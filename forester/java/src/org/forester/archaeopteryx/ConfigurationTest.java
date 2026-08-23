@@ -37,46 +37,48 @@ public final class ConfigurationTest {
     }
 
     public static boolean test() {
-        return testDefaults() && testClickToOptionAlignment();
+        return testDefaults() && testOptionEnums();
     }
 
     /**
-     * The click-to options use a fragile parallel-array scheme: each {@code final static int} index
-     * must address the matching row of {@link Configuration#clickto_options}. Guards that coupling
-     * (notably after "Change Node Font(s)" was removed and the trailing indices shifted down).
+     * The click-to actions and "Display Data" options are now the type-safe enums {@link ClickToOption} /
+     * {@link DisplayOption} (they replaced the old fragile positional {@code String[][]} arrays + parallel
+     * int index constants, so the previous alignment guard is obsolete). Spot-check that each enum carries a
+     * title and that a couple of representative default states are correct, and that the removed actions/
+     * options ("Launch BLAST", "Open PDB", "Binary Characters", "Vector Data", ...) are gone.
      */
-    private static boolean testClickToOptionAlignment() {
-        final Configuration c = new Configuration();
-        if ( !"Display Node Data".equals( c.getClickToTitle( Configuration.display_node_data ) ) ) {
+    private static boolean testOptionEnums() {
+        if ( !"Display Node Data".equals( ClickToOption.DISPLAY_NODE_DATA.title() )
+                || !"Order Subtree".equals( ClickToOption.ORDER_SUBTREE.title() )
+                || !"Open Taxonomy DB".equals( ClickToOption.OPEN_TAX_WEB.title() ) ) {
             return false;
         }
-        if ( !"Node Style".equals( c.getClickToTitle( Configuration.node_style ) ) ) {
-            return false;
-        }
-        if ( !"Colorize Subtree(s)".equals( c.getClickToTitle( Configuration.color_subtree ) ) ) {
-            return false;
-        }
-        // constants after the removed "Open PDB"/"Launch BLAST" rows must still address the right row
-        if ( !"Open Taxonomy DB".equals( c.getClickToTitle( Configuration.open_tax_web ) ) ) {
-            return false;
-        }
-        if ( !"Cut Subtree".equals( c.getClickToTitle( Configuration.cut_subtree ) ) ) {
-            return false;
-        }
-        if ( !"Order Subtree".equals( c.getClickToTitle( Configuration.order_subtree ) ) ) {
-            return false;
-        }
-        // the removed "Change Node Font(s)", "List Node Data", "Launch BLAST" and "Open PDB" options
-        // must no longer appear in the table
-        for ( final String[] option : Configuration.clickto_options ) {
-            if ( "Change Node Font(s)".equals( option[ 0 ] ) || "List Node Data".equals( option[ 0 ] )
-                    || "Launch BLAST".equals( option[ 0 ] ) || "Open PDB".equals( option[ 0 ] ) ) {
+        for ( final ClickToOption o : ClickToOption.values() ) {
+            if ( ( o.title() == null ) || o.title().isEmpty() ) {
+                return false;
+            }
+            // the removed BLAST / PDB actions must be gone
+            if ( "Launch BLAST".equals( o.title() ) || "Open PDB".equals( o.title() ) ) {
                 return false;
             }
         }
-        // the last index must still address the final row (no off-by-one after the shift)
-        if ( Configuration.order_subtree != ( Configuration.clickto_options.length - 1 ) ) {
+        // DefaultState replaces the old "yes"/"no"/"?" third column
+        if ( !DisplayOption.SHOW_NODE_NAMES.isCheckedByDefault()
+                || DisplayOption.SHOW_DOMAIN_ARCHITECTURES.isCheckedByDefault()
+                || !DisplayOption.DISPLAY_AS_PHYLOGRAM.isGuessedByDefault() ) {
             return false;
+        }
+        for ( final DisplayOption o : DisplayOption.values() ) {
+            if ( ( o.title() == null ) || o.title().isEmpty() ) {
+                return false;
+            }
+            // the removed display features must be gone
+            final String t = o.title();
+            if ( "Binary Characters".equals( t ) || "Binary Char Counts".equals( t ) || "Vector Data".equals( t )
+                    || "Relation Confidence".equals( t ) || "Multiple Seq Alignment".equals( t )
+                    || "Taxonomy Images".equals( t ) ) {
+                return false;
+            }
         }
         return true;
     }

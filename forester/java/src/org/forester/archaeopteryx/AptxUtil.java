@@ -38,6 +38,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -391,96 +392,96 @@ public final class AptxUtil {
         return false;
     }
 
-    // The number of distinct "Display Data" option constants scanForDataPresence can report (kept in
-    // sync by hand with the present.add(...) calls below); used to short-circuit the scan once every
-    // flag has been found.
+    // The number of distinct {@link DisplayOption}s scanForDataPresence can report (kept in sync by
+    // hand with the present.add(...) calls below); used to short-circuit the scan once every flag has
+    // been found.
     private final static int NUM_DATA_PRESENCE_FLAGS = 17;
 
     /**
-     * Scans the whole tree once and returns the set of "Display Data" option constants (from
-     * {@link Configuration}) for which at least one node actually carries the corresponding data.
+     * Scans the whole tree once and returns the set of {@link DisplayOption}s for which at least one
+     * node actually carries the corresponding data.
      * The control panel uses this to show only the checkboxes that would do something for the
      * current tree, instead of an intimidating wall of toggles that silently do nothing. A single
      * pre-order pass; each flag is tested only until it is found, and the whole scan stops early
      * once every flag is set (cheap even on very large trees).
      */
-    public final static Set<Integer> scanForDataPresence(final Phylogeny phy) {
-        final Set<Integer> present = new HashSet<Integer>();
+    public final static Set<DisplayOption> scanForDataPresence(final Phylogeny phy) {
+        final Set<DisplayOption> present = EnumSet.noneOf(DisplayOption.class);
         if ((phy == null) || phy.isEmpty()) {
             return present;
         }
         for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext();) {
             final PhylogenyNode n = it.next();
             final NodeData nd = n.getNodeData();
-            if (!present.contains(Configuration.show_node_names) && !ForesterUtil.isEmpty(n.getName())) {
-                present.add(Configuration.show_node_names);
+            if (!present.contains(DisplayOption.SHOW_NODE_NAMES) && !ForesterUtil.isEmpty(n.getName())) {
+                present.add(DisplayOption.SHOW_NODE_NAMES);
             }
             // Offer "Shorten Labels" only for trees that actually have an over-long external name (e.g. a
             // whole UniProt/NCBI FASTA header used as a label) -- otherwise the checkbox stays hidden.
-            if (!present.contains(Configuration.shorten_labels) && n.isExternal() && (n.getName() != null)
+            if (!present.contains(DisplayOption.SHORTEN_LABELS) && n.isExternal() && (n.getName() != null)
                     && (n.getName().length() > AptxConstants.LONG_NODE_NAME_LIMIT)) {
-                present.add(Configuration.shorten_labels);
+                present.add(DisplayOption.SHORTEN_LABELS);
             }
             // Match the renderer: it writes the branch length whenever it is set to anything other than
             // the "no length" sentinel (so legitimate zero-length and negative branches count too).
-            if (!present.contains(Configuration.write_branch_length_values)
+            if (!present.contains(DisplayOption.WRITE_BRANCH_LENGTH_VALUES)
                     && (n.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT)) {
-                present.add(Configuration.write_branch_length_values);
+                present.add(DisplayOption.WRITE_BRANCH_LENGTH_VALUES);
             }
-            if (!present.contains(Configuration.write_confidence_values) && n.getBranchData().isHasConfidences()) {
-                present.add(Configuration.write_confidence_values);
+            if (!present.contains(DisplayOption.WRITE_CONFIDENCE_VALUES) && n.getBranchData().isHasConfidences()) {
+                present.add(DisplayOption.WRITE_CONFIDENCE_VALUES);
             }
-            if (!present.contains(Configuration.width_branches) && (n.getBranchData().getBranchWidth() != null)
+            if (!present.contains(DisplayOption.WIDTH_BRANCHES) && (n.getBranchData().getBranchWidth() != null)
                     && (n.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE)) {
-                present.add(Configuration.width_branches);
+                present.add(DisplayOption.WIDTH_BRANCHES);
             }
-            if (!present.contains(Configuration.use_style)
+            if (!present.contains(DisplayOption.USE_STYLE)
                     && (((nd.getNodeVisualData() != null) && !nd.getNodeVisualData().isEmpty())
                             || (n.getBranchData().getBranchColor() != null))) {
-                present.add(Configuration.use_style);
+                present.add(DisplayOption.USE_STYLE);
             }
-            if (!present.contains(Configuration.write_events) && nd.isHasEvent()) {
-                present.add(Configuration.write_events);
+            if (!present.contains(DisplayOption.WRITE_EVENTS) && nd.isHasEvent()) {
+                present.add(DisplayOption.WRITE_EVENTS);
             }
-            if (!present.contains(Configuration.show_properties) && (nd.getProperties() != null)
+            if (!present.contains(DisplayOption.SHOW_PROPERTIES) && (nd.getProperties() != null)
                     && (nd.getProperties().size() > 0)) {
-                present.add(Configuration.show_properties);
+                present.add(DisplayOption.SHOW_PROPERTIES);
             }
             if (nd.isHasTaxonomy()) {
                 final Taxonomy t = nd.getTaxonomy();
-                if (!present.contains(Configuration.show_tax_code) && !ForesterUtil.isEmpty(t.getTaxonomyCode())) {
-                    present.add(Configuration.show_tax_code);
+                if (!present.contains(DisplayOption.SHOW_TAX_CODE) && !ForesterUtil.isEmpty(t.getTaxonomyCode())) {
+                    present.add(DisplayOption.SHOW_TAX_CODE);
                 }
-                if (!present.contains(Configuration.show_taxonomy_scientific_names)
+                if (!present.contains(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
                         && !ForesterUtil.isEmpty(t.getScientificName())) {
-                    present.add(Configuration.show_taxonomy_scientific_names);
+                    present.add(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES);
                 }
-                if (!present.contains(Configuration.show_taxonomy_common_names)
+                if (!present.contains(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES)
                         && !ForesterUtil.isEmpty(t.getCommonName())) {
-                    present.add(Configuration.show_taxonomy_common_names);
+                    present.add(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES);
                 }
-                if (!present.contains(Configuration.show_tax_rank) && !ForesterUtil.isEmpty(t.getRank())) {
-                    present.add(Configuration.show_tax_rank);
+                if (!present.contains(DisplayOption.SHOW_TAX_RANK) && !ForesterUtil.isEmpty(t.getRank())) {
+                    present.add(DisplayOption.SHOW_TAX_RANK);
                 }
             }
             if (nd.isHasSequence()) {
                 final Sequence s = nd.getSequence();
-                if (!present.contains(Configuration.show_seq_names) && !ForesterUtil.isEmpty(s.getName())) {
-                    present.add(Configuration.show_seq_names);
+                if (!present.contains(DisplayOption.SHOW_SEQ_NAMES) && !ForesterUtil.isEmpty(s.getName())) {
+                    present.add(DisplayOption.SHOW_SEQ_NAMES);
                 }
-                if (!present.contains(Configuration.show_gene_names) && !ForesterUtil.isEmpty(s.getGeneName())) {
-                    present.add(Configuration.show_gene_names);
+                if (!present.contains(DisplayOption.SHOW_GENE_NAMES) && !ForesterUtil.isEmpty(s.getGeneName())) {
+                    present.add(DisplayOption.SHOW_GENE_NAMES);
                 }
-                if (!present.contains(Configuration.show_seq_symbols) && !ForesterUtil.isEmpty(s.getSymbol())) {
-                    present.add(Configuration.show_seq_symbols);
+                if (!present.contains(DisplayOption.SHOW_SEQ_SYMBOLS) && !ForesterUtil.isEmpty(s.getSymbol())) {
+                    present.add(DisplayOption.SHOW_SEQ_SYMBOLS);
                 }
                 // Match the renderer: it draws the accession (source and/or value) whenever one exists.
-                if (!present.contains(Configuration.show_sequence_acc) && (s.getAccession() != null)) {
-                    present.add(Configuration.show_sequence_acc);
+                if (!present.contains(DisplayOption.SHOW_SEQUENCE_ACC) && (s.getAccession() != null)) {
+                    present.add(DisplayOption.SHOW_SEQUENCE_ACC);
                 }
-                if (!present.contains(Configuration.show_domain_architectures)
+                if (!present.contains(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)
                         && (s.getDomainArchitecture() != null)) {
-                    present.add(Configuration.show_domain_architectures);
+                    present.add(DisplayOption.SHOW_DOMAIN_ARCHITECTURES);
                 }
             }
             if (present.size() >= NUM_DATA_PRESENCE_FLAGS) {
@@ -950,7 +951,7 @@ public final class AptxUtil {
                     }
                     main_panel.addPhylogenyInNewTab(phy, configuration, my_name, full_path);
                     main_panel.getCurrentTreePanel().setTreeFile(new File(my_name_for_file));
-                    lookAtSomeTreePropertiesForAptxControlSettings(phy, main_panel.getControlPanel(), configuration);
+                    lookAtSomeTreePropertiesForAptxControlSettings(phy, main_panel.getControlPanel());
                     ++i;
                 }
             }
@@ -1361,9 +1362,7 @@ public final class AptxUtil {
         }
     }
 
-    final static void lookAtSomeTreePropertiesForAptxControlSettings(final Phylogeny t,
-                                                                     final ControlPanel cp,
-                                                                     final Configuration configuration) {
+    final static void lookAtSomeTreePropertiesForAptxControlSettings(final Phylogeny t, final ControlPanel cp) {
         if ((t != null) && !t.isEmpty()) {
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero(t);
             if (!has_bl) {
@@ -1380,7 +1379,7 @@ public final class AptxUtil {
                     && cp.getUseBranchWidthsCb() != null) {
                 cp.getUseBranchWidthsCb().setSelected(true);
             }
-            if (configuration.doGuessCheckOption(Configuration.display_as_phylogram)) {
+            if (DisplayOption.DISPLAY_AS_PHYLOGRAM.isGuessedByDefault()) {
                 if (cp.getDisplayAsAlignedPhylogramRb() != null) {
                     if (has_bl) {
                         // open the tree in the user's persisted P/A/C preference (default UNALIGNED_PHYLOGRAM), gated
@@ -1394,21 +1393,21 @@ public final class AptxUtil {
                     }
                 }
             }
-            if (configuration.doGuessCheckOption(Configuration.write_confidence_values)) {
+            if (DisplayOption.WRITE_CONFIDENCE_VALUES.isGuessedByDefault()) {
                 if (cp.getWriteConfidenceCb() != null) {
                     if (AptxUtil.isHasAtLeastOneBranchWithSupportValues(t)) {
-                        cp.setCheckbox(Configuration.write_confidence_values, true);
+                        cp.setCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES, true);
                     } else {
-                        cp.setCheckbox(Configuration.write_confidence_values, false);
+                        cp.setCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES, false);
                     }
                 }
             }
-            if (configuration.doGuessCheckOption(Configuration.write_events)) {
+            if (DisplayOption.WRITE_EVENTS.isGuessedByDefault()) {
                 if (cp.getShowEventsCb() != null) {
                     if (AptxUtil.isHasAtLeastNodeWithEvent(t)) {
-                        cp.setCheckbox(Configuration.write_events, true);
+                        cp.setCheckbox(DisplayOption.WRITE_EVENTS, true);
                     } else {
-                        cp.setCheckbox(Configuration.write_events, false);
+                        cp.setCheckbox(DisplayOption.WRITE_EVENTS, false);
                     }
                 }
             }

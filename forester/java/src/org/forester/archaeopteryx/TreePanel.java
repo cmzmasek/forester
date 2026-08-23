@@ -1972,7 +1972,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (int i = 0; i < clickto_names.size(); i++) {
             final String title = clickto_names.get(i);
             _node_popup_menu_items[i] = new JMenuItem(title);
-            if (title.equals(Configuration.clickto_options[Configuration.open_seq_web][0])) {
+            if (title.equals(ClickToOption.OPEN_SEQ_WEB.title())) {
                 final List<Sequence> seqs = node.getNodeData().getSequences();
                 boolean addedPerSeqItems = false;
                 if (seqs != null) {
@@ -2009,49 +2009,49 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else {
                     _node_popup_menu_items[i].setEnabled(false);
                 }
-            } else if (title.equals(Configuration.clickto_options[Configuration.open_tax_web][0])) {
+            } else if (title.equals(ClickToOption.OPEN_TAX_WEB.title())) {
                 _node_popup_menu_items[i].setEnabled(isCanOpenTaxWeb(node));
-            } else if (title.equals(Configuration.clickto_options[Configuration.delete_subtree_or_node][0])) {
+            } else if (title.equals(ClickToOption.DELETE_SUBTREE_OR_NODE.title())) {
                 if (!getOptions().isEditable()) {
                     continue;
                 }
                 _node_popup_menu_items[i].setEnabled(isCanDelete());
-            } else if (title.equals(Configuration.clickto_options[Configuration.cut_subtree][0])) {
+            } else if (title.equals(ClickToOption.CUT_SUBTREE.title())) {
                 if (!getOptions().isEditable()) {
                     continue;
                 }
                 _node_popup_menu_items[i].setEnabled(isCanCut(node));
-            } else if (title.equals(Configuration.clickto_options[Configuration.copy_subtree][0])) {
+            } else if (title.equals(ClickToOption.COPY_SUBTREE.title())) {
                 if (!getOptions().isEditable()) {
                     continue;
                 }
                 _node_popup_menu_items[i].setEnabled(isCanCopy());
-            } else if (title.equals(Configuration.clickto_options[Configuration.paste_subtree][0])) {
+            } else if (title.equals(ClickToOption.PASTE_SUBTREE.title())) {
                 if (!getOptions().isEditable()) {
                     continue;
                 }
                 _node_popup_menu_items[i].setEnabled(isCanPaste());
-            } else if (title.equals(Configuration.clickto_options[Configuration.edit_node_data][0])) {
+            } else if (title.equals(ClickToOption.EDIT_NODE_DATA.title())) {
                 if (!getOptions().isEditable()) {
                     continue;
                 }
-            } else if (title.equals(Configuration.clickto_options[Configuration.add_new_node][0])) {
+            } else if (title.equals(ClickToOption.ADD_NEW_NODE.title())) {
                 if (!getOptions().isEditable()) {
                     continue;
                 }
-            } else if (title.equals(Configuration.clickto_options[Configuration.reroot][0])) {
+            } else if (title.equals(ClickToOption.REROOT.title())) {
                 _node_popup_menu_items[i].setEnabled(isCanReroot());
-            } else if (title.equals(Configuration.clickto_options[Configuration.collapse_uncollapse][0])) {
+            } else if (title.equals(ClickToOption.COLLAPSE_UNCOLLAPSE.title())) {
                 _node_popup_menu_items[i].setEnabled((isCanCollapse() && !node.isExternal()));
-            } else if (title.equals(Configuration.clickto_options[Configuration.color_subtree][0])) {
+            } else if (title.equals(ClickToOption.COLOR_SUBTREE.title())) {
                 _node_popup_menu_items[i].setEnabled(isCanColorSubtree());
-            } else if (title.equals(Configuration.clickto_options[Configuration.subtree][0])) {
+            } else if (title.equals(ClickToOption.SUBTREE.title())) {
                 _node_popup_menu_items[i].setEnabled(isCanSubtree(node));
-            } else if (title.equals(Configuration.clickto_options[Configuration.swap][0])) {
+            } else if (title.equals(ClickToOption.SWAP.title())) {
                 _node_popup_menu_items[i].setEnabled(node.getNumberOfDescendants() == 2);
-            } else if (title.equals(Configuration.clickto_options[Configuration.sort_descendents][0])) {
+            } else if (title.equals(ClickToOption.SORT_DESCENDENTS.title())) {
                 _node_popup_menu_items[i].setEnabled(node.getNumberOfDescendants() > 1);
-            } else if (title.equals(Configuration.clickto_options[Configuration.uncollapse_all][0])) {
+            } else if (title.equals(ClickToOption.UNCOLLAPSE_ALL.title())) {
                 _node_popup_menu_items[i].setEnabled(isCanUncollapseAll(node));
             }
             _node_popup_menu_items[i].addActionListener(this);

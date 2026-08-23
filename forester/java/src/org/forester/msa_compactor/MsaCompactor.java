@@ -260,18 +260,12 @@ public class MsaCompactor {
     }
 
     public final void displayTree( final Phylogeny phy ) {
+        // The per-option display presets that used to be set here went through Configuration setters that
+        // mutated the (now removed) static display_options defaults; the "Display Data" checkboxes are now
+        // driven by the DisplayOption enum defaults plus data-driven visibility, so the tree opens with the
+        // standard defaults. Scale and font are still configured directly.
         final Configuration config = new Configuration();
-        config.setDisplayAsPhylogram( true );
-        config.setUseStyle( true );
-        config.setDisplayTaxonomyCode( false );
-        config.setDisplayTaxonomyCommonNames( false );
-        config.setDisplayTaxonomyScientificNames( false );
-        config.setDisplaySequenceNames( false );
-        config.setDisplaySequenceSymbols( false );
-        config.setDisplayGeneNames( false );
-        config.setDisplayMultipleSequenceAlignment( true );
         config.setShowScale( true );
-        config.setAddTaxonomyImagesCB( false );
         config.setBaseFontSize( 9 );
         config.setBaseFontFamilyName( "Arial" );
         Archaeopteryx.createApplication( phy, config, _infile_name );

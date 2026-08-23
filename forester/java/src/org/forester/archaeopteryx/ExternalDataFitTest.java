@@ -62,7 +62,7 @@ public final class ExternalDataFitTest {
                     cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
 
                     // Show External Data ON: the long tip labels reserve a real right margin
-                    cp.setCheckbox( Configuration.display_external_data, true );
+                    cp.setCheckbox( DisplayOption.DISPLAY_EXTERNAL_DATA, true );
                     tp.calcParametersForPainting( 800, 600 );
                     final int reserve_on = tp.getLongestExtNodeInfo();
                     final double corr_on = tp.getXcorrectionFactor();
@@ -70,7 +70,7 @@ public final class ExternalDataFitTest {
                             + reserve_on );
 
                     // Show External Data OFF: labels are not drawn -> reserve NOTHING, branches expand into the space
-                    cp.setCheckbox( Configuration.display_external_data, false );
+                    cp.setCheckbox( DisplayOption.DISPLAY_EXTERNAL_DATA, false );
                     tp.calculateLongestExtNodeInfo();
                     ck( ok, tp.getLongestExtNodeInfo() == 0,
                         "with external data OFF the label reservation must collapse to 0, got "

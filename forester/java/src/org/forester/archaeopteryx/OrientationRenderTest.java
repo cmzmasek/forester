@@ -286,11 +286,11 @@ public final class OrientationRenderTest {
                     // support/length (right) from the (unchanged) tree structure.
                     final ControlPanel cp0 = tp.getControlPanel();
                     setInternalNames( phy, true );
-                    cp0.setCheckbox( Configuration.display_internal_data, true ); // the internal label needs this on
+                    cp0.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, true ); // the internal label needs this on
                     if ( cp0.getWriteConfidenceCb() != null ) {
                         cp0.getWriteConfidenceCb().setSelected( true );
                     }
-                    cp0.setCheckbox( Configuration.write_branch_length_values, true );
+                    cp0.setCheckbox( DisplayOption.WRITE_BRANCH_LENGTH_VALUES, true );
                     final BufferedImage data_on = render( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
                     final PhylogenyNode inode = centralInternalNode( tp, phy, w, h );
                     if ( inode == null ) {
@@ -308,7 +308,7 @@ public final class OrientationRenderTest {
                         if ( cp0.getWriteConfidenceCb() != null ) {
                             cp0.getWriteConfidenceCb().setSelected( false );
                         }
-                        cp0.setCheckbox( Configuration.write_branch_length_values, false );
+                        cp0.setCheckbox( DisplayOption.WRITE_BRANCH_LENGTH_VALUES, false );
                         final BufferedImage data_off = render( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
                         final int left_off = darkInRegion( data_off, bx - 60, by - 8, bx - 4, by + 8 );
                         final int right_off = darkInRegion( data_off, bx + 4, by - 8, bx + 60, by + 8 );
@@ -374,9 +374,9 @@ public final class OrientationRenderTest {
                     o.setShowScaleGrid( false );
                     o.setShowScale( false );
                     final ControlPanel cp = tp.getControlPanel();
-                    cp.setCheckbox( Configuration.show_node_names, false );
-                    cp.setCheckbox( Configuration.display_external_data, false );
-                    cp.setCheckbox( Configuration.display_internal_data, false );
+                    cp.setCheckbox( DisplayOption.SHOW_NODE_NAMES, false );
+                    cp.setCheckbox( DisplayOption.DISPLAY_EXTERNAL_DATA, false );
+                    cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, false );
                     final BufferedImage top = render( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
                     final BufferedImage bottom = render( frame, tp, o, TREE_ORIENTATION.ROOT_BOTTOM, w, h );
                     if ( ( top == null ) || ( bottom == null ) || !hasInk( top ) || !hasInk( bottom ) ) {
@@ -432,8 +432,8 @@ public final class OrientationRenderTest {
                     // geometry (not slanted inside the 45deg label frame). Smoke: it renders non-empty and a tip is
                     // still hit-testable (a regression here -- e.g. drawing the leader in the tilted frame -- broke
                     // the layout badly enough that this exercises the aligned path end to end).
-                    cp.setCheckbox( Configuration.show_node_names, true );
-                    cp.setCheckbox( Configuration.display_external_data, true );
+                    cp.setCheckbox( DisplayOption.SHOW_NODE_NAMES, true );
+                    cp.setCheckbox( DisplayOption.DISPLAY_EXTERNAL_DATA, true );
                     cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM );
                     final BufferedImage aligned = render( frame, tp, o, TREE_ORIENTATION.ROOT_TOP, w, h );
                     if ( ( aligned == null ) || !hasInk( aligned ) ) {

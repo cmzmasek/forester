@@ -73,14 +73,14 @@ public final class RadialNodeContentRenderTest {
             o.setGraphicsExportWhiteBackground( true );
             o.setShowOverview( false );
             tp.setOvOn( false );
-            cp.setCheckbox( Configuration.display_node_data, true ); // show external node data
+            cp.setCheckbox( DisplayOption.SHOW_NODE_NAMES, true ); // show node-name labels
             tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
             tp.setPreferredSize( new java.awt.Dimension( w, h ) );
             tp.setSize( w, h );
-            cp.setCheckbox( Configuration.show_gene_names, false );
+            cp.setCheckbox( DisplayOption.SHOW_GENE_NAMES, false );
             tp.calcParametersForPainting( w, h );
             final int off = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
-            cp.setCheckbox( Configuration.show_gene_names, true );
+            cp.setCheckbox( DisplayOption.SHOW_GENE_NAMES, true );
             tp.calcParametersForPainting( w, h );
             final int on = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
             if ( on <= ( off + 200 ) ) {
@@ -716,12 +716,12 @@ public final class RadialNodeContentRenderTest {
             for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
                     Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
                 tp.setPhylogenyGraphicsType( gt );
-                cp.setCheckbox( Configuration.write_confidence_values, false );
-                cp.setCheckbox( Configuration.write_branch_length_values, false );
+                cp.setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, false );
+                cp.setCheckbox( DisplayOption.WRITE_BRANCH_LENGTH_VALUES, false );
                 tp.calcParametersForPainting( w, h );
                 final int no_num = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
-                cp.setCheckbox( Configuration.write_confidence_values, true );
-                cp.setCheckbox( Configuration.write_branch_length_values, true );
+                cp.setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, true );
+                cp.setCheckbox( DisplayOption.WRITE_BRANCH_LENGTH_VALUES, true );
                 tp.calcParametersForPainting( w, h );
                 final int with_num = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
                 if ( with_num <= ( no_num + 150 ) ) {
@@ -743,18 +743,18 @@ public final class RadialNodeContentRenderTest {
             o.setGraphicsExportWhiteBackground( true );
             frame.showWhole();
             tp.setSize( w, h );
-            cp.setCheckbox( Configuration.show_taxonomy_scientific_names, true );
-            cp.setCheckbox( Configuration.show_tax_rank, true );
+            cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+            cp.setCheckbox( DisplayOption.SHOW_TAX_RANK, true );
             tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
 
             // TIP labels render radially: showing taxonomy adds dark text ink over a no-labels baseline
-            cp.setCheckbox( Configuration.show_taxonomy_scientific_names, false );
-            cp.setCheckbox( Configuration.display_node_data, false );
+            cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, false );
+            cp.setCheckbox( DisplayOption.SHOW_NODE_NAMES, false );
             tp.calcParametersForPainting( w, h );
             final int no_labels = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
-            cp.setCheckbox( Configuration.show_taxonomy_scientific_names, true );
-            cp.setCheckbox( Configuration.display_node_data, true );
-            cp.setCheckbox( Configuration.display_internal_data, false );
+            cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+            cp.setCheckbox( DisplayOption.SHOW_NODE_NAMES, true );
+            cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, false );
             tp.calcParametersForPainting( w, h );
             final int tips_only = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
             if ( tips_only <= ( no_labels + 200 ) ) {
@@ -764,7 +764,7 @@ public final class RadialNodeContentRenderTest {
 
             // INTERNAL-node labels render radially: turning "Show Internal Data" on adds MORE dark ink (the clade
             // roots' "[order] <taxon>" labels) over the tips-only render
-            cp.setCheckbox( Configuration.display_internal_data, true );
+            cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, true );
             tp.calcParametersForPainting( w, h );
             final int with_internal = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
             if ( with_internal <= ( tips_only + 100 ) ) {
@@ -774,10 +774,10 @@ public final class RadialNodeContentRenderTest {
 
             // UNROOTED: internal-node labels ride the branch there too (added dark ink over internal-data-off)
             tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
-            cp.setCheckbox( Configuration.display_internal_data, false );
+            cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, false );
             tp.calcParametersForPainting( w, h );
             final int u_ext = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
-            cp.setCheckbox( Configuration.display_internal_data, true );
+            cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, true );
             tp.calcParametersForPainting( w, h );
             final int u_all = countDark( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
             if ( u_all <= ( u_ext + 100 ) ) {

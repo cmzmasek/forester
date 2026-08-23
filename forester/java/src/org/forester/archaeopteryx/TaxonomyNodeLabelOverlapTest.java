@@ -99,8 +99,6 @@ public final class TaxonomyNodeLabelOverlapTest {
     private static boolean testNoRenderedOverlap( final String sci ) {
         try {
             final Configuration conf = new Configuration();
-            conf.setDisplayTaxonomyScientificNames( true );
-            conf.setDisplaySequenceNames( true );
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait(
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { tree( sci ) }, conf, "ov" ) );
@@ -109,6 +107,9 @@ public final class TaxonomyNodeLabelOverlapTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    // show the scientific name + the sequence name (the two labels whose overlap is under test)
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_SEQ_NAMES, true );
                     final Options o = frame.getOptions();
                     o.setAntialiasPrint( false ); // crisp single-color glyphs, so a pixel is exactly one segment's color
                     o.setUseItalicScientificNames( true );
@@ -182,8 +183,6 @@ public final class TaxonomyNodeLabelOverlapTest {
     private static boolean internalGapOk( final String sci ) {
         try {
             final Configuration conf = new Configuration();
-            conf.setDisplayTaxonomyScientificNames( true );
-            conf.setDisplaySequenceNames( true );
             // root -> [ A(non-root internal) -> (C,D), B ]; every node carries a scientific name + a sequence name
             final Phylogeny phy = new Phylogeny();
             final PhylogenyNode root = new PhylogenyNode();
@@ -203,6 +202,8 @@ public final class TaxonomyNodeLabelOverlapTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_SEQ_NAMES, true );
                     final Options o = frame.getOptions();
                     o.setAntialiasPrint( false );
                     o.setUseItalicScientificNames( true );

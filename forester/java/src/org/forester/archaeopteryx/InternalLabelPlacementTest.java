@@ -75,8 +75,8 @@ public final class InternalLabelPlacementTest {
                     final TreePanel tp = mp.getCurrentTreePanel();
                     final ControlPanel cp = mp.getControlPanel();
                     mp.getOptions().setRasterExportScale( 1 ); // pixel checks below are in logical coordinates
-                    cp.setCheckbox( Configuration.display_internal_data, true );
-                    cp.setCheckbox( Configuration.show_node_names, true );
+                    cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, true );
+                    cp.setCheckbox( DisplayOption.SHOW_NODE_NAMES, true );
                     cp.showWhole();
                     if ( ( tp.getWidth() < 200 ) || ( tp.getHeight() < 200 ) || !cp.isShowNodeNames() ) {
                         return; // no usable viewport or node-name display in this environment; nothing to assert

@@ -115,8 +115,8 @@ public final class SearchEmphasisRenderTest {
                     }
                     // the NUMBERS dim too: with branch-length + confidence values shown, a non-hit tip's branch-length
                     // number fades when Dim is on (it routes through the same dimNonMatch helper as the labels).
-                    tp.getControlPanel().setCheckbox( Configuration.write_branch_length_values, true );
-                    tp.getControlPanel().setCheckbox( Configuration.write_confidence_values, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.WRITE_BRANCH_LENGTH_VALUES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, true );
                     final PhylogenyNode ins = tipNamed( phy, "insulin" ); // a non-hit tip
                     final int bl_off = branchLenInk( render( frame, tp, o, false, false, w, h ), ins );
                     final int bl_on = branchLenInk( render( frame, tp, o, false, true, w, h ), ins );

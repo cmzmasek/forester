@@ -46,95 +46,16 @@ public final class Configuration {
     private static final String PREFS_NODE = "org/forester/archaeopteryx";
     private static final String PREFS_KEY_UI = "ui";
 
-    final static String[][] clickto_options = {
-            {"Display Node Data", "display"}, {"Collapse/Uncollapse", "display"}, {"Root/Reroot", "display"},
-            {"Go to Sub/Supertree", "display"}, {"Swap Descendants", "display"},
-            {"Node Style", "display"},
-            {"Colorize Subtree(s)", "display"}, {"Open Sequence DB", "display"},
-            {"Open Taxonomy DB", "display"}, {"Cut Subtree", "display"},
-            {"Copy Subtree", "display"}, {"Paste Subtree", "display"}, {"Delete Subtree/Node", "display"},
-            {"Add New Node", "display"}, {"Edit Node Data", "display"}, {"Sort Descendants", "display"},
-            {"Select Node(s)", "display"}, {"Uncollapse All", "display"}, {"Order Subtree", "display"},};
-
-    final static int display_node_data = 0;
-    final static int collapse_uncollapse = 1;
-    final static int reroot = 2;
-    final static int subtree = 3;
-    final static int swap = 4;
-    final static int node_style = 5;
-    final static int color_subtree = 6;
-    final static int open_seq_web = 7;
-    final static int open_tax_web = 8;
-    final static int cut_subtree = 9;
-    final static int copy_subtree = 10;
-    final static int paste_subtree = 11;
-    final static int delete_subtree_or_node = 12;
-    final static int add_new_node = 13;
-    final static int edit_node_data = 14;
-    final static int sort_descendents = 15;
-    final static int select_nodes = 16;
-    final static int uncollapse_all = 17;
-    final static int order_subtree = 18;
-
-    // ------------------
-    // Click-to options
-    // ------------------
-    final static String[][] display_options = {
-            {"Phylogram", "display", "?"}, {"Node Name", "display", "yes"}, {"Taxonomy Code", "display", "yes"},
-            {"Seq Annotations", "display", "no"}, {"Confidence Values", "display", "?"},
-            {"Node Events", "display", "?"}, {"Colorize by Taxonomy", "display", "no"},
-            {"Colorize by Sequence", "display", "no"}, {"Visual Styles/Branch Colors", "display", "yes"},
-            {"Branch Widths", "display", "no"}, {"Domain Architectures", "display", "no"},
-            {"Binary Characters", "nodisplay", "no"}, {"Binary Char Counts", "nodisplay", "no"},
-            {"Seq Name", "display", "no"}, {"Seq Accession", "display", "no"},
-            {"Show Internal Data", "display", "yes"}, {"Dyna Hide", "display", "yes"},
-            {"Taxonomy Scientific", "display", "yes"}, {"Taxonomy Common", "display", "no"},
-            {"Colorize by Annotation", "nodisplay", "no"}, {"Seq Symbol", "nodisplay", "no"},
-            {"Rollover", "display", "yes"}, {"Relation Confidence", "nodisplay", "no"},
-            {"Vector Data", "nodisplay", "no"}, {"Taxonomy Images", "nodisplay", "no"},
-            {"Properties", "display", "no"}, {"Gene Name", "nodisplay", "no"},
-            {"Multiple Seq Alignment", "nodisplay", "no"}, {"Branch Length Values", "display", "no"}
-            , {"Taxonomy Rank", "display", "no"}, {"Show External Data", "display", "yes"},
-            {"Shorten Labels", "display", "yes"}};
-    final static int display_as_phylogram = 0;
-    final static int show_node_names = 1;
-    final static int show_tax_code = 2;
-    final static int write_confidence_values = 4;
-    final static int write_events = 5;
-    final static int use_style = 8;
-    final static int width_branches = 9;
-    final static int show_domain_architectures = 10;
-    final static int show_binary_characters = 11;
-    final static int show_binary_character_counts = 12;
-    final static int show_seq_names = 13;
-    final static int show_sequence_acc = 14;
-    final static int display_internal_data = 15;
-    final static int dynamically_hide_data = 16;
-    final static int show_taxonomy_scientific_names = 17;
-    final static int show_taxonomy_common_names = 18;
-    final static int show_seq_symbols = 20;
-    final static int node_data_popup = 21;
-    final static int show_relation_confidence = 22;
-    final static int show_vector_data = 23;
-    final static int show_taxonomy_images = 24;
-    final static int show_properties = 25;
-    final static int show_gene_names = 26;
-    final static int show_mol_seqs = 27;
-    final static int write_branch_length_values = 28;
-    final static int show_tax_rank = 29;
-    final static int display_external_data = 30;
-    final static int shorten_labels = 31;
+    // The click-to actions and the "Display Data" options are now the type-safe enums
+    // {@link ClickToOption} and {@link DisplayOption} (they replaced the old positional String[][]
+    // clickto_options / display_options arrays and their parallel int index constants).
 
     private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;
     private static String DEFAULT_FONT_FAMILY = "";
 
-    // ---------------------------
-    // Display options for trees
-    // ---------------------------
-    // ---------------------------------
-    // This option is selected in the dropdown
-    int default_clickto = Configuration.display_node_data;
+    // The click-to action selected by default in the dropdown.
+    private ClickToOption _default_clickto = ClickToOption.DISPLAY_NODE_DATA;
 
     private final boolean _abbreviate_scientific_names = false;
     private String _base_font_family_name = "";
@@ -200,7 +121,7 @@ public final class Configuration {
 
     public Configuration() {
         // Archaeopteryx no longer reads configuration files; all settings come from the
-        // built-in defaults (see the field initializers and display_options above) and the
+        // built-in defaults (see the field initializers and the DisplayOption enum) and the
         // Settings dialog at runtime.
         setDisplayColors(new TreeMap<String, Color>());
     }
@@ -281,10 +202,6 @@ public final class Configuration {
         getDisplayColors().put(key, color);
     }
 
-    public void setAddTaxonomyImagesCB(final boolean b) {
-        display_options[show_taxonomy_images][1] = b ? "yes" : "no";
-    }
-
     public void setBaseFontFamilyName(final String base_font_family_name) {
         _base_font_family_name = base_font_family_name;
     }
@@ -293,51 +210,12 @@ public final class Configuration {
         _base_font_size = base_font_size;
     }
 
-    public void setDisplayAsPhylogram(final boolean b) {
-        display_options[display_as_phylogram][2] = b ? "yes" : "no";
-    }
-
     public void setDisplayColors(final SortedMap<String, Color> display_colors) {
         _display_colors = display_colors;
     }
 
-    public void setDisplayGeneNames(final boolean b) {
-        display_options[show_gene_names][2] = b ? "yes" : "no";
-    }
-
-    public void setDisplayMultipleSequenceAlignment(final boolean b) {
-        display_options[show_mol_seqs][2] = b ? "yes" : "no";
-    }
-
-    public void setDisplaySequenceNames(final boolean b) {
-        display_options[show_seq_names][2] = b ? "yes" : "no";
-    }
-
-
-    public void setDisplaySequenceSymbols(final boolean b) {
-        display_options[show_seq_symbols][2] = b ? "yes" : "no";
-    }
-
-    public void setDisplayTaxonomyCode(final boolean b) {
-        display_options[show_tax_code][2] = b ? "yes" : "no";
-    }
-
-
-    public void setDisplayTaxonomyCommonNames(final boolean b) {
-        display_options[show_taxonomy_common_names][2] = b ? "yes" : "no";
-    }
-
-    public void setDisplayTaxonomyScientificNames(final boolean b) {
-        display_options[show_taxonomy_scientific_names][2] = b ? "yes" : "no";
-    }
-
-
     public void setShowScale(final boolean show_scale) {
         _show_scale = show_scale;
-    }
-
-    public void setUseStyle(final boolean b) {
-        display_options[use_style][2] = b ? "yes" : "no";
     }
 
     private final void initSpeciesColors() {
@@ -349,27 +227,6 @@ public final class Configuration {
         return _display_sequence_relations;
     }
 
-    boolean doCheckOption(final int which) {
-        return (display_options[which][2].equalsIgnoreCase("yes"))
-                || (display_options[which][2].equalsIgnoreCase("true"));
-    }
-
-    boolean doDisplayClickToOption(final int which) {
-        return clickto_options[which][1].equalsIgnoreCase("display");
-    }
-
-    boolean doDisplayOption(final int which) {
-        return display_options[which][1].equalsIgnoreCase("display");
-    }
-
-    /**
-     * Will attempt to use the phylogeny to determine whether to check
-     * this or not (e.g. phylogram)
-     */
-    boolean doGuessCheckOption(final int which) {
-        return display_options[which][2].equals("?");
-    }
-
     int getBaseFontSize() {
         return _base_font_size;
     }
@@ -378,20 +235,12 @@ public final class Configuration {
         return _cladogram_type;
     }
 
-    String getClickToTitle(final int which) {
-        return clickto_options[which][0];
-    }
-
-    int getDefaultDisplayClicktoOption() {
-        return default_clickto;
+    ClickToOption getDefaultDisplayClicktoOption() {
+        return _default_clickto;
     }
 
     SortedMap<String, Color> getDisplayColors() {
         return _display_colors;
-    }
-
-    String getDisplayTitle(final int which) {
-        return display_options[which][0];
     }
 
     Map<String, Color> getDomainColors() {
@@ -494,7 +343,7 @@ public final class Configuration {
      * @return true if the tree should be drawn as a phylogram (vs. cladogram) by default
      */
     boolean isDrawAsPhylogram() {
-        return doCheckOption(display_as_phylogram);
+        return DisplayOption.DISPLAY_AS_PHYLOGRAM.isCheckedByDefault();
     }
 
     boolean isEditable() {

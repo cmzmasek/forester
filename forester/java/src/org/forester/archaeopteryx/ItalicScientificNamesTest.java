@@ -78,14 +78,14 @@ public final class ItalicScientificNamesTest {
                     final MainPanel mp = mf[ 0 ].getMainPanel();
                     final TreePanel tp = mp.getCurrentTreePanel();
                     final ControlPanel cp = mp.getControlPanel();
-                    cp.setCheckbox( Configuration.display_external_data, true );
+                    cp.setCheckbox( DisplayOption.DISPLAY_EXTERNAL_DATA, true );
                     cp.showWhole();
                     if ( ( tp.getWidth() < 200 ) || ( tp.getHeight() < 200 ) ) {
                         return; // no usable viewport in this environment; nothing to assert
                     }
                     // (1) scientific names shown: italics ON vs OFF must differ
-                    cp.setCheckbox( Configuration.show_taxonomy_scientific_names, true );
-                    cp.setCheckbox( Configuration.show_tax_code, false );
+                    cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                    cp.setCheckbox( DisplayOption.SHOW_TAX_CODE, false );
                     if ( !cp.isShowTaxonomyScientificNames() ) {
                         return; // can't enable scientific-name display here; nothing to assert
                     }
@@ -94,8 +94,8 @@ public final class ItalicScientificNamesTest {
                         System.out.println( "  italics had no effect on a scientific name" );
                     }
                     // (2) only the taxonomy code shown: italics ON vs OFF must be identical
-                    cp.setCheckbox( Configuration.show_taxonomy_scientific_names, false );
-                    cp.setCheckbox( Configuration.show_tax_code, true );
+                    cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, false );
+                    cp.setCheckbox( DisplayOption.SHOW_TAX_CODE, true );
                     if ( cp.isShowTaxonomyCode() ) {
                         final long leak = pixelDiff( render( tp, mp, true ), render( tp, mp, false ) );
                         if ( leak != 0 ) {
@@ -108,8 +108,8 @@ public final class ItalicScientificNamesTest {
                     // Times serif, SVG -> generic sans). So NO label text -- scientific name OR taxonomy
                     // code -- may appear as literal characters, <path> outlines must be present, and
                     // toggling italics must still change the output (italic vs roman species geometry).
-                    cp.setCheckbox( Configuration.show_taxonomy_scientific_names, true );
-                    cp.setCheckbox( Configuration.show_tax_code, true );
+                    cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                    cp.setCheckbox( DisplayOption.SHOW_TAX_CODE, true );
                     if ( cp.isShowTaxonomyScientificNames() ) {
                         final String svg_on = exportSvg( tp, mp, true );
                         final String svg_off = exportSvg( tp, mp, false );

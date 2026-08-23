@@ -321,7 +321,7 @@ public final class UndoRedoToolTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
-                frame.getMainPanel().getControlPanel().setCheckbox( Configuration.show_domain_architectures, true );
+                frame.getMainPanel().getControlPanel().setCheckbox( DisplayOption.SHOW_DOMAIN_ARCHITECTURES, true );
                 if ( !frame.getMainPanel().getControlPanel().isShowDomainArchitectures() ) {
                     System.out.println( "  [UndoRedoToolTest] note: domain-architecture display not available; "
                             + "skipping the domain-undo assertion" );

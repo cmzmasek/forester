@@ -1616,7 +1616,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (_mainpanel.getCurrentTreePanel() != null) {
                 _mainpanel.getCurrentTreePanel().setEdited(true);
                 // reveal the freshly-created confidence values so the conversion is immediately visible
-                _mainpanel.getControlPanel().setCheckbox(Configuration.write_confidence_values, true);
+                _mainpanel.getControlPanel().setCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES, true);
                 _mainpanel.getControlPanel().displayedPhylogenyMightHaveChanged(true);
                 _mainpanel.getCurrentTreePanel().repaint();
             }
@@ -1668,8 +1668,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final int n = LabelDataExtractor.extract(tp.getPhylogeny());
         if (n > 0) {
             tp.setEdited(true);
-            tp.getControlPanel().setCheckbox(Configuration.show_seq_names, true);
-            tp.getControlPanel().setCheckbox(Configuration.show_taxonomy_scientific_names, true);
+            tp.getControlPanel().setCheckbox(DisplayOption.SHOW_SEQ_NAMES, true);
+            tp.getControlPanel().setCheckbox(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true);
             // the extraction populated new fields (seq name/accession/gene name, taxonomy) on the SAME tree, so force
             // a data-presence refresh: this reveals the newly-populated Display-Data checkboxes AND (via the shared
             // choke point) rebuilds the search field selectors so the new fields are searchable -- on the manual Tools

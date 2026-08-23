@@ -89,7 +89,7 @@ public final class LabelExtractionResizeTest {
         frame.validate();
         final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
         final ControlPanel cp = tp.getControlPanel();
-        cp.setCheckbox( Configuration.show_domain_architectures, true );
+        cp.setCheckbox( DisplayOption.SHOW_DOMAIN_ARCHITECTURES, true );
         cp.showWhole();
 
         // preconditions: the two columns the extraction reveals are off to begin with

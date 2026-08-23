@@ -515,8 +515,8 @@ public final class AptxUtilTest {
             br.addAsChild(b2);
             barren.setRoot(br);
             barren.externalNodesHaveChanged();
-            final Set<Integer> barren_set = AptxUtil.scanForDataPresence(barren);
-            if (!barren_set.contains(Configuration.show_node_names) || (barren_set.size() != 1)) {
+            final Set<DisplayOption> barren_set = AptxUtil.scanForDataPresence(barren);
+            if (!barren_set.contains(DisplayOption.SHOW_NODE_NAMES) || (barren_set.size() != 1)) {
                 return false;
             }
             // rich node: one leaf carrying many kinds of data
@@ -545,22 +545,22 @@ public final class AptxUtilTest {
             props.addProperty(new Property("aptx:test", "1", "", "xsd:string", Property.AppliesTo.NODE));
             leaf.getNodeData().setProperties(props);
             leaf.getNodeData().setVector(Arrays.asList(1.0, 2.0, 3.0));
-            // Binary characters + a vector + a molecular sequence are all present on the rich node so the
-            // "must be absent" checks below have TEETH: if a removed scan branch for any of those retired
-            // features were re-introduced, the flag would appear and both the size and absence checks would trip.
+            // A vector, a molecular sequence, and binary characters are all present on the rich node, yet none
+            // is a DisplayOption (those display features were removed): the scan returns a Set<DisplayOption>, so
+            // it structurally cannot report them, and the exact-set size check below still guards over-reporting.
             leaf.getNodeData().setBinaryCharacters(new BinaryCharacters());
             rr.addAsChild(leaf);
             rr.addAsChild(new PhylogenyNode());
             rich.setRoot(rr);
             rich.externalNodesHaveChanged();
-            final Set<Integer> s = AptxUtil.scanForDataPresence(rich);
-            final int[] expected = { Configuration.show_node_names, Configuration.write_branch_length_values,
-                    Configuration.write_confidence_values, Configuration.width_branches, Configuration.use_style,
-                    Configuration.write_events, Configuration.show_taxonomy_scientific_names,
-                    Configuration.show_taxonomy_common_names, Configuration.show_tax_code, Configuration.show_tax_rank,
-                    Configuration.show_seq_names, Configuration.show_gene_names, Configuration.show_sequence_acc,
-                    Configuration.show_properties };
-            for (final int which : expected) {
+            final Set<DisplayOption> s = AptxUtil.scanForDataPresence(rich);
+            final DisplayOption[] expected = { DisplayOption.SHOW_NODE_NAMES, DisplayOption.WRITE_BRANCH_LENGTH_VALUES,
+                    DisplayOption.WRITE_CONFIDENCE_VALUES, DisplayOption.WIDTH_BRANCHES, DisplayOption.USE_STYLE,
+                    DisplayOption.WRITE_EVENTS, DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES,
+                    DisplayOption.SHOW_TAXONOMY_COMMON_NAMES, DisplayOption.SHOW_TAX_CODE, DisplayOption.SHOW_TAX_RANK,
+                    DisplayOption.SHOW_SEQ_NAMES, DisplayOption.SHOW_GENE_NAMES, DisplayOption.SHOW_SEQUENCE_ACC,
+                    DisplayOption.SHOW_PROPERTIES };
+            for (final DisplayOption which : expected) {
                 if (!s.contains(which)) {
                     return false;
                 }
@@ -570,13 +570,9 @@ public final class AptxUtilTest {
             if (s.size() != expected.length) {
                 return false;
             }
-            // spot-check a few that must be absent (subsumed by the size check, kept for intent).
-            // The rich node HAS a molecular sequence AND a vector, yet show_mol_seqs / show_vector_data /
-            // show_binary_characters must NOT be reported: those display features were removed, so their
-            // (retired) constants are never built or scanned.
-            if (s.contains(Configuration.show_domain_architectures) || s.contains(Configuration.show_seq_symbols)
-                    || s.contains(Configuration.show_binary_characters) || s.contains(Configuration.show_mol_seqs)
-                    || s.contains(Configuration.show_vector_data)) {
+            // spot-check a couple of real DisplayOptions that must be absent for THIS fixture (the leaf has no
+            // domain architecture and no sequence symbol) -- subsumed by the size check, kept for intent.
+            if (s.contains(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) || s.contains(DisplayOption.SHOW_SEQ_SYMBOLS)) {
                 return false;
             }
             // regression (renderer match): a legitimate zero-length branch and a source-only accession
@@ -593,9 +589,9 @@ public final class AptxUtilTest {
             er.addAsChild(new PhylogenyNode());
             edge.setRoot(er);
             edge.externalNodesHaveChanged();
-            final Set<Integer> edge_set = AptxUtil.scanForDataPresence(edge);
-            if (!edge_set.contains(Configuration.write_branch_length_values)
-                    || !edge_set.contains(Configuration.show_sequence_acc)) {
+            final Set<DisplayOption> edge_set = AptxUtil.scanForDataPresence(edge);
+            if (!edge_set.contains(DisplayOption.WRITE_BRANCH_LENGTH_VALUES)
+                    || !edge_set.contains(DisplayOption.SHOW_SEQUENCE_ACC)) {
                 return false;
             }
             // "Shorten Labels" is offered only when an external name is over-long (a pasted-in
@@ -609,7 +605,7 @@ public final class AptxUtilTest {
             lr.addAsChild(new PhylogenyNode());
             longlbl.setRoot(lr);
             longlbl.externalNodesHaveChanged();
-            if (!AptxUtil.scanForDataPresence(longlbl).contains(Configuration.shorten_labels)) {
+            if (!AptxUtil.scanForDataPresence(longlbl).contains(DisplayOption.SHORTEN_LABELS)) {
                 return false;
             }
             return true;

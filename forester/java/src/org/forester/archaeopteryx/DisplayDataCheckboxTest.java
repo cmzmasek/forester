@@ -59,20 +59,20 @@ public final class DisplayDataCheckboxTest {
             SwingUtilities.invokeAndWait( () -> {
                 final ControlPanel cp = mf[ 0 ].getMainPanel().getControlPanel();
                 // present data -> visible
-                check( ok, cp, Configuration.show_node_names, true, "Node Name (always)" );
-                check( ok, cp, Configuration.show_taxonomy_scientific_names, true, "Taxonomy Scientific" );
+                check( ok, cp, DisplayOption.SHOW_NODE_NAMES, true, "Node Name (always)" );
+                check( ok, cp, DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true, "Taxonomy Scientific" );
                 // absent data -> hidden
-                check( ok, cp, Configuration.show_seq_names, false, "Seq Name (no sequences)" );
-                check( ok, cp, Configuration.show_gene_names, false, "Gene Name (no sequences)" );
-                check( ok, cp, Configuration.show_domain_architectures, false, "Domain Architectures" );
-                check( ok, cp, Configuration.show_taxonomy_common_names, false, "Taxonomy Common" );
+                check( ok, cp, DisplayOption.SHOW_SEQ_NAMES, false, "Seq Name (no sequences)" );
+                check( ok, cp, DisplayOption.SHOW_GENE_NAMES, false, "Gene Name (no sequences)" );
+                check( ok, cp, DisplayOption.SHOW_DOMAIN_ARCHITECTURES, false, "Domain Architectures" );
+                check( ok, cp, DisplayOption.SHOW_TAXONOMY_COMMON_NAMES, false, "Taxonomy Common" );
                 // now add a sequence name to a leaf; after a refresh the Seq Name checkbox must appear
                 final PhylogenyNode leaf = phy.getFirstExternalNode();
                 final Sequence seq = new Sequence();
                 seq.setName( "myseq" );
                 leaf.getNodeData().setSequence( seq );
                 cp.displayedPhylogenyMightHaveChanged( true );
-                check( ok, cp, Configuration.show_seq_names, true, "Seq Name (after adding a sequence)" );
+                check( ok, cp, DisplayOption.SHOW_SEQ_NAMES, true, "Seq Name (after adding a sequence)" );
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
@@ -85,7 +85,7 @@ public final class DisplayDataCheckboxTest {
 
     private static void check( final boolean[] ok,
                                final ControlPanel cp,
-                               final int which,
+                               final DisplayOption which,
                                final boolean expected_visible,
                                final String label ) {
         if ( cp.isDisplayDataCheckboxVisible( which ) != expected_visible ) {

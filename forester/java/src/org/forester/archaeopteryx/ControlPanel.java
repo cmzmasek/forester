@@ -39,6 +39,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -124,7 +125,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private static final long serialVersionUID = -8463483932821545633L;
     private NodeClickAction _action_when_node_clicked;
     private int _add_new_node_item;
-    private Map<Integer, String> _all_click_to_names;
     private JComboBox<String> _click_to_combobox;
     private JLabel _click_to_label;
     private List<String> _click_to_names;
@@ -229,19 +229,19 @@ final class ControlPanel extends JPanel implements ActionListener {
     // corresponding data (so the panel is not a wall of toggles that silently do nothing). This
     // maps each option constant to its wrapper panel (so a whole row can be collapsed/shown) and
     // caches the last presence scan, keyed by tree identity so pure navigation reuses it.
-    private final Map<Integer, JPanel> _checkbox_panels = new HashMap<Integer, JPanel>();
-    private Set<Integer>               _data_presence;
+    private final Map<DisplayOption, JPanel> _checkbox_panels = new EnumMap<DisplayOption, JPanel>(DisplayOption.class);
+    private Set<DisplayOption>         _data_presence;
     private Phylogeny                  _data_presence_for;
     // The data-dependent checkboxes (Node Name is intentionally NOT here: it is always shown). Their
     // visibility tracks scanForDataPresence over the whole loaded tree.
-    private final static int[]         DATA_GATED_CHECKBOXES     = {
-            Configuration.show_tax_code, Configuration.show_taxonomy_scientific_names,
-            Configuration.show_taxonomy_common_names, Configuration.show_tax_rank, Configuration.show_seq_names,
-            Configuration.show_gene_names, Configuration.show_seq_symbols, Configuration.show_sequence_acc,
-            Configuration.write_confidence_values, Configuration.write_branch_length_values,
-            Configuration.write_events, Configuration.show_domain_architectures,
-            Configuration.show_properties, Configuration.use_style,
-            Configuration.width_branches, Configuration.shorten_labels };
+    private final static DisplayOption[] DATA_GATED_CHECKBOXES   = {
+            DisplayOption.SHOW_TAX_CODE, DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES,
+            DisplayOption.SHOW_TAXONOMY_COMMON_NAMES, DisplayOption.SHOW_TAX_RANK, DisplayOption.SHOW_SEQ_NAMES,
+            DisplayOption.SHOW_GENE_NAMES, DisplayOption.SHOW_SEQ_SYMBOLS, DisplayOption.SHOW_SEQUENCE_ACC,
+            DisplayOption.WRITE_CONFIDENCE_VALUES, DisplayOption.WRITE_BRANCH_LENGTH_VALUES,
+            DisplayOption.WRITE_EVENTS, DisplayOption.SHOW_DOMAIN_ARCHITECTURES,
+            DisplayOption.SHOW_PROPERTIES, DisplayOption.USE_STYLE,
+            DisplayOption.WIDTH_BRANCHES, DisplayOption.SHORTEN_LABELS };
 
     ControlPanel(final MainPanel ap, final Configuration configuration) {
         init();
@@ -533,14 +533,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_properties_cb != null) && _show_properties_cb.isSelected());
     }
 
-    private void addClickToOption(final int which, final String title) {
-        _click_to_combobox.addItem(title);
-        _click_to_names.add(title);
-        _all_click_to_names.put(Integer.valueOf(which), title);
+    /** Adds {@code option} to the click-to dropdown (at combo position {@code cb_index}) and returns {@code cb_index}. */
+    private int addClickToOption(final int cb_index, final ClickToOption option) {
+        _click_to_combobox.addItem(option.title());
+        _click_to_names.add(option.title());
         if (_configuration.isApplyCustomGuiColors()) {
             _click_to_combobox.setBackground(getConfiguration().getGuiButtonBackgroundColor());
             _click_to_combobox.setForeground(getConfiguration().getGuiButtonTextColor());
         }
+        return cb_index;
     }
 
     private List<Options.PHYLOGENY_DISPLAY_TYPE> getTreeDisplayTypes() {
@@ -747,215 +748,93 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private void setupClickToOptions() {
-        final int default_option = _configuration.getDefaultDisplayClicktoOption();
+        // Every click-to action is always offered (the old "display"/"nodisplay" gate was uniformly
+        // "display"); the editable-only subset stays gated by Options.isEditable() below.
+        final ClickToOption default_option = _configuration.getDefaultDisplayClicktoOption();
         int selected_index = 0;
         int cb_index = 0;
-        if (_configuration.doDisplayClickToOption(Configuration.display_node_data)) {
-            _show_data_item = cb_index;
-            addClickToOption(Configuration.display_node_data,
-                    _configuration.getClickToTitle(Configuration.display_node_data));
-            if (default_option == Configuration.display_node_data) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.collapse_uncollapse)) {
-            _collapse_cb_item = cb_index;
-            addClickToOption(Configuration.collapse_uncollapse,
-                    _configuration.getClickToTitle(Configuration.collapse_uncollapse));
-            if (default_option == Configuration.collapse_uncollapse) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.uncollapse_all)) {
-            _uncollapse_all_cb_item = cb_index;
-            addClickToOption(Configuration.uncollapse_all,
-                    _configuration.getClickToTitle(Configuration.uncollapse_all));
-            if (default_option == Configuration.uncollapse_all) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.reroot)) {
-            _reroot_cb_item = cb_index;
-            addClickToOption(Configuration.reroot, _configuration.getClickToTitle(Configuration.reroot));
-            if (default_option == Configuration.reroot) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.subtree)) {
-            _subtree_cb_item = cb_index;
-            addClickToOption(Configuration.subtree, _configuration.getClickToTitle(Configuration.subtree));
-            if (default_option == Configuration.subtree) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.swap)) {
-            _swap_cb_item = cb_index;
-            addClickToOption(Configuration.swap, _configuration.getClickToTitle(Configuration.swap));
-            if (default_option == Configuration.swap) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.order_subtree)) {
-            _order_subtree_cb_item = cb_index;
-            addClickToOption(Configuration.order_subtree,
-                    _configuration.getClickToTitle(Configuration.order_subtree));
-            if (default_option == Configuration.order_subtree) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.sort_descendents)) {
-            _sort_descendents_item = cb_index;
-            addClickToOption(Configuration.sort_descendents,
-                    _configuration.getClickToTitle(Configuration.sort_descendents));
-            if (default_option == Configuration.sort_descendents) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.node_style)) {
-            _node_style_item = cb_index;
-            addClickToOption(Configuration.node_style,
-                    _configuration.getClickToTitle(Configuration.node_style));
-            if (default_option == Configuration.node_style) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.color_subtree)) {
-            _color_subtree_cb_item = cb_index;
-            addClickToOption(Configuration.color_subtree,
-                    _configuration.getClickToTitle(Configuration.color_subtree));
-            if (default_option == Configuration.color_subtree) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.open_seq_web)) {
-            _open_seq_web_item = cb_index;
-            addClickToOption(Configuration.open_seq_web,
-                    _configuration.getClickToTitle(Configuration.open_seq_web));
-            if (default_option == Configuration.open_seq_web) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.open_tax_web)) {
-            _open_tax_web_item = cb_index;
-            addClickToOption(Configuration.open_tax_web,
-                    _configuration.getClickToTitle(Configuration.open_tax_web));
-            if (default_option == Configuration.open_tax_web) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.select_nodes)) {
-            _select_nodes_item = cb_index;
-            addClickToOption(Configuration.select_nodes,
-                    _configuration.getClickToTitle(Configuration.select_nodes));
-            if (default_option == Configuration.select_nodes) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
+        _show_data_item = addClickToOption(cb_index++, ClickToOption.DISPLAY_NODE_DATA);
+        selected_index = clickToSelectedIndex(selected_index, _show_data_item, default_option, ClickToOption.DISPLAY_NODE_DATA);
+        _collapse_cb_item = addClickToOption(cb_index++, ClickToOption.COLLAPSE_UNCOLLAPSE);
+        selected_index = clickToSelectedIndex(selected_index, _collapse_cb_item, default_option, ClickToOption.COLLAPSE_UNCOLLAPSE);
+        _uncollapse_all_cb_item = addClickToOption(cb_index++, ClickToOption.UNCOLLAPSE_ALL);
+        selected_index = clickToSelectedIndex(selected_index, _uncollapse_all_cb_item, default_option, ClickToOption.UNCOLLAPSE_ALL);
+        _reroot_cb_item = addClickToOption(cb_index++, ClickToOption.REROOT);
+        selected_index = clickToSelectedIndex(selected_index, _reroot_cb_item, default_option, ClickToOption.REROOT);
+        _subtree_cb_item = addClickToOption(cb_index++, ClickToOption.SUBTREE);
+        selected_index = clickToSelectedIndex(selected_index, _subtree_cb_item, default_option, ClickToOption.SUBTREE);
+        _swap_cb_item = addClickToOption(cb_index++, ClickToOption.SWAP);
+        selected_index = clickToSelectedIndex(selected_index, _swap_cb_item, default_option, ClickToOption.SWAP);
+        _order_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.ORDER_SUBTREE);
+        selected_index = clickToSelectedIndex(selected_index, _order_subtree_cb_item, default_option, ClickToOption.ORDER_SUBTREE);
+        _sort_descendents_item = addClickToOption(cb_index++, ClickToOption.SORT_DESCENDENTS);
+        selected_index = clickToSelectedIndex(selected_index, _sort_descendents_item, default_option, ClickToOption.SORT_DESCENDENTS);
+        _node_style_item = addClickToOption(cb_index++, ClickToOption.NODE_STYLE);
+        selected_index = clickToSelectedIndex(selected_index, _node_style_item, default_option, ClickToOption.NODE_STYLE);
+        _color_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.COLOR_SUBTREE);
+        selected_index = clickToSelectedIndex(selected_index, _color_subtree_cb_item, default_option, ClickToOption.COLOR_SUBTREE);
+        _open_seq_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_SEQ_WEB);
+        selected_index = clickToSelectedIndex(selected_index, _open_seq_web_item, default_option, ClickToOption.OPEN_SEQ_WEB);
+        _open_tax_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_TAX_WEB);
+        selected_index = clickToSelectedIndex(selected_index, _open_tax_web_item, default_option, ClickToOption.OPEN_TAX_WEB);
+        _select_nodes_item = addClickToOption(cb_index++, ClickToOption.SELECT_NODES);
+        selected_index = clickToSelectedIndex(selected_index, _select_nodes_item, default_option, ClickToOption.SELECT_NODES);
         if (getOptions().isEditable()) {
-            if (_configuration.doDisplayClickToOption(Configuration.cut_subtree)) {
-                _cut_subtree_item = cb_index;
-                addClickToOption(Configuration.cut_subtree,
-                        _configuration.getClickToTitle(Configuration.cut_subtree));
-                if (default_option == Configuration.cut_subtree) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if (_configuration.doDisplayClickToOption(Configuration.copy_subtree)) {
-                _copy_subtree_item = cb_index;
-                addClickToOption(Configuration.copy_subtree,
-                        _configuration.getClickToTitle(Configuration.copy_subtree));
-                if (default_option == Configuration.copy_subtree) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if (_configuration.doDisplayClickToOption(Configuration.paste_subtree)) {
-                _paste_subtree_item = cb_index;
-                addClickToOption(Configuration.paste_subtree,
-                        _configuration.getClickToTitle(Configuration.paste_subtree));
-                if (default_option == Configuration.paste_subtree) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if (_configuration.doDisplayClickToOption(Configuration.delete_subtree_or_node)) {
-                _delete_node_or_subtree_item = cb_index;
-                addClickToOption(Configuration.delete_subtree_or_node,
-                        _configuration.getClickToTitle(Configuration.delete_subtree_or_node));
-                if (default_option == Configuration.delete_subtree_or_node) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if (_configuration.doDisplayClickToOption(Configuration.add_new_node)) {
-                _add_new_node_item = cb_index;
-                addClickToOption(Configuration.add_new_node,
-                        _configuration.getClickToTitle(Configuration.add_new_node));
-                if (default_option == Configuration.add_new_node) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if (_configuration.doDisplayClickToOption(Configuration.edit_node_data)) {
-                _edit_node_data_item = cb_index;
-                addClickToOption(Configuration.edit_node_data,
-                        _configuration.getClickToTitle(Configuration.edit_node_data));
-                if (default_option == Configuration.edit_node_data) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
+            _cut_subtree_item = addClickToOption(cb_index++, ClickToOption.CUT_SUBTREE);
+            selected_index = clickToSelectedIndex(selected_index, _cut_subtree_item, default_option, ClickToOption.CUT_SUBTREE);
+            _copy_subtree_item = addClickToOption(cb_index++, ClickToOption.COPY_SUBTREE);
+            selected_index = clickToSelectedIndex(selected_index, _copy_subtree_item, default_option, ClickToOption.COPY_SUBTREE);
+            _paste_subtree_item = addClickToOption(cb_index++, ClickToOption.PASTE_SUBTREE);
+            selected_index = clickToSelectedIndex(selected_index, _paste_subtree_item, default_option, ClickToOption.PASTE_SUBTREE);
+            _delete_node_or_subtree_item = addClickToOption(cb_index++, ClickToOption.DELETE_SUBTREE_OR_NODE);
+            selected_index = clickToSelectedIndex(selected_index, _delete_node_or_subtree_item, default_option, ClickToOption.DELETE_SUBTREE_OR_NODE);
+            _add_new_node_item = addClickToOption(cb_index++, ClickToOption.ADD_NEW_NODE);
+            selected_index = clickToSelectedIndex(selected_index, _add_new_node_item, default_option, ClickToOption.ADD_NEW_NODE);
+            _edit_node_data_item = addClickToOption(cb_index++, ClickToOption.EDIT_NODE_DATA);
+            selected_index = clickToSelectedIndex(selected_index, _edit_node_data_item, default_option, ClickToOption.EDIT_NODE_DATA);
         }
         // Set default selection and its action
         _click_to_combobox.setSelectedIndex(selected_index);
         setClickToAction(selected_index);
     }
 
+    /** Returns {@code candidate_index} when {@code option} is the default click-to action, else keeps {@code current}. */
+    private static int clickToSelectedIndex(final int current, final int candidate_index, final ClickToOption default_option,
+                                            final ClickToOption option) {
+        return (default_option == option) ? candidate_index : current;
+    }
+
     private void setupDisplayCheckboxes() {
-        addDisplayCheckbox(Configuration.dynamically_hide_data);
-        addDisplayCheckbox(Configuration.node_data_popup);
-        addDisplayCheckbox(Configuration.display_internal_data);
-        addDisplayCheckbox(Configuration.display_external_data);
-        addDisplayCheckbox(Configuration.use_style);
-        addDisplayCheckbox(Configuration.width_branches);
+        addDisplayCheckbox(DisplayOption.DYNAMICALLY_HIDE_DATA);
+        addDisplayCheckbox(DisplayOption.NODE_DATA_POPUP);
+        addDisplayCheckbox(DisplayOption.DISPLAY_INTERNAL_DATA);
+        addDisplayCheckbox(DisplayOption.DISPLAY_EXTERNAL_DATA);
+        addDisplayCheckbox(DisplayOption.USE_STYLE);
+        addDisplayCheckbox(DisplayOption.WIDTH_BRANCHES);
         final JLabel label = new JLabel("Display Data:");
         label.setFont(ControlPanel.jcb_bold_font);
         if (getConfiguration().isApplyCustomGuiColors()) {
             label.setForeground(getConfiguration().getGuiCheckboxTextColor());
         }
         add(label);
-        addDisplayCheckbox(Configuration.show_node_names);
-        addDisplayCheckbox(Configuration.shorten_labels);
-        addDisplayCheckbox(Configuration.show_tax_code);
-        addDisplayCheckbox(Configuration.show_taxonomy_scientific_names);
-        addDisplayCheckbox(Configuration.show_taxonomy_common_names);
-        addDisplayCheckbox(Configuration.show_tax_rank);
-        addDisplayCheckbox(Configuration.show_seq_names);
-        addDisplayCheckbox(Configuration.show_gene_names);
-        addDisplayCheckbox(Configuration.show_seq_symbols);
-        addDisplayCheckbox(Configuration.show_sequence_acc);
-        addDisplayCheckbox(Configuration.write_confidence_values);
-        addDisplayCheckbox(Configuration.write_branch_length_values);
-        addDisplayCheckbox(Configuration.show_domain_architectures);
-        addDisplayCheckbox(Configuration.write_events);
-        addDisplayCheckbox(Configuration.show_properties);
+        addDisplayCheckbox(DisplayOption.SHOW_NODE_NAMES);
+        addDisplayCheckbox(DisplayOption.SHORTEN_LABELS);
+        addDisplayCheckbox(DisplayOption.SHOW_TAX_CODE);
+        addDisplayCheckbox(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES);
+        addDisplayCheckbox(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES);
+        addDisplayCheckbox(DisplayOption.SHOW_TAX_RANK);
+        addDisplayCheckbox(DisplayOption.SHOW_SEQ_NAMES);
+        addDisplayCheckbox(DisplayOption.SHOW_GENE_NAMES);
+        addDisplayCheckbox(DisplayOption.SHOW_SEQ_SYMBOLS);
+        addDisplayCheckbox(DisplayOption.SHOW_SEQUENCE_ACC);
+        addDisplayCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES);
+        addDisplayCheckbox(DisplayOption.WRITE_BRANCH_LENGTH_VALUES);
+        addDisplayCheckbox(DisplayOption.SHOW_DOMAIN_ARCHITECTURES);
+        addDisplayCheckbox(DisplayOption.WRITE_EVENTS);
+        addDisplayCheckbox(DisplayOption.SHOW_PROPERTIES);
         // Data-dependent checkboxes start hidden; the first scan of the loaded tree reveals only the
         // ones whose data is actually present (Node Name is intentionally always shown).
-        for (final int which : DATA_GATED_CHECKBOXES) {
+        for (final DisplayOption which : DATA_GATED_CHECKBOXES) {
             final JPanel p = _checkbox_panels.get(which);
             if (p != null) {
                 p.setVisible(false);
@@ -965,9 +844,9 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     // Build a "Display Data" checkbox and set its initial checked state. Whether it is actually
     // visible is then governed by updateDataCheckboxVisibility (data presence in the current tree).
-    private void addDisplayCheckbox(final int which) {
-        addCheckbox(which, _configuration.getDisplayTitle(which));
-        setCheckbox(which, _configuration.doCheckOption(which));
+    private void addDisplayCheckbox(final DisplayOption which) {
+        addCheckbox(which, which.title());
+        setCheckbox(which, which.isCheckedByDefault());
     }
 
     private void setVisibilityOfDomainStrucureControls() {
@@ -1114,10 +993,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton(_return_to_whole_tree, o_panel);
         addJButton(_return_to_super_tree, o_panel);
         addJButton(_uncollapse_all, o_panel);
-        if (getConfiguration().doDisplayOption(Configuration.show_domain_architectures)) {
-            nextRowGap(SECTION_GAP);
-            setUpControlsForDomainStrucures();
-        }
+        nextRowGap(SECTION_GAP);
+        setUpControlsForDomainStrucures();
         setVisibilityOfDomainStrucureControls();
     }
 
@@ -1196,120 +1073,120 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    void addCheckbox(final int which, final String title) {
+    void addCheckbox(final DisplayOption which, final String title) {
         nextRowGap(CHECKBOX_GAP); // pack the display checkboxes tightly together
         final JPanel ch_panel = new JPanel(new BorderLayout(0, 0));
         switch (which) {
-            case Configuration.display_internal_data:
+            case DISPLAY_INTERNAL_DATA:
                 _display_internal_data = new JCheckBox(title);
                 _display_internal_data.setToolTipText("To allow or disallow display of internal labels");
                 addJCheckBox(_display_internal_data, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.display_external_data:
+            case DISPLAY_EXTERNAL_DATA:
                 _display_external_data = new JCheckBox(title);
                 _display_external_data.setToolTipText("To allow or disallow display of external labels");
                 addJCheckBox(_display_external_data, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_node_names:
+            case SHOW_NODE_NAMES:
                 _show_node_names = new JCheckBox(title);
                 addJCheckBox(_show_node_names, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.shorten_labels:
+            case SHORTEN_LABELS:
                 _shorten_labels_cb = new JCheckBox(title);
                 _shorten_labels_cb.setToolTipText(
                         "Display over-long external labels (e.g. full UniProt/NCBI descriptions) shortened with an ellipsis; the underlying names are not changed");
                 addJCheckBox(_shorten_labels_cb, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_taxonomy_scientific_names:
+            case SHOW_TAXONOMY_SCIENTIFIC_NAMES:
                 _show_taxo_scientific_names = new JCheckBox(title);
                 addJCheckBox(_show_taxo_scientific_names, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_taxonomy_common_names:
+            case SHOW_TAXONOMY_COMMON_NAMES:
                 _show_taxo_common_names = new JCheckBox(title);
                 addJCheckBox(_show_taxo_common_names, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_tax_code:
+            case SHOW_TAX_CODE:
                 _show_taxo_code = new JCheckBox(title);
                 addJCheckBox(_show_taxo_code, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_tax_rank:
+            case SHOW_TAX_RANK:
                 _show_taxo_rank = new JCheckBox(title);
                 addJCheckBox(_show_taxo_rank, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.write_confidence_values:
+            case WRITE_CONFIDENCE_VALUES:
                 _write_confidence = new JCheckBox(title);
                 addJCheckBox(getWriteConfidenceCb(), ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.write_events:
+            case WRITE_EVENTS:
                 _show_events = new JCheckBox(title);
                 addJCheckBox(getShowEventsCb(), ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.use_style:
+            case USE_STYLE:
                 _use_visual_styles_cb = new JCheckBox(title);
                 getUseVisualStylesCb()
                         .setToolTipText("To use visual styles (node colors, fonts) and branch colors, if present");
                 addJCheckBox(getUseVisualStylesCb(), ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.width_branches:
+            case WIDTH_BRANCHES:
                 _width_branches = new JCheckBox(title);
                 _width_branches.setToolTipText("To use branch width values, if present");
                 addJCheckBox(_width_branches, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.write_branch_length_values:
+            case WRITE_BRANCH_LENGTH_VALUES:
                 _write_branch_length_values = new JCheckBox(title);
                 addJCheckBox(_write_branch_length_values, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_domain_architectures:
+            case SHOW_DOMAIN_ARCHITECTURES:
                 _show_domain_architectures = new JCheckBox(title);
                 addJCheckBox(_show_domain_architectures, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_seq_names:
+            case SHOW_SEQ_NAMES:
                 _show_seq_names = new JCheckBox(title);
                 addJCheckBox(_show_seq_names, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_gene_names:
+            case SHOW_GENE_NAMES:
                 _show_gene_names = new JCheckBox(title);
                 addJCheckBox(_show_gene_names, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_seq_symbols:
+            case SHOW_SEQ_SYMBOLS:
                 _show_seq_symbols = new JCheckBox(title);
                 addJCheckBox(_show_seq_symbols, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_sequence_acc:
+            case SHOW_SEQUENCE_ACC:
                 _show_sequence_acc = new JCheckBox(title);
                 addJCheckBox(_show_sequence_acc, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.dynamically_hide_data:
+            case DYNAMICALLY_HIDE_DATA:
                 _dynamically_hide_data = new JCheckBox(title);
                 getDynamicallyHideData().setToolTipText("To hide labels depending on expected visibility");
                 addJCheckBox(getDynamicallyHideData(), ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.node_data_popup:
+            case NODE_DATA_POPUP:
                 _node_desc_popup_cb = new JCheckBox(title);
                 getNodeDescPopupCb().setToolTipText("To enable mouse rollover display of basic node data");
                 addJCheckBox(getNodeDescPopupCb(), ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_properties:
+            case SHOW_PROPERTIES:
                 _show_properties_cb = new JCheckBox(title);
                 addJCheckBox(_show_properties_cb, ch_panel);
                 add(ch_panel);
@@ -1388,13 +1265,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             return;
         }
         final Phylogeny phy = _mainpanel.getCurrentPhylogeny();
-        final Set<Integer> prev_presence = _data_presence;
+        final Set<DisplayOption> prev_presence = _data_presence;
         if (force_rescan || (phy != _data_presence_for) || (_data_presence == null)) {
             _data_presence = AptxUtil.scanForDataPresence(phy);
             _data_presence_for = phy;
         }
         boolean changed = false;
-        for (final int which : DATA_GATED_CHECKBOXES) {
+        for (final DisplayOption which : DATA_GATED_CHECKBOXES) {
             final JPanel p = _checkbox_panels.get(which);
             if (p != null) {
                 final boolean vis = _data_presence.contains(which);
@@ -1419,7 +1296,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     // For tests: whether the "Display Data" checkbox row for the given option constant is showing.
-    boolean isDisplayDataCheckboxVisible(final int which) {
+    boolean isDisplayDataCheckboxVisible(final DisplayOption which) {
         final JPanel p = _checkbox_panels.get(which);
         return (p != null) && p.isVisible();
     }
@@ -1538,10 +1415,6 @@ final class ControlPanel extends JPanel implements ActionListener {
      */
     NodeClickAction getActionWhenNodeClicked() {
         return _action_when_node_clicked;
-    }
-
-    Map<Integer, String> getAllClickToItems() {
-        return _all_click_to_names;
     }
 
     Configuration getConfiguration() {
@@ -1979,116 +1852,116 @@ final class ControlPanel extends JPanel implements ActionListener {
         _action_when_node_clicked = action;
     }
 
-    void setCheckbox(final int which, final boolean state) {
+    void setCheckbox(final DisplayOption which, final boolean state) {
         switch (which) {
-            case Configuration.display_as_phylogram:
+            case DISPLAY_AS_PHYLOGRAM:
                 if (getDisplayAsUnalignedPhylogramRb() != null) {
                     getDisplayAsUnalignedPhylogramRb().setSelected(state);
                     getDisplayAsAlignedPhylogramRb().setSelected(!state);
                     getDisplayAsCladogramRb().setSelected(!state);
                 }
                 break;
-            case Configuration.display_internal_data:
+            case DISPLAY_INTERNAL_DATA:
                 if (_display_internal_data != null) {
                     _display_internal_data.setSelected(state);
                 }
                 break;
-            case Configuration.display_external_data:
+            case DISPLAY_EXTERNAL_DATA:
                 if (_display_external_data != null) {
                     _display_external_data.setSelected(state);
                 }
                 break;
-            case Configuration.show_node_names:
+            case SHOW_NODE_NAMES:
                 if (_show_node_names != null) {
                     _show_node_names.setSelected(state);
                 }
                 break;
-            case Configuration.shorten_labels:
+            case SHORTEN_LABELS:
                 if (_shorten_labels_cb != null) {
                     _shorten_labels_cb.setSelected(state);
                 }
                 break;
-            case Configuration.show_taxonomy_scientific_names:
+            case SHOW_TAXONOMY_SCIENTIFIC_NAMES:
                 if (_show_taxo_scientific_names != null) {
                     _show_taxo_scientific_names.setSelected(state);
                 }
                 break;
-            case Configuration.show_taxonomy_common_names:
+            case SHOW_TAXONOMY_COMMON_NAMES:
                 if (_show_taxo_common_names != null) {
                     _show_taxo_common_names.setSelected(state);
                 }
                 break;
-            case Configuration.show_tax_code:
+            case SHOW_TAX_CODE:
                 if (_show_taxo_code != null) {
                     _show_taxo_code.setSelected(state);
                 }
                 break;
-            case Configuration.show_tax_rank:
+            case SHOW_TAX_RANK:
                 if (_show_taxo_rank != null) {
                     _show_taxo_rank.setSelected(state);
                 }
                 break;
-            case Configuration.write_confidence_values:
+            case WRITE_CONFIDENCE_VALUES:
                 if (getWriteConfidenceCb() != null) {
                     getWriteConfidenceCb().setSelected(state);
                 }
                 break;
-            case Configuration.write_events:
+            case WRITE_EVENTS:
                 if (getShowEventsCb() != null) {
                     getShowEventsCb().setSelected(state);
                 }
                 break;
-            case Configuration.use_style:
+            case USE_STYLE:
                 if (getUseVisualStylesCb() != null) {
                     getUseVisualStylesCb().setSelected(state);
                 }
                 break;
-            case Configuration.width_branches:
+            case WIDTH_BRANCHES:
                 if (_width_branches != null) {
                     _width_branches.setSelected(state);
                 }
                 break;
-            case Configuration.show_domain_architectures:
+            case SHOW_DOMAIN_ARCHITECTURES:
                 if (_show_domain_architectures != null) {
                     _show_domain_architectures.setSelected(state);
                 }
                 break;
-            case Configuration.write_branch_length_values:
+            case WRITE_BRANCH_LENGTH_VALUES:
                 if (_write_branch_length_values != null) {
                     _write_branch_length_values.setSelected(state);
                 }
                 break;
-            case Configuration.show_seq_names:
+            case SHOW_SEQ_NAMES:
                 if (_show_seq_names != null) {
                     _show_seq_names.setSelected(state);
                 }
                 break;
-            case Configuration.show_gene_names:
+            case SHOW_GENE_NAMES:
                 if (_show_gene_names != null) {
                     _show_gene_names.setSelected(state);
                 }
                 break;
-            case Configuration.show_seq_symbols:
+            case SHOW_SEQ_SYMBOLS:
                 if (_show_seq_symbols != null) {
                     _show_seq_symbols.setSelected(state);
                 }
                 break;
-            case Configuration.show_properties:
+            case SHOW_PROPERTIES:
                 if (_show_properties_cb != null) {
                     _show_properties_cb.setSelected(state);
                 }
                 break;
-            case Configuration.show_sequence_acc:
+            case SHOW_SEQUENCE_ACC:
                 if (_show_sequence_acc != null) {
                     _show_sequence_acc.setSelected(state);
                 }
                 break;
-            case Configuration.dynamically_hide_data:
+            case DYNAMICALLY_HIDE_DATA:
                 if (getDynamicallyHideData() != null) {
                     getDynamicallyHideData().setSelected(state);
                 }
                 break;
-            case Configuration.node_data_popup:
+            case NODE_DATA_POPUP:
                 if (getNodeDescPopupCb() != null) {
                     getNodeDescPopupCb().setSelected(state);
                 }
@@ -3796,8 +3669,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         // an event)
         // click_to_list.addActionListener(this);
         add(_click_to_combobox);
-        // Correlates option names to titles
-        _all_click_to_names = new HashMap<Integer, String>();
         _click_to_names = new ArrayList<String>();
     }
 

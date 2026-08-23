@@ -98,9 +98,9 @@ public final class InternalTaxonomyDedupTest {
                 final ControlPanel cp = mp.getControlPanel();
                 mp.getOptions().setRasterExportScale( 1 );
                 mp.getOptions().setInternalLabelsAboveBranch( true );
-                cp.setCheckbox( Configuration.display_internal_data, true );
-                cp.setCheckbox( Configuration.show_taxonomy_scientific_names, true );
-                cp.setCheckbox( Configuration.dynamically_hide_data, false ); // else internal labels get hidden
+                cp.setCheckbox( DisplayOption.DISPLAY_INTERNAL_DATA, true );
+                cp.setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                cp.setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, false ); // else internal labels get hidden
                 cp.showWhole();
                 if ( ( tp.getWidth() < 200 ) || ( tp.getHeight() < 200 ) || !cp.isShowTaxonomyScientificNames() ) {
                     usable[ 0 ] = false;
