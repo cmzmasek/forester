@@ -1903,7 +1903,7 @@ public final class MainFrameApplication extends MainFrame {
     /** Fresh Options seeded from the configuration, then overlaid with the user's persisted display toggles
      *  (so the view the user last chose is restored). Paired with the saveFrom(...) in {@link #exit()}. */
     private Options optionsWithSavedPreferences() {
-        final Options options = Options.createInstance(_configuration);
+        final Options options = Options.createInstance();
         new GuiPreferences().applyTo(options);
         return options;
     }

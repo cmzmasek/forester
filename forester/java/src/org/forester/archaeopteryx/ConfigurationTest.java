@@ -21,7 +21,6 @@
 package org.forester.archaeopteryx;
 
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
-import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 
 /**
  * Unit tests for {@link Configuration}. Archaeopteryx no longer reads configuration files, so the
@@ -83,7 +82,12 @@ public final class ConfigurationTest {
         return true;
     }
 
-    /** The no-arg constructor yields the built-in defaults (no file is read). */
+    /**
+     * The no-arg constructor yields the built-in defaults (no file is read). Configuration no longer seeds
+     * {@link Options} (those display defaults now live solely in {@code Options.init()} / the enums), so this
+     * only exercises the surface Configuration still owns: XSD validation, the tip-color map, the parse-time
+     * taxonomy-extraction knob, the default click-to action, and the editable / draw-as-phylogram convenience.
+     */
     private static boolean testDefaults() {
         final Configuration c = new Configuration();
         // phyloXML XSD validation defaults on and can no longer be switched off (the only switch
@@ -96,23 +100,15 @@ public final class ConfigurationTest {
         if ( ( c.getDisplayColors() == null ) || !c.getDisplayColors().isEmpty() ) {
             return false;
         }
-        if ( c.getCladogramType() != AptxConstants.CLADOGRAM_TYPE_DEFAULT ) {
-            return false;
-        }
-        if ( c.getDefaultNodeShapeSize() != AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT ) {
-            return false;
-        }
-        // the requested out-of-the-box defaults: a small (5px) CIRCLE node shape
-        if ( c.getDefaultNodeShape() != NodeShape.CIRCLE ) {
-            return false;
-        }
-        if ( c.getDefaultNodeShapeSize() != 5 ) {
-            return false;
-        }
         if ( c.getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) {
             return false;
         }
-        if ( c.isMidpointReroot() ) {
+        // the click-to dropdown defaults to "Display Node Data"
+        if ( c.getDefaultDisplayClicktoOption() != ClickToOption.DISPLAY_NODE_DATA ) {
+            return false;
+        }
+        // trees are editable by default; the default display type is a cladogram (phylogram is only GUESSed)
+        if ( !c.isEditable() || c.isDrawAsPhylogram() ) {
             return false;
         }
         return true;

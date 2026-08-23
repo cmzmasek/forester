@@ -35,6 +35,7 @@ import java.util.TreeSet;
 
 import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.archaeopteryx.Configuration;
+import org.forester.archaeopteryx.MainFrame;
 import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
@@ -260,15 +261,12 @@ public class MsaCompactor {
     }
 
     public final void displayTree( final Phylogeny phy ) {
-        // The per-option display presets that used to be set here went through Configuration setters that
-        // mutated the (now removed) static display_options defaults; the "Display Data" checkboxes are now
-        // driven by the DisplayOption enum defaults plus data-driven visibility, so the tree opens with the
-        // standard defaults. Scale and font are still configured directly.
-        final Configuration config = new Configuration();
-        config.setShowScale( true );
-        config.setBaseFontSize( 9 );
-        config.setBaseFontFamilyName( "Arial" );
-        Archaeopteryx.createApplication( phy, config, _infile_name );
+        // Open the compacted-alignment tree with the built-in display defaults (the "Display Data" checkboxes
+        // are driven by the DisplayOption enum defaults plus data-driven visibility), then apply the two
+        // figure preferences this tool wants -- a compact font and a visible scale bar -- directly on the
+        // created window. (Configuration no longer seeds Options, so these can no longer be pushed through it.)
+        final MainFrame mf = Archaeopteryx.createApplication( phy, new Configuration(), _infile_name );
+        mf.applyTreeDisplayPreferences( "Arial", 9, true );
     }
 
     final public Msa getMsa() {

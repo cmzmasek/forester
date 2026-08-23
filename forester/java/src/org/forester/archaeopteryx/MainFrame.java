@@ -794,6 +794,34 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         repaint();
     }
 
+    /**
+     * Applies a few figure-display preferences programmatically to the currently displayed tree. The MSA
+     * compactor opens a tree window from another package and wants a compact font and a visible scale bar for
+     * the compacted-alignment tree; it can no longer push these through {@link Configuration} (which no longer
+     * seeds {@link Options}), so it calls this right after {@link Archaeopteryx#createApplication}.
+     *
+     * @param base_font_family the tree font family, or {@code null} to leave the current font unchanged
+     * @param base_font_size   the tree font size in points; ignored when {@code <= 0}
+     * @param show_scale       whether to show the scale bar
+     */
+    public void applyTreeDisplayPreferences(final String base_font_family, final int base_font_size,
+                                            final boolean show_scale) {
+        getOptions().setShowScale(show_scale);
+        if ((base_font_family != null) && (base_font_size > 0)) {
+            final Font base_font = new Font(base_font_family, Font.PLAIN, base_font_size);
+            getOptions().setBaseFont(base_font);
+            getMainPanel().getTreeFontSet().setBaseFont(base_font);
+        }
+        // re-derive the label-width-driven layout at the new font (mirrors chooseFont)
+        getControlPanel().displayedPhylogenyMightHaveChanged(true);
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        if (tp != null) {
+            tp.resetPreferredSize();
+            tp.updateOvSizes();
+        }
+        repaint();
+    }
+
     private void deleteSelectedNodes(final boolean delete) {
         final String function = delete ? "Delete" : "Retain";
         final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
@@ -2637,7 +2665,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // 1. settings: reset the LIVE Options in place against the frame's own configuration (== the baseline
         //    createInstance produced at launch) -- each TreePanel caches this same reference, so an in-place reset
         //    propagates everywhere without a swap
-        getOptions().resetToDefaults(getConfiguration());
+        getOptions().resetToDefaults();
         // 2. push the defaults out to the menu controls, so a later updateOptions() reads defaults, not stale state
         applyOptionsToMenuStates(getOptions());
         // 3. forget the persisted settings so the reset survives the next launch
@@ -2869,10 +2897,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
 
 
-    static void printPhylogenyToPdf(final String file_name,
-                                    final Options opts,
-                                    final TreePanel tp,
-                                    final Component comp) {
+    static void exportPhylogenyToPdf(final String file_name,
+                                     final Options opts,
+                                     final TreePanel tp,
+                                     final Component comp) {
 
         String pdf_written_to = "";
         boolean error = false;
@@ -4018,7 +4046,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     return null;
                 }
             }
-            printPhylogenyToPdf(file.toString(), mp.getOptions(), mp.getCurrentTreePanel(), component);
+            exportPhylogenyToPdf(file.toString(), mp.getOptions(), mp.getCurrentTreePanel(), component);
         }
         return new_current_dir;
     }

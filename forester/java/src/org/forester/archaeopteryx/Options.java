@@ -27,7 +27,6 @@ import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
-import org.forester.util.ForesterUtil;
 
 /*
  * This is to hold changeable options.
@@ -222,7 +221,6 @@ final public class Options {
     private boolean _antialias_print;
     private Font _base_font;
     private CLADOGRAM_TYPE _cladogram_type;
-    private boolean _color_by_taxonomic_group;
     private boolean _color_labels_same_as_parent_branch;
     private NodeVisualData.NodeFill _default_node_fill;
     private NodeVisualData.NodeShape _default_node_shape;
@@ -377,6 +375,7 @@ final public class Options {
         _antialias_print = true;
         _graphics_export_visible_only = false;
         _editable = true;
+        _allow_errors_in_distance_to_parent = false;
         _show_default_node_shapes_internal = false;
         // Publication-style default: internal-node labels (e.g. clade names from "Annotate Clades by
         // Rank") sit to the LEFT of the node, right-aligned, on top of the incoming branch -- where the
@@ -442,14 +441,6 @@ final public class Options {
         _show_abbreviated_labels_for_collapsed_nodes = true;
         _search_properties = true;
         _default_branch_width = 1;
-    }
-
-    final private void setNumberOfDigitsAfterCommaForBranchLength(final short number_of_digits_after_comma_for_branch_length_values) {
-        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
-    }
-
-    final private void setNumberOfDigitsAfterCommaForConfidenceValues(final short number_of_digits_after_comma_for_confidence_values) {
-        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     final Font getBaseFont() {
@@ -563,10 +554,6 @@ final public class Options {
 
     final boolean isAntialiasPrint() {
         return _antialias_print;
-    }
-
-    final boolean isColorByTaxonomicGroup() {
-        return _color_by_taxonomic_group;
     }
 
     final boolean isColorLabelsSameAsParentBranch() {
@@ -806,10 +793,6 @@ final public class Options {
         _cladogram_type = cladogram_type;
     }
 
-    final void setColorByTaxonomicGroup(final boolean color_by_taxonomic_group) {
-        _color_by_taxonomic_group = color_by_taxonomic_group;
-    }
-
     final void setDefaultNodeFill(final NodeFill default_node_fill) {
         _default_node_fill = default_node_fill;
     }
@@ -950,75 +933,23 @@ final public class Options {
         _taxonomy_extraction = taxonomy_extraction;
     }
 
-    public final static Options createInstance(final Configuration configuration) {
-        final Options instance = createDefaultInstance();
-        instance.applyConfiguration(configuration);
-        return instance;
+    /**
+     * Returns a fresh {@code Options} at the built-in defaults ({@link #init()}, backed by
+     * {@link AptxConstants} and the {@link DisplayOption} / {@link ClickToOption} enums). Configuration files
+     * were removed, so there is nothing to overlay -- {@link Configuration} no longer seeds {@code Options}.
+     */
+    public final static Options createInstance() {
+        return createDefaultInstance();
     }
 
     /**
-     * Resets this (LIVE) Options to the built-in defaults for {@code configuration} -- exactly the state
-     * {@link #createInstance(Configuration)} produces -- IN PLACE, so every holder of this instance (the
-     * MainFrame, and each TreePanel, which caches the reference) sees the reset without a swap. Backs
-     * "Reset to Defaults". Display/UI settings only; it does not touch loaded trees.
+     * Resets this (LIVE) Options to the built-in defaults -- exactly the state {@link #createInstance()}
+     * produces -- IN PLACE, so every holder of this instance (the MainFrame, and each TreePanel, which
+     * caches the reference) sees the reset without a swap. Backs "Reset to Defaults". Display/UI settings
+     * only; it does not touch loaded trees.
      */
-    void resetToDefaults(final Configuration configuration) {
+    void resetToDefaults() {
         init();
-        applyConfiguration(configuration);
-    }
-
-    /** Overlays {@code configuration}'s values onto this instance (the built-in defaults already set by
-     *  {@link #init()}); shared by {@link #createInstance(Configuration)} and {@link #resetToDefaults}. */
-    private void applyConfiguration(final Configuration configuration) {
-        if (configuration == null) {
-            return;
-        }
-        setShowScale(configuration.isShowScale());
-        setShowOverview(configuration.isShowOverview());
-        setColorByTaxonomicGroup(configuration.isColorByTaxonomicGroup());
-        setCladogramType(configuration.getCladogramType());
-        setOvPlacement(configuration.getOvPlacement());
-        setPrintLineWidth(configuration.getPrintLineWidth());
-        setNodeLabelDirection(configuration.getNodeLabelDirection());
-        if (configuration.getNumberOfDigitsAfterCommaForBranchLengthValues() >= 0) {
-            setNumberOfDigitsAfterCommaForBranchLength(configuration
-                    .getNumberOfDigitsAfterCommaForBranchLengthValues());
-        }
-        if (configuration.getNumberOfDigitsAfterCommaForConfidenceValues() >= 0) {
-            setNumberOfDigitsAfterCommaForConfidenceValues(configuration
-                    .getNumberOfDigitsAfterCommaForConfidenceValues());
-        }
-        setTaxonomyExtraction(configuration.getTaxonomyExtraction());
-        setReplaceUnderscoresInNhParsing(configuration.isReplaceUnderscoresInNhParsing());
-        setInternalNumberAreConfidenceForNhParsing(configuration.isInternalNumberAreConfidenceForNhParsing());
-        setEditable(configuration.isEditable());
-        setColorLabelsSameAsParentBranch(configuration.isColorLabelsSameAsParentBranch());
-        setAbbreviateScientificTaxonNames(configuration.isAbbreviateScientificTaxonNames());
-        if (configuration.getMinConfidenceFraction() != MIN_CONFIDENCE_FRACTION_DEFAULT) {
-            setMinConfidenceFraction(configuration.getMinConfidenceFraction());
-        }
-        if (configuration.getBaseFontSize() > 0) {
-            setBaseFont(getBaseFont().deriveFont((float) configuration.getBaseFontSize()));
-        }
-        if (!ForesterUtil.isEmpty(configuration.getBaseFontFamilyName())) {
-            setBaseFont(new Font(configuration.getBaseFontFamilyName(), Font.PLAIN, getBaseFont().getSize()));
-        }
-        if (configuration.getPhylogenyGraphicsType() != null) {
-            setPhylogenyGraphicsType(configuration.getPhylogenyGraphicsType());
-        }
-        if (configuration.getDefaultNodeFill() != null) {
-            setDefaultNodeFill(configuration.getDefaultNodeFill());
-        }
-        if (configuration.getDefaultNodeShape() != null) {
-            setDefaultNodeShape(configuration.getDefaultNodeShape());
-        }
-        if (configuration.getDefaultNodeShapeSize() >= 0) {
-            setDefaultNodeShapeSize(configuration.getDefaultNodeShapeSize());
-        }
-        setShowDefaultNodeShapesInternal(configuration.isShowDefaultNodeShapesInternal());
-        setShowDefaultNodeShapesExternal(configuration.isShowDefaultNodeShapesExternal());
-        setShowDefaultNodeShapesForMarkedNodes(configuration.isShowDefaultNodeShapesForMarkedNodes());
-        setAllowErrorsInDistanceToParent(false);
     }
 
     final static Options createDefaultInstance() {

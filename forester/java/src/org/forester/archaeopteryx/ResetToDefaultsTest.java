@@ -71,7 +71,7 @@ public final class ResetToDefaultsTest {
      *  {@link Options#createInstance} produces -- across the persisted + display fields. A field that init() forgets
      *  would come back non-default here. */
     private static boolean optionsResetOk() {
-        final Options o = Options.createInstance( new Configuration() );
+        final Options o = Options.createInstance();
         // drive a broad set of fields away from their defaults
         o.setShowScale( true );
         o.setShowTreeName( false );
@@ -120,9 +120,9 @@ public final class ResetToDefaultsTest {
         o.setInverseSearchResult( true );
         o.setSearchProperties( false );
 
-        o.resetToDefaults( new Configuration() );
+        o.resetToDefaults();
 
-        final Options def = Options.createInstance( new Configuration() );
+        final Options def = Options.createInstance();
         return sameDefaults( o, def );
     }
 
@@ -303,9 +303,9 @@ public final class ResetToDefaultsTest {
                     // 3b. EVERY flipped menu control was re-seeded: reading them all back via updateOptions must equal
                     //     a fresh default across the whole boolean surface (a control the resync missed stays flipped
                     //     and shows up here)
-                    final Options probe = Options.createInstance( new Configuration() ); // starts == a fresh default
+                    final Options probe = Options.createInstance(); // starts == a fresh default
                     frame.updateOptions( probe ); // overwrites the menu-backed fields FROM the (reset) controls
-                    if ( !sameDefaults( probe, Options.createInstance( new Configuration() ) ) ) {
+                    if ( !sameDefaults( probe, Options.createInstance() ) ) {
                         fail( ok, "menu controls were not fully re-seeded to defaults (see field above)" );
                     }
                     // 3c. theme reverted to light AND the ControlPanel theme radio follows

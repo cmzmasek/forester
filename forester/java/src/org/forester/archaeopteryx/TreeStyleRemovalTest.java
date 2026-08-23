@@ -92,7 +92,7 @@ public final class TreeStyleRemovalTest {
         try ( final OutputStream o = Files.newOutputStream( file ) ) {
             p.store( o, "test" );
         }
-        final Options opts = Options.createInstance( new Configuration() );
+        final Options opts = Options.createInstance();
         opts.setPhylogenyGraphicsType( initial );
         new GuiPreferences( file ).applyTo( opts ); // must not throw
         if ( opts.getPhylogenyGraphicsType() != expected ) {

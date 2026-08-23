@@ -28,15 +28,18 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
-import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
-import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
-import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
-import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
-import org.forester.phylogeny.data.NodeVisualData.NodeFill;
-import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.util.ForesterUtil;
 
+/**
+ * Holds the runtime GUI theme (look-and-feel preference + custom cross-platform colors), the tip-facing color
+ * maps, and the handful of file-reading/overview knobs that {@link TreePanel} and the parsers read directly.
+ *
+ * <p>Archaeopteryx no longer reads configuration files. The <em>default</em> display settings that used to be
+ * copied from here into {@link Options} now live solely in {@code Options.init()} (backed by
+ * {@link AptxConstants}) and in the {@link DisplayOption} / {@link ClickToOption} enums, so this class is no
+ * longer a defaults-carrier for {@code Options} -- it retains only what is genuinely consumed at runtime.
+ */
 public final class Configuration {
 
     public enum UI {
@@ -46,9 +49,9 @@ public final class Configuration {
     private static final String PREFS_NODE = "org/forester/archaeopteryx";
     private static final String PREFS_KEY_UI = "ui";
 
-    // The click-to actions and the "Display Data" options are now the type-safe enums
-    // {@link ClickToOption} and {@link DisplayOption} (they replaced the old positional String[][]
-    // clickto_options / display_options arrays and their parallel int index constants).
+    // The click-to actions and the "Display Data" options are the type-safe enums {@link ClickToOption}
+    // and {@link DisplayOption} (they replaced the old positional String[][] clickto_options /
+    // display_options arrays and their parallel int index constants).
 
     private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;
@@ -57,14 +60,6 @@ public final class Configuration {
     // The click-to action selected by default in the dropdown.
     private final ClickToOption _default_clickto = ClickToOption.DISPLAY_NODE_DATA;
 
-    private final boolean _abbreviate_scientific_names = false;
-    private String _base_font_family_name = "";
-    private int _base_font_size = -1;
-    private final CLADOGRAM_TYPE _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
-    private final boolean _color_labels_same_as_parent_branch = false;
-    private final NodeFill _default_node_fill = NodeFill.SOLID;
-    private final NodeShape _default_node_shape = NodeShape.CIRCLE;
-    private final short _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private SortedMap<String, Color> _display_colors = null;
 
     private final Color _gui_background_color = AptxConstants.GUI_BACKGROUND_DEFAULT;
@@ -75,27 +70,20 @@ public final class Configuration {
     private final Color _gui_checkbox_text_color = AptxConstants.CHECKBOX_TEXT_COLOR_DEFAULT;
     private final Color _gui_menu_background_color = AptxConstants.MENU_BACKGROUND_COLOR_DEFAULT;
     private final Color _gui_menu_text_color = AptxConstants.MENU_TEXT_COLOR_DEFAULT;
+
+    // Read directly by the NH/NHX/Nexus parse path (see Archaeopteryx.main).
     private final boolean _internal_number_are_confidence_for_nh_parsing = false;
-    private final boolean _midpoint_root = false;
-    private int _min_base_font_size = 2;
-    private double _min_confidence_fraction = Options.MIN_CONFIDENCE_FRACTION_DEFAULT;
-    private boolean _nh_parsing_replace_underscores = false;
-    private NODE_LABEL_DIRECTION _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
-    private short _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
-    private short _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
+    private final boolean _nh_parsing_replace_underscores = false;
+    private final TAXONOMY_EXTRACTION _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
+
+    // Read directly by TreePanel.
+    private final int _min_base_font_size = 2;
+    private final short _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
+    private final short _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
     private final short _ov_max_height = 80;
     private final short _ov_max_width = 80;
-    private OVERVIEW_PLACEMENT_TYPE _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
-    private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-    private float _print_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
-    private boolean _show_default_node_shapes_external = false;
-    private boolean _show_default_node_shapes_for_marked_nodes = false;
-    private boolean _show_default_node_shapes_internal = false;
-    private boolean _show_overview = true;
-    private boolean _show_scale = false;
-    private TAXONOMY_EXTRACTION _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
+
     private UI _ui = UI.UNKNOWN;
-    private final boolean _validate_against_phyloxml_xsd_schema = AptxConstants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
 
 
     static {
@@ -111,88 +99,19 @@ public final class Configuration {
     }
 
     public Configuration() {
-        // Archaeopteryx no longer reads configuration files; all settings come from the
-        // built-in defaults (see the field initializers and the DisplayOption enum) and the
-        // Settings dialog at runtime.
+        // Archaeopteryx no longer reads configuration files; all display settings come from the built-in
+        // defaults (Options.init + the DisplayOption enum) and the Settings dialog at runtime.
         setDisplayColors(new TreeMap<String, Color>());
-    }
-
-    public String getBaseFontFamilyName() {
-        return _base_font_family_name;
-    }
-
-    public NodeFill getDefaultNodeFill() {
-        return _default_node_fill;
-    }
-
-    public NodeShape getDefaultNodeShape() {
-        return _default_node_shape;
-    }
-
-    public short getDefaultNodeShapeSize() {
-        return _default_node_shape_size;
-    }
-
-    public boolean isAbbreviateScientificTaxonNames() {
-        return _abbreviate_scientific_names;
-    }
-
-    public boolean isColorByTaxonomicGroup() {
-        return false;
-    }
-
-    public boolean isColorLabelsSameAsParentBranch() {
-        return _color_labels_same_as_parent_branch;
-    }
-
-    public boolean isMidpointReroot() {
-        return _midpoint_root;
-    }
-
-    public boolean isShowDefaultNodeShapesExternal() {
-        return _show_default_node_shapes_external;
-    }
-
-    public boolean isShowDefaultNodeShapesForMarkedNodes() {
-        return _show_default_node_shapes_for_marked_nodes;
-    }
-
-    public boolean isShowDefaultNodeShapesInternal() {
-        return _show_default_node_shapes_internal;
-    }
-
-    public void putDisplayColors(final String key, final Color color) {
-        getDisplayColors().put(key, color);
-    }
-
-    public void setBaseFontFamilyName(final String base_font_family_name) {
-        _base_font_family_name = base_font_family_name;
-    }
-
-    public void setBaseFontSize(final int base_font_size) {
-        _base_font_size = base_font_size;
     }
 
     public void setDisplayColors(final SortedMap<String, Color> display_colors) {
         _display_colors = display_colors;
     }
 
-    public void setShowScale(final boolean show_scale) {
-        _show_scale = show_scale;
-    }
-
-    private final void initSpeciesColors() {
+    private void initSpeciesColors() {
         _species_colors = new Hashtable<String, Color>();
     }
 
-
-    int getBaseFontSize() {
-        return _base_font_size;
-    }
-
-    CLADOGRAM_TYPE getCladogramType() {
-        return _cladogram_type;
-    }
 
     ClickToOption getDefaultDisplayClicktoOption() {
         return _default_clickto;
@@ -249,14 +168,6 @@ public final class Configuration {
         return _min_base_font_size;
     }
 
-    double getMinConfidenceFraction() {
-        return _min_confidence_fraction;
-    }
-
-    NODE_LABEL_DIRECTION getNodeLabelDirection() {
-        return _node_label_direction;
-    }
-
     short getNumberOfDigitsAfterCommaForBranchLengthValues() {
         return _number_of_digits_after_comma_for_branch_length_values;
     }
@@ -273,18 +184,6 @@ public final class Configuration {
         return _ov_max_width;
     }
 
-    OVERVIEW_PLACEMENT_TYPE getOvPlacement() {
-        return _ov_placement;
-    }
-
-    PHYLOGENY_GRAPHICS_TYPE getPhylogenyGraphicsType() {
-        return _phylogeny_graphics_type;
-    }
-
-    float getPrintLineWidth() {
-        return _print_line_width;
-    }
-
     Hashtable<String, Color> getSpeciesColors() {
         if (_species_colors == null) {
             initSpeciesColors();
@@ -292,7 +191,7 @@ public final class Configuration {
         return _species_colors;
     }
 
-    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+    TAXONOMY_EXTRACTION getTaxonomyExtraction() {
         return _taxonomy_extraction;
     }
 
@@ -318,21 +217,13 @@ public final class Configuration {
         return _nh_parsing_replace_underscores;
     }
 
-    boolean isShowOverview() {
-        return _show_overview;
-    }
-
-    boolean isShowScale() {
-        return _show_scale;
-    }
-
     /**
      * Returns the resolved look-and-feel selection. When no preference has been set yet
      * ({@code UNKNOWN}), the last theme the user chose at runtime (persisted via
      * {@link java.util.prefs.Preferences}) is used; if none was ever saved, the modern
      * FlatLaf light theme is the default.
      */
-    final UI getUi() {
+    UI getUi() {
         if (_ui == UI.UNKNOWN) {
             _ui = readUiPreference();
         }
@@ -378,13 +269,13 @@ public final class Configuration {
      * applied to the Swing components. The native and FlatLaf look-and-feels style the
      * components themselves, so custom colors are only applied for {@code CROSSPLATFORM}.
      */
-    final boolean isApplyCustomGuiColors() {
+    boolean isApplyCustomGuiColors() {
         return getUi() == UI.CROSSPLATFORM;
     }
 
 
     boolean isValidatePhyloXmlAgainstSchema() {
-        return _validate_against_phyloxml_xsd_schema;
+        return true;
     }
 
 

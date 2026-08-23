@@ -114,7 +114,6 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
-import org.forester.util.TaxonomyUtil;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener {
 
@@ -6834,45 +6833,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color calculateTaxonomyBasedColor(final Taxonomy tax) {
-        if (getOptions().isColorByTaxonomicGroup()) {
-            if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-                boolean ex = false;
-                String group = null;
-                try {
-                    group = TaxonomyUtil.getTaxGroupByTaxCode(tax.getTaxonomyCode());
-                } catch (final Exception e) {
-                    ex = true;
-                }
-                if (!ex && !ForesterUtil.isEmpty(group)) {
-                    final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup(group);
-                    if (c != null) {
-                        return c;
-                    }
-                }
-            }
+        if (ForesterUtil.isEmpty(tax.getTaxonomyCode()) && ForesterUtil.isEmpty(tax.getScientificName())) {
             return getTreeColorSet().getTaxonomyColor();
-        } else {
-            if (ForesterUtil.isEmpty(tax.getTaxonomyCode()) && ForesterUtil.isEmpty(tax.getScientificName())) {
-                return getTreeColorSet().getTaxonomyColor();
-            }
-            Color c = null;
-            if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-                c = getControlPanel().getSpeciesColors().get(tax.getTaxonomyCode());
-            }
-            if ((c == null) && !ForesterUtil.isEmpty(tax.getScientificName())) {
-                c = getControlPanel().getSpeciesColors().get(tax.getScientificName());
-            }
-            if (c == null) {
-                if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-                    c = AptxUtil.calculateColorFromString(tax.getTaxonomyCode(), true);
-                    getControlPanel().getSpeciesColors().put(tax.getTaxonomyCode(), c);
-                } else {
-                    c = AptxUtil.calculateColorFromString(tax.getScientificName(), true);
-                    getControlPanel().getSpeciesColors().put(tax.getScientificName(), c);
-                }
-            }
-            return c;
         }
+        Color c = null;
+        if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
+            c = getControlPanel().getSpeciesColors().get(tax.getTaxonomyCode());
+        }
+        if ((c == null) && !ForesterUtil.isEmpty(tax.getScientificName())) {
+            c = getControlPanel().getSpeciesColors().get(tax.getScientificName());
+        }
+        if (c == null) {
+            if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
+                c = AptxUtil.calculateColorFromString(tax.getTaxonomyCode(), true);
+                getControlPanel().getSpeciesColors().put(tax.getTaxonomyCode(), c);
+            } else {
+                c = AptxUtil.calculateColorFromString(tax.getScientificName(), true);
+                getControlPanel().getSpeciesColors().put(tax.getScientificName(), c);
+            }
+        }
+        return c;
     }
 
     // ---------------------------------------------------------------------------
