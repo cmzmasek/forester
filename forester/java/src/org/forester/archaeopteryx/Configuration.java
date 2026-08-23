@@ -174,7 +174,6 @@ public final class Configuration {
     private boolean _show_default_node_shapes_external = false;
     private boolean _show_default_node_shapes_for_marked_nodes = false;
     private boolean _show_default_node_shapes_internal = false;
-    private boolean _show_domain_labels = true;
     private boolean _show_overview = true;
     private boolean _show_scale = false;
     private TAXONOMY_EXTRACTION _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
@@ -278,10 +277,6 @@ public final class Configuration {
 
     public boolean isShowDefaultNodeShapesInternal() {
         return _show_default_node_shapes_internal;
-    }
-
-    public boolean isShowDomainLabels() {
-        return _show_domain_labels;
     }
 
     public void putDisplayColors(final String key, final Color color) {

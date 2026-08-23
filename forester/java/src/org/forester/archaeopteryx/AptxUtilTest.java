@@ -65,7 +65,7 @@ public final class AptxUtilTest {
         return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChoices()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
-                && testAssignDistinctColors() && testShortenLabel()
+                && testAssignDistinctColors() && testAssignScatteredColors() && testGatherDomainNames() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
                 && testPreferredDisplayTypeForBranchLengthTree() && testDetectTimeTree()
                 && testDeriveTimeAxisType();
@@ -382,6 +382,82 @@ public final class AptxUtilTest {
      * is deterministic (same input -&gt; same colors) and ordered like the (sorted) input, and an
      * empty/null input yields an empty map.
      */
+    /** The domain palette scatters hues by the golden angle, so SPELLING-adjacent names (DUF1/DUF11/DUF2,
+     *  Flavi_glycoprot/Flavi_glycoprot_C/Flavi_E_stem) get FAR-apart colours -- unlike the i/n taxonomy sweep, which
+     *  would crush them into one hue band. */
+    /**
+     * gatherDomainNames feeds the domain palette: it must collect only the DRAWN domains -- those passing the
+     * E-value cutoff (Math.pow(10, exp)) -- and skip null-named domains (matching colorFor's / the renderer's null
+     * guard). Verifies the cutoff direction, that a looser threshold admits more, and null/empty-tree safety.
+     */
+    private static boolean testGatherDomainNames() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode leaf = new PhylogenyNode();
+        final Sequence seq = new Sequence();
+        final DomainArchitecture da = new DomainArchitecture();
+        da.addDomain(new ProteinDomain("Strong", 1, 50, 1.0e-5)); // passes cutoff 1e-3
+        da.addDomain(new ProteinDomain("AlsoStrong", 60, 90, 1.0e-4)); // passes
+        da.addDomain(new ProteinDomain("Weak", 100, 130, 1.0e-2)); // FAILS 1e-3 (0.01 > 0.001)
+        da.addDomain(new ProteinDomain(null, 140, 160, 1.0e-8)); // passes the cutoff but NULL name -> skipped
+        seq.setDomainArchitecture(da);
+        leaf.getNodeData().addSequence(seq);
+        root.addAsChild(leaf);
+        phy.setRoot(root);
+        phy.externalNodesHaveChanged();
+        java.util.SortedSet<String> names = new java.util.TreeSet<String>();
+        AptxUtil.gatherDomainNames(phy, -3, names); // cutoff 1e-3
+        if (!names.equals(new java.util.TreeSet<String>(Arrays.asList("AlsoStrong", "Strong")))) {
+            return fail("gatherDomainNames at e<=1e-3 must collect only passing, non-null-named domains; got " + names);
+        }
+        names = new java.util.TreeSet<String>();
+        AptxUtil.gatherDomainNames(phy, -1, names); // cutoff 1e-1 admits Weak too (still skips the null name)
+        if (!names.equals(new java.util.TreeSet<String>(Arrays.asList("AlsoStrong", "Strong", "Weak")))) {
+            return fail("a looser E-value cutoff must admit the weaker domain; got " + names);
+        }
+        final java.util.SortedSet<String> empty = new java.util.TreeSet<String>();
+        AptxUtil.gatherDomainNames(null, -3, empty);
+        AptxUtil.gatherDomainNames(new Phylogeny(), -3, empty);
+        if (!empty.isEmpty()) {
+            return fail("null/empty tree must contribute no domain names");
+        }
+        return true;
+    }
+
+    private static boolean testAssignScatteredColors() {
+        if (!AptxUtil.assignScatteredColors(null).isEmpty()
+                || !AptxUtil.assignScatteredColors(new java.util.TreeSet<String>()).isEmpty()) {
+            return fail("null/empty names must yield an empty color map");
+        }
+        final java.util.SortedSet<String> doms = new java.util.TreeSet<String>(java.util.Arrays.asList("DUF1", "DUF11",
+                "DUF2", "DUF3", "DUF4", "Flavi_E_stem", "Flavi_glycop_C", "Flavi_glycoprot"));
+        final Map<String, Color> scat = AptxUtil.assignScatteredColors(doms);
+        if (scat.size() != doms.size()) {
+            return fail("every domain name must get a color");
+        }
+        if (new java.util.HashSet<Color>(scat.values()).size() != doms.size()) {
+            return fail("scattered colors must be pairwise distinct; got " + scat.values());
+        }
+        // consecutive sorted names jump FAR in hue (golden angle ~0.382 circular), NOT 1/n as the taxonomy sweep gives
+        final java.util.List<String> order = new java.util.ArrayList<String>(scat.keySet());
+        for (int i = 0; (i + 1) < order.size(); ++i) {
+            final Color c0 = scat.get(order.get(i));
+            final Color c1 = scat.get(order.get(i + 1));
+            final float h0 = Color.RGBtoHSB(c0.getRed(), c0.getGreen(), c0.getBlue(), null)[0];
+            final float h1 = Color.RGBtoHSB(c1.getRed(), c1.getGreen(), c1.getBlue(), null)[0];
+            final float d = Math.abs(h0 - h1);
+            final float circ = Math.min(d, 1f - d);
+            if (circ < 0.20f) {
+                return fail("adjacent-sorted domain names must get far-apart hues, got circular distance " + circ
+                        + " between '" + order.get(i) + "' and '" + order.get(i + 1) + "'");
+            }
+        }
+        if (!scat.equals(AptxUtil.assignScatteredColors(doms))) {
+            return fail("assignScatteredColors must be deterministic");
+        }
+        return true;
+    }
+
     private static boolean testAssignDistinctColors() {
         if (!AptxUtil.assignDistinctColors(null).isEmpty()
                 || !AptxUtil.assignDistinctColors(new java.util.TreeSet<String>()).isEmpty()) {

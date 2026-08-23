@@ -69,6 +69,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +109,7 @@ import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
@@ -146,7 +148,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    public final static boolean SPECIAL_DOMAIN_COLORING = true;
     final static Cursor ARROW_CURSOR = Cursor
             .getPredefinedCursor(Cursor.DEFAULT_CURSOR);
     final static Cursor CUT_CURSOR = Cursor
@@ -166,6 +167,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // taxonomy label ends. When the two differed (taxonomy 3, node data 2), the node data started a pixel inside
     // the taxonomy box and an italic scientific name's right overhang overlapped the following node name.
     private final static int LABEL_GAP_AFTER_NODE_SHAPE = 2;
+    // The domain-architecture box height tracks the tip-row spacing (getYdistance()), CLAMPED to [MIN, MAX]: it grows
+    // as the tree is expanded vertically (responds to Y+/Y-) instead of staying at a fixed size; MIN keeps a very
+    // zoomed-out tree's boxes visible, MAX keeps a very zoomed-in tree's boxes as bars, not tall blocks (and << the
+    // row pitch 2*yDistance, so no overlap). Tuned with the user against real domain trees.
+    private final static int DOMAIN_STRUCTURE_HEIGHT_MIN = 6;
+    private final static int DOMAIN_STRUCTURE_HEIGHT_MAX = 16;
     // Gap (px) between a tip and its UPRIGHT (horizontal) label along the DEPTH axis in a vertical orientation
     // (see paintTipLabelHorizontal). depthLabelReserve() must reserve this too, else the outermost tip's label
     // pokes past the depth edge and clips (the top in root-bottom, the bottom in root-top).
@@ -4323,13 +4330,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final RenderableDomainArchitecture rds = (RenderableDomainArchitecture) node.getNodeData().getSequence()
                 .getDomainArchitecture();
-        final int default_height = 7;
-        float yd = getYdistance();
-        if (getControlPanel().isDynamicallyHideData()) {
-            yd = getTreeFontSet().getFontMetricsLarge().getHeight();
-        }
-        final int hgt = yd < default_height ? ForesterUtil.roundToInt(yd) : default_height;
-        rds.setRenderingHeight(hgt > 1 ? hgt : 2);
+        // Height tracks the ACTUAL tip-row spacing (getYdistance()) -- NOT the font height even under dynamic hiding
+        // (which pinned it to a fixed size, so it neither responded to vertical zoom NOR shrank when the rows pack
+        // tight, crowding the boxes). Clamped into [MIN, MAX] so it stays readable zoomed out and bars-not-blocks
+        // zoomed in (shared with the other domain-height site via TreePanelUtil.domainBoxHeight).
+        final float yd = getYdistance();
+        final int hgt = TreePanelUtil.domainBoxHeight(yd, DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
+        rds.setRenderingHeight(hgt);
         // start just past the label's DEPTH footprint -- the same bounding-box projection depthLabelReserve() reserves
         // (label_w*|sin| + lineH*|cos|), so a tilted 45-degree label's track doesn't overlap the label's lower edge and
         // an upright 0-degree label's track clears the one-line-tall label. Anchor at the label column (labelTextStartX),
@@ -4405,13 +4412,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 cce.printStackTrace();
             }
             if (rds != null) {
-                final int default_height = 7;
-                float y = getYdistance();
-                if (getControlPanel().isDynamicallyHideData()) {
-                    y = getTreeFontSet().getFontMetricsLarge().getHeight();
-                }
-                final int h = y < default_height ? ForesterUtil.roundToInt(y) : default_height;
-                rds.setRenderingHeight(h > 1 ? h : 2);
+                final float y = getYdistance(); // track the actual row spacing (see the horizontal path above)
+                final int h = TreePanelUtil.domainBoxHeight(y, DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
+                rds.setRenderingHeight(h);
                 if (getControlPanel().isDrawPhylogram()) {
                     if (getOptions().isLineUpRendarableNodeData()) {
                         if (getOptions().isRightLineUpDomains()) {
@@ -7272,10 +7275,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // rank (no colors), shown alongside any other legend when isShowInternalTaxonomyKey() and the tree carries them.
     private Point               _internal_taxa_key_offset = null;
     private Rectangle           _internal_taxa_key_bounds = null;
+    // A FIFTH, independent legend: the protein-domain legend (domain name -> its box colour), shown when the domain
+    // label mode is LEGEND. E-value-cutoff aware -- it lists exactly the domains that pass the current threshold.
+    private Point               _domain_legend_offset     = null;
+    private Rectangle           _domain_legend_bounds     = null;
     // Which legend the active drag moves (they share _legend_grab_dx/dy). Generalized from a single "size?" boolean
     // once a third (pie) draggable legend was added.
     enum DRAGGED_LEGEND {
-        PROPERTY, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA
+        PROPERTY, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA, DOMAIN
     }
     // The two branch-length metrics an Auspice/Nextstrain tree can be laid out by (Increment 2 display toggle).
     enum NEXTSTRAIN_BRANCH_MODE {
@@ -7393,13 +7400,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && _internal_taxa_key_bounds.contains(e.getX(), e.getY());
     }
 
-    /** Over any legend (color/rank/column, size, ancestral pie, or internal-taxonomy key) -- to start a drag / cursor. */
+    /** Over the protein-domain legend -- guarded by the LEGEND label mode AND that domain boxes are actually shown; the
+     *  recorded bounds mean it was drawn. */
+    final boolean isOnDomainLegend(final MouseEvent e) {
+        return (getOptions().getDomainLabelMode() == Options.DOMAIN_LABEL_MODE.LEGEND) && (getControlPanel() != null)
+                && getControlPanel().isShowDomainArchitectures() && (_domain_legend_bounds != null)
+                && _domain_legend_bounds.contains(e.getX(), e.getY());
+    }
+
+    /** Over any legend (color/rank/column, size, ancestral pie, internal-taxonomy key, or domain legend). */
     final boolean isOnAnyLegend(final MouseEvent e) {
-        return isOnPropertyLegend(e) || isOnSizeLegend(e) || isOnAncestralPieLegend(e) || isOnInternalTaxaKey(e);
+        return isOnPropertyLegend(e) || isOnSizeLegend(e) || isOnAncestralPieLegend(e) || isOnInternalTaxaKey(e)
+                || isOnDomainLegend(e);
     }
 
     private Rectangle draggedLegendBounds() {
         switch (_dragged_legend) {
+            case DOMAIN:
+                return _domain_legend_bounds;
             case INTERNAL_TAXA:
                 return _internal_taxa_key_bounds;
             case ANCESTRAL_PIE:
@@ -7414,7 +7432,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void startLegendDrag(final MouseEvent e) {
         // the legends are drawn color/rank -> size -> pie -> internal-taxa (last on top), so an overlap grab must
         // hit-test in reverse draw order and give the top-most legend priority
-        if (isOnInternalTaxaKey(e)) {
+        if (isOnDomainLegend(e)) {
+            _dragged_legend = DRAGGED_LEGEND.DOMAIN;
+        } else if (isOnInternalTaxaKey(e)) {
             _dragged_legend = DRAGGED_LEGEND.INTERNAL_TAXA;
         } else if (isOnAncestralPieLegend(e)) {
             _dragged_legend = DRAGGED_LEGEND.ANCESTRAL_PIE;
@@ -7442,6 +7462,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         ox = Math.max(0, Math.min(ox, Math.max(0, vp.width - b.width)));
         oy = Math.max(0, Math.min(oy, Math.max(0, vp.height - b.height)));
         switch (_dragged_legend) {
+            case DOMAIN:
+                _domain_legend_offset = new Point(ox, oy);
+                break;
             case INTERNAL_TAXA:
                 _internal_taxa_key_offset = new Point(ox, oy);
                 break;
@@ -7485,6 +7508,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _internal_taxa_key_offset = null;
             repaint();
         }
+    }
+
+    /** A click on the domain legend: double-click returns it to its default corner (no recolorable rows). */
+    final void handleDomainLegendClick(final MouseEvent e) {
+        if (e.getClickCount() == 2) {
+            _domain_legend_offset = null;
+            repaint();
+        }
+    }
+
+    /** Test hook: the last-drawn domain-legend bounds (null when it was not drawn / had no content). */
+    Rectangle getDomainLegendBoundsForTest() {
+        return _domain_legend_bounds;
+    }
+
+    /** Test hook: draw the domain legend directly (records the bounds when {@code draggable}). */
+    void drawDomainLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        drawDomainLegend(g, bounds, draggable);
+    }
+
+    /** Test hook: set the domain E-value threshold exponent (normally driven by the ControlPanel +/- controls). */
+    void setDomainEvalueThresholdExpForTest(final int exp) {
+        _domain_structure_e_value_thr_exp = exp;
     }
 
     final void endLegendDrag() {
@@ -8525,6 +8571,97 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
     }
 
+    /**
+     * Draws the protein-domain legend (domain name -> its box colour). Shown only in the LEGEND label mode, and
+     * E-value-cutoff AWARE: it lists exactly the domain names that pass the current threshold across the displayed
+     * tips -- so it stays in sync as the threshold moves. Its OWN draggable slot (default bottom-right); once dragged
+     * it maps fractionally like the other legends. Painted last, so an overlap grab gives it priority.
+     */
+    private void drawDomainLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        if ((getOptions().getDomainLabelMode() != Options.DOMAIN_LABEL_MODE.LEGEND) || (_phylogeny == null)
+                || (getControlPanel() == null) || !getControlPanel().isShowDomainArchitectures() || isRadialLayout()) {
+            // no boxes drawn -> no orphan legend (domain boxes are a rectangular-family right-margin track; a
+            // circular/unrooted layout draws none, so it must not show a legend for them either -- nulling the
+            // bounds also disarms isOnDomainLegend's hit-test)
+            _domain_legend_bounds = null;
+            return;
+        }
+        final LinkedHashMap<String, Color> values = new LinkedHashMap<String, Color>();
+        final Map<String, Integer> counts = new HashMap<String, Integer>();
+        collectDisplayedDomains(values, counts);
+        if (values.isEmpty()) {
+            _domain_legend_bounds = null;
+            return;
+        }
+        final int pad = 7;
+        final int swatch = 10;
+        final int gap = 5;
+        final int max_text = 240;
+        g.setFont(legendFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final int row_h = fm.getHeight() + 2;
+        final String title = "Protein domains (E ≤ 1e" + _domain_structure_e_value_thr_exp + ")";
+        int text_w = fm.stringWidth(title);
+        for (final String name : values.keySet()) {
+            text_w = Math.max(text_w, swatch + gap + fm.stringWidth(domainLegendRow(name, counts, fm, max_text)));
+        }
+        final int box_w = text_w + (2 * pad) + 4;
+        final int box_h = ((1 + values.size()) * row_h) + (2 * pad);
+        final Point tl = domainLegendTopLeft(bounds, box_w, box_h);
+        final int x = tl.x;
+        final int y = tl.y;
+        if (draggable) {
+            _domain_legend_bounds = new Rectangle(x, y, box_w, box_h);
+        }
+        final Stroke saved_stroke = g.getStroke();
+        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, false, false);
+        final Color fg = getTreeColorSet().getSequenceColor();
+        for (final Map.Entry<String, Color> en : values.entrySet()) {
+            baseline += row_h;
+            g.setColor(en.getValue());
+            g.fillRect(x + pad, (baseline - fm.getAscent()) + ((fm.getAscent() - swatch) / 2) + 1, swatch, swatch);
+            g.setColor(fg);
+            g.drawString(domainLegendRow(en.getKey(), counts, fm, max_text), x + pad + swatch + gap, baseline);
+        }
+        g.setStroke(saved_stroke);
+    }
+
+    private String domainLegendRow(final String name, final Map<String, Integer> counts, final FontMetrics fm,
+                                   final int max_text) {
+        final Integer c = counts.get(name);
+        return clipToWidth(name + ((c != null) ? (" (" + c + ")") : ""), fm, max_text);
+    }
+
+    /** Collect the DISPLAYED domain names passing the E-value threshold -> box colour, ordered by first appearance,
+     *  plus per-name instance counts (the number of drawn boxes). */
+    private void collectDisplayedDomains(final LinkedHashMap<String, Color> values, final Map<String, Integer> counts) {
+        final double thr = Math.pow(10, _domain_structure_e_value_thr_exp);
+        for (final PhylogenyNode n : _phylogeny.getExternalNodes()) {
+            if (isHiddenUnderCollapse(n)) {
+                continue; // a tip hidden under a collapsed clade draws no boxes, so it is not in the legend/counts
+            }
+            if (n.getNodeData().isHasSequence() && (n.getNodeData().getSequence().getDomainArchitecture() != null)) {
+                final DomainArchitecture da = n.getNodeData().getSequence().getDomainArchitecture();
+                for (final ProteinDomain d : da.getDomains().values()) {
+                    if ((d.getName() != null) && (d.getConfidence() <= thr)) {
+                        values.putIfAbsent(d.getName(), RenderableDomainArchitecture.colorFor(d.getName()));
+                        counts.merge(d.getName(), 1, Integer::sum);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Default position of the domain legend: BOTTOM-RIGHT (clear of the top-right primary legends and the top-left
+     *  overview); once dragged, maps fractionally like the others. */
+    private Point domainLegendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
+        if (_domain_legend_offset != null) {
+            return legendTopLeftFor(bounds, getVisibleRect(), _domain_legend_offset, box_w, box_h);
+        }
+        return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
+                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
+    }
+
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
         if (fm.stringWidth(s) <= max_px) {
             return s;
@@ -8913,10 +9050,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     && (node.getNodeData().getSequence().getDomainArchitecture() != null)
                     && !(node.getNodeData().getSequence()
                             .getDomainArchitecture() instanceof RenderableDomainArchitecture)) {
-                final RenderableDomainArchitecture rds = SPECIAL_DOMAIN_COLORING
-                        ? new RenderableDomainArchitecture(node.getNodeData().getSequence().getDomainArchitecture(),
-                                node.getName())
-                        : new RenderableDomainArchitecture(node.getNodeData().getSequence().getDomainArchitecture());
+                final RenderableDomainArchitecture rds = new RenderableDomainArchitecture(
+                        node.getNodeData().getSequence().getDomainArchitecture());
                 node.getNodeData().getSequence().setDomainArchitecture(rds);
             }
         }
@@ -10579,6 +10714,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void decreaseDomainStructureEvalueThresholdExp() {
         if (_domain_structure_e_value_thr_exp > -20) {
             _domain_structure_e_value_thr_exp -= 1;
+            AptxUtil.assignDomainPalette(null, getMainPanel()); // the drawn domain set changed -> recolour it
         }
     }
 
@@ -10962,6 +11098,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void increaseDomainStructureEvalueThresholdExp() {
         if (_domain_structure_e_value_thr_exp < 3) {
             _domain_structure_e_value_thr_exp += 1;
+            AptxUtil.assignDomainPalette(null, getMainPanel()); // the drawn domain set changed -> recolour it
+        }
+    }
+
+    /** Set the initial domain-architecture horizontal scale so the WIDEST architecture spans roughly {@code fraction}
+     *  of {@code viewport_width} pixels -- called when the domain display is first fitted on load, so domains open at a
+     *  useful, screen-proportional size instead of a fixed ~90px. (The final drawn width is this times the ~0.9 fit
+     *  headroom applied in {@link #initNodeData}.) The user's later domain zoom (+/-) then scales from here. */
+    void fitDomainWidthToScreen(final double fraction, final int viewport_width) {
+        if (viewport_width > 0) {
+            _domain_structure_width = fraction * viewport_width;
         }
     }
 
@@ -10976,13 +11123,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 RenderableDomainArchitecture rds = null;
                 if (!(node.getNodeData().getSequence()
                         .getDomainArchitecture() instanceof RenderableDomainArchitecture)) {
-                    if (SPECIAL_DOMAIN_COLORING) {
-                        rds = new RenderableDomainArchitecture(node.getNodeData().getSequence()
-                                .getDomainArchitecture(), node.getName());
-                    } else {
-                        rds = new RenderableDomainArchitecture(node.getNodeData().getSequence()
-                                .getDomainArchitecture());
-                    }
+                    rds = new RenderableDomainArchitecture(node.getNodeData().getSequence().getDomainArchitecture());
                     node.getNodeData().getSequence().setDomainArchitecture(rds);
                 } else {
                     rds = (RenderableDomainArchitecture) node.getNodeData().getSequence().getDomainArchitecture();
@@ -12055,6 +12196,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawInternalTaxonomyKey(g, legend_bounds, to_screen);
+        }
+        // the protein-domain legend (LEGEND label mode): its own draggable slot, drawn last so an overlap grab wins;
+        // E-value-cutoff aware. Layout-agnostic (rides every layout + export), like the other legends.
+        {
+            final boolean to_screen = !(to_pdf || to_graphics_file);
+            final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+            drawDomainLegend(g, legend_bounds, to_screen);
         }
         // reconcile the "Pulse Found Nodes" animation timer after EVERY screen paint (all layouts): starts it when a
         // hit halo was drawn (rectangular OR radial), stops it when none was (option off / no hit).

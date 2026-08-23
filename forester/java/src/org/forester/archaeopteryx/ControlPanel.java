@@ -1178,9 +1178,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     if (mf._right_line_up_domains_cbmi != null) {
                         mf._right_line_up_domains_cbmi.setVisible(true);
                     }
-                    if (mf._show_domain_labels != null) {
-                        mf._show_domain_labels.setVisible(true);
-                    }
                 } else {
                     _domain_display_label.setVisible(false);
                     _zoom_in_domain_structure.setVisible(false);
@@ -1190,9 +1187,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _domain_structure_evalue_thr_tf.setVisible(false);
                     if (mf._right_line_up_domains_cbmi != null) {
                         mf._right_line_up_domains_cbmi.setVisible(false);
-                    }
-                    if (mf._show_domain_labels != null) {
-                        mf._show_domain_labels.setVisible(false);
                     }
                 }
             }
@@ -1851,6 +1845,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_domain_architectures != null) && _show_domain_architectures.isSelected());
     }
 
+    /** Test hook: force the "Show Domain Architectures" checkbox on/off. */
+    void setShowDomainArchitecturesForTest(final boolean selected) {
+        if (_show_domain_architectures != null) {
+            _show_domain_architectures.setSelected(selected);
+        }
+    }
+
     /**
      * Gives a text field its own Undo/Redo (Cmd/Ctrl-Z, Cmd/Ctrl-Shift-Z) bound at WHEN_FOCUSED scope, so
      * those keystrokes edit the field's text instead of falling through to the tree-level Undo menu
@@ -1888,10 +1889,19 @@ final class ControlPanel extends JPanel implements ActionListener {
      * because of the domain rows -- to the screen. Called on load for a tree that contains domain
      * architectures so the domains are shown immediately (most users never find the checkbox).
      */
+    // On load, open the domain architectures at ~this fraction of the viewport width (the widest architecture), so
+    // they read at a useful size out of the box instead of a fixed ~90px. The user's domain zoom (+/-) scales from here.
+    private static final double INITIAL_DOMAIN_WIDTH_SCREEN_FRACTION = 0.25;
+
     void showDomainArchitecturesFitted() {
-        if ((_show_domain_architectures != null) && _show_domain_architectures.isVisible()
-                && !_show_domain_architectures.isSelected()) {
-            _show_domain_architectures.setSelected(true);
+        if ((_show_domain_architectures != null) && _show_domain_architectures.isVisible()) {
+            _show_domain_architectures.setSelected(true); // no-op (and fires nothing) if already on
+            // Set THIS tree's initial domain width regardless of whether the checkbox was already selected by a
+            // previously-open domain tree: _domain_structure_width is per-TreePanel and a freshly-loaded tree has
+            // no user domain-zoom to clobber. (This method runs only from the per-load property scan, never on a
+            // manual checkbox toggle, so it can't reset the width out from under a user who is zooming domains.)
+            getCurrentTreePanel().fitDomainWidthToScreen(INITIAL_DOMAIN_WIDTH_SCREEN_FRACTION,
+                    getMainPanel().getSizeOfViewport().width);
             fitWidth(); // re-fit the (now wider) tree horizontally so the domains show; keep vertical zoom
         }
     }
@@ -3684,22 +3694,13 @@ final class ControlPanel extends JPanel implements ActionListener {
                 if (getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null) {
                     getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible(false);
                 }
-                if (getMainPanel().getMainFrame()._show_domain_labels != null) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible(false);
-                }
             } else if (isShowDomainArchitectures()) {
                 if (getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null) {
                     getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible(true);
                 }
-                if (getMainPanel().getMainFrame()._show_domain_labels != null) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible(true);
-                }
             } else {
                 if (getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null) {
                     getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible(false);
-                }
-                if (getMainPanel().getMainFrame()._show_domain_labels != null) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible(false);
                 }
             }
         } catch (final Exception ignore) {

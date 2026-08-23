@@ -487,6 +487,17 @@ public class TreePanelUtil {
      * flat bar. This is a schematic of the SUMMARISED uncertainty (point + 95% HPD), not the raw posterior density.
      * Pure/testable.
      */
+    /**
+     * The pixel height of a protein-domain-architecture box for a leaf row of spacing {@code row_spacing}
+     * (= {@code TreePanel.getYdistance()}): track the vertical zoom, but clamp into a legible band
+     * [{@code min}, {@code max}] so the boxes stay readable when zoomed out (floor) and don't become giant blocks
+     * when zoomed in (ceiling). Extracted + shared by BOTH domain-height sites in {@code TreePanel} so the clamp is
+     * testable and cannot drift between them. Pure.
+     */
+    final static int domainBoxHeight( final float row_spacing, final int min, final int max ) {
+        return Math.max( min, Math.min( ForesterUtil.roundToInt( row_spacing ), max ) );
+    }
+
     final static double spindleHalfHeightAt( final double p, final double lo, final double hi, final double peak,
                                              final double h_max ) {
         if ( ( hi <= lo ) || ( h_max <= 0 ) ) {

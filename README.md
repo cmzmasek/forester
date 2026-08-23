@@ -133,7 +133,10 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 
 - **Color Tips by Metadata** — a tree colored by a categorical property
 - **Annotation Columns** — tip-aligned color strips and a numeric heat-map
-- **Protein Domain Architectures** — multi-domain proteins drawn to scale
+- **Protein Domain Architectures** — multi-domain proteins drawn to scale as flat,
+  rounded, distinctly-colored boxes (a soft shadow, an optional glow); label the domains
+  on the boxes or gather them into a draggable, E-value-aware legend
+  (Settings → Layout → Domain labels)
 - **Bat Phylogeny (Taxonomy by Rank)** — 34 bat species with common + scientific
   names + synonyms, every clade rank-annotated, colorized by family (all offline)
 - **GTDB Taxonomy (Genome-based)** — Bacteria + Archaea genomes with the GTDB

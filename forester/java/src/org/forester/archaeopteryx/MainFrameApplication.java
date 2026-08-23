@@ -1686,7 +1686,6 @@ public final class MainFrameApplication extends MainFrame {
         _line_up_renderable_data_cbmi = new JCheckBoxMenuItem(MainFrame.LINE_UP_RENDERABLE_DATA);
         if (getConfiguration().doDisplayOption(Configuration.show_domain_architectures)) {
             _right_line_up_domains_cbmi = new JCheckBoxMenuItem(MainFrame.RIGHT_LINE_UP_DOMAINS);
-            _show_domain_labels = new JCheckBoxMenuItem(MainFrame.SHOW_DOMAIN_LABELS_LABEL);
         }
         _show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL);
         _show_mad_confidence_cbmi = new JCheckBoxMenuItem(MainFrame.SHOW_MAD_CONF_LABEL);
@@ -1730,7 +1729,6 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().isShowDefaultNodeShapesForMarkedNodes());
         customizeCheckBoxMenuItem(_color_labels_same_as_parent_branch,
                 getOptions().isColorLabelsSameAsParentBranch());
-        customizeCheckBoxMenuItem(_show_domain_labels, getOptions().isShowDomainLabels());
         customizeCheckBoxMenuItem(_abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames());
         customizeCheckBoxMenuItem(_use_italic_scientific_names_cbmi, getOptions().isUseItalicScientificNames());
         customizeCheckBoxMenuItem(_outline_fonts_in_vector_export_cbmi,

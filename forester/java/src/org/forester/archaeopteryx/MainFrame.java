@@ -213,7 +213,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String INTERNAL_LABELS_RIGHT_OF_NODE_TIP = "Place internal-node labels to the right of the node (classic placement)";
     static final String SHOW_OVERVIEW_LABEL = "Overview";
     static final String NONUNIFORM_CLADOGRAMS_LABEL = "Lined Up Cladogram";
-    static final String SHOW_DOMAIN_LABELS_LABEL = "Domain Labels";
     static final String COLOR_LABELS_TIP = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String ABBREV_SN_LABEL = "Abbreviate Scientific Taxonomic Names";
     static final String ITALIC_SN_LABEL = "Italic Scientific Taxonomic Names";
@@ -308,7 +307,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _dim_non_matches_cbmi;
     JCheckBoxMenuItem _pulse_found_nodes_cbmi;
     JCheckBoxMenuItem _show_overview_cbmi;
-    JCheckBoxMenuItem _show_domain_labels;
     JCheckBoxMenuItem _abbreviate_scientific_names;
     JCheckBoxMenuItem _use_italic_scientific_names_cbmi;
     JCheckBoxMenuItem _outline_fonts_in_vector_export_cbmi;
@@ -498,8 +496,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().stepToFoundNode(-1);
             }
-        } else if (o == _show_domain_labels) {
-            updateOptions(getOptions());
         } else if (o == _abbreviate_scientific_names) {
             updateOptions(getOptions());
         } else if (o == _use_italic_scientific_names_cbmi) {
@@ -2432,7 +2428,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void updateOptions(final Options options) {
-        options.setShowDomainLabels((_show_domain_labels != null) && _show_domain_labels.isSelected());
         options.setAbbreviateScientificTaxonNames((_abbreviate_scientific_names != null)
                 && _abbreviate_scientific_names.isSelected());
         options.setUseItalicScientificNames((_use_italic_scientific_names_cbmi != null)
@@ -2564,7 +2559,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * resets, then runs updateOptions and asserts a default result, so a control missed here fails that test.
      */
     void applyOptionsToMenuStates(final Options options) {
-        setSelected(_show_domain_labels, options.isShowDomainLabels());
         setSelected(_abbreviate_scientific_names, options.isAbbreviateScientificTaxonNames());
         setSelected(_use_italic_scientific_names_cbmi, options.isUseItalicScientificNames());
         setSelected(_outline_fonts_in_vector_export_cbmi, options.isOutlineFontsInVectorExport());

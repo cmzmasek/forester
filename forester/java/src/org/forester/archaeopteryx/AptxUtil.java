@@ -47,6 +47,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -69,8 +70,11 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
@@ -164,6 +168,36 @@ public final class AptxUtil {
             final float sat = ((i % 2) == 0) ? 0.75f : 0.95f;
             final float bri = ((i % 2) == 0) ? 0.95f : 0.78f;
             result.put(taxon, Color.getHSBColor(hue, sat, bri));
+            ++i;
+        }
+        return result;
+    }
+
+    // Golden-ratio-conjugate hue step: consecutive items land ~137.5° apart on the wheel, so a SORTED set whose
+    // adjacent names are merely SPELLING-similar gets maximally-SEPARATED hues -- the opposite of the plain i/n sweep,
+    // which gives adjacent names near-identical hues. That i/n sweep ({@link #assignDistinctColors}) is deliberately
+    // kept for TAXONOMY (alphabetical adjacency implies relatedness); protein domains want no name->hue relationship
+    // (e.g. Flavi_glycoprot / Flavi_glycoprot_C / Flavi_E_stem should be visually distinct, not the same blue).
+    private static final double GOLDEN_CONJUGATE = 0.6180339887498949;
+
+    /**
+     * Assigns each name a colour whose HUE is scattered by the golden angle, so alphabetically-adjacent names get
+     * FAR-APART colours (unlike {@link #assignDistinctColors}, whose i/n sweep is right for taxonomy but clusters
+     * spelling-similar domain names into one hue band). Deterministic in the input's sorted order; a saturation /
+     * brightness alternation adds extra separation where two hues happen to land near each other. Used for protein
+     * domains.
+     */
+    final static Map<String, Color> assignScatteredColors(final SortedSet<String> names) {
+        final Map<String, Color> result = new LinkedHashMap<String, Color>();
+        if ((names == null) || names.isEmpty()) {
+            return result;
+        }
+        int i = 0;
+        for (final String name : names) {
+            final float hue = (float) ((i * GOLDEN_CONJUGATE) % 1.0);
+            final float sat = ((i % 2) == 0) ? 0.72f : 0.90f;
+            final float bri = ((i % 2) == 0) ? 0.92f : 0.76f;
+            result.put(name, Color.getHSBColor(hue, sat, bri));
             ++i;
         }
         return result;
@@ -279,6 +313,54 @@ public final class AptxUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Assign an aesthetically distinct colour to every protein-domain NAME present in {@code phy} -- the modern
+     * palette the flat domain renderer uses, replacing the old name-hash colours ({@link #calculateColorFromString}).
+     * Colours are spread evenly over the sorted set of names (the same helper the rank colouriser uses), so similar
+     * names no longer collide. Display-only, recomputed on each load; a domain first seen after this (e.g. a later
+     * node edit) still gets a deterministic hash colour on demand ({@code RenderableDomainArchitecture.colorFor}).
+     */
+    static void assignDomainPalette(final Phylogeny loading_phy, final MainPanel main_panel) {
+        // Assign scattered colours over the DRAWN domains of every open tree (plus the just-loaded one), so a domain
+        // shared across tabs gets ONE consistent colour and every tab's boxes come from the palette (not the hash
+        // fallback). Only the domains a user actually SEES (passing each tree's E-value cutoff) share the palette --
+        // NOT the whole domain vocabulary a big phyloXML may carry (hundreds of names would crush the drawn few into
+        // one hue band). Re-run on LOAD and whenever the E-value threshold changes (which changes the drawn set).
+        final SortedSet<String> names = new TreeSet<String>();
+        if (loading_phy != null) {
+            // a just-loaded tree's panel is still at the default threshold
+            gatherDomainNames(loading_phy, AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP, names);
+        }
+        if (main_panel != null) {
+            for (final TreePanel tp : main_panel.getTreePanels()) {
+                gatherDomainNames(tp.getPhylogeny(), tp.getDomainStructureEvalueThresholdExp(), names);
+            }
+        }
+        if (!names.isEmpty()) {
+            RenderableDomainArchitecture.setColorMap(assignScatteredColors(names));
+        }
+    }
+
+    // package-private (not private) so AptxUtilTest can verify the E-value filtering + null-name skip directly.
+    static void gatherDomainNames(final Phylogeny phy, final int e_value_thr_exp, final SortedSet<String> names) {
+        if ((phy == null) || phy.isEmpty()) {
+            return;
+        }
+        // Only DRAWN domains (passing the E-value cutoff) get a palette colour; the renderer uses the same condition.
+        final double thr = Math.pow(10, e_value_thr_exp);
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode n = it.next();
+            if (n.getNodeData().isHasSequence() && (n.getNodeData().getSequence().getDomainArchitecture() != null)) {
+                final DomainArchitecture da = n.getNodeData().getSequence().getDomainArchitecture();
+                for (final ProteinDomain d : da.getDomains().values()) {
+                    if ((d.getName() != null) && (d.getConfidence() <= thr)) {
+                        names.add(d.getName());
+                    }
+                }
+            }
+        }
     }
 
     /** True when at least one INTERNAL node carries a node-age {@code <date>} with both a minimum and a maximum --
@@ -1341,6 +1423,7 @@ public final class AptxUtil {
             // so the domains are shown right away (most users would not find the checkbox otherwise).
             if (AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture(t)) {
                 cp.showDomainArchitecturesFitted();
+                assignDomainPalette(t, cp.getMainPanel());
             }
             // "Node Age Bars (HPD)" and "Fossil Range Bars" are data-driven GLOBAL toggles (Options + a menu item),
             // so reconcile them to whether ANY currently-open tree carries the interval data -- a dated phylogram

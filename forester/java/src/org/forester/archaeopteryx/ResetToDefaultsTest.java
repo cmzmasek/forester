@@ -111,6 +111,8 @@ public final class ResetToDefaultsTest {
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE ); // default is BAR
+        o.setDomainLabelMode( Options.DOMAIN_LABEL_MODE.LEGEND ); // default is ON_DOMAINS
+        o.setShowDomainGlow( true ); // default is false
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
         o.setMatchWholeTermsOnly( true );
@@ -173,6 +175,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
         ok &= eq( "nodeAgeShape", o.getNodeAgeShape(), def.getNodeAgeShape() );
+        ok &= eq( "domainLabelMode", o.getDomainLabelMode(), def.getDomainLabelMode() );
+        ok &= eq( "showDomainGlow", o.isShowDomainGlow(), def.isShowDomainGlow() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );
         ok &= eq( "searchWholeWords", o.isMatchWholeTermsOnly(), def.isMatchWholeTermsOnly() );
         ok &= eq( "searchRegex", o.isSearchWithRegex(), def.isSearchWithRegex() );
@@ -205,7 +209,7 @@ public final class ResetToDefaultsTest {
                     //    (a) EVERY menu control updateOptions reads, flipped to the opposite of default, so the
                     //        Options->control resync is genuinely completeness-checked (not spot-checked): a control
                     //        missed in applyOptionsToMenuStates stays flipped and fails the 3b probe below
-                    flip( frame._show_domain_labels, frame._abbreviate_scientific_names,
+                    flip( frame._abbreviate_scientific_names,
                           frame._use_italic_scientific_names_cbmi, frame._outline_fonts_in_vector_export_cbmi,
                           frame._transparent_export_background_cbmi, frame._graphics_export_white_background_cbmi,
                           frame._color_labels_same_as_parent_branch, frame._show_default_node_shapes_internal_cbmi,

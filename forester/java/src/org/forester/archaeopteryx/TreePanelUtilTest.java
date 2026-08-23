@@ -71,7 +71,8 @@ public final class TreePanelUtilTest {
                 && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange() && testSpindleHalfHeight()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
-                && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testAncestralPieData();
+                && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
+                && testAncestralPieData();
     }
 
     /**
@@ -625,6 +626,31 @@ public final class TreePanelUtilTest {
 
     /** The node-age SPINDLE profile: 0 at both interval ends, peaks at the point estimate, asymmetric when the estimate
      *  is off-centre, and degenerate-safe. */
+    /**
+     * The protein-domain box-height clamp: track the tip-row spacing (getYdistance), but clamp into [min,max] so the
+     * boxes stay readable when zoomed out (floor) and stay bars-not-blocks when zoomed in (ceiling). The user tuned
+     * this across rounds 3-5 to MIN=6/MAX=16; shared by both domain-height sites in TreePanel.
+     */
+    private static boolean testDomainBoxHeight() {
+        if ( TreePanelUtil.domainBoxHeight( 1.79f, 6, 16 ) != 6 ) { // tightly packed (yd below the floor) -> floor
+            return fail( "a tightly-packed row (spacing below min) must floor at min" );
+        }
+        if ( TreePanelUtil.domainBoxHeight( 40f, 6, 16 ) != 16 ) { // very expanded (yd above the ceiling) -> ceiling
+            return fail( "a very expanded row (spacing above max) must cap at max" );
+        }
+        if ( TreePanelUtil.domainBoxHeight( 9f, 6, 16 ) != 9 ) { // in range -> the (rounded) spacing
+            return fail( "an in-range row must use the rounded spacing" );
+        }
+        if ( TreePanelUtil.domainBoxHeight( 9.6f, 6, 16 ) != 10 ) { // ROUNDED, not truncated
+            return fail( "the spacing must be rounded, not truncated" );
+        }
+        // RESPONDS to vertical zoom once above the floor: a wider row spacing gives a taller box
+        if ( TreePanelUtil.domainBoxHeight( 12f, 6, 16 ) <= TreePanelUtil.domainBoxHeight( 8f, 6, 16 ) ) {
+            return fail( "domain box height must grow with row spacing above the floor" );
+        }
+        return true;
+    }
+
     private static boolean testSpindleHalfHeight() {
         // interval [0,10], estimate (peak) at 3, max half-height 5
         if ( TreePanelUtil.spindleHalfHeightAt( 0, 0, 10, 3, 5 ) != 0 ) {

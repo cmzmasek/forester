@@ -1035,6 +1035,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Domain display (flat render, glow, label modes + legend): ");
+        if (org.forester.archaeopteryx.DomainRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Clustergram layout (render): ");
         if (org.forester.archaeopteryx.ClustergramRenderTest.test()) {
             System.out.println("OK.");

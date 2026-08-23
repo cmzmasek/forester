@@ -23,9 +23,12 @@ package org.forester.archaeopteryx.phylogeny.data;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
@@ -42,25 +45,33 @@ import org.forester.util.ForesterUtil;
 
 public final class RenderableDomainArchitecture extends DomainArchitecture implements RenderablePhylogenyData {
 
-    final static private String       SPECIAL_DOMAIN                = "RRMa";
-    final static private int          BRIGHTEN_COLOR_BY             = 200;
-    final static private int          E_VALUE_THRESHOLD_EXP_DEFAULT = 0;
-    final static private BasicStroke  STROKE_1                      = new BasicStroke( 1f );
+    private final static int          E_VALUE_THRESHOLD_EXP_DEFAULT = 0;
+    private final static BasicStroke  STROKE_1                      = new BasicStroke( 1f );
+    // The flat modern look (fixed style): a rounded gradient body, a thin hue border, and a soft drop-shadow. The
+    // shadow (and the optional glow) are STEPPED -- a few translucent offset/outset copies rather than a Gaussian blur
+    // -- so they render IDENTICALLY on screen and in vector export (PDF / SVG / EPS have no blur). GradientPaint is
+    // vector-safe (verified: OpenPDF renders a native shading, VectorGraphics2D tessellates it correctly).
+    // Small radius on purpose: domain boxes are SHORT (height capped ~11px), so a larger radius rounds the short sides
+    // into a pill/oval. 2px reads as a rounded RECTANGLE at every height (r is still clamped to min(w,h)/2 below).
+    private final static float        CORNER_RADIUS                 = 2f;
+    private final static float        GRAD_LIGHTEN_TOP              = 0.12f; // top edge toward white
+    private final static float        GRAD_DARKEN_BOTTOM            = 0.10f; // bottom edge toward black
+    private final static float        BORDER_DARKEN                 = 0.24f;
+    // { dx, dy, alpha } per drop-shadow layer -- darkest/closest first, softest/farthest last (a stepped soft shadow).
+    private final static float[][]    SHADOW_LAYERS                 = { { 0.4f, 0.7f, 40 }, { 0.9f, 1.5f, 28 },
+            { 1.6f, 2.5f, 17 } };
+    // { outset, alpha } per glow layer (a hue halo; off by default).
+    private final static float[][]    GLOW_LAYERS                   = { { 3.2f, 20 }, { 1.6f, 34 } };
     private static Map<String, Color> _domain_colors;
     private final DomainArchitecture  _domain_structure;
     private int                       _e_value_threshold_exp        = E_VALUE_THRESHOLD_EXP_DEFAULT;
     private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
-    private float                     _rendering_factor_width       = 1;
-    private float                     _rendering_height             = 0;
-    private String                    _node_name;
+    private final RoundRectangle2D    _round                        = new RoundRectangle2D.Float();
+    private float                     _rendering_factor_width        = 1;
+    private float                     _rendering_height              = 0;
 
     public RenderableDomainArchitecture( final DomainArchitecture domain_structure ) {
         _domain_structure = domain_structure;
-    }
-
-    public RenderableDomainArchitecture( final DomainArchitecture domain_structure, final String node_name ) {
-        _domain_structure = domain_structure;
-        _node_name = node_name;
     }
 
     public static void setColorMap( final Map<String, Color> domain_colors ) {
@@ -82,67 +93,83 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         return _domain_structure.copy();
     }
 
-    private final void drawDomain( final double x,
-                                   final double y,
-                                   final double width,
-                                   final double heigth,
-                                   final String name,
-                                   final Graphics2D g,
-                                   final boolean to_pdf ) {
-        final double h2 = heigth / 2.0;
-        final Color color_one = getColorOne( name );
-        final Color color_two = getColorTwo( color_one );
-        double step = 1;
-        if ( to_pdf ) {
-            step = 0.05;
+    /**
+     * Draw one domain box in the flat modern style: a soft stepped drop-shadow, an optional hue glow, a rounded body
+     * with a mild vertical gradient, and a thin hue border. Pure Graphics2D primitives (translucent rounded rects +
+     * a GradientPaint), so it is WYSIWYG on screen and in every vector export.
+     */
+    private void drawDomainFlat( final double x, final double y, final double width, final double height,
+                                 final Color base, final boolean glow, final Graphics2D g ) {
+        if ( ( width <= 0 ) || !Double.isFinite( width ) ) { // non-finite guards a degenerate factor (all-zero-length architectures)
+            return;
         }
-        for( double i = 0; i < heigth; i += step ) {
-            g.setColor( org.forester.util.ForesterUtil
-                        .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
-            _rectangle.setFrame( x, i + y, width, step );
-            g.fill( _rectangle );
+        final double r = Math.min( CORNER_RADIUS, Math.min( width, height ) / 2.0 );
+        final double arc = 2 * r;
+        // stepped soft drop-shadow (behind the box)
+        for( final float[] s : SHADOW_LAYERS ) {
+            g.setColor( new Color( 8, 18, 21, (int) s[ 2 ] ) );
+            _round.setRoundRect( x + s[ 0 ], y + s[ 1 ], width, height, arc, arc );
+            g.fill( _round );
         }
+        // optional hue glow (behind the box)
+        if ( glow ) {
+            for( final float[] gl : GLOW_LAYERS ) {
+                final float o = gl[ 0 ];
+                g.setColor( new Color( base.getRed(), base.getGreen(), base.getBlue(), (int) gl[ 1 ] ) );
+                _round.setRoundRect( x - o, y - o, width + ( 2 * o ), height + ( 2 * o ), arc + ( 2 * o ),
+                                     arc + ( 2 * o ) );
+                g.fill( _round );
+            }
+        }
+        // rounded body with a mild vertical gradient
+        g.setPaint( new GradientPaint( 0f, (float) y, lighten( base, GRAD_LIGHTEN_TOP ), 0f,
+                                       (float) ( y + height ), darken( base, GRAD_DARKEN_BOTTOM ) ) );
+        _round.setRoundRect( x, y, width, height, arc, arc );
+        g.fill( _round );
+        // thin hue border
+        g.setColor( darken( base, BORDER_DARKEN ) );
+        g.setStroke( STROKE_1 );
+        g.draw( _round );
     }
 
-    private final void drawDomainGrey( final double x,
-                                       final double y,
-                                       final double width,
-                                       final double heigth,
-                                       final String name,
-                                       final Graphics2D g,
-                                       final boolean to_pdf ) {
-        final double h2 = heigth / 2.0;
-        final Color color_one = Color.GRAY;
-        final Color color_two = getColorTwo( color_one );
-        double step = 1;
-        if ( to_pdf ) {
-            step = 0.05;
+    /**
+     * The colour the renderer uses for a domain NAME: the palette entry (see
+     * {@code AptxUtil.assignDomainPalette}) if present, else a deterministic fallback colour, cached. Public + static
+     * so a legend (painted by the {@code TreePanel}) can match the drawn boxes exactly.
+     */
+    public static Color colorFor( final String name ) {
+        if ( name == null ) {
+            return Color.GRAY; // a nameless domain (guards calculateColorFromString(null) -> NPE)
         }
-        for( double i = 0; i < heigth; i += step ) {
-            g.setColor( org.forester.util.ForesterUtil
-                        .calcColor( i >= h2 ? heigth - i : i, 0, h2, color_one, color_two ) );
-            _rectangle.setFrame( x, i + y, width, step );
-            g.fill( _rectangle );
+        if ( _domain_colors == null ) {
+            _domain_colors = new java.util.HashMap<String, Color>();
         }
-    }
-
-    private final Color getColorOne( final String name ) {
         Color c = _domain_colors.get( name );
         if ( c == null ) {
             c = AptxUtil.calculateColorFromString( name, false );
             if ( c == null ) {
-                throw new IllegalStateException();
+                c = Color.GRAY;
             }
             _domain_colors.put( name, c );
         }
         return c;
     }
 
-    private Color getColorTwo( final Color color_one ) {
-        final int red = color_one.getRed() + RenderableDomainArchitecture.BRIGHTEN_COLOR_BY;
-        final int green = color_one.getGreen() + RenderableDomainArchitecture.BRIGHTEN_COLOR_BY;
-        final int blue = color_one.getBlue() + RenderableDomainArchitecture.BRIGHTEN_COLOR_BY;
-        return new Color( red > 255 ? 255 : red, green > 255 ? 255 : green, blue > 255 ? 255 : blue );
+    private static Color lighten( final Color c, final float t ) {
+        return new Color( c.getRed() + Math.round( ( 255 - c.getRed() ) * t ),
+                          c.getGreen() + Math.round( ( 255 - c.getGreen() ) * t ),
+                          c.getBlue() + Math.round( ( 255 - c.getBlue() ) * t ) );
+    }
+
+    private static Color darken( final Color c, final float t ) {
+        return new Color( Math.round( c.getRed() * ( 1 - t ) ), Math.round( c.getGreen() * ( 1 - t ) ),
+                          Math.round( c.getBlue() * ( 1 - t ) ) );
+    }
+
+    /** Near-black or white label ink, whichever reads on {@code c} (by relative luminance). */
+    private static Color contrastInk( final Color c ) {
+        final double lum = ( ( 0.2126 * c.getRed() ) + ( 0.7152 * c.getGreen() ) + ( 0.0722 * c.getBlue() ) ) / 255.0;
+        return lum > 0.55 ? new Color( 20, 26, 29 ) : Color.WHITE;
     }
 
     @Override
@@ -215,45 +242,33 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         final float start = x1 + 20;
         final Stroke s = g.getStroke();
         g.setStroke( STROKE_1 );
-        if ( !to_pdf ) {
-            g.setColor( tree_panel.getTreeColorSet().getDomainBaseColor() );
-        }
-        else {
-            g.setColor( AptxConstants.DOMAIN_BASE_COLOR_FOR_PDF );
-        }
+        g.setColor( to_pdf ? AptxConstants.DOMAIN_BASE_COLOR_FOR_PDF
+                           : tree_panel.getTreeColorSet().getDomainBaseColor() );
         _rectangle.setFrame( start, y - 0.5, _domain_structure.getTotalLength() * f, 1 );
         g.fill( _rectangle );
-        short special_domain_count = 0;
+        // "Labels on domains" draws the name centred inside each box; "Legend" and "No labels" draw none here (the
+        // legend is a separate, draggable, E-value-aware slot painted by the TreePanel).
+        final boolean glow = tree_panel.getMainPanel().getOptions().isShowDomainGlow();
+        final boolean on_domain_labels = draw_labels
+                && tree_panel.getMainPanel().getOptions().isDomainLabelsOnDomains()
+                && ( tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getHeight() > 4 );
         for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
             final ProteinDomain d = _domain_structure.getDomain( i );
-            if ( ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) )
-                    || ( TreePanel.SPECIAL_DOMAIN_COLORING && ( d.getName().equals( SPECIAL_DOMAIN ) ) && ( ( d
-                            .getConfidence() <= 1 ) ) ) ) {
-                if ( TreePanel.SPECIAL_DOMAIN_COLORING && ( d.getName().equals( SPECIAL_DOMAIN ) ) ) {
-                    special_domain_count++;
-                }
+            if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
                 final float xa = start + ( d.getFrom() * f );
                 final float xb = xa + ( d.getLength() * f );
-                if ( draw_labels && tree_panel.getMainPanel().getOptions().isShowDomainLabels()
-                        && ( tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getHeight() > 4 ) ) {
-                    g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
-                    if ( !to_pdf ) {
-                        g.setColor( tree_panel.getTreeColorSet().getDomainLabelColor() );
+                final Color base = colorFor( d.getName() );
+                drawDomainFlat( xa, y1, xb - xa, _rendering_height, base, glow, g );
+                if ( on_domain_labels && ( d.getName() != null ) ) { // a nameless domain still draws its box, just no label
+                    final FontMetrics fm = tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall();
+                    final int tw = fm.stringWidth( d.getName() );
+                    if ( tw <= ( ( xb - xa ) - 4 ) ) { // fits centred inside the box, else drop it
+                        g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
+                        g.setColor( contrastInk( base ) );
+                        final float tx = xa + ( ( ( xb - xa ) - tw ) / 2f );
+                        final float ty = y1 + ( ( _rendering_height + fm.getAscent() - fm.getDescent() ) / 2f );
+                        g.drawString( d.getName(), tx, ty );
                     }
-                    else {
-                        g.setColor( AptxConstants.DOMAIN_LABEL_COLOR_FOR_PDF );
-                    }
-                    g.drawString( d.getName(), xa, y1
-                                  + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
-                                  + _rendering_height );
-                }
-                if ( TreePanel.SPECIAL_DOMAIN_COLORING && ( _node_name.indexOf( "~" ) > 1 )
-                        && ( d.getName().equals( SPECIAL_DOMAIN ) )
-                        && ( _node_name.indexOf( "~" + special_domain_count + "-" ) < 1 ) ) {
-                    drawDomainGrey( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
-                }
-                else {
-                    drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
                 }
             }
         }

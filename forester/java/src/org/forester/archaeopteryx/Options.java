@@ -189,6 +189,25 @@ final public class Options {
         }
     }
 
+    /** How protein-domain names are labelled: not at all, centred on each domain box, or gathered into a single
+     *  draggable legend (which lists only the domains passing the current E-value cutoff). */
+    static enum DOMAIN_LABEL_MODE {
+        NONE("No labels"),
+        ON_DOMAINS("Labels on domains"),
+        LEGEND("Legend");
+
+        private final String _name;
+
+        private DOMAIN_LABEL_MODE(final String name) {
+            _name = name;
+        }
+
+        @Override
+        public String toString() {
+            return _name;
+        }
+    }
+
     // The "Min. confidence shown" display filter is a FRACTION (0..1) of each tree's detected support scale,
     // not an absolute value -- so one setting behaves correctly whatever the scale (0-1 posteriors, 0-100
     // bootstrap, 0-1000). The effective cutoff is fraction * confidenceScaleMaxFor(tree). Default 0.5 hides
@@ -252,7 +271,8 @@ final public class Options {
     private boolean _internal_labels_above_branch;
     private boolean _use_italic_scientific_names;
     private boolean _outline_fonts_in_vector_export;
-    private boolean _show_domain_labels;
+    private DOMAIN_LABEL_MODE _domain_label_mode;
+    private boolean _show_domain_glow;
     // Clustergram layout: in a vertical (root-top/bottom) orientation with annotation columns, draw the tip labels
     // BELOW the columns (at the bottom) instead of between the tree and the columns, so the dendrogram sits directly
     // on the tip-aligned grid. Display-only; no-op in the horizontal orientation / without annotation columns.
@@ -307,8 +327,18 @@ final public class Options {
         return _right_align_domains;
     }
 
-    public final boolean isShowDomainLabels() {
-        return _show_domain_labels;
+    public final DOMAIN_LABEL_MODE getDomainLabelMode() {
+        return _domain_label_mode;
+    }
+
+    /** Public convenience for the domain renderer (a different package, so it cannot see the package-private
+     *  {@link DOMAIN_LABEL_MODE}): true iff domain names are drawn centred on each domain box. */
+    public final boolean isDomainLabelsOnDomains() {
+        return _domain_label_mode == DOMAIN_LABEL_MODE.ON_DOMAINS;
+    }
+
+    public final boolean isShowDomainGlow() {
+        return _show_domain_glow;
     }
 
     final boolean isTipLabelsBelowColumns() {
@@ -335,8 +365,12 @@ final public class Options {
         _right_align_domains = right_align_domains;
     }
 
-    public void setShowDomainLabels(final boolean show_domain_labels) {
-        _show_domain_labels = show_domain_labels;
+    public void setDomainLabelMode(final DOMAIN_LABEL_MODE domain_label_mode) {
+        _domain_label_mode = domain_label_mode;
+    }
+
+    public void setShowDomainGlow(final boolean show_domain_glow) {
+        _show_domain_glow = show_domain_glow;
     }
 
     final private void init() {
@@ -414,7 +448,8 @@ final public class Options {
         _graphics_export_white_background = true;
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
-        _show_domain_labels = true;
+        _domain_label_mode = DOMAIN_LABEL_MODE.ON_DOMAINS;
+        _show_domain_glow = false;
         _tip_labels_below_columns = false;
         setAbbreviateScientificTaxonNames(false);
         _color_labels_same_as_parent_branch = false;
@@ -978,7 +1013,6 @@ final public class Options {
         setInternalNumberAreConfidenceForNhParsing(configuration.isInternalNumberAreConfidenceForNhParsing());
         setEditable(configuration.isEditable());
         setColorLabelsSameAsParentBranch(configuration.isColorLabelsSameAsParentBranch());
-        setShowDomainLabels(configuration.isShowDomainLabels());
         setAbbreviateScientificTaxonNames(configuration.isAbbreviateScientificTaxonNames());
         if (configuration.getMinConfidenceFraction() != MIN_CONFIDENCE_FRACTION_DEFAULT) {
             setMinConfidenceFraction(configuration.getMinConfidenceFraction());
