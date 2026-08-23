@@ -50,8 +50,8 @@ public final class Configuration {
             {"Display Node Data", "display"}, {"Collapse/Uncollapse", "display"}, {"Root/Reroot", "display"},
             {"Go to Sub/Supertree", "display"}, {"Swap Descendants", "display"},
             {"Node Style", "display"},
-            {"Colorize Subtree(s)", "display"}, {"Open Sequence DB", "display"}, {"Open PDB", "display"},
-            {"Open Taxonomy DB", "display"}, {"Launch BLAST", "display"}, {"Cut Subtree", "display"},
+            {"Colorize Subtree(s)", "display"}, {"Open Sequence DB", "display"},
+            {"Open Taxonomy DB", "display"}, {"Cut Subtree", "display"},
             {"Copy Subtree", "display"}, {"Paste Subtree", "display"}, {"Delete Subtree/Node", "display"},
             {"Add New Node", "display"}, {"Edit Node Data", "display"}, {"Sort Descendants", "display"},
             {"Select Node(s)", "display"}, {"Uncollapse All", "display"}, {"Order Subtree", "display"},};
@@ -64,19 +64,17 @@ public final class Configuration {
     final static int node_style = 5;
     final static int color_subtree = 6;
     final static int open_seq_web = 7;
-    final static int open_pdb_web = 8;
-    final static int open_tax_web = 9;
-    final static int blast = 10;
-    final static int cut_subtree = 11;
-    final static int copy_subtree = 12;
-    final static int paste_subtree = 13;
-    final static int delete_subtree_or_node = 14;
-    final static int add_new_node = 15;
-    final static int edit_node_data = 16;
-    final static int sort_descendents = 17;
-    final static int select_nodes = 18;
-    final static int uncollapse_all = 19;
-    final static int order_subtree = 20;
+    final static int open_tax_web = 8;
+    final static int cut_subtree = 9;
+    final static int copy_subtree = 10;
+    final static int paste_subtree = 11;
+    final static int delete_subtree_or_node = 12;
+    final static int add_new_node = 13;
+    final static int edit_node_data = 14;
+    final static int sort_descendents = 15;
+    final static int select_nodes = 16;
+    final static int uncollapse_all = 17;
+    final static int order_subtree = 18;
 
     // ------------------
     // Click-to options

@@ -202,14 +202,6 @@ public final class TreeColorSet {
         return found_color_1;
     }
 
-    Color getGainedCharactersColor() {
-        return Color.GREEN;
-    }
-
-    Color getLostCharactersColor() {
-        return Color.RED;
-    }
-
     Color getOvColor() {
         return ov_color;
     }

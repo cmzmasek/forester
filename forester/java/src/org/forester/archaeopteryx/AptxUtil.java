@@ -394,7 +394,7 @@ public final class AptxUtil {
     // The number of distinct "Display Data" option constants scanForDataPresence can report (kept in
     // sync by hand with the present.add(...) calls below); used to short-circuit the scan once every
     // flag has been found.
-    private final static int NUM_DATA_PRESENCE_FLAGS = 20;
+    private final static int NUM_DATA_PRESENCE_FLAGS = 17;
 
     /**
      * Scans the whole tree once and returns the set of "Display Data" option constants (from
@@ -441,13 +441,6 @@ public final class AptxUtil {
             }
             if (!present.contains(Configuration.write_events) && nd.isHasEvent()) {
                 present.add(Configuration.write_events);
-            }
-            if (!present.contains(Configuration.show_binary_characters) && nd.isHasBinaryCharacters()) {
-                present.add(Configuration.show_binary_characters);
-                present.add(Configuration.show_binary_character_counts);
-            }
-            if (!present.contains(Configuration.show_vector_data) && !ForesterUtil.isEmpty(nd.getVector())) {
-                present.add(Configuration.show_vector_data);
             }
             if (!present.contains(Configuration.show_properties) && (nd.getProperties() != null)
                     && (nd.getProperties().size() > 0)) {

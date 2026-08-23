@@ -94,7 +94,6 @@ public final class ForesterUtil {
     public final static String       OS_ARCH                          = System.getProperty( "os.arch" );
     public final static String       OS_NAME                          = System.getProperty( "os.name" );
     public final static String       OS_VERSION                       = System.getProperty( "os.version" );
-    public static final String       PDB                              = "http://www.pdb.org/pdb/explore/explore.do?pdbId=";
     public final static String       UNIPROT_KB                       = "https://www.uniprot.org/uniprot/";
     public final static double       ZERO_DIFF                        = 1.0E-12;
     private static final Pattern     PARANTHESESABLE_NH_CHARS_PATTERN = Pattern.compile( "[(),;\\s:\\[\\]]" );

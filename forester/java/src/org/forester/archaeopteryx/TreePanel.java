@@ -45,7 +45,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
@@ -75,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JColorChooser;
@@ -96,11 +94,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
-import org.forester.archaeopteryx.phylogeny.data.RenderableMsaSequence;
-import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
-import org.forester.archaeopteryx.tools.Blast;
 import org.forester.io.parsers.json.AuspiceJsonParser;
-import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
@@ -116,12 +110,10 @@ import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
-import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.data.Uri;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
-import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
@@ -161,7 +153,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private static double _180_OVER_PI = 180.0 / Math.PI;
     private static final float ANGLE_ROTATION_UNIT = (float) (Math.PI
             / 32);
-    private final static int CONFIDENCE_LEFT_MARGIN = 4;
     // Gap (px) between the node shape and the first label glyph. The taxonomy label and the node-data label that
     // follows it MUST use the same value (via labelSegmentStartX) so the node data begins exactly where the
     // taxonomy label ends. When the two differed (taxonomy 3, node data 2), the node data started a pixel inside
@@ -387,7 +378,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private Phylogeny _phylogeny = null;
     private final Path2D.Float _polygon = new Path2D.Float();
     private final StringBuffer _popup_buffer = new StringBuffer();
-    private Sequence _query_sequence = null;
     private final Rectangle2D _rectangle = new Rectangle2D.Float();
     private final Path2D.Float _diamond = new Path2D.Float();
     // "Time tree" badge state: the expensive DATED detection is cached per tree; a user-confirmed ULTRAMETRIC tree
@@ -464,7 +454,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private PhylogenyNode _last_step_target;
     private double _scale_distance = 0.0;
     private String _scale_label = null;
-    private DescriptiveStatistics _statistics_for_vector_data;
     private final Phylogeny[] _sub_phylogenies = new Phylogeny[TreePanel.MAX_SUBTREES];
     private final PhylogenyNode[] _sub_phylogenies_temp_roots = new PhylogenyNode[TreePanel.MAX_SUBTREES];
     private int _subtree_index = 0;
@@ -491,7 +480,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // support-scale ceiling (1 or 100) for node-symbol support visualization; recomputed per paint
     private double _confidence_scale_max = 1.0;
     private int _length_of_longest_text;
-    private int _length_of_longest_text_only; // longest tip TEXT label (name+taxonomy) only, excluding domain/vector tracks
+    private int _length_of_longest_text_only; // longest tip TEXT label (name+taxonomy) only, excluding the domain track
     // AUTO tip-label direction resolved ONCE per calcParametersForPainting pass (null = option is not AUTO). Caching it
     // keeps the breadth RESERVES and the PAINT in agreement within a pass -- both read this instead of re-resolving AUTO
     // against a y-distance that the reserves see stale (pre-setYdistance) but the paint sees fresh, which clipped the
@@ -839,51 +828,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _confidence_scale_max);
         final Color strong = to_pdf ? getTreeColorSet().getBranchColorForPdf() : getTreeColorSet().getBranchColor();
         return TreePanelUtil.supportColor(fraction, strong, getTreeColorSet().getBackgroundColor());
-    }
-
-    final private void blast(final PhylogenyNode node) {
-        if (!isCanBlast(node)) {
-            JOptionPane.showMessageDialog(this,
-                    "Insufficient information present",
-                    "Cannot Blast",
-                    JOptionPane.INFORMATION_MESSAGE);
-            return;
-        } else {
-            final String query = Blast.obtainQueryForBlast(node);
-            System.out.println("query for BLAST is: " + query);
-            char type = '?';
-            if (!ForesterUtil.isEmpty(query)) {
-                if (node.getNodeData().isHasSequence()) {
-                    if (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getType())) {
-                        if (node.getNodeData().getSequence().getType().toLowerCase()
-                                .equals(PhyloXmlUtil.SEQ_TYPE_PROTEIN)) {
-                            type = 'p';
-                        } else {
-                            type = 'n';
-                        }
-                    } else if (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getMolecularSequence())) {
-                        if (ForesterUtil
-                                .seqIsLikelyToBeAa(node.getNodeData().getSequence().getMolecularSequence())) {
-                            type = 'p';
-                        } else {
-                            type = 'n';
-                        }
-                    }
-                }
-                if (type == '?') {
-                    if (SequenceAccessionTools.isProteinDbQuery(query)) {
-                        type = 'p';
-                    } else {
-                        type = 'n';
-                    }
-                }
-                try {
-                    Blast.openNcbiBlastWeb(query, type == 'n', this);
-                } catch (final Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     private final int calcDynamicHidingFactor() {
@@ -1507,22 +1451,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _ov_y_start;
     }
 
-    final private List<Accession> getPdbAccs(final PhylogenyNode node) {
-        final List<Accession> pdb_ids = new ArrayList<>();
-        if (node.getNodeData().isHasSequence()) {
-            final Sequence seq = node.getNodeData().getSequence();
-            if (!ForesterUtil.isEmpty(seq.getCrossReferences())) {
-                final SortedSet<Accession> cross_refs = seq.getCrossReferences();
-                for (final Accession acc : cross_refs) {
-                    if (acc.getSource().equalsIgnoreCase("pdb")) {
-                        pdb_ids.add(acc);
-                    }
-                }
-            }
-        }
-        return pdb_ids;
-    }
-
     final private double getScaleDistance() {
         return _scale_distance;
     }
@@ -1569,14 +1497,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case OPEN_SEQ_WEB:
                 openSeqWeb(node);
                 break;
-            case BLAST:
-                blast(node);
-                break;
             case OPEN_TAX_WEB:
                 openTaxWeb(node);
-                break;
-            case OPEN_PDB_WEB:
-                openPdbWeb(node);
                 break;
             case CUT_SUBTREE:
                 cutSubtree(node);
@@ -1651,13 +1573,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private boolean inOvVirtualRectangle(final MouseEvent e) {
         return (inOvVirtualRectangle(e.getX(), e.getY()));
-    }
-
-    final private boolean isCanBlast(final PhylogenyNode node) {
-        if (!node.getNodeData().isHasSequence() && ForesterUtil.isEmpty(node.getName())) {
-            return false;
-        }
-        return Blast.isContainsQueryForBlast(node);
     }
 
     final private String isCanOpenSeqWeb(final PhylogenyNode node) {
@@ -2094,39 +2009,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else {
                     _node_popup_menu_items[i].setEnabled(false);
                 }
-            } else if (title.equals(Configuration.clickto_options[Configuration.open_pdb_web][0])) {
-                final List<Accession> accs = getPdbAccs(node);
-                _node_popup_menu_items[i] = new JMenuItem(title);
-                if (!ForesterUtil.isEmpty(accs)) {
-                    if (accs.size() == 1) {
-                        _node_popup_menu_items[i].setText(_node_popup_menu_items[i].getText() + " ["
-                                + TreePanelUtil.pdbAccToString(accs, 0) + "]");
-                        _node_popup_menu_items[i].setEnabled(true);
-                    } else if (accs.size() == 2) {
-                        _node_popup_menu_items[i].setText(_node_popup_menu_items[i].getText() + " ["
-                                + TreePanelUtil.pdbAccToString(accs, 0) + ", "
-                                + TreePanelUtil.pdbAccToString(accs, 1) + "]");
-                        _node_popup_menu_items[i].setEnabled(true);
-                    } else if (accs.size() == 3) {
-                        _node_popup_menu_items[i].setText(_node_popup_menu_items[i].getText() + " ["
-                                + TreePanelUtil.pdbAccToString(accs, 0) + ", "
-                                + TreePanelUtil.pdbAccToString(accs, 1) + ", "
-                                + TreePanelUtil.pdbAccToString(accs, 2) + "]");
-                        _node_popup_menu_items[i].setEnabled(true);
-                    } else {
-                        _node_popup_menu_items[i].setText(_node_popup_menu_items[i].getText() + " ["
-                                + TreePanelUtil.pdbAccToString(accs, 0) + ", "
-                                + TreePanelUtil.pdbAccToString(accs, 1) + ", "
-                                + TreePanelUtil.pdbAccToString(accs, 2) + ", + " + (accs.size() - 3) + " more]");
-                        _node_popup_menu_items[i].setEnabled(true);
-                    }
-                } else {
-                    _node_popup_menu_items[i].setEnabled(false);
-                }
             } else if (title.equals(Configuration.clickto_options[Configuration.open_tax_web][0])) {
                 _node_popup_menu_items[i].setEnabled(isCanOpenTaxWeb(node));
-            } else if (title.equals(Configuration.clickto_options[Configuration.blast][0])) {
-                _node_popup_menu_items[i].setEnabled(isCanBlast(node));
             } else if (title.equals(Configuration.clickto_options[Configuration.delete_subtree_or_node][0])) {
                 if (!getOptions().isEditable()) {
                     continue;
@@ -2312,30 +2196,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return TreePanelUtil.abbreviateScientificName(sn);
         }
         return sn;
-    }
-
-    final private void openPdbWeb(final PhylogenyNode node) {
-        final List<Accession> pdb_ids = getPdbAccs(node);
-        if (ForesterUtil.isEmpty(pdb_ids)) {
-            cannotOpenBrowserWarningMessage("PDB");
-            return;
-        }
-        final List<String> uri_strs = TreePanelUtil.createUrisForPdbWeb(node, pdb_ids, getConfiguration(), this);
-        if (!ForesterUtil.isEmpty(uri_strs)) {
-            for (final String uri_str : uri_strs) {
-                try {
-                    AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_seq");
-                } catch (final IOException e) {
-                    AptxUtil.showErrorMessage(this, e.toString());
-                    e.printStackTrace();
-                } catch (final URISyntaxException e) {
-                    AptxUtil.showErrorMessage(this, e.toString());
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            cannotOpenBrowserWarningMessage("PDB");
-        }
     }
 
     final private void openSeqWeb(final PhylogenyNode node) {
@@ -3172,51 +3032,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && node.getBranchData().isHasConfidences();
     }
 
-    final private void paintGainedAndLostCharacters(final Graphics2D g,
-                                                    final PhylogenyNode node,
-                                                    final String gained,
-                                                    final String lost) {
-        if (node.getParent() != null) {
-            final float parent_x = node.getParent().getXcoord();
-            final float x = node.getXcoord();
-            g.setFont(getTreeFontSet().getLargeFont());
-            g.setColor(getTreeColorSet().getGainedCharactersColor());
-            TreePanel.drawString(gained,
-                    parent_x + ((x - parent_x
-                            - getFontMetricsForLargeDefaultFont().stringWidth(gained)) / 2),
-                    (node.getYcoord() - getFontMetricsForLargeDefaultFont().getMaxDescent()),
-                    g);
-            g.setColor(getTreeColorSet().getLostCharactersColor());
-            TreePanel
-                    .drawString(lost,
-                            parent_x + ((x - parent_x - getFontMetricsForLargeDefaultFont().stringWidth(lost))
-                                    / 2),
-                            (node.getYcoord() + getFontMetricsForLargeDefaultFont().getMaxAscent()),
-                            g);
-        }
-    }
-
-    private void paintMolecularSequences(final Graphics2D g, final PhylogenyNode node, final boolean to_pdf) {
-        final RenderableMsaSequence rs = RenderableMsaSequence.createInstance(node.getNodeData().getSequence()
-                .getMolecularSequence(), node.getNodeData().getSequence().getType(), getConfiguration());
-        if (rs != null) {
-            final int default_height = 8;
-            final float y = getYdistance();
-            final int h = (y / 2) < default_height ? ForesterUtil.roundToInt(y * 2) : default_height;
-            rs.setRenderingHeight(h > 1 ? h : 1);
-            if (getControlPanel().isDrawPhylogram()) {
-                rs.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor()) + _length_of_longest_text),
-                        node.getYcoord() - (h / 2.0f),
-                        g,
-                        this,
-                        to_pdf);
-            } else {
-                rs.render(getPhylogeny().getFirstExternalNode().getXcoord()
-                        + _length_of_longest_text, node.getYcoord() - (h / 2.0f), g, this, to_pdf);
-            }
-        }
-    }
-
     /**
      * Draws the branch-support (confidence) symbol on the <i>middle of the branch</i> (support is a
      * branch property, not a node one -- matching where the confidence <i>value</i> text is drawn),
@@ -3647,54 +3462,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         final String sb_str = _sb.toString();
-        // GUILHEM_BEG ______________
-        if (_control_panel.isShowSequenceRelations() && node.getNodeData().isHasSequence()
-                && (_query_sequence != null)) {
-            x = paintSequenceRelation(g, node, x, half_box_size, pos_x, pos_y, sb_str);
-        }
-        // GUILHEM_END _____________
         if (sb_str.length() > 0) {
             TreePanel.drawString(sb_str, pos_x, pos_y, g);
         }
         if (_sb.length() > 0) {
             x += labelStringWidth(g, _sb.toString(), using_visual_font, is_in_found_nodes, to_pdf) + 5;
-        }
-        if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE)
-                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
-            if ((getControlPanel().isShowBinaryCharacters() || getControlPanel().isShowBinaryCharacterCounts())
-                    && node.getNodeData().isHasBinaryCharacters()) {
-                if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
-                    g.setColor(Color.BLACK);
-                } else {
-                    g.setColor(getTreeColorSet().getBinaryDomainCombinationsColor());
-                }
-                if (getControlPanel().isShowBinaryCharacters()) {
-                    TreePanel.drawString(
-                            node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringBuffer()
-                                    .toString(),
-                            node.getXcoord() + x + 1 + half_box_size,
-                            node.getYcoord() + (getFontMetricsForLargeDefaultFont().getAscent()
-                                    / down_shift_factor),
-                            g);
-                    paintGainedAndLostCharacters(g,
-                            node,
-                            node.getNodeData().getBinaryCharacters()
-                                    .getGainedCharactersAsStringBuffer().toString(),
-                            node.getNodeData().getBinaryCharacters()
-                                    .getLostCharactersAsStringBuffer().toString());
-                } else {
-                    TreePanel.drawString(" " + node.getNodeData().getBinaryCharacters().getPresentCount(),
-                            node.getXcoord() + x + 4 + half_box_size,
-                            node.getYcoord() + (getFontMetricsForLargeDefaultFont().getAscent()
-                                    / down_shift_factor),
-                            g);
-                    paintGainedAndLostCharacters(g,
-                            node,
-                            "+" + node.getNodeData().getBinaryCharacters().getGainedCount(),
-                            "-" + node.getNodeData().getBinaryCharacters().getLostCount());
-                }
-            }
         }
         return x;
     }
@@ -3702,9 +3474,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /**
      * Whether {@code node}'s label should use the publication-style placement: to the LEFT of the node,
      * right-aligned, on top of the incoming branch. Applies to non-root internal nodes (not collapsed)
-     * in the rectangular-family layouts when the option is on. Nodes that also show binary characters (a
-     * rare legacy feature positioned to the right of the node) keep the old right-placement so nothing
-     * is dropped.
+     * in the rectangular-family layouts when the option is on.
      */
     /** The exact taxonomy text the paint path would draw for {@code node} under the active taxonomy checkboxes
      *  (rank/code/scientific/common), trimmed -- the label basis for {@link TreePanelUtil#isDuplicateOfAncestorTaxon}
@@ -3727,17 +3497,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final PHYLOGENY_GRAPHICS_TYPE t = getPhylogenyGraphicsType();
         if ((t != PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR) && (t != PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE)
                 && (t != PHYLOGENY_GRAPHICS_TYPE.ROUNDED)) {
-            return false;
-        }
-        if ((getControlPanel().isShowBinaryCharacters() || getControlPanel().isShowBinaryCharacterCounts())
-                && node.getNodeData().isHasBinaryCharacters()) {
-            return false;
-        }
-        // Sequence relations (the query-sequence highlight / ortholog underline) are drawn to the RIGHT
-        // of the node by paintSequenceRelation; keep the old placement for such nodes so that rendering
-        // is not dropped -- same rationale as the binary-characters exclusion above.
-        if (getControlPanel().isShowSequenceRelations() && (_query_sequence != null)
-                && node.getNodeData().isHasSequence()) {
             return false;
         }
         return true;
@@ -3817,66 +3576,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return getFontMetricsForLargeDefaultFont().stringWidth(str);
         }
         return getFontMetrics(g.getFont()).stringWidth(str);
-    }
-
-    private final int paintSequenceRelation(final Graphics2D g,
-                                            final PhylogenyNode node,
-                                            int x,
-                                            final int half_box_size,
-                                            final float pos_x,
-                                            final float pos_y,
-                                            final String sb_str) {
-        int nodeTextBoundsWidth = 0;
-        if (sb_str.length() > 0) {
-            final Rectangle2D node_text_bounds = new TextLayout(sb_str, g.getFont(), _frc).getBounds(); //would like to remove this 'new', but how...
-            nodeTextBoundsWidth = (int) node_text_bounds.getWidth();
-        }
-        if (node.getNodeData().getSequence().equals(_query_sequence)) {
-            if (nodeTextBoundsWidth > 0) { // invert font color and background color to show that this is the query sequence
-                g.fillRect((int) pos_x - 1, (int) pos_y - 8, nodeTextBoundsWidth + 5, 11);
-                g.setColor(getTreeColorSet().getBackgroundColor());
-            }
-        } else {
-            final List<SequenceRelation> seqRelations = node.getNodeData().getSequence().getSequenceRelations();
-            for (final SequenceRelation seqRelation : seqRelations) {
-                final boolean fGotRelationWithQuery = (seqRelation.getRef0().isEqual(_query_sequence)
-                        || seqRelation.getRef1().isEqual(_query_sequence))
-                        && seqRelation.getType()
-                        .equals(getControlPanel().getSequenceRelationTypeBox().getSelectedItem());
-                if (fGotRelationWithQuery) { // we will underline the text to show that this sequence is ortholog to the query
-                    final double linePosX = node.getXcoord() + 2 + half_box_size;
-                    final String sConfidence = (!getControlPanel().isShowSequenceRelationConfidence()
-                            || (seqRelation.getConfidence() == null)) ? null
-                            : " (" + seqRelation.getConfidence().getValue() + ")";
-                    if (sConfidence != null) {
-                        float confidenceX = pos_x;
-                        if (sb_str.length() > 0) {
-                            confidenceX += new TextLayout(sb_str, g.getFont(), _frc).getBounds().getWidth()
-                                    + CONFIDENCE_LEFT_MARGIN;
-                        }
-                        if (confidenceX > linePosX) { // let's only display confidence value if we are already displaying at least one of Prot/Gene Name and Taxonomy Code
-                            final int confidenceWidth = (int) new TextLayout(sConfidence, g.getFont(), _frc)
-                                    .getBounds().getWidth();
-                            TreePanel.drawString(sConfidence, confidenceX, pos_y, g);
-                            x += CONFIDENCE_LEFT_MARGIN + confidenceWidth;
-                        }
-                    }
-                    if ((x + nodeTextBoundsWidth) > 0) /* we only underline if there is something displayed */ {
-                        if (nodeTextBoundsWidth == 0) {
-                            nodeTextBoundsWidth -= 3; /* the gap between taxonomy code and node name should not be underlined if nothing comes after it */
-                        } else {
-                            nodeTextBoundsWidth += 2;
-                        }
-                        g.drawLine((int) linePosX + 1,
-                                3 + (int) pos_y,
-                                (int) linePosX + x + nodeTextBoundsWidth,
-                                3 + (int) pos_y);
-                        break;
-                    }
-                }
-            }
-        }
-        return x;
     }
 
     private final void drawConnection(final float x1,
@@ -4298,11 +3997,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             paintNodeBox(node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file);
         }
-        if (!vertical && getControlPanel().isShowMolSequences() && (node.getNodeData().isHasSequence())
-                && (node.getNodeData().getSequence().isMolecularSequenceAligned())
-                && (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getMolecularSequence()))) {
-            paintMolecularSequences(g, node, to_pdf); // deferred in vertical orientation (increment 1)
-        }
         if (dynamically_hide && ((node.isExternal() && ((_external_node_index % dynamic_hiding_factor) != 1))
                 || (!node.isExternal() && ((new_x_min < 20)
                 || ((_y_distance * node.getNumberOfExternalNodes()) < getFontMetricsForLargeDefaultFont()
@@ -4327,15 +4021,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             () -> label_w[0] = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0));
                 }
                 // renderable domain architecture: a per-tip vertical bar just past the label (boxes ride R, no labels).
-                // The other renderable overlays (MSA, binary chars, vectors, sequence relations) stay deferred here.
                 paintDomainsVertical(g, node, label_w[0], to_pdf, to_graphics_file);
             } else {
                 // internal-node label: horizontal, right-aligned, LEFT of the branch midpoint. This path deliberately
-                // does NOT route through paintNodeData, so the other node-data overlays it draws are DEFERRED for
-                // internal nodes in a vertical orientation (increment 1): renderable domains, molecular sequences,
-                // binary characters / counts, and sequence relations. They each need the rotated-frame re-anchoring
-                // the tip labels get; niche for root-top/bottom (focused on internal LABELS, small trees). External
-                // nodes still draw them via the tilted paintNodeData path above.
+                // does NOT route through paintNodeData, so the renderable domain overlay it draws is DEFERRED for
+                // internal nodes in a vertical orientation (increment 1): it needs the rotated-frame re-anchoring the
+                // tip labels get; niche for root-top/bottom (focused on internal LABELS, small trees). External nodes
+                // still draw it via the tilted paintNodeData path above.
                 paintInternalLabelLeftVertical(g, node, to_pdf, to_graphics_file);
             }
         } else {
@@ -4484,30 +4176,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
-        if (getControlPanel().isShowVectorData() && (node.getNodeData().getVector() != null)
-                && (node.getNodeData().getVector().size() > 0) && (getStatisticsForExpressionValues() != null)) {
-            final RenderableVector rv = RenderableVector.createInstance(node.getNodeData().getVector(),
-                    getStatisticsForExpressionValues(),
-                    getConfiguration());
-            if (rv != null) {
-                double domain_add = 0;
-                if (getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
-                        && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
-                    domain_add = _domain_structure_width + 10;
-                }
-                if (getControlPanel().isDrawPhylogram()) {
-                    rv.render((float) (node.getXcoord() + x + domain_add), node.getYcoord() - 3, g, this, to_pdf);
-                } else {
-                    rv.render((float) (getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text
-                            + domain_add), node.getYcoord() - 3, g, this, to_pdf);
-                }
-            }
-        }
-        //if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
-        //        && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
-        //        && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
-        //   paintMolecularSequences( g, node, to_pdf );
-        //}
     }
 
     final private void paintOvRectangle(final Graphics2D g) {
@@ -6142,17 +5810,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             start_y = node.getYcoord()
                     + (getFontMetrics(g.getFont()).getAscent() / (node.getNumberOfDescendants() == 1 ? 1 : 3.0f));
         }
-        /* GUILHEM_BEG */
-        if (_control_panel.isShowSequenceRelations() && (node.getNodeData().isHasSequence())
-                && node.getNodeData().getSequence().equals(_query_sequence)) {
-            // invert font color and background color to show that this is the query sequence
-            final int label_w = taxonomyLabel(g, taxonomy, start_x, start_y, to_pdf, false);
-            if (label_w > 0) {
-                g.fillRect((int) start_x - 1, (int) start_y - 8, label_w + 4, 11);
-                g.setColor(getTreeColorSet().getBackgroundColor());
-            }
-        }
-        /* GUILHEM_END */
         return taxonomyLabel(g, taxonomy, start_x, start_y, to_pdf, true);
     }
 
@@ -6217,7 +5874,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * scientific name's right overhang overlap the following node name). NOTE this abutment holds only when the two
      * segments pass the same base_x: for a collapsed node in aligned-phylogram mode the taxonomy uses the node's x
      * while the node data uses the aligned right margin (pre-existing), so they do not abut there. Shared by the
-     * taxonomy and node-data segments; other label bits (e.g. paintSequenceRelation) still position independently.
+     * taxonomy and node-data segments.
      */
     static float labelSegmentStartX(final float base_x, final int half_box_size, final float prior_width) {
         return base_x + half_box_size + LABEL_GAP_AFTER_NODE_SHAPE + prior_width;
@@ -7098,7 +6755,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
         }
-        // When "Show External Data" is off, no external-node labels/domains/vectors/etc. are drawn (see the
+        // When "Show External Data" is off, no external-node labels/domains are drawn (see the
         // isShowExternalData guards in paintNodeData), so reserve ZERO width for them -- otherwise fit-to-window ("F")
         // and fit-width ("W") leave a large empty right margin where the (undrawn) labels would have gone. This is the
         // single source of the label-reach reservation (depthLabelReserve/breadthLabelReserve, the radial label reach,
@@ -7120,7 +6777,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         int longest = 30;
         int longest_txt = 0;
-        int longest_text_only = 0; // text label (name + taxonomy) width, WITHOUT the domain/vector track widths
+        int longest_text_only = 0; // text label (name + taxonomy) width, WITHOUT the domain track width
         _longest_domain = 0;
         _longest_rendered_domain = 0;
         PhylogenyNode longest_txt_node = _phylogeny.getFirstExternalNode();
@@ -7161,19 +6818,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sum = Math.min(sum, radialMaxLabelWidth());
             }
             if (sum > longest_text_only) {
-                longest_text_only = sum; // capture BEFORE the domain/vector/binary track widths are added
-            }
-            if (getControlPanel().isShowBinaryCharacters() && node.getNodeData().isHasBinaryCharacters()) {
-                sum += getFontMetricsForLargeDefaultFont().stringWidth(node.getNodeData().getBinaryCharacters()
-                        .getGainedCharactersAsStringBuffer().toString());
-            }
-            if (getControlPanel().isShowVectorData() && (node.getNodeData().getVector() != null)
-                    && (node.getNodeData().getVector().size() > 0)) {
-                if (getConfiguration() != null) {
-                    sum += getConfiguration().getVectorDataWidth() + 10;
-                } else {
-                    sum += RenderableVector.VECTOR_DEFAULT_WIDTH + 10;
-                }
+                longest_text_only = sum; // capture BEFORE the domain track width is added
             }
             if (getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
                     && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
@@ -7189,12 +6834,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (rendered > _longest_rendered_domain) {
                     _longest_rendered_domain = rendered;
                 }
-            }
-            if (getControlPanel().isShowMolSequences() && (node.getNodeData().isHasSequence())
-                    && (node.getNodeData().getSequence().isMolecularSequenceAligned())
-                    && (!ForesterUtil.isEmpty(node.getNodeData().getSequence().getMolecularSequence()))) {
-                // FIXME
-                sum += RenderableMsaSequence.DEFAULT_WIDTH + 30;
             }
             if (sum >= max_possible_length) {
                 _longest_ext_node_info = max_possible_length;
@@ -10683,7 +10322,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * The x just past the end of the longest currently shown tip label (all text fields plus any aligned
-     * domain/vector/MSA columns, via {@link #getLongestExtNodeInfo()}). Mirrors the tree's own label-end
+     * domain track, via {@link #getLongestExtNodeInfo()}). Mirrors the tree's own label-end
      * logic: in a phylogram labels start at each tip's own x, so the rightmost label ends past the DEEPEST
      * tip; in an aligned/cladogram view all tips share one x. When external labels are hidden ("Show External
      * Data" off) they occupy no width, so annotations sit right after the tips.
@@ -11231,10 +10870,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final double getStartingAngle() {
         return _urt_starting_angle;
-    }
-
-    DescriptiveStatistics getStatisticsForExpressionValues() {
-        return _statistics_for_vector_data;
     }
 
     final File getTreeFile() {
@@ -11964,9 +11599,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!to_pdf && !to_graphics_file) {
             _found_halo_bounds.clear();
             _has_visible_found_halo = false;
-        }
-        if (_control_panel.isShowSequenceRelations()) {
-            _query_sequence = _control_panel.getSelectedQuerySequence();
         }
         // Color the background
         if (!to_pdf) {
@@ -12966,10 +12598,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setStartingAngle(final double starting_angle) {
         _urt_starting_angle = starting_angle;
-    }
-
-    void setStatisticsForExpressionValues(final DescriptiveStatistics statistics_for_expression_values) {
-        _statistics_for_vector_data = statistics_for_expression_values;
     }
 
     final void setTextAntialias() {

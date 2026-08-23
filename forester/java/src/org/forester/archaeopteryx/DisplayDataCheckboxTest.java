@@ -65,7 +65,6 @@ public final class DisplayDataCheckboxTest {
                 check( ok, cp, Configuration.show_seq_names, false, "Seq Name (no sequences)" );
                 check( ok, cp, Configuration.show_gene_names, false, "Gene Name (no sequences)" );
                 check( ok, cp, Configuration.show_domain_architectures, false, "Domain Architectures" );
-                check( ok, cp, Configuration.show_vector_data, false, "Vector Data" );
                 check( ok, cp, Configuration.show_taxonomy_common_names, false, "Taxonomy Common" );
                 // now add a sequence name to a leaf; after a refresh the Seq Name checkbox must appear
                 final PhylogenyNode leaf = phy.getFirstExternalNode();

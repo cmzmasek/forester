@@ -36,13 +36,9 @@ import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import javax.swing.undo.UndoManager;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,7 +59,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -72,9 +67,6 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Sequence;
-import org.forester.phylogeny.data.SequenceRelation;
-import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
@@ -82,14 +74,12 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     enum NodeClickAction {
         ADD_NEW_NODE,
-        BLAST,
         COLLAPSE,
         COLOR_SUBTREE,
         COPY_SUBTREE,
         CUT_SUBTREE,
         DELETE_NODE_OR_SUBTREE,
         EDIT_NODE_DATA,
-        OPEN_PDB_WEB,
         OPEN_SEQ_WEB,
         OPEN_TAX_WEB,
         PASTE_SUBTREE,
@@ -135,7 +125,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private NodeClickAction _action_when_node_clicked;
     private int _add_new_node_item;
     private Map<Integer, String> _all_click_to_names;
-    private int _blast_item;
     private JComboBox<String> _click_to_combobox;
     private JLabel _click_to_label;
     private List<String> _click_to_names;
@@ -179,7 +168,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _incr_domain_structure_evalue_thr;
     private final MainPanel _mainpanel;
     private JCheckBox _node_desc_popup_cb;
-    private int _open_pdb_item;
     private int _open_seq_web_item;
     private int _open_tax_web_item;
     private int _node_style_item;
@@ -200,15 +188,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JLabel _search_nav_label;    // "k / N"
     private JPanel _search_nav_panel;    // whole row; hidden while there are no hits
     private int _select_nodes_item;
-    private Sequence _selected_query_seq;
-    private JCheckBox _seq_relation_confidence_switch;
-    private JComboBox<SEQUENCE_RELATION_TYPE> _sequence_relation_type_box;
-    private JCheckBox _show_binary_character_counts;
-    private JCheckBox _show_binary_characters;
     // Indices for the click-to options in the combo box
     private int _show_data_item;
     private JCheckBox _show_domain_architectures;
-    private JCheckBox _show_mol_seqs;
     private JCheckBox _write_branch_length_values;
     private JCheckBox _show_events;
     private JCheckBox _show_gene_names;
@@ -218,12 +200,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _show_seq_names;
     private JCheckBox _show_seq_symbols;
     private JCheckBox _show_sequence_acc;
-    private JComboBox<String> _show_sequence_relations;
     private JCheckBox _show_taxo_code;
     private JCheckBox _show_taxo_rank;
     private JCheckBox _show_taxo_common_names;
     private JCheckBox _show_taxo_scientific_names;
-    private JCheckBox _show_vector_data_cb;
     private JButton _show_whole;
     private JButton _expand_y;
     private JButton _fit_width;
@@ -259,9 +239,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             Configuration.show_taxonomy_common_names, Configuration.show_tax_rank, Configuration.show_seq_names,
             Configuration.show_gene_names, Configuration.show_seq_symbols, Configuration.show_sequence_acc,
             Configuration.write_confidence_values, Configuration.write_branch_length_values,
-            Configuration.write_events, Configuration.show_binary_characters,
-            Configuration.show_binary_character_counts, Configuration.show_domain_architectures,
-            Configuration.show_vector_data, Configuration.show_properties, Configuration.use_style,
+            Configuration.write_events, Configuration.show_domain_architectures,
+            Configuration.show_properties, Configuration.use_style,
             Configuration.width_branches, Configuration.shorten_labels };
 
     ControlPanel(final MainPanel ap, final Configuration configuration) {
@@ -359,16 +338,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             } else if (e.getSource() == _click_to_combobox) {
                 setClickToAction(_click_to_combobox.getSelectedIndex());
                 getCurrentTreePanel().repaint();
-            } else if (e.getSource() == _show_binary_characters) {
-                if ((_show_binary_character_counts != null) && _show_binary_characters.isSelected()) {
-                    _show_binary_character_counts.setSelected(false);
-                }
-                displayedPhylogenyMightHaveChanged(true);
-            } else if (e.getSource() == _show_binary_character_counts) {
-                if ((_show_binary_characters != null) && _show_binary_character_counts.isSelected()) {
-                    _show_binary_characters.setSelected(false);
-                }
-                displayedPhylogenyMightHaveChanged(true);
             } else if (e.getSource() == _show_domain_architectures) {
                 reRunSearches();
                 // When the user switches domains ON, re-fit the (now wider) tree horizontally so the
@@ -548,47 +517,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _node_desc_popup_cb;
     }
 
-    public Sequence getSelectedQuerySequence() {
-        return _selected_query_seq;
-    }
-
-    public JComboBox<String> getSequenceRelationBox() {
-        if (_show_sequence_relations == null) {
-            _show_sequence_relations = new JComboBox<String>();
-            _show_sequence_relations.setFocusable(false);
-            _show_sequence_relations.setMaximumRowCount(20);
-            _show_sequence_relations.setFont(ControlPanel.js_font);
-            if (_configuration.isApplyCustomGuiColors()) {
-                _show_sequence_relations.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-                _show_sequence_relations.setForeground(getConfiguration().getGuiButtonTextColor());
-            }
-            _show_sequence_relations.addItem("-----");
-            _show_sequence_relations.setToolTipText("To display orthology information for selected query");
-        }
-        return _show_sequence_relations;
-    }
-
-    /* GUILHEM_BEG */
-    public JComboBox<SEQUENCE_RELATION_TYPE> getSequenceRelationTypeBox() {
-        if (_sequence_relation_type_box == null) {
-            _sequence_relation_type_box = new JComboBox<SEQUENCE_RELATION_TYPE>();
-            for (final SequenceRelation.SEQUENCE_RELATION_TYPE type : SequenceRelation.SEQUENCE_RELATION_TYPE
-                    .values()) {
-                _sequence_relation_type_box.addItem(type);
-            }
-            _sequence_relation_type_box.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(final ActionEvent e) {
-                    if (_mainpanel.getCurrentPhylogeny() != null) {
-                        setSequenceRelationQueries(getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries());
-                    }
-                }
-            });
-        }
-        return _sequence_relation_type_box;
-    }
-
     public JCheckBox getShowEventsCb() {
         return _show_events;
     }
@@ -601,63 +529,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _write_confidence;
     }
 
-    public boolean isShowMolSequences() {
-        return ((_show_mol_seqs != null) && _show_mol_seqs.isSelected());
-    }
-
     public boolean isShowProperties() {
         return ((_show_properties_cb != null) && _show_properties_cb.isSelected());
-    }
-
-
-    public boolean isShowVectorData() {
-        return ((_show_vector_data_cb != null) && _show_vector_data_cb.isSelected());
-    }
-
-    public void setSequenceRelationQueries(final Collection<Sequence> sequenceRelationQueries) {
-        final JComboBox<String> box = getSequenceRelationBox();
-        while (box.getItemCount() > 1) {
-            box.removeItemAt(1);
-        }
-        final HashMap<String, Sequence> sequencesByName = new HashMap<String, Sequence>();
-        final SequenceRelation.SEQUENCE_RELATION_TYPE relationType = (SequenceRelation.SEQUENCE_RELATION_TYPE) _sequence_relation_type_box
-                .getSelectedItem();
-        if (relationType == null) {
-            return;
-        }
-        final ArrayList<String> sequenceNamesToAdd = new ArrayList<String>();
-        for (final Sequence seq : sequenceRelationQueries) {
-            if (seq.isHasSequenceRelations()) {
-                boolean fFoundForCurrentType = false;
-                for (final SequenceRelation sq : seq.getSequenceRelations()) {
-                    if (sq.getType().equals(relationType)) {
-                        fFoundForCurrentType = true;
-                        break;
-                    }
-                }
-                if (fFoundForCurrentType) {
-                    sequenceNamesToAdd.add(seq.getName());
-                    sequencesByName.put(seq.getName(), seq);
-                }
-            }
-        }
-        // sort sequences by name before adding them to the combo
-        final String[] sequenceNameArray = sequenceNamesToAdd.toArray(new String[sequenceNamesToAdd.size()]);
-        Arrays.sort(sequenceNameArray, String.CASE_INSENSITIVE_ORDER);
-        for (final String seqName : sequenceNameArray) {
-            box.addItem(seqName);
-        }
-        for (final ItemListener oldItemListener : box.getItemListeners()) {
-            box.removeItemListener(oldItemListener);
-        }
-        box.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(final ItemEvent e) {
-                _selected_query_seq = sequencesByName.get(e.getItem());
-                _mainpanel.getCurrentTreePanel().repaint();
-            }
-        });
     }
 
     private void addClickToOption(final int which, final String title) {
@@ -670,56 +543,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    /* GUILHEM_BEG */
-    private void addSequenceRelationBlock() {
-        final JLabel spacer = new JLabel("");
-        spacer.setSize(1, 1);
-        add(spacer);
-        final JLabel mainLabel = new JLabel("Sequence relations to display");
-        final JLabel typeLabel = customizeLabel(new JLabel("(type) "), getConfiguration());
-        typeLabel.setFont(ControlPanel.js_font.deriveFont(7));
-        getSequenceRelationTypeBox().setFocusable(false);
-        _sequence_relation_type_box.setFont(ControlPanel.js_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            _sequence_relation_type_box.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-            _sequence_relation_type_box.setForeground(getConfiguration().getGuiButtonTextColor());
-        }
-        _sequence_relation_type_box.setRenderer(new ListCellRenderer<Object>() {
-
-            @Override
-            public Component getListCellRendererComponent(final JList<?> list,
-                                                          final Object value,
-                                                          final int index,
-                                                          final boolean isSelected,
-                                                          final boolean cellHasFocus) {
-                final Component component = new DefaultListCellRenderer()
-                        .getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if ((value != null) && (value instanceof SequenceRelation.SEQUENCE_RELATION_TYPE)) {
-                    ((DefaultListCellRenderer) component).setText(SequenceRelation
-                            .getPrintableNameByType((SequenceRelation.SEQUENCE_RELATION_TYPE) value));
-                }
-                return component;
-            }
-        });
-        final GridBagLayout gbl = new GridBagLayout();
-        _sequence_relation_type_box.setMinimumSize(new Dimension(115, 17));
-        _sequence_relation_type_box.setPreferredSize(new Dimension(115, 20));
-        final JPanel horizGrid = new JPanel(gbl);
-        horizGrid.setBackground(getBackground());
-        horizGrid.add(typeLabel);
-        horizGrid.add(_sequence_relation_type_box);
-        add(customizeLabel(mainLabel, getConfiguration()));
-        add(horizGrid);
-        add(getSequenceRelationBox());
-        if (_configuration.doDisplayOption(Configuration.show_relation_confidence)) {
-            addCheckbox(Configuration.show_relation_confidence,
-                    _configuration.getDisplayTitle(Configuration.show_relation_confidence));
-            setCheckbox(Configuration.show_relation_confidence,
-                    _configuration.doCheckOption(Configuration.show_relation_confidence));
-        }
-    }// addSequenceRelationBlock
-
-    /* GUILHEM_END */
     private List<Options.PHYLOGENY_DISPLAY_TYPE> getTreeDisplayTypes() {
         return _tree_display_types;
     }
@@ -1023,28 +846,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
-        if (_configuration.doDisplayClickToOption(Configuration.open_pdb_web)) {
-            _open_pdb_item = cb_index;
-            addClickToOption(Configuration.open_pdb_web,
-                    _configuration.getClickToTitle(Configuration.open_pdb_web));
-            if (default_option == Configuration.open_pdb_web) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
         if (_configuration.doDisplayClickToOption(Configuration.open_tax_web)) {
             _open_tax_web_item = cb_index;
             addClickToOption(Configuration.open_tax_web,
                     _configuration.getClickToTitle(Configuration.open_tax_web));
             if (default_option == Configuration.open_tax_web) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if (_configuration.doDisplayClickToOption(Configuration.blast)) {
-            _blast_item = cb_index;
-            addClickToOption(Configuration.blast, _configuration.getClickToTitle(Configuration.blast));
-            if (default_option == Configuration.blast) {
                 selected_index = cb_index;
             }
             cb_index++;
@@ -1144,13 +950,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         addDisplayCheckbox(Configuration.show_sequence_acc);
         addDisplayCheckbox(Configuration.write_confidence_values);
         addDisplayCheckbox(Configuration.write_branch_length_values);
-        addDisplayCheckbox(Configuration.show_binary_characters);
-        addDisplayCheckbox(Configuration.show_binary_character_counts);
         addDisplayCheckbox(Configuration.show_domain_architectures);
-        // NB: "Multiple Seq Alignment" (show_mol_seqs) is deliberately NOT built — there is currently no
-        // MSA viewer, so the checkbox would only mislead. Re-add here if/when one exists.
         addDisplayCheckbox(Configuration.write_events);
-        addDisplayCheckbox(Configuration.show_vector_data);
         addDisplayCheckbox(Configuration.show_properties);
         // Data-dependent checkboxes start hidden; the first scan of the loaded tree reveals only the
         // ones whose data is actually present (Node Name is intentionally always shown).
@@ -1443,16 +1244,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox(_show_taxo_rank, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_binary_characters:
-                _show_binary_characters = new JCheckBox(title);
-                addJCheckBox(_show_binary_characters, ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.show_binary_character_counts:
-                _show_binary_character_counts = new JCheckBox(title);
-                addJCheckBox(_show_binary_character_counts, ch_panel);
-                add(ch_panel);
-                break;
             case Configuration.write_confidence_values:
                 _write_confidence = new JCheckBox(title);
                 addJCheckBox(getWriteConfidenceCb(), ch_panel);
@@ -1486,11 +1277,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox(_show_domain_architectures, ch_panel);
                 add(ch_panel);
                 break;
-            case Configuration.show_mol_seqs:
-                _show_mol_seqs = new JCheckBox(title);
-                addJCheckBox(_show_mol_seqs, ch_panel);
-                add(ch_panel);
-                break;
             case Configuration.show_seq_names:
                 _show_seq_names = new JCheckBox(title);
                 addJCheckBox(_show_seq_names, ch_panel);
@@ -1521,16 +1307,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _node_desc_popup_cb = new JCheckBox(title);
                 getNodeDescPopupCb().setToolTipText("To enable mouse rollover display of basic node data");
                 addJCheckBox(getNodeDescPopupCb(), ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.show_relation_confidence:
-                _seq_relation_confidence_switch = new JCheckBox(title);
-                addJCheckBox(_seq_relation_confidence_switch, ch_panel);
-                add(ch_panel);
-                break;
-            case Configuration.show_vector_data:
-                _show_vector_data_cb = new JCheckBox(title);
-                addJCheckBox(_show_vector_data_cb, ch_panel);
                 add(ch_panel);
                 break;
             case Configuration.show_properties:
@@ -1834,14 +1610,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((getNodeDescPopupCb() != null) && getNodeDescPopupCb().isSelected());
     }
 
-    boolean isShowBinaryCharacterCounts() {
-        return ((_show_binary_character_counts != null) && _show_binary_character_counts.isSelected());
-    }
-
-    boolean isShowBinaryCharacters() {
-        return ((_show_binary_characters != null) && _show_binary_characters.isSelected());
-    }
-
     boolean isShowConfidenceValues() {
         return ((getWriteConfidenceCb() != null) && getWriteConfidenceCb().isSelected());
     }
@@ -1947,14 +1715,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowSequenceAcc() {
         return ((_show_sequence_acc != null) && _show_sequence_acc.isSelected());
-    }
-
-    boolean isShowSequenceRelationConfidence() {
-        return ((_seq_relation_confidence_switch != null) && (_seq_relation_confidence_switch.isSelected()));
-    }
-
-    boolean isShowSequenceRelations() {
-        return ((_show_sequence_relations != null) && (_show_sequence_relations.getSelectedIndex() > 0));
     }
 
     boolean isShowTaxonomyCode() {
@@ -2268,16 +2028,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _show_taxo_rank.setSelected(state);
                 }
                 break;
-            case Configuration.show_binary_characters:
-                if (_show_binary_characters != null) {
-                    _show_binary_characters.setSelected(state);
-                }
-                break;
-            case Configuration.show_binary_character_counts:
-                if (_show_binary_character_counts != null) {
-                    _show_binary_character_counts.setSelected(state);
-                }
-                break;
             case Configuration.write_confidence_values:
                 if (getWriteConfidenceCb() != null) {
                     getWriteConfidenceCb().setSelected(state);
@@ -2308,11 +2058,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _write_branch_length_values.setSelected(state);
                 }
                 break;
-            case Configuration.show_mol_seqs:
-                if (_show_mol_seqs != null) {
-                    _show_mol_seqs.setSelected(state);
-                }
-                break;
             case Configuration.show_seq_names:
                 if (_show_seq_names != null) {
                     _show_seq_names.setSelected(state);
@@ -2326,11 +2071,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_seq_symbols:
                 if (_show_seq_symbols != null) {
                     _show_seq_symbols.setSelected(state);
-                }
-                break;
-            case Configuration.show_vector_data:
-                if (_show_vector_data_cb != null) {
-                    _show_vector_data_cb.setSelected(state);
                 }
                 break;
             case Configuration.show_properties:
@@ -2353,13 +2093,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     getNodeDescPopupCb().setSelected(state);
                 }
                 break;
-            /* GUILHEM_BEG */
-            case Configuration.show_relation_confidence:
-                if (_seq_relation_confidence_switch != null) {
-                    _seq_relation_confidence_switch.setSelected(state);
-                }
-                break;
-            /* GUILHEM_END */
             default:
                 throw new AssertionError("unknown checkbox: " + which);
         }
@@ -2393,8 +2126,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked(NodeClickAction.OPEN_SEQ_WEB);
         } else if (action == _sort_descendents_item) {
             setActionWhenNodeClicked(NodeClickAction.SORT_DESCENDENTS);
-        } else if (action == _blast_item) {
-            setActionWhenNodeClicked(NodeClickAction.BLAST);
         } else if (action == _open_tax_web_item) {
             setActionWhenNodeClicked(NodeClickAction.OPEN_TAX_WEB);
         } else if (action == _cut_subtree_item) {
@@ -2411,8 +2142,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked(NodeClickAction.EDIT_NODE_DATA);
         } else if (action == _select_nodes_item) {
             setActionWhenNodeClicked(NodeClickAction.SELECT_NODES);
-        } else if (action == _open_pdb_item) {
-            setActionWhenNodeClicked(NodeClickAction.OPEN_PDB_WEB);
         } else if (action == _node_style_item) {
             setActionWhenNodeClicked(NodeClickAction.NODE_STYLE);
         } else if (action == _uncollapse_all_cb_item) {
@@ -2795,12 +2524,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupAncestralPieProperty();
         setupBranchLengthsControl();
         setupDisplayCheckboxes();
-        /* GUILHEM_BEG */
-        // The sequence relation query selection combo-box
-        if (_configuration.displaySequenceRelations()) {
-            addSequenceRelationBlock();
-        }
-        /* GUILHEM_END */
         // Click-to options
         nextRowGap(SECTION_GAP);
         startClickToOptions();
@@ -4112,14 +3835,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             if (getMainPanel().getMainFrame() != null) {
                 getMainPanel().getMainFrame().updateEditMenu(); // undo history is per-tab
             }
-            getSequenceRelationTypeBox().removeAllItems();
-            for (final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
-                    .getRelevantSequenceRelationTypes()) {
-                _sequence_relation_type_box.addItem(type);
-            }
             getMainPanel().getCurrentTreePanel().repaint();
-            //setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
-            // according to GUILHEM the line above can be removed.
         }
         else if (getMainPanel().getMainFrame() != null) {
             getMainPanel().getMainFrame().updateEditMenu(); // last tab closed -> disable Undo/Redo

@@ -37,6 +37,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
@@ -544,6 +545,10 @@ public final class AptxUtilTest {
             props.addProperty(new Property("aptx:test", "1", "", "xsd:string", Property.AppliesTo.NODE));
             leaf.getNodeData().setProperties(props);
             leaf.getNodeData().setVector(Arrays.asList(1.0, 2.0, 3.0));
+            // Binary characters + a vector + a molecular sequence are all present on the rich node so the
+            // "must be absent" checks below have TEETH: if a removed scan branch for any of those retired
+            // features were re-introduced, the flag would appear and both the size and absence checks would trip.
+            leaf.getNodeData().setBinaryCharacters(new BinaryCharacters());
             rr.addAsChild(leaf);
             rr.addAsChild(new PhylogenyNode());
             rich.setRoot(rr);
@@ -554,7 +559,7 @@ public final class AptxUtilTest {
                     Configuration.write_events, Configuration.show_taxonomy_scientific_names,
                     Configuration.show_taxonomy_common_names, Configuration.show_tax_code, Configuration.show_tax_rank,
                     Configuration.show_seq_names, Configuration.show_gene_names, Configuration.show_sequence_acc,
-                    Configuration.show_properties, Configuration.show_vector_data };
+                    Configuration.show_properties };
             for (final int which : expected) {
                 if (!s.contains(which)) {
                     return false;
@@ -566,10 +571,12 @@ public final class AptxUtilTest {
                 return false;
             }
             // spot-check a few that must be absent (subsumed by the size check, kept for intent).
-            // show_mol_seqs in particular must NOT be reported even though the rich node HAS a molecular
-            // sequence: there is no MSA viewer, so that checkbox is deliberately never built/scanned.
+            // The rich node HAS a molecular sequence AND a vector, yet show_mol_seqs / show_vector_data /
+            // show_binary_characters must NOT be reported: those display features were removed, so their
+            // (retired) constants are never built or scanned.
             if (s.contains(Configuration.show_domain_architectures) || s.contains(Configuration.show_seq_symbols)
-                    || s.contains(Configuration.show_binary_characters) || s.contains(Configuration.show_mol_seqs)) {
+                    || s.contains(Configuration.show_binary_characters) || s.contains(Configuration.show_mol_seqs)
+                    || s.contains(Configuration.show_vector_data)) {
                 return false;
             }
             // regression (renderer match): a legitimate zero-length branch and a source-only accession

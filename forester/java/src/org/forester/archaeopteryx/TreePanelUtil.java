@@ -42,7 +42,6 @@ import javax.swing.JOptionPane;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
@@ -186,21 +185,6 @@ public class TreePanelUtil {
             }
         }
         return uri_str;
-    }
-
-    public static List<String> createUrisForPdbWeb( final PhylogenyNode node,
-                                                    final List<Accession> pdb_accs,
-                                                    final Configuration configuration,
-                                                    final TreePanel treePanel ) {
-        final List<String> uris = new ArrayList<String>();
-        if ( !ForesterUtil.isEmpty( pdb_accs ) ) {
-            for( final Accession pdb_acc : pdb_accs ) {
-                if ( !ForesterUtil.isEmpty( pdb_acc.getValue() ) ) {
-                    uris.add( ForesterUtil.PDB + pdb_acc.getValue() );
-                }
-            }
-        }
-        return uris;
     }
 
     final public static void showInformationMessage( final Component parent, final String title, final String msg ) {
@@ -1732,13 +1716,6 @@ public class TreePanelUtil {
         return ( ( tax.getIdentifier() == null ) && ForesterUtil.isEmpty( tax.getTaxonomyCode() )
                 && ForesterUtil.isEmpty( tax.getCommonName() ) && ForesterUtil.isEmpty( tax.getScientificName() )
                 && tax.getSynonyms().isEmpty() );
-    }
-
-    final static String pdbAccToString( final List<Accession> accs, final int i ) {
-        if ( ForesterUtil.isEmpty( accs.get( i ).getComment() ) ) {
-            return accs.get( i ).getValue();
-        }
-        return accs.get( i ).getValue() + " (" + accs.get( i ).getComment().toLowerCase() + ")";
     }
 
     final static Phylogeny subTree( final PhylogenyNode new_root, final Phylogeny source_phy ) {

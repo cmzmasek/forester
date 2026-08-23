@@ -56,12 +56,21 @@ public final class ConfigurationTest {
         if ( !"Colorize Subtree(s)".equals( c.getClickToTitle( Configuration.color_subtree ) ) ) {
             return false;
         }
+        // constants after the removed "Open PDB"/"Launch BLAST" rows must still address the right row
+        if ( !"Open Taxonomy DB".equals( c.getClickToTitle( Configuration.open_tax_web ) ) ) {
+            return false;
+        }
+        if ( !"Cut Subtree".equals( c.getClickToTitle( Configuration.cut_subtree ) ) ) {
+            return false;
+        }
         if ( !"Order Subtree".equals( c.getClickToTitle( Configuration.order_subtree ) ) ) {
             return false;
         }
-        // the removed "Change Node Font(s)" and "List Node Data" options must no longer appear in the table
+        // the removed "Change Node Font(s)", "List Node Data", "Launch BLAST" and "Open PDB" options
+        // must no longer appear in the table
         for ( final String[] option : Configuration.clickto_options ) {
-            if ( "Change Node Font(s)".equals( option[ 0 ] ) || "List Node Data".equals( option[ 0 ] ) ) {
+            if ( "Change Node Font(s)".equals( option[ 0 ] ) || "List Node Data".equals( option[ 0 ] )
+                    || "Launch BLAST".equals( option[ 0 ] ) || "Open PDB".equals( option[ 0 ] ) ) {
                 return false;
             }
         }
