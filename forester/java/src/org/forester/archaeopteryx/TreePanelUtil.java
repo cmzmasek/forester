@@ -498,6 +498,33 @@ public class TreePanelUtil {
         return Math.max( min, Math.min( ForesterUtil.roundToInt( row_spacing ), max ) );
     }
 
+    /**
+     * Trim {@code s} (binary search) so it renders within {@code max_px} pixels in {@code fm}, appending an ellipsis;
+     * returns the whole string if it already fits, "" if not even the ellipsis fits, and s for null/empty. Used to
+     * truncate radial (circular/unrooted) tip labels so tree + labels + domains stay on-canvas. Pure.
+     */
+    final static String truncateToPixelWidth( final java.awt.FontMetrics fm, final String s, final int max_px ) {
+        if ( ( s == null ) || ( s.length() == 0 ) || ( fm.stringWidth( s ) <= max_px ) ) {
+            return s;
+        }
+        final String ell = "…";
+        final int ell_w = fm.stringWidth( ell );
+        if ( max_px <= ell_w ) {
+            return "";
+        }
+        int lo = 0, hi = s.length();
+        while ( lo < hi ) {
+            final int mid = ( lo + hi + 1 ) / 2;
+            if ( ( fm.stringWidth( s.substring( 0, mid ) ) + ell_w ) <= max_px ) {
+                lo = mid;
+            }
+            else {
+                hi = mid - 1;
+            }
+        }
+        return s.substring( 0, lo ) + ell;
+    }
+
     final static double spindleHalfHeightAt( final double p, final double lo, final double hi, final double peak,
                                              final double h_max ) {
         if ( ( hi <= lo ) || ( h_max <= 0 ) ) {
@@ -562,6 +589,32 @@ public class TreePanelUtil {
         final float cx = ( parent_x + node_x ) / 2.0f;
         final float cy = radial ? ( ( parent_y + node_y ) / 2.0f ) : node_y;
         return new float[] { cx, cy };
+    }
+
+    /**
+     * The support-symbol centre for a CIRCULAR layout: the branch to a node is drawn as a RADIAL leg along the node's
+     * own spoke (from the node's radius inward to the parent's radius) plus an arc, so the straight-line
+     * (Cartesian) midpoint of node and parent lies OFF the branch. This puts the symbol on the node's spoke at the
+     * mid-radius between node and parent -- i.e. the midpoint of the radial leg -- where the branch actually is.
+     * {@code (root_x, root_y)} is the ring centre (the circular layout places the root there). Pure.
+     */
+    final static float[] circularSupportSymbolCenter( final float root_x,
+                                                      final float root_y,
+                                                      final float node_x,
+                                                      final float node_y,
+                                                      final float parent_x,
+                                                      final float parent_y ) {
+        final double dnx = node_x - root_x;
+        final double dny = node_y - root_y;
+        final double r_node = Math.sqrt( ( dnx * dnx ) + ( dny * dny ) );
+        if ( r_node <= 0.0 ) {
+            return new float[] { node_x, node_y }; // node sits at the centre (no spoke to place it on)
+        }
+        final double r_parent = Math.sqrt( ( ( parent_x - root_x ) * ( parent_x - root_x ) )
+                + ( ( parent_y - root_y ) * ( parent_y - root_y ) ) );
+        final double mid_r = ( r_node + r_parent ) / 2.0;
+        return new float[] { (float) ( root_x + ( ( dnx / r_node ) * mid_r ) ),
+                             (float) ( root_y + ( ( dny / r_node ) * mid_r ) ) };
     }
 
     /**

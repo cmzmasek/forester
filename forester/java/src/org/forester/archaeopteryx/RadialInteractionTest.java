@@ -245,17 +245,20 @@ public final class RadialInteractionTest {
                     fail( ok, "precondition: a sane fit diameter in " + gt + " (got " + fit + ")" );
                     return;
                 }
-                // fit == min(viewport), and the preferred size is a SQUARE of that diameter (the core of the decouple)
-                final int vmin = Math.min( frame.getMainPanel().getSizeOfViewport().width,
-                        frame.getMainPanel().getSizeOfViewport().height );
-                if ( Math.abs( fit - vmin ) > 2 ) {
+                // fit == min(viewport); the zoom DIAMETER is the square canvas, but the PREFERRED size is PADDED to at
+                // least the viewport so a tree zoomed out below fit stays centred in the window (not top-left) -- so at
+                // fit the preferred size == the viewport (max(diameter, viewport) per dim).
+                final int vw = frame.getMainPanel().getSizeOfViewport().width;
+                final int vh = frame.getMainPanel().getSizeOfViewport().height;
+                if ( Math.abs( fit - Math.min( vw, vh ) ) > 2 ) {
                     fail( ok, "showWhole must fit the radial canvas to min(viewport) in " + gt + " (fit " + fit
-                            + " vs " + vmin + ")" );
+                            + " vs " + Math.min( vw, vh ) + ")" );
                 }
                 final java.awt.Dimension pref = tp.getPreferredSize();
-                if ( ( pref.width != fit ) || ( pref.height != fit ) ) {
-                    fail( ok, "the radial preferred size must be a square of the diameter in " + gt + " (" + pref.width
-                            + "x" + pref.height + " vs " + fit + ")" );
+                if ( ( pref.width != Math.max( fit, vw ) ) || ( pref.height != Math.max( fit, vh ) ) ) {
+                    fail( ok, "the radial preferred size must be max(diameter, viewport) per dim in " + gt + " ("
+                            + pref.width + "x" + pref.height + " vs " + Math.max( fit, vw ) + "x" + Math.max( fit, vh )
+                            + ")" );
                 }
                 cp.zoomInX( 1.25f, 1.2f );
                 final int in_x = tp.radialDiameter();

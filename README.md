@@ -136,7 +136,9 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Protein Domain Architectures** — multi-domain proteins drawn to scale as flat,
   rounded, distinctly-colored boxes (a soft shadow, an optional glow); label the domains
   on the boxes or gather them into a draggable, E-value-aware legend
-  (Settings → Layout → Domain labels)
+  (Settings → Layout → Domain labels). In **circular and unrooted** views the
+  architectures ride each tip's spoke as a concentric ring — the iTOL look — whenever
+  **Radial Labels** are on (auto-enabled when you show domains in a radial layout)
 - **Bat Phylogeny (Taxonomy by Rank)** — 34 bat species with common + scientific
   names + synonyms, every clade rank-annotated, colorized by family (all offline)
 - **GTDB Taxonomy (Genome-based)** — Bacteria + Archaea genomes with the GTDB

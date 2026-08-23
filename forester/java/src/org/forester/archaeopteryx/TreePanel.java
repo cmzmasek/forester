@@ -173,6 +173,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // row pitch 2*yDistance, so no overlap). Tuned with the user against real domain trees.
     private final static int DOMAIN_STRUCTURE_HEIGHT_MIN = 6;
     private final static int DOMAIN_STRUCTURE_HEIGHT_MAX = 16;
+    // Radial gap (px) between a tip's label column and the start of its domain architecture in circular/unrooted.
+    private final static int DOMAIN_RADIAL_GAP = 4;
     // Gap (px) between a tip and its UPRIGHT (horizontal) label along the DEPTH axis in a vertical orientation
     // (see paintTipLabelHorizontal). depthLabelReserve() must reserve this too, else the outermost tip's label
     // pokes past the depth edge and clips (the top in root-bottom, the bottom in root-top).
@@ -211,6 +213,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // to the canvas still draws a real circle/fan (the labels then extend past the canvas edge -- zoom out or use
     // "Shorten Labels" to see them) instead of collapsing the whole tree onto the centre point.
     private final static double RADIAL_LABEL_MAX_RATIO = 0.5;
+    // Floor the circular tip-ring at this fraction of the available radius so a wide domain track (reserved fully)
+    // can't collapse the ring to nothing; only a pathologically huge domain track then clips.
+    private final static double RADIAL_MIN_TREE_RATIO = 0.2;
+    // Cap the domain track at this fraction of the canvas HALF-radius in a radial layout: the rectangular default
+    // (~0.25*viewport) is ~half the circular radius, far too thick -- this keeps it a legible ring that fits.
+    private final static double RADIAL_DOMAIN_MAX_FRACTION = 0.2;
     private final static String NODE_POPMENU_NODE_CLIENT_PROPERTY = "node";
     private static final float ONEHALF_PI = (float) (1.5
             * Math.PI);
@@ -467,6 +475,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // radial size -- set to fit the viewport by showWhole, scaled by radial zoom -- decoupled from the rectangular
     // x/y-distance machinery. 0 = not yet initialised (lazy-fit on first use). See resetPreferredSize/setUpUrtFactor.
     private int _radial_diameter = 0;
+    // The ring centre + radius the LAST circular paint used (screen: the padded panel centre + the zoom-diameter
+    // radius; export: the export-canvas centre + radius). circularLabelAnchor / the ring hit-test read these so they
+    // ALWAYS match the drawn tree (the radius is decoupled from the padded preferred size).
+    private int _circular_center_x = 0;
+    private int _circular_center_y = 0;
+    private int _circular_radius = 0;
     final private HashMap<Long, Double> _urt_nodeid_angle_map = new HashMap<>();
     final private HashMap<Long, Integer> _urt_nodeid_index_map = new HashMap<>();
     private double _urt_starting_angle = (float) (Math.PI
@@ -1803,6 +1817,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     PhylogenyNode getLastStepTargetForTest() {
         return _last_step_target;
     }
+
 
     /** Test hook: center the viewport on a node (drives the orientation-aware {@link #centerOnNode}). */
     void centerOnNodeForTest(final PhylogenyNode node) {
@@ -3259,10 +3274,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         float cy = y;
         final PhylogenyNode parent = node.getParent();
         if (parent != null) {
-            final boolean radial = (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
-                    || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR);
-            final float[] center = TreePanelUtil.supportSymbolCenter(parent.getXcoord(), node.getXcoord(),
-                    parent.getYcoord(), node.getYcoord(), radial);
+            final float[] center;
+            if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
+                // the branch is a radial leg along the node's spoke, NOT a straight line to the parent -> place the
+                // symbol on that leg (the ring centre = the root's coords in the circular layout)
+                center = TreePanelUtil.circularSupportSymbolCenter(_phylogeny.getRoot().getXcoord(),
+                        _phylogeny.getRoot().getYcoord(), node.getXcoord(), node.getYcoord(), parent.getXcoord(),
+                        parent.getYcoord());
+            }
+            else {
+                // UNROOTED draws a straight parent->node line, so the Cartesian midpoint IS on the branch;
+                // rectangular uses the branch-mid x at the node's y.
+                final boolean radial = getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED;
+                center = TreePanelUtil.supportSymbolCenter(parent.getXcoord(), node.getXcoord(), parent.getYcoord(),
+                        node.getYcoord(), radial);
+            }
             cx = center[0];
             cy = center[1];
         }
@@ -4063,7 +4089,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append(seq.getName());
             }
         }
-        final String rest = _sb.toString();
+        String rest = _sb.toString();
         if (!show_tax && (rest.length() < 1)) {
             return; // nothing to draw
         }
@@ -4072,6 +4098,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Font base_font = g.getFont();
         final float gap = effectiveNodeHalfBoxSize(node) + 3f; // start the label just off the node box (per-node size aware)
         final int tax_w = show_tax ? taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base_font) : 0;
+        // Radial layouts: a full label in a circle runs ~twice the radius (off the canvas), so truncate the node-name/
+        // sequence part with an ellipsis to the label budget left after the taxonomy, keeping tree + labels + domains
+        // on-canvas. (No cap in a rectangular layout -- radialMaxLabelWidth returns MAX_VALUE there.)
+        if ((rest.length() > 0) && isRadialLayout()) {
+            rest = TreePanelUtil.truncateToPixelWidth(getFontMetrics(base_font), rest,
+                    Math.max(0, radialMaxLabelWidth() - tax_w));
+        }
         final int rest_w = getFontMetrics(base_font).stringWidth(rest);
         final double total_w = gap + tax_w + rest_w; // full extent from the node, for the left-half flip
         double m = (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
@@ -6258,6 +6291,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     radial_labels,
                     (high_angle + low_angle) / 2,
                     isInFoundNodes(n));
+            // the tip's domain architecture rides its spoke, extending outward past the label (like circular) -- only
+            // with RADIAL labels; under horizontal labels it would clash with the upright labels (see domainBoxesDrawn)
+            if (radial_labels && (getControlPanel() != null) && getControlPanel().isShowDomainArchitectures()) {
+                final int num_ext = _phylogeny.getNumberOfExternalNodes();
+                // tips sit near the periphery (radius ~ radialDiameter/2); estimate the arc between adjacent tips there
+                final double spacing = (Math.PI * radialDiameter()) / Math.max(1, num_ext);
+                final int height = TreePanelUtil.domainBoxHeight((float) spacing, DOMAIN_STRUCTURE_HEIGHT_MIN,
+                        DOMAIN_STRUCTURE_HEIGHT_MAX);
+                paintDomainArchitectureRadial(g, n, n.getXcoord(), n.getYcoord(), (high_angle + low_angle) / 2,
+                        _length_of_longest_text_only + DOMAIN_RADIAL_GAP, height, to_pdf);
+            }
             return;
         }
         // honor collapse: a collapsed clade is a single stub here -- its incoming branch + node box are drawn by the
@@ -6633,9 +6677,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int d;
         if (isRadialLayout()) {
             // reserve the label margin on both sides, but CAP it (like the circular radius) so a tree with long
-            // labels relative to the canvas still fans out instead of collapsing to a tiny region
-            final int per_side = (int) Math.min(MOVE + getLongestExtNodeInfo(),
-                    (radialDiameter() / 2.0) * RADIAL_LABEL_MAX_RATIO);
+            // labels relative to the canvas still fans out instead of collapsing to a tiny region. When domains are
+            // drawn, reserve the FULL reach (labels + the bounded domain track) -- capped so the fan can't collapse --
+            // so the domains fit rather than overflowing the canvas.
+            final double half = radialDiameter() / 2.0;
+            final double cap = domainBoxesDrawnInCurrentLayout() ? (1 - RADIAL_MIN_TREE_RATIO) : RADIAL_LABEL_MAX_RATIO;
+            final int per_side = (int) Math.min(MOVE + getLongestExtNodeInfo(), half * cap);
             d = Math.max(MIN_RADIAL_DIAMETER, radialDiameter() - (2 * per_side));
         } else {
             d = getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width : getVisibleRect().height;
@@ -7108,6 +7155,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (has_tax) {
                 sum += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
             }
+            if (isRadialLayout()) {
+                // radial labels are truncated to this reach (see paintNodeDataUnrootedCirc) -- so the reservation, the
+                // domain start (radius + longest_text) and the drawn labels all agree, keeping everything on-canvas
+                sum = Math.min(sum, radialMaxLabelWidth());
+            }
             if (sum > longest_text_only) {
                 longest_text_only = sum; // capture BEFORE the domain/vector/binary track widths are added
             }
@@ -7128,7 +7180,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // FIXME
                 // TODO this might need some clean up
                 final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
-                final double rendered = (_domain_structure_width
+                final double rendered = (effectiveDomainStructureWidth()
                         / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth()) * d.getTotalLength();
                 sum += rendered + 10;
                 if (d.getTotalLength() > _longest_domain) {
@@ -8579,10 +8631,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private void drawDomainLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         if ((getOptions().getDomainLabelMode() != Options.DOMAIN_LABEL_MODE.LEGEND) || (_phylogeny == null)
-                || (getControlPanel() == null) || !getControlPanel().isShowDomainArchitectures() || isRadialLayout()) {
-            // no boxes drawn -> no orphan legend (domain boxes are a rectangular-family right-margin track; a
-            // circular/unrooted layout draws none, so it must not show a legend for them either -- nulling the
-            // bounds also disarms isOnDomainLegend's hit-test)
+                || !domainBoxesDrawnInCurrentLayout()) {
+            // no boxes drawn in this layout -> no orphan legend (rectangular always; radial only with RADIAL labels)
             _domain_legend_bounds = null;
             return;
         }
@@ -9824,6 +9874,105 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
     }
 
+    /** Whether domain-architecture BOXES are actually drawn in the current layout: always in the rectangular family;
+     *  in circular/unrooted ONLY when labels are RADIAL (ride the spoke). Under horizontal ("Radial Labels" off)
+     *  labels a spoke-riding domain bar would clash with the upright labels and has no clean radial track, so domains
+     *  -- and their legend -- are suppressed there. */
+    boolean domainBoxesDrawnInCurrentLayout() {
+        return (getControlPanel() != null) && getControlPanel().isShowDomainArchitectures()
+                && (!isRadialLayout() || (getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL));
+    }
+
+    /** The domain-structure target width to use for the CURRENT layout: the user's {@code _domain_structure_width}
+     *  in a rectangular layout, but capped in a radial layout to a fraction of the canvas half-radius (the rectangular
+     *  ~0.25*viewport width extends ~half the circular radius and clips). Used consistently by the reservation
+     *  ({@code calculateLongestExtNodeInfo}) and the draw factor ({@code initNodeData}) so they agree. */
+    private double effectiveDomainStructureWidth() {
+        if (!isRadialLayout()) {
+            return _domain_structure_width;
+        }
+        // the radial canvas is the SQUARE radialDiameter (what circularRadius / the preferred size use), NOT getSize()
+        // (the panel's actual size, which after a fit is the possibly-large preferred size) -> cap to its half-radius
+        final double half = radialDiameter() / 2.0;
+        return Math.min(_domain_structure_width, half * RADIAL_DOMAIN_MAX_FRACTION);
+    }
+
+    /** The maximum pixel reach a tip label may extend outward in a radial (circular/unrooted) layout: a fraction of
+     *  the canvas half-radius, so that tree ring + labels + domains all FIT on fit-to-window (labels longer than this
+     *  are truncated with an ellipsis -- full labels in a circle would run ~twice the radius, off the canvas). No cap
+     *  in a rectangular layout. */
+    private int radialMaxLabelWidth() {
+        if (!isRadialLayout()) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) ((radialDiameter() / 2.0) * RADIAL_LABEL_MAX_RATIO);
+    }
+
+
+    /** Protein-domain architectures for the CIRCULAR layout: each external tip's architecture rides its spoke, drawn
+     *  as a bar extending radially OUTWARD from a common start radius just past the tip labels -- the iTOL
+     *  circular-domains look (a clean CONCENTRIC ring in both aligned and unaligned phylograms). circularRadius already
+     *  reserves the concentric worst-case reach, so this only DRAWS. On-box domain-name labels are suppressed in radial
+     *  (they would rotate illegibly on a spoke and collide with neighbours); the draggable, E-value-aware domain LEGEND
+     *  names them instead -- the same approved exception as the vertical (root-top/bottom) orientation. */
+    private void paintDomainsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
+                                      final boolean to_pdf, final boolean to_graphics_file) {
+        if (!domainBoxesDrawnInCurrentLayout() || (_phylogeny == null) || (radius <= 0)) {
+            return;
+        }
+        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        if (displayed <= 0) {
+            return;
+        }
+        // ALL architectures start at a common radius just past the longest tip label -> a clean CONCENTRIC domain
+        // ring (the iTOL look) in BOTH aligned and unaligned phylograms (radius + longest label clears every tip's
+        // label, since even a shallow tip's label reaches at most radius + longest_text).
+        final double start_r = radius + _length_of_longest_text_only + DOMAIN_RADIAL_GAP;
+        // clamp the box thickness to the arc between adjacent spokes at that radius, so dense trees don't overlap
+        final int height = TreePanelUtil.domainBoxHeight((float) (start_r * (TWO_PI / displayed)),
+                DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
+        for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            if (!node.isExternal() || isHiddenUnderCollapse(node)) {
+                continue;
+            }
+            final Double a = _urt_nodeid_angle_map.get(node.getId());
+            if (a != null) {
+                paintDomainArchitectureRadial(g, node, cx, cy, a, start_r, height, to_pdf);
+            }
+        }
+    }
+
+    /** Draw {@code node}'s domain architecture as a bar riding the spoke at {@code angle}, extending outward from
+     *  {@code (pivot_x, pivot_y)} starting {@code start_dist} px out, {@code height} px thick (perpendicular to the
+     *  spoke). Rotating the graphics turns the renderer's horizontal bar into a radial one; on-box labels are
+     *  suppressed (radial exception). Shared by the circular pass and the unrooted per-tip draw. */
+    private void paintDomainArchitectureRadial(final Graphics2D g, final PhylogenyNode node, final double pivot_x,
+                                               final double pivot_y, final double angle, final double start_dist,
+                                               final int height, final boolean to_pdf) {
+        final RenderableDomainArchitecture rds = renderableDomainArchitectureOf(node);
+        if (rds == null) {
+            return;
+        }
+        rds.setRenderingHeight(height);
+        final java.awt.geom.AffineTransform saved = g.getTransform();
+        g.rotate(angle, pivot_x, pivot_y); // the spoke at `angle` becomes the local +x axis
+        rds.render((float) (pivot_x + start_dist), (float) (pivot_y - (height / 2.0)), g, this, to_pdf, false);
+        g.setTransform(saved);
+    }
+
+    /** The node's domain architecture as a RenderableDomainArchitecture, or null (no sequence / no architecture / a
+     *  plain DomainArchitecture from an undo copy not yet re-wrapped). */
+    private RenderableDomainArchitecture renderableDomainArchitectureOf(final PhylogenyNode node) {
+        if (!node.getNodeData().isHasSequence()) {
+            return null;
+        }
+        final org.forester.phylogeny.data.DomainArchitecture da = node.getNodeData().getSequence()
+                .getDomainArchitecture();
+        // a plain DomainArchitecture (e.g. from an undo copy not yet re-wrapped) is not renderable -> null
+        return (da instanceof RenderableDomainArchitecture) ? (RenderableDomainArchitecture) da : null;
+    }
+
     /** Node age (HPD) bars for the CIRCULAR PHYLOGRAM -- the polar analogue of {@link #paintHpdBars}: a translucent
      *  RADIAL segment along each dated internal node's spoke, spanning its age interval (the radius encodes
      *  distance-from-root = time, so an age range is a radial range). The older bound sits at a SMALLER radius (toward
@@ -10393,9 +10542,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * radius going negative and collapsing every tip onto the centre. Never negative. Shared by the paint + the
      * ring-click hit-test so they agree.
      */
-    private int circularRadius(final double pref_w, final double pref_h) {
-        final double avail = Math.max(0, (Math.min(pref_w, pref_h) / 2.0) - MOVE - circularCladeBandReserve()
+    private int circularRadius(final double side) {
+        final double avail = Math.max(0, (side / 2.0) - MOVE - circularCladeBandReserve()
                 - circularAnnotationRingsReserve());
+        if (domainBoxesDrawnInCurrentLayout()) {
+            // Domains draw as a CONCENTRIC ring: every architecture starts at radius + _length_of_longest_text_only
+            // (+ gap + the renderer's 20px lead-in) and extends by up to _longest_rendered_domain. The worst-case
+            // reach is the SUM of those two SEPARATE maxima -- the longest-label tip and the widest-domain tip may be
+            // DIFFERENT tips -- NOT getLongestExtNodeInfo() (a per-tip max of text+domain, which under-reserves and
+            // clips when they differ). Reserve the sum so both fit on fit-to-window; floor the ring so it can't
+            // collapse (this SHRINKS the ring rather than clipping -- the user wants domains + labels to fit).
+            final double reach = _length_of_longest_text_only + _longest_rendered_domain + DOMAIN_RADIAL_GAP + 20;
+            return (int) Math.max(avail - reach, avail * RADIAL_MIN_TREE_RATIO);
+        }
         final int label = (int) Math.min(getLongestExtNodeInfo(), avail * RADIAL_LABEL_MAX_RATIO);
         return (int) (avail - label);
     }
@@ -10482,12 +10641,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!hasAnnotationColumns() || (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
             return -1;
         }
-        final double pref_w = getPreferredSize().getWidth(), pref_h = getPreferredSize().getHeight();
-        final int radius = circularRadius(pref_w, pref_h); // MUST match the paint (capped) radius so clicks hit the rings
+        final int radius = _circular_radius; // the exact radius the last paint used, so clicks hit the drawn rings
         if (radius <= 0) {
             return -1;
         }
-        final double rr = Math.hypot(x - (pref_w / 2), y - (pref_h / 2));
+        final double rr = Math.hypot(x - _circular_center_x, y - _circular_center_y);
         double r = circularAnnotationRingStart(radius);
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
@@ -11137,7 +11295,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if (getControlPanel().isShowDomainArchitectures()) {
-            final float ds_factor_width = (float) (_domain_structure_width / _max_original_domain_structure_width);
+            final float ds_factor_width = (float) (effectiveDomainStructureWidth() / _max_original_domain_structure_width);
             for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
                 if (node.getNodeData().isHasSequence()
                         && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
@@ -11676,14 +11834,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  radius are derived from {@link #getPreferredSize()} + {@link #circularRadius} -- IDENTICAL to how the enclosing
      *  paintCircular set the node coords in the same pass, so anchor and drawn tree agree on screen and in exports. */
     private Point2D.Double circularLabelAnchor(final PhylogenyNode node) {
-        if (node.isExternal() && (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && isAlignedCircularPhylogram()) {
+        if (node.isExternal() && (_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && isAlignedCircularPhylogram()
+                && (_circular_radius > 0)) {
             final Double a = _urt_nodeid_angle_map.get(node.getId());
             if (a != null) {
                 final double m = a % TWO_PI;
-                final java.awt.Dimension pref = getPreferredSize();
-                final int radius = circularRadius(pref.getWidth(), pref.getHeight());
-                return new Point2D.Double((int) (pref.getWidth() / 2) + (radius * Math.cos(m)),
-                        (int) (pref.getHeight() / 2) + (radius * Math.sin(m)));
+                // the ring centre + radius the enclosing paintCircular used this pass (screen: padded-panel centre +
+                // zoom radius; export: export-canvas centre + radius), so the anchor matches the drawn tree exactly
+                return new Point2D.Double(_circular_center_x + (_circular_radius * Math.cos(m)),
+                        _circular_center_y + (_circular_radius * Math.sin(m)));
             }
         }
         return new Point2D.Double(node.getXcoord(), node.getYcoord());
@@ -12071,11 +12230,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // tp's own width/height) so the circle is CENTRED and fills it, like the unrooted layout already does. The
             // old code placed the centre at min(w,h)/2, i.e. top-left-biased whenever the canvas is not square (the
             // radial preferred size is the rectangular tip-spread extent), which pushed the circle into a corner.
-            final double pref_w = getPreferredSize().getWidth();
-            final double pref_h = getPreferredSize().getHeight();
-            final int radius = circularRadius(pref_w, pref_h);
-            final int center_x = (int) (pref_w / 2);
-            final int center_y = (int) (pref_h / 2);
+            // The ring is sized to the ZOOM diameter (WYSIWYG on screen AND export -- the domain-width cap + label
+            // truncation are radialDiameter-based too, so all three agree) and CENTRED at the panel/canvas centre
+            // getWidth()/getHeight(): on screen resetPreferredSize pads the panel to at least the viewport, so when the
+            // tree is zoomed out BELOW fit the panel still fills the window and the ring stays CENTRED (was pinned to
+            // the top-left corner, shrinking away). On export getWidth()/getHeight() is the export canvas (a
+            // visible-only export TRANSLATES g to crop, so drawing at the full-panel centre yields the correct crop --
+            // using graphics_file_width/height here would instead re-centre the whole ring into the cropped canvas).
+            final int radius = circularRadius(radialDiameter());
+            final int center_x = getWidth() / 2;
+            final int center_y = getHeight() / 2;
+            _circular_center_x = center_x; // so circularLabelAnchor / the ring hit-test match this exact geometry
+            _circular_center_y = center_y;
+            _circular_radius = radius;
             _dynamic_hiding_factor = 0;
             if (getControlPanel().isDynamicallyHideData() && (radius > 0)) {
                 _dynamic_hiding_factor = (int) ((getFontMetricsForLargeDefaultFont().getHeight() * 1.5
@@ -12116,6 +12283,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintGeologicRingLabelsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // optional Ma age labels at the coarse-band boundary radii, up the spoke (gated on "Geologic Boundary Ages")
             paintGeologicBoundaryAgesCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            // protein-domain architectures riding each tip's spoke, just past the labels (iTOL circular-domains look)
+            paintDomainsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             paintTimeAxisHint(g, to_pdf, to_graphics_file); // a dated circular CLADOGRAM: say why the ring axis isn't showing
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
@@ -12287,10 +12456,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (isRadialLayout()) {
             // radial layouts use a SQUARE canvas of _radial_diameter (the single radial-zoom knob), decoupled from the
-            // rectangular x/y-distance extent -- the circle then centres + fills it (see the CIRCULAR paint block), and
-            // the unrooted spread is scaled by an urt-factor derived from the same diameter.
+            // rectangular x/y-distance extent -- the circle is sized to it (see the CIRCULAR paint block), and the
+            // unrooted spread is scaled by an urt-factor derived from it. PAD the panel to at least the viewport so a
+            // tree zoomed out BELOW fit still fills the window (the scroll pane keeps it CENTRED) instead of shrinking
+            // into the top-left corner; zoomed IN past the viewport the panel is larger -> scrollbars + panning.
             final int d = radialDiameter();
-            setPreferredSize(new Dimension(d, d));
+            int vw = d, vh = d;
+            final java.awt.Container parent = getParent();
+            if (parent instanceof javax.swing.JViewport) {
+                final Dimension ext = ((javax.swing.JViewport) parent).getExtentSize();
+                if (ext.width > 0) {
+                    vw = ext.width;
+                }
+                if (ext.height > 0) {
+                    vh = ext.height;
+                }
+            }
+            setPreferredSize(new Dimension(Math.max(d, vw), Math.max(d, vh)));
             invalidateOrientationTransform();
             return;
         }

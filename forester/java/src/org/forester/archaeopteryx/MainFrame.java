@@ -2386,6 +2386,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             // pre-0.11.7 leftover that greyed the radios out in circular even though the paint now responds to them).
             getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(getCurrentTreePanel().isPhyHasBranchLengths());
             getCurrentTreePanel().setPhylogenyGraphicsType(getOptions().getPhylogenyGraphicsType());
+            // switching TO a radial layout with domains on: auto-enable "Radial Labels" so the domains show (a
+            // spoke-riding domain bar needs radial labels; horizontal labels suppress it)
+            enableRadialLabelsIfDomainsInRadialLayout();
             // Apply the Triangular->Cladogram nudge computed above. setTreeDisplayType does NOT fire the P/A/C
             // actionPerformed, so the persisted global display-type default is untouched -- a per-tab nudge only.
             if (nudge_to_cladogram) {
@@ -2417,6 +2420,27 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      *  writes {@code Options._node_label_direction} -- so the option, its menu/dialog state, GuiPreferences
      *  persistence and Reset-to-Defaults all stay consistent (setSelected does not fire the item's action, hence the
      *  explicit updateOptions). Then repaints the current tree. */
+    /** When domain architectures are shown in a radial (circular/unrooted) layout, node labels must ride the spoke
+     *  for the domain bars to sit cleanly past them (a horizontal label + a spoke-riding bar clash, and the bars are
+     *  suppressed under horizontal labels). So the moment domains + a radial layout coincide -- on load, when the user
+     *  turns domains on, or when the user switches to a radial layout -- auto-enable "Radial Labels" so the domains are
+     *  immediately visible. Sets the option AND syncs the menu checkbox (kept consistent for updateOptions / Reset /
+     *  GuiPreferences). No-op if already radial-labelled, not a radial layout, or domains are off. */
+    void enableRadialLabelsIfDomainsInRadialLayout() {
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        if (tp.isRadialLayout() && (tp.getControlPanel() != null) && tp.getControlPanel().isShowDomainArchitectures()
+                && (getOptions().getNodeLabelDirection() != NODE_LABEL_DIRECTION.RADIAL)) {
+            getOptions().setNodeLabelDirection(NODE_LABEL_DIRECTION.RADIAL);
+            if (_label_direction_cbmi != null) {
+                _label_direction_cbmi.setSelected(true);
+            }
+            tp.repaint();
+        }
+    }
+
     void toggleRadialLabelDirection() {
         if (_label_direction_cbmi != null) {
             _label_direction_cbmi.setSelected(!_label_direction_cbmi.isSelected());

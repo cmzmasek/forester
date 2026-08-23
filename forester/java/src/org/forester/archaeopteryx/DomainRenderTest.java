@@ -147,19 +147,40 @@ public final class DomainRenderTest {
                     }
                     tp.getControlPanel().setShowDomainArchitecturesForTest( true );
 
-                    // 4c. no domain legend in a RADIAL layout: domain boxes are a rectangular-family right-margin
-                    //     track, so a circular/unrooted layout must NOT show a legend for boxes it never draws (the
-                    //     orphan-legend class); nulling the bounds also disarms isOnDomainLegend's hit-test.
+                    // 4c. in a RADIAL layout the domain legend draws ONLY when labels are RADIAL -- then domain boxes
+                    //     ride the spoke, so the legend is informative. Under horizontal labels the boxes (and the
+                    //     legend) are suppressed, since a spoke-riding bar would clash with the upright labels.
                     final Options.PHYLOGENY_GRAPHICS_TYPE prev_type = tp.getPhylogenyGraphicsType();
+                    final Options.NODE_LABEL_DIRECTION prev_dir = o.getNodeLabelDirection();
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                    o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL );
+                    drawLegend( tp, w, h, bounds );
+                    if ( tp.getDomainLegendBoundsForTest() == null ) {
+                        fail( ok, "the domain legend must draw in a circular layout with RADIAL labels" );
+                    }
+                    o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.HORIZONTAL );
                     drawLegend( tp, w, h, bounds );
                     if ( tp.getDomainLegendBoundsForTest() != null ) {
-                        fail( ok, "no domain legend must draw in a circular/unrooted layout (boxes are not rendered there)" );
+                        fail( ok, "no domain legend in a circular layout with HORIZONTAL labels (domains suppressed)" );
                     }
-                    if ( tp.isOnDomainLegend( mouseAt( tp, w / 2, h / 2 ) ) ) {
-                        fail( ok, "isOnDomainLegend must be false in a radial layout" );
-                    }
+                    o.setNodeLabelDirection( prev_dir );
                     tp.setPhylogenyGraphicsType( prev_type );
+
+                    // 4d. enabling domains in a radial layout auto-enables "Radial Labels" (option 2): a spoke-riding
+                    //     domain bar needs radial labels, so a rectangular tree does NOT flip, but a circular one does.
+                    o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.HORIZONTAL );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    frame.enableRadialLabelsIfDomainsInRadialLayout();
+                    if ( o.getNodeLabelDirection() != Options.NODE_LABEL_DIRECTION.HORIZONTAL ) {
+                        fail( ok, "a rectangular layout must NOT auto-enable radial labels" );
+                    }
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                    frame.enableRadialLabelsIfDomainsInRadialLayout();
+                    if ( o.getNodeLabelDirection() != Options.NODE_LABEL_DIRECTION.RADIAL ) {
+                        fail( ok, "a circular layout with domains on must auto-enable radial labels" );
+                    }
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.HORIZONTAL );
 
                     // 5. the legend is E-value-cutoff AWARE: below every domain's e-value (1e-6) NOTHING passes and the
                     //    legend is empty (bounds null); a permissive threshold draws it.

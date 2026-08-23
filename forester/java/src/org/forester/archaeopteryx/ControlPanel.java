@@ -375,6 +375,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 // domains actually become visible -- otherwise it looks like nothing happened. The
                 // horizontal-only fit keeps the user's vertical zoom; turning domains OFF just repaints.
                 if (_show_domain_architectures.isSelected()) {
+                    final MainFrame mf = getMainFrame();
+                    if (mf != null) {
+                        // radial layout: turning domains on auto-enables "Radial Labels" so they actually show
+                        mf.enableRadialLabelsIfDomainsInRadialLayout();
+                    }
                     fitWidth();
                 } else {
                     displayedPhylogenyMightHaveChanged(true);
@@ -1902,6 +1907,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             // manual checkbox toggle, so it can't reset the width out from under a user who is zooming domains.)
             getCurrentTreePanel().fitDomainWidthToScreen(INITIAL_DOMAIN_WIDTH_SCREEN_FRACTION,
                     getMainPanel().getSizeOfViewport().width);
+            final MainFrame mf = getMainFrame();
+            if (mf != null) {
+                // a tree that opens in a radial layout (persisted graphics type): auto-enable "Radial Labels" so its
+                // domains show right away (they are suppressed under horizontal labels)
+                mf.enableRadialLabelsIfDomainsInRadialLayout();
+            }
             fitWidth(); // re-fit the (now wider) tree horizontally so the domains show; keep vertical zoom
         }
     }
@@ -4168,6 +4179,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         final double hc = (hsb.getMaximum() - hsb.getMinimum()) / (hsb.getValue() + (hsb.getVisibleAmount() / 2.0));
         final double vc = (vsb.getMaximum() - vsb.getMinimum()) / (vsb.getValue() + (vsb.getVisibleAmount() / 2.0));
         tp.multiplyRadialDiameter(factor);
+        // recompute the layout params against the NEW diameter -- the domain-width cap (effectiveDomainStructureWidth),
+        // the domain/label reservation and the label truncation are all radialDiameter-based and are set only here, so
+        // without this an incremental +/- zoom leaves them stale (domains sized for the old diameter -> clip/misalign)
+        tp.calcParametersForPainting(getMainPanel().getSizeOfViewport().width, getMainPanel().getSizeOfViewport().height);
         getMainPanel().adjustJScrollPane();
         tp.resetPreferredSize();
         getMainPanel().getCurrentScrollPane().getViewport().validate();

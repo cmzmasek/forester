@@ -72,7 +72,7 @@ public final class TreePanelUtilTest {
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
-                && testAncestralPieData();
+                && testTruncateToPixelWidth() && testAncestralPieData();
     }
 
     /**
@@ -649,6 +649,50 @@ public final class TreePanelUtilTest {
             return fail( "domain box height must grow with row spacing above the floor" );
         }
         return true;
+    }
+
+    /**
+     * The radial tip-label truncation: fits-as-is, null/empty, budget-below-ellipsis -> "", and a real truncation
+     * that yields the MAXIMUM prefix + ellipsis fitting the budget (guards the binary-search off-by-one class -- the
+     * exact bug that would silently over/under-trim and push labels off-canvas, the feature it fixes).
+     */
+    private static boolean testTruncateToPixelWidth() {
+        final java.awt.image.BufferedImage img = new java.awt.image.BufferedImage( 10, 10,
+                java.awt.image.BufferedImage.TYPE_INT_RGB );
+        final java.awt.Graphics2D g = img.createGraphics();
+        g.setFont( new java.awt.Font( "SansSerif", java.awt.Font.PLAIN, 12 ) );
+        final java.awt.FontMetrics fm = g.getFontMetrics();
+        try {
+            final String s = "Dengue virus 1 |ARO78001.1 |envelope protein";
+            if ( !TreePanelUtil.truncateToPixelWidth( fm, s, fm.stringWidth( s ) + 5 ).equals( s ) ) {
+                return fail( "a label that already fits must be returned unchanged" );
+            }
+            if ( ( TreePanelUtil.truncateToPixelWidth( fm, null, 100 ) != null )
+                    || !TreePanelUtil.truncateToPixelWidth( fm, "", 100 ).isEmpty() ) {
+                return fail( "null/empty must be returned as-is" );
+            }
+            if ( !TreePanelUtil.truncateToPixelWidth( fm, s, 1 ).isEmpty() ) {
+                return fail( "a budget below the ellipsis width must yield an empty string" );
+            }
+            final int budget = fm.stringWidth( s ) / 2;
+            final String t = TreePanelUtil.truncateToPixelWidth( fm, s, budget );
+            if ( !t.endsWith( "…" ) || ( fm.stringWidth( t ) > budget ) || ( t.length() >= s.length() )
+                    || !s.startsWith( t.substring( 0, t.length() - 1 ) ) ) {
+                return fail( "truncated label must be a shorter prefix + ellipsis fitting the budget; got '" + t + "'" );
+            }
+            // maximality: keeping ONE more source char would overflow the budget (catches an off-by-one that under-trims)
+            final String prefix = t.substring( 0, t.length() - 1 );
+            if ( prefix.length() < s.length() ) {
+                final int one_more = fm.stringWidth( s.substring( 0, prefix.length() + 1 ) ) + fm.stringWidth( "…" );
+                if ( one_more <= budget ) {
+                    return fail( "truncation must keep the MAXIMUM chars that fit (one more still fits the budget)" );
+                }
+            }
+            return true;
+        }
+        finally {
+            g.dispose();
+        }
     }
 
     private static boolean testSpindleHalfHeight() {
@@ -1920,11 +1964,25 @@ public final class TreePanelUtilTest {
             return fail( "rectangular support symbol must sit at branch-midpoint x and node y; got " + rect[ 0 ] + ","
                     + rect[ 1 ] );
         }
-        // radial (unrooted/circular): the branch is slanted, so y is the segment midpoint too
+        // UNROOTED: a straight parent->node line, so the symbol sits at the 2-D (Cartesian) branch midpoint
         final float[] radial = TreePanelUtil.supportSymbolCenter( 10f, 30f, 5f, 25f, true );
         if ( ( radial[ 0 ] != 20f ) || ( radial[ 1 ] != 15f ) ) {
-            return fail( "radial support symbol must sit at the 2-D branch midpoint; got " + radial[ 0 ] + ","
+            return fail( "unrooted support symbol must sit at the 2-D branch midpoint; got " + radial[ 0 ] + ","
                     + radial[ 1 ] );
+        }
+        // CIRCULAR: the branch is a RADIAL leg along the node's OWN spoke (from the node's radius inward to the
+        // parent's radius), NOT a straight line to the parent -- so the symbol must sit on that spoke at the
+        // mid-radius, using only the parent's RADIUS (its angle is irrelevant). Centre (0,0), node (100,0) r=100,
+        // parent (0,60) r=60 -> leg from radius 100 to 60 along (1,0) -> midpoint radius 80 -> (80,0).
+        final float[] circ = TreePanelUtil.circularSupportSymbolCenter( 0f, 0f, 100f, 0f, 0f, 60f );
+        if ( ( Math.abs( circ[ 0 ] - 80f ) > 0.001f ) || ( Math.abs( circ[ 1 ] ) > 0.001f ) ) {
+            return fail( "circular support symbol must sit on the node's spoke at mid-radius; got " + circ[ 0 ] + ","
+                    + circ[ 1 ] );
+        }
+        // parent AT the centre (root) -> leg from the node inward to radius 0 -> midpoint at half the spoke
+        final float[] circ_root = TreePanelUtil.circularSupportSymbolCenter( 0f, 0f, 100f, 0f, 0f, 0f );
+        if ( Math.abs( circ_root[ 0 ] - 50f ) > 0.001f ) {
+            return fail( "circular symbol for a child-of-root must sit at half the spoke; got " + circ_root[ 0 ] );
         }
         return true;
     }
