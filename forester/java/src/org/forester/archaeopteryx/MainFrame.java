@@ -119,18 +119,12 @@ import org.forester.util.WindowsUtils;
 public abstract class MainFrame extends JFrame implements ActionListener {
 
     /**
-     * Installs the given look-and-feel. FlatLaf (light/dark) is the modern default;
-     * the native and cross-platform look-and-feels are kept as alternatives.
+     * Installs the FlatLaf look-and-feel (light or dark) -- the only look-and-feel Archaeopteryx uses. It is
+     * pure Java, so it renders identically on macOS, Windows and Linux.
      */
     static void installLookAndFeel(final Configuration.UI ui) {
         try {
             switch (ui) {
-                case NATIVE:
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    break;
-                case CROSSPLATFORM:
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                    break;
                 case FLAT_DARK:
                     FlatDarkLaf.setup();
                     break;
@@ -1793,10 +1787,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void customizeCheckBoxMenuItem(final JCheckBoxMenuItem item, final boolean is_selected) {
         if (item != null) {
             item.setFont(MainFrame.menu_font);
-            if (getConfiguration().isApplyCustomGuiColors()) {
-                item.setBackground(getConfiguration().getGuiMenuBackgroundColor());
-                item.setForeground(getConfiguration().getGuiMenuTextColor());
-            }
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -1805,10 +1795,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem customizeJMenuItem(final JMenuItem jmi) {
         if (jmi != null) {
             jmi.setFont(MainFrame.menu_font);
-            if (getConfiguration().isApplyCustomGuiColors()) {
-                jmi.setBackground(getConfiguration().getGuiMenuBackgroundColor());
-                jmi.setForeground(getConfiguration().getGuiMenuTextColor());
-            }
             jmi.addActionListener(this);
         }
         return jmi;
@@ -1817,10 +1803,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void customizeRadioButtonMenuItem(final JRadioButtonMenuItem item, final boolean is_selected) {
         if (item != null) {
             item.setFont(MainFrame.menu_font);
-            if (getConfiguration().isApplyCustomGuiColors()) {
-                item.setBackground(getConfiguration().getGuiMenuBackgroundColor());
-                item.setForeground(getConfiguration().getGuiMenuTextColor());
-            }
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -2855,13 +2837,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     static JMenu createMenu(final String title, final Configuration conf) {
-        final JMenu jmenu = new JMenu(title);
-        if (conf.isApplyCustomGuiColors()) {
-            jmenu.setFont(MainFrame.menu_font);
-            jmenu.setBackground(conf.getGuiMenuBackgroundColor());
-            jmenu.setForeground(conf.getGuiMenuTextColor());
-        }
-        return jmenu;
+        return new JMenu(title);
     }
 
     static void cycleOverview(final Options op, final TreePanel tree_panel) {

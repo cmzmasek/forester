@@ -32,8 +32,8 @@ import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.util.ForesterUtil;
 
 /**
- * Holds the runtime GUI theme (look-and-feel preference + custom cross-platform colors), the tip-facing color
- * maps, and the handful of file-reading/overview knobs that {@link TreePanel} and the parsers read directly.
+ * Holds the runtime look-and-feel theme preference (FlatLaf light/dark), the tip-facing color maps, and the
+ * handful of file-reading/overview knobs that {@link TreePanel} and the parsers read directly.
  *
  * <p>Archaeopteryx no longer reads configuration files. The <em>default</em> display settings that used to be
  * copied from here into {@link Options} now live solely in {@code Options.init()} (backed by
@@ -42,8 +42,10 @@ import org.forester.util.ForesterUtil;
  */
 public final class Configuration {
 
+    /** FlatLaf is the only look-and-feel Archaeopteryx uses (pure Java, identical on every OS); the only
+     *  distinction is the light/dark theme. UNKNOWN means "not resolved yet" (see {@link #getUi()}). */
     public enum UI {
-        CROSSPLATFORM, NATIVE, NIMBUS, FLAT_LIGHT, FLAT_DARK, UNKNOWN
+        FLAT_LIGHT, FLAT_DARK, UNKNOWN
     }
 
     private static final String PREFS_NODE = "org/forester/archaeopteryx";
@@ -61,15 +63,6 @@ public final class Configuration {
     private final ClickToOption _default_clickto = ClickToOption.DISPLAY_NODE_DATA;
 
     private SortedMap<String, Color> _display_colors = null;
-
-    private final Color _gui_background_color = AptxConstants.GUI_BACKGROUND_DEFAULT;
-    private final Color _gui_button_background_color = AptxConstants.BUTTON_BACKGROUND_COLOR_DEFAULT;
-    private final Color _gui_button_border_color = AptxConstants.BUTTON_BORDER_COLOR_DEFAULT;
-    private final Color _gui_button_text_color = AptxConstants.BUTTON_TEXT_COLOR_DEFAULT;
-    private final Color _gui_checkbox_and_button_active_color = AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT;
-    private final Color _gui_checkbox_text_color = AptxConstants.CHECKBOX_TEXT_COLOR_DEFAULT;
-    private final Color _gui_menu_background_color = AptxConstants.MENU_BACKGROUND_COLOR_DEFAULT;
-    private final Color _gui_menu_text_color = AptxConstants.MENU_TEXT_COLOR_DEFAULT;
 
     // Read directly by the NH/NHX/Nexus parse path (see Archaeopteryx.main).
     private final boolean _internal_number_are_confidence_for_nh_parsing = false;
@@ -126,38 +119,6 @@ public final class Configuration {
             _domain_colors = new Hashtable<String, Color>();
         }
         return _domain_colors;
-    }
-
-    Color getGuiBackgroundColor() {
-        return _gui_background_color;
-    }
-
-    Color getGuiButtonBackgroundColor() {
-        return _gui_button_background_color;
-    }
-
-    Color getGuiButtonBorderColor() {
-        return _gui_button_border_color;
-    }
-
-    Color getGuiButtonTextColor() {
-        return _gui_button_text_color;
-    }
-
-    Color getGuiCheckboxAndButtonActiveColor() {
-        return _gui_checkbox_and_button_active_color;
-    }
-
-    Color getGuiCheckboxTextColor() {
-        return _gui_checkbox_text_color;
-    }
-
-    Color getGuiMenuBackgroundColor() {
-        return _gui_menu_background_color;
-    }
-
-    Color getGuiMenuTextColor() {
-        return _gui_menu_text_color;
     }
 
     static int getGuiFontSize() {
@@ -259,20 +220,6 @@ public final class Configuration {
             // failing to persist the preference is non-fatal
         }
     }
-
-    boolean isUseNativeUI() {
-        return getUi() == UI.NATIVE;
-    }
-
-    /**
-     * Whether the legacy, hand-themed cross-platform GUI colors and fonts should be
-     * applied to the Swing components. The native and FlatLaf look-and-feels style the
-     * components themselves, so custom colors are only applied for {@code CROSSPLATFORM}.
-     */
-    boolean isApplyCustomGuiColors() {
-        return getUi() == UI.CROSSPLATFORM;
-    }
-
 
     boolean isValidatePhyloXmlAgainstSchema() {
         return true;

@@ -102,11 +102,10 @@ public final class RadialZoomControlTest {
             // radial re-label must be undone
             o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
             frame.typeChanged( frame._rectangular_type_cbmi );
-            final boolean native_ui = frame.getConfiguration().isUseNativeUI();
             expect( ok, "revert Y+ -> 'Y+'", "Y+", cp.getZoomInYButtonForTest().getText() );
             expect( ok, "revert Y- -> 'Y-'", "Y-", cp.getZoomOutYButtonForTest().getText() );
-            expect( ok, "revert X+", native_ui ? "+" : "X+", cp.getZoomInXButtonForTest().getText() );
-            expect( ok, "revert X-", native_ui ? "-" : "X-", cp.getZoomOutXButtonForTest().getText() );
+            expect( ok, "revert X+", "X+", cp.getZoomInXButtonForTest().getText() );
+            expect( ok, "revert X-", "X-", cp.getZoomOutXButtonForTest().getText() );
             expect( ok, "revert W -> 'W'", "W", cp.getFitWidthButtonForTest().getText() );
             if ( !cp.getExpandButtonForTest().isEnabled() ) {
                 fail( ok, "E must be re-enabled when reverting to a rectangular layout" );

@@ -231,9 +231,6 @@ public final class MainFrameApplication extends MainFrame {
         }
         // build the menu bar
         _jmenubar = new JMenuBar();
-        if (_configuration.isApplyCustomGuiColors()) {
-            _jmenubar.setBackground(getConfiguration().getGuiMenuBackgroundColor());
-        }
         buildFileMenu();
         buildEditMenu();
         buildAnalysisMenu();
@@ -1510,10 +1507,6 @@ public final class MainFrameApplication extends MainFrame {
             // style the item like the others, but do NOT route it through customizeJMenuItem: that also adds the global
             // MainFrame action dispatcher (this) as a listener, which would double-fire alongside the demo lambda
             item.setFont(MainFrame.menu_font);
-            if (getConfiguration().isApplyCustomGuiColors()) {
-                item.setBackground(getConfiguration().getGuiMenuBackgroundColor());
-                item.setForeground(getConfiguration().getGuiMenuTextColor());
-            }
             item.addActionListener(e -> openDemo(demo));
             demo_menu.add(item);
         }

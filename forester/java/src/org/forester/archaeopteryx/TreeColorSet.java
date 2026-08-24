@@ -138,10 +138,6 @@ public final class TreeColorSet {
         _color_schemes[ 0 ][ i ] = color;
     }
 
-    Color getAnnotationColor() {
-        return annotation_color;
-    }
-
     Color getBackgroundColor() {
         return background_color;
     }

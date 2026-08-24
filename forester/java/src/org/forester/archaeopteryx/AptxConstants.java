@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.83";
+    final static String VERSION = "0.11.84";
     final static String PRG_DATE = "2026-08-23";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
@@ -71,21 +71,9 @@ public final class AptxConstants {
     final static boolean VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT = true;
     final static String BACKUP_FILE_SUFFIX = ".BAK";
     final static double MIN_NOT_COLLAPSE_DEFAULT = 50;
-    final static Color GUI_BACKGROUND_DEFAULT = new Color(32, 32, 32);
-    final static Color CHECKBOX_TEXT_COLOR_DEFAULT = new Color(220,
-            220,
-            220);
+    // Red accent painted on the "Return to Whole/Super Tree" + "Uncollapse All" buttons and the Dyna-Hide
+    // indicator while they are active (see ControlPanel); the only surviving hand-picked GUI accent color.
     final static Color CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT = new Color(255, 0, 0);
-    final static Color BUTTON_TEXT_COLOR_DEFAULT = new Color(255,
-            255,
-            255);
-    final static Color BUTTON_BACKGROUND_COLOR_DEFAULT = new Color(64, 64, 64);
-    final static Color MENU_BACKGROUND_COLOR_DEFAULT = new Color(0, 0, 0);
-    final static Color MENU_TEXT_COLOR_DEFAULT = new Color(255,
-            255,
-            255);
-    final static Color BUTTON_BORDER_COLOR_DEFAULT = new Color(0, 0, 0);
-    final static Color TAB_LABEL_FOREGROUND_COLOR_SELECTED = new Color(0, 0, 0);
     public final static Color DOMAIN_BASE_COLOR_FOR_PDF = new Color(100,
             100,
             100);

@@ -245,13 +245,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         init();
         _mainpanel = ap;
         _configuration = configuration;
-        if (_configuration.isApplyCustomGuiColors()) {
-            setBackground(getConfiguration().getGuiBackgroundColor());
-            setBorder(BorderFactory.createRaisedBevelBorder());
-        } else {
-            // modern look-and-feels: a little breathing room instead of the legacy bevel
-            setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        }
+        // modern look-and-feels: a little breathing room instead of the legacy bevel
+        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         setLayout(new GridBagLayout());
         setupControls();
     }
@@ -535,10 +530,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int addClickToOption(final int cb_index, final ClickToOption option) {
         _click_to_combobox.addItem(option.title());
         _click_to_names.add(option.title());
-        if (_configuration.isApplyCustomGuiColors()) {
-            _click_to_combobox.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-            _click_to_combobox.setForeground(getConfiguration().getGuiButtonTextColor());
-        }
         return cb_index;
     }
 
@@ -813,9 +804,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         addDisplayCheckbox(DisplayOption.WIDTH_BRANCHES);
         final JLabel label = new JLabel("Display Data:");
         label.setFont(ControlPanel.jcb_bold_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         add(label);
         addDisplayCheckbox(DisplayOption.SHOW_NODE_NAMES);
         addDisplayCheckbox(DisplayOption.SHORTEN_LABELS);
@@ -873,14 +861,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void activateButtonsToReturnToSuperTree() {
-        _return_to_whole_tree.setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
+        _return_to_whole_tree.setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
         _return_to_whole_tree.setEnabled(true);
-        _return_to_super_tree.setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
+        _return_to_super_tree.setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
         _return_to_super_tree.setEnabled(true);
     }
 
     void activateButtonToUncollapseAll() {
-        _uncollapse_all.setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
+        _uncollapse_all.setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
         _uncollapse_all.setEnabled(true);
     }
 
@@ -892,25 +880,14 @@ final class ControlPanel extends JPanel implements ActionListener {
         final JPanel y_panel = new JPanel(new GridLayout(1, 5, 0, 0));
         final JPanel z_panel = new JPanel(new GridLayout(1, 1, 0, 0));
         final JPanel o_panel = new JPanel(new GridLayout(1, 4, 0, 0));
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            x_panel.setBackground(getBackground());
-            y_panel.setBackground(getBackground());
-            z_panel.setBackground(getBackground());
-            o_panel.setBackground(getBackground());
-        }
         nextRowGap(SECTION_GAP);
         add(_zoom_label = new JLabel("Zoom:"));
         customizeLabel(_zoom_label, getConfiguration());
         add(x_panel);
         add(y_panel);
         add(z_panel);
-        if (getConfiguration().isUseNativeUI()) {
-            _zoom_in_x = new TypomaticJButton("+");
-            _zoom_out_x = new TypomaticJButton("-");
-        } else {
-            _zoom_in_x = new TypomaticJButton("X+");
-            _zoom_out_x = new TypomaticJButton("X-");
-        }
+        _zoom_in_x = new TypomaticJButton("X+");
+        _zoom_out_x = new TypomaticJButton("X-");
         _zoom_in_y = new TypomaticJButton("Y+");
         _zoom_out_y = new TypomaticJButton("Y-");
         _show_whole = new JButton("F");
@@ -923,13 +900,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y.setToolTipText("zoom in vertically [Alt+Up or Shift+mousewheel]");
         _zoom_out_x.setToolTipText("zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
         _zoom_out_y.setToolTipText("zoom out vertically [Alt+Down or Shift+mousewheel]");
-        if (getConfiguration().isUseNativeUI() && ForesterUtil.isMac()) {
-            _zoom_out_x.setPreferredSize(new Dimension(55, ZOOM_BUTTON_HEIGHT));
-            _zoom_in_x.setPreferredSize(new Dimension(55, ZOOM_BUTTON_HEIGHT));
-        } else {
-            _zoom_out_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
-            _zoom_in_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
-        }
+        _zoom_out_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
+        _zoom_in_x.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         _zoom_out_y.setPreferredSize(new Dimension(10, ZOOM_Y_BUTTON_HEIGHT));
         _zoom_in_y.setPreferredSize(new Dimension(10, ZOOM_Y_BUTTON_HEIGHT));
         _show_whole.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
@@ -976,9 +948,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         // a small preferred width so the slider does not widen the control panel; the full-width GridBag row
         // stretches it to the panel width (set by the comboboxes), like the zoom buttons do
         _font_size_slider.setPreferredSize(new Dimension(10, _font_size_slider.getPreferredSize().height));
-        if (!getConfiguration().isUseNativeUI()) {
-            _font_size_slider.setBackground(getBackground());
-        }
+        _font_size_slider.setBackground(getBackground());
         _font_size_slider.addChangeListener(e -> fontSizeSliderChanged());
         add(_font_size_slider);
         nextRowGap(SECTION_GAP);
@@ -1194,11 +1164,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void addJButton(final JButton jb, final JPanel p) {
         jb.setFocusPainted(false);
         jb.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            jb.setBorder(BorderFactory.createLineBorder(getConfiguration().getGuiButtonBorderColor()));
-            jb.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-            jb.setForeground(getConfiguration().getGuiButtonTextColor());
-        }
         p.add(jb);
         jb.addActionListener(this);
     }
@@ -1207,10 +1172,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         jcb.setFocusPainted(false);
         jcb.setFont(ControlPanel.jcb_font);
         jcb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
-        if (_configuration.isApplyCustomGuiColors()) {
-            jcb.setBackground(getConfiguration().getGuiBackgroundColor());
-            jcb.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         p.add(jcb, "Center");
         jcb.addActionListener(this);
     }
@@ -1218,31 +1179,23 @@ final class ControlPanel extends JPanel implements ActionListener {
     private final void setupJRadioButton(final JRadioButton rb) {
         rb.setFocusPainted(false);
         rb.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            rb.setBackground(getConfiguration().getGuiBackgroundColor());
-            rb.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         rb.addActionListener(this);
     }
 
     void addJTextField(final JTextField tf, final JPanel p) {
-        if (_configuration.isApplyCustomGuiColors()) {
-            tf.setForeground(getConfiguration().getGuiBackgroundColor());
-            tf.setFont(ControlPanel.jcb_font);
-        }
         p.add(tf);
         tf.addActionListener(this);
     }
 
     void deactivateButtonsToReturnToSuperTree() {
-        _return_to_whole_tree.setForeground(getConfiguration().getGuiButtonTextColor());
+        _return_to_whole_tree.setForeground(UIManager.getColor("Button.foreground"));
         _return_to_whole_tree.setEnabled(false);
-        _return_to_super_tree.setForeground(getConfiguration().getGuiButtonTextColor());
+        _return_to_super_tree.setForeground(UIManager.getColor("Button.foreground"));
         _return_to_super_tree.setEnabled(false);
     }
 
     void deactivateButtonToUncollapseAll() {
-        _uncollapse_all.setForeground(getConfiguration().getGuiButtonTextColor());
+        _uncollapse_all.setForeground(UIManager.getColor("Button.foreground"));
         _uncollapse_all.setEnabled(false);
     }
 
@@ -1789,18 +1742,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_combine_panel.setBackground(getBackground());
         final JLabel lbl = new JLabel("Combine:");
         lbl.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            lbl.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _search_combine_combo = new JComboBox<>(new String[] { "independent", "A AND B", "A OR B" });
         _search_combine_combo.setSelectedIndex(0);
         _search_combine_combo.setToolTipText("How to combine the two search boxes: independent A/B highlights, or one "
                 + "result set -- A AND B (in both) / A OR B (in either)");
         _search_combine_combo.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            _search_combine_combo.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-            _search_combine_combo.setForeground(getConfiguration().getGuiButtonTextColor());
-        }
         _search_combine_combo.setPreferredSize(new Dimension(10, _search_combine_combo.getPreferredSize().height));
         _search_combine_combo.addActionListener(e -> {
             if (!_search_controls_adjusting) {
@@ -2051,14 +1997,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setDynamicHidingIsOn(final boolean is_on) {
         if (is_on) {
-            getDynamicallyHideData().setForeground(getConfiguration().getGuiCheckboxAndButtonActiveColor());
+            getDynamicallyHideData().setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
         } else {
-            if (_configuration.isApplyCustomGuiColors()) {
-                getDynamicallyHideData().setForeground(getConfiguration().getGuiButtonTextColor());
-            } else {
-                // reset to the look-and-feel default so the label stays visible in dark themes
-                getDynamicallyHideData().setForeground(UIManager.getColor("CheckBox.foreground"));
-            }
+            // use the look-and-feel default so the label stays visible in dark themes
+            getDynamicallyHideData().setForeground(UIManager.getColor("CheckBox.foreground"));
         }
     }
 
@@ -2089,9 +2031,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupColorByProperty() {
         final JLabel label = new JLabel("Color by:");
         label.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _color_by_property_cb = new JComboBox<String>();
         _color_by_property_cb.setFont(ControlPanel.js_font);
         _color_by_property_cb.setToolTipText("color leaves by the value of a phyloXML property");
@@ -2119,9 +2058,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupSizeByProperty() {
         final JLabel label = new JLabel("Size by:");
         label.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _size_by_property_cb = new JComboBox<String>();
         _size_by_property_cb.setFont(ControlPanel.js_font);
         _size_by_property_cb.setToolTipText("scale the tip symbols by the value of a numeric phyloXML property");
@@ -2173,9 +2109,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupAncestralPieProperty() {
         _ancestral_pie_label = new JLabel("Ancestral pie:");
         _ancestral_pie_label.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            _ancestral_pie_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _ancestral_pie_property_cb = new JComboBox<String>();
         _ancestral_pie_property_cb.setFont(ControlPanel.js_font);
         _ancestral_pie_property_cb
@@ -2259,9 +2192,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupBranchLengthsControl() {
         _branch_lengths_label = new JLabel("Branch lengths:");
         _branch_lengths_label.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            _branch_lengths_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _branch_lengths_cb = new JComboBox<String>();
         _branch_lengths_cb.setFont(ControlPanel.js_font);
         _branch_lengths_cb.setToolTipText(
@@ -2448,9 +2378,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupSearchOptions() {
         final JLabel header = new JLabel("Search Options:");
         header.setFont(ControlPanel.jcb_bold_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            header.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         add(header);
         _search_case_sensitive_cb = new JCheckBox(MainFrame.SEARCH_CASE_SENSITIVE_LABEL);
         _search_inverse_cb = new JCheckBox(MainFrame.INVERSE_SEARCH_RESULT_LABEL);
@@ -2471,10 +2398,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             cb.setFocusPainted(false);
             cb.setFont(ControlPanel.jcb_font);
             cb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
-            if (_configuration.isApplyCustomGuiColors()) {
-                cb.setBackground(getConfiguration().getGuiBackgroundColor());
-                cb.setForeground(getConfiguration().getGuiCheckboxTextColor());
-            }
             cb.addActionListener(l);
         }
         nextRowGap(CHECKBOX_GAP);
@@ -2693,11 +2616,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         tf.setFont(ControlPanel.jcb_font);
         tf.setToolTipText("range upper bound");
         installTextUndo(tf);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
-            tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
-            tf.setBorder(null);
-        }
         tf.addKeyListener(new KeyAdapter() {
 
             @Override
@@ -2722,9 +2640,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         p.setBackground(getBackground());
         final JLabel to = new JLabel("to ");
         to.setFont(ControlPanel.jcb_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            to.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         p.add(to, BorderLayout.WEST);
         p.add(range_tf, BorderLayout.CENTER);
         p.setVisible(false);
@@ -2737,11 +2652,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private void styleSearchCombo(final JComboBox<?> combo) {
         combo.setFont(ControlPanel.jcb_font);
         combo.setRenderer(SEARCH_LABEL_RENDERER);
-        if (_configuration.isApplyCustomGuiColors()) {
-            // match the other control-panel combos (Click-on / sequence-relation / color-by), not the text fields
-            combo.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-            combo.setForeground(getConfiguration().getGuiButtonTextColor());
-        }
         combo.setPreferredSize(new Dimension(10, combo.getPreferredSize().height));
     }
 
@@ -2926,9 +2836,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private JPanel searchOptionsRow(final JCheckBox a, final JCheckBox b) {
         final JPanel p = new JPanel(new GridLayout(1, 2, 0, 0));
-        if (_configuration.isApplyCustomGuiColors()) {
-            p.setBackground(getBackground());
-        }
         p.add(a);
         p.add(b);
         return p;
@@ -2965,19 +2872,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         for (final JRadioButton rb : new JRadioButton[] { _light_mode_rb, _dark_mode_rb }) {
             rb.setFocusPainted(false);
             rb.setFont(ControlPanel.jcb_font);
-            if (_configuration.isApplyCustomGuiColors()) {
-                rb.setBackground(getConfiguration().getGuiBackgroundColor());
-                rb.setForeground(getConfiguration().getGuiCheckboxTextColor());
-            }
         }
         _light_mode_rb.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(false));
         _dark_mode_rb.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(true));
         final JPanel p = new JPanel(new GridLayout(1, 2, 0, 0));
         p.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            p.setBackground(getConfiguration().getGuiBackgroundColor());
-            p.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         p.add(_light_mode_rb);
         p.add(_dark_mode_rb);
         add(p);
@@ -2999,10 +2898,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupJRadioButton(getDisplayAsCladogramRb());
         final JPanel p = new JPanel(new GridLayout(1, 3, 0, 0));
         p.setFont(ControlPanel.jcb_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            p.setBackground(getConfiguration().getGuiBackgroundColor());
-            p.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         p.add(_display_as_unaligned_phylogram_rb);
         p.add(_display_as_aligned_phylogram_rb);
         p.add(_display_as_cladogram_rb);
@@ -3026,17 +2921,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _domain_structure_evalue_thr_tf = new JTextField(3);
         _domain_structure_evalue_thr_tf.setFont(ControlPanel.jcb_font);
         _domain_structure_evalue_thr_tf.setEditable(false);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _domain_structure_evalue_thr_tf.setForeground(getConfiguration().getGuiMenuBackgroundColor());
-            _domain_structure_evalue_thr_tf.setBackground(getConfiguration().getGuiCheckboxTextColor());
-            _domain_structure_evalue_thr_tf.setBorder(null);
-        }
         final JPanel d1_panel = new JPanel(new GridLayout(1, 2, 0, 0));
         final JPanel d2_panel = new JPanel(new GridLayout(1, 3, 0, 0));
-        if (_configuration.isApplyCustomGuiColors()) {
-            d1_panel.setBackground(getBackground());
-            d2_panel.setBackground(getBackground());
-        }
         add(d1_panel);
         add(d2_panel);
         addJButton(_zoom_out_domain_structure, d1_panel);
@@ -3050,9 +2936,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupSearchTools0() {
         final JLabel search_label = new JLabel("Search (A):");
         search_label.setFont(ControlPanel.jcb_bold_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            search_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         add(search_label);
         search_label.setToolTipText(SEARCH_TIP_TEXT);
         _search_field_0 = makeSearchFieldCombo(true);
@@ -3062,19 +2945,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_found_label_0 = new JLabel();
         getSearchFoundCountsLabel0().setVisible(false);
         _search_found_label_0.setFont(ControlPanel.jcb_bold_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _search_found_label_0.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _search_tf_0 = new JTextField(3);
         _search_tf_0.setFont(ControlPanel.jcb_font);
         _search_tf_0.setToolTipText(SEARCH_TIP_TEXT);
         installTextUndo(_search_tf_0);
         _search_tf_0.setEditable(true);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _search_tf_0.setForeground(getConfiguration().getGuiMenuBackgroundColor());
-            _search_tf_0.setBackground(getConfiguration().getGuiCheckboxTextColor());
-            _search_tf_0.setBorder(null);
-        }
         _search_reset_button_0 = new JButton();
         getSearchResetButton0().setText("Reset");
         getSearchResetButton0().setEnabled(false);
@@ -3121,9 +2996,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupSearchTools1() {
         final JLabel search_label = new JLabel("Search (B):");
         search_label.setFont(ControlPanel.jcb_bold_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            search_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         add(search_label);
         search_label.setToolTipText(SEARCH_TIP_TEXT);
         _search_field_1 = makeSearchFieldCombo(false);
@@ -3133,19 +3005,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_found_label_1 = new JLabel();
         getSearchFoundCountsLabel1().setVisible(false);
         _search_found_label_1.setFont(ControlPanel.jcb_bold_font);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _search_found_label_1.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _search_tf_1 = new JTextField(3);
         _search_tf_1.setFont(ControlPanel.jcb_font);
         _search_tf_1.setToolTipText(SEARCH_TIP_TEXT);
         installTextUndo(_search_tf_1);
         _search_tf_1.setEditable(true);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _search_tf_1.setForeground(getConfiguration().getGuiMenuBackgroundColor());
-            _search_tf_1.setBackground(getConfiguration().getGuiCheckboxTextColor());
-            _search_tf_1.setBorder(null);
-        }
         _search_reset_button_1 = new JButton();
         getSearchResetButton1().setText("Reset");
         getSearchResetButton1().setEnabled(false);
@@ -3198,9 +3062,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_nav_label = new JLabel("", javax.swing.SwingConstants.CENTER);
         _search_nav_label.setFont(ControlPanel.jcb_bold_font);
         _search_nav_label.setToolTipText("Position among the search hits");
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _search_nav_label.setForeground(getConfiguration().getGuiCheckboxTextColor());
-        }
         _search_nav_panel = new JPanel(new BorderLayout());
         _search_nav_panel.setBackground(getBackground());
         _search_nav_panel.add(_search_prev_button, BorderLayout.WEST);
@@ -3216,11 +3077,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         b.setFont(ControlPanel.jcb_bold_font);
         b.setMargin(new Insets(2, 10, 2, 10)); // roomy enough to match the sibling zoom buttons' height
         b.setToolTipText(tip);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            b.setBorder(BorderFactory.createLineBorder(getConfiguration().getGuiButtonBorderColor()));
-            b.setBackground(getConfiguration().getGuiButtonBackgroundColor());
-            b.setForeground(getConfiguration().getGuiButtonTextColor());
-        }
         b.addActionListener(new ActionListener() {
 
             @Override
@@ -3542,7 +3398,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     void updateZoomButtonsForLayout() {
         final boolean radial = isRadialLayout();
         final boolean vertical = isVerticalOrientation();
-        final boolean native_ui = getConfiguration().isUseNativeUI();
         if (_zoom_in_y != null) {
             _zoom_in_y.setText(radial ? "+" : "Y+");
             _zoom_in_y.setToolTipText(radial ? "zoom in [mouse wheel, +, or Alt+Up]"
@@ -3554,14 +3409,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                     : "zoom out vertically [Alt+Down or Shift+mousewheel]");
         }
         if (_zoom_in_x != null) {
-            _zoom_in_x.setText(radial ? rotateLabel(_zoom_in_x, ROTATE_CW_LABEL, ROTATE_CW_FALLBACK)
-                    : (native_ui ? "+" : "X+"));
+            _zoom_in_x.setText(radial ? rotateLabel(_zoom_in_x, ROTATE_CW_LABEL, ROTATE_CW_FALLBACK) : "X+");
             _zoom_in_x.setToolTipText(radial ? "rotate clockwise [S or Shift+mousewheel]"
                     : "zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
         }
         if (_zoom_out_x != null) {
-            _zoom_out_x.setText(radial ? rotateLabel(_zoom_out_x, ROTATE_CCW_LABEL, ROTATE_CCW_FALLBACK)
-                    : (native_ui ? "-" : "X-"));
+            _zoom_out_x.setText(radial ? rotateLabel(_zoom_out_x, ROTATE_CCW_LABEL, ROTATE_CCW_FALLBACK) : "X-");
             _zoom_out_x.setToolTipText(radial ? "rotate counter-clockwise [A or Shift+mousewheel]"
                     : "zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
         }
@@ -3632,9 +3485,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         _click_to_combobox.setFocusable(false);
         _click_to_combobox.setMaximumRowCount(14);
         _click_to_combobox.setFont(ControlPanel.js_font);
-        if (_configuration.isApplyCustomGuiColors()) {
-            _click_to_combobox.setBackground(getConfiguration().getGuiBackgroundColor());
-        }
         // don't add listener until all items are set (or each one will trigger
         // an event)
         // click_to_list.addActionListener(this);
@@ -3912,10 +3762,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final static JLabel customizeLabel(final JLabel label, final Configuration configuration) {
         label.setFont(ControlPanel.jcb_bold_font);
-        if (configuration.isApplyCustomGuiColors()) {
-            label.setForeground(configuration.getGuiCheckboxTextColor());
-            label.setBackground(configuration.getGuiBackgroundColor());
-        }
         return label;
     }
 

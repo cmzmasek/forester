@@ -288,9 +288,6 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     void initialize() {
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            setBackground(getConfiguration().getGuiBackgroundColor());
-        }
         setTreeFontSet(new TreeFontSet(this));
         getTreeFontSet().setBaseFont(getOptions().getBaseFont());
         setLayout(new BorderLayout());
@@ -298,37 +295,14 @@ public class MainPanel extends JPanel implements ComponentListener {
         _treegraphic_scroll_panes = new ArrayList<JScrollPane>();
         _treegraphic_scroll_pane_panels = new ArrayList<JPanel>();
         _tabbed_pane = new JTabbedPane(SwingConstants.TOP);
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _tabbed_pane.setBackground(getConfiguration().getGuiBackgroundColor());
-            _tabbed_pane.setForeground(getConfiguration().getGuiBackgroundColor());
-        }
         _tabbed_pane.addChangeListener(new ChangeListener() {
 
             // This method is called whenever the selected tab changes
             @Override
             public void stateChanged(final ChangeEvent evt) {
-                final JTabbedPane pane = (JTabbedPane) evt.getSource();
                 getControlPanel().tabChanged();
-                // Get current tab
-                final int sel = pane.getSelectedIndex();
-                if (sel >= 0) {
-                    if (getConfiguration().isApplyCustomGuiColors()) {
-                        if (_tabbed_pane.getTabCount() > 0) {
-                            _tabbed_pane.setForegroundAt(sel, AptxConstants.TAB_LABEL_FOREGROUND_COLOR_SELECTED);
-                            for (int i = 0; i < _tabbed_pane.getTabCount(); ++i) {
-                                if (i != sel) {
-                                    _tabbed_pane.setBackgroundAt(i, getConfiguration().getGuiBackgroundColor());
-                                    _tabbed_pane.setForegroundAt(i, getConfiguration().getGuiCheckboxTextColor());
-                                }
-                            }
-                        }
-                    }
-                }
             }
         });
-        if (getConfiguration().isApplyCustomGuiColors()) {
-            _tabbed_pane.setFont(ControlPanel.jcb_font);
-        }
         // A tab's title IS the tree name (save writes it back onto the tree). Double-clicking a tab opens the
         // editor for that name and the tree description; the tab right-click menu offers the same item (see
         // MainFrameApplication.createTabPopupMenu).
