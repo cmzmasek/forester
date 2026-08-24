@@ -1995,16 +1995,58 @@ public class TreePanelUtil {
 
     /**
      * Provenance sentence for a ladderize (order-appearance) operation -- pure/testable; the caller appends it
-     * to the phylogeny description. {@code ascending} is {@code null} when the direction is not tracked (the
-     * per-node "Ladderize Subtree" action auto-picks a direction); non-null (the whole-tree "order all" toggle)
-     * names the applied direction.
+     * to the phylogeny description. {@code larger_first} is {@code null} when the direction is not tracked (the
+     * per-node "Ladderize Subtree" action auto-picks a direction); {@code TRUE} means the larger clade is drawn
+     * first at each node (the whole-tree "order all" toggle in its {@code order=true} state), {@code FALSE} the
+     * smaller clade first. See {@link #ladderizeStateOf}.
      */
-    final static String ladderizeProvenanceSentence( final boolean whole_tree, final Boolean ascending,
+    final static String ladderizeProvenanceSentence( final boolean whole_tree, final Boolean larger_first,
                                                       final String tree_name, final int num_ext_nodes ) {
         final String scope = whole_tree ? "the whole tree" : "a subtree";
-        final String dir = ( ascending == null ) ? ""
-                : ( " so that " + ( ascending ? "smaller" : "larger" ) + " clades appear first" );
+        final String dir = ( larger_first == null ) ? ""
+                : ( " so that " + ( larger_first ? "larger" : "smaller" ) + " clades are drawn first" );
         final String name = ForesterUtil.isEmpty( tree_name ) ? "" : ( " named \"" + tree_name + "\"" );
         return "Ladderized " + scope + dir + " (tree" + name + " with " + num_ext_nodes + " tips).";
+    }
+
+    /**
+     * The direction the subtree rooted at {@code root} is currently ladderized in -- used to sync the "order all"
+     * toggle icon to the tree after an Undo/Redo or navigation. {@code TRUE} = larger clade drawn first at every
+     * 2-child node ({@code orderAppearance}'s {@code order=true} result); {@code FALSE} = smaller first; {@code
+     * null} = mixed, or not ladderized (no 2-child node with unequal-sized children). Requires the external-node
+     * counts to be current. Pure/testable.
+     */
+    final static Boolean ladderizeStateOf( final PhylogenyNode root ) {
+        final boolean[] flags = { false, true, true }; // { any-unequal, all-larger-first, all-smaller-first }
+        collectLadderizeState( root, flags );
+        if ( !flags[ 0 ] ) {
+            return null;
+        }
+        if ( flags[ 1 ] ) {
+            return Boolean.TRUE;
+        }
+        if ( flags[ 2 ] ) {
+            return Boolean.FALSE;
+        }
+        return null;
+    }
+
+    private static void collectLadderizeState( final PhylogenyNode n, final boolean[] flags ) {
+        if ( n.getNumberOfDescendants() == 2 ) {
+            final int a = n.getChildNode1().getNumberOfExternalNodes();
+            final int b = n.getChildNode2().getNumberOfExternalNodes();
+            if ( a != b ) {
+                flags[ 0 ] = true;
+                if ( a > b ) {
+                    flags[ 2 ] = false; // child1 larger -> not smaller-first
+                }
+                else {
+                    flags[ 1 ] = false; // child1 smaller -> not larger-first
+                }
+            }
+        }
+        for ( int i = 0; i < n.getNumberOfDescendants(); i++ ) {
+            collectLadderizeState( n.getChildNode( i ), flags );
+        }
     }
 }

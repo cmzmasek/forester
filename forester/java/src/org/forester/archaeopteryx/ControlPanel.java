@@ -177,10 +177,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _open_tax_web_item;
     private int _node_style_item;
     private JButton _order;
-    // The "order all" (ladderize) button toggles between the two ladderize directions; its icon shows the
-    // one just applied. _order_ascending holds the last-applied direction. This is transient UI state and is
-    // NOT restored by Undo/Redo (like other view state) -- after an undo the icon may show the previously-
-    // applied direction rather than the restored tree's actual order; the next press re-ladderizes as usual.
+    // The "order all" (ladderize) button toggles between the two ladderize directions (larger vs smaller clades
+    // drawn first) and shows the current one on its icon. _order_ascending == true means the LARGER clade is
+    // drawn first at each node (PhylogenyMethods.orderAppearance with order=true). syncOrderButtonIconToTree
+    // re-derives this from the tree after an Undo/Redo, so the icon stays in sync with the restored tree.
     private static final int  LADDERIZE_ICON_SIZE       = 12;
     private static final Icon LADDERIZE_ICON_ASCENDING  = new LadderizeIcon(true, LADDERIZE_ICON_SIZE);
     private static final Icon LADDERIZE_ICON_DESCENDING = new LadderizeIcon(false, LADDERIZE_ICON_SIZE);
@@ -493,6 +493,20 @@ final class ControlPanel extends JPanel implements ActionListener {
         tp.resetNodeIdToDistToLeafMap();
         tp.setEdited(true);
         displayedPhylogenyMightHaveChanged(true);
+    }
+
+    /**
+     * Re-syncs the "order all" toggle state + button icon to the currently displayed tree's actual ladderize
+     * direction. Called after an Undo/Redo (which restores the tree but not view state), so the icon reflects
+     * the restored tree instead of the pre-undo direction. A tree that is not cleanly ladderized (mixed / no
+     * unequal-sized sibling clades) falls back to the resting default. See {@link TreePanelUtil#ladderizeStateOf}.
+     */
+    void syncOrderButtonIconToTree(final TreePanel tp) {
+        if ((tp == null) || (_order == null) || (tp.getPhylogeny() == null) || tp.getPhylogeny().isEmpty()) {
+            return;
+        }
+        _order_ascending = Boolean.TRUE.equals(TreePanelUtil.ladderizeStateOf(tp.getPhylogeny().getRoot()));
+        _order.setIcon(_order_ascending ? LADDERIZE_ICON_ASCENDING : LADDERIZE_ICON_DESCENDING);
     }
 
     // test hooks for the "order all" (ladderize) toggle + its two-state icon

@@ -8645,6 +8645,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             rebuildPropertyDisplays(); // color+size schemes summarize the tree -- recompute for the restored one
             rebuildAnnotationColumns();
             rebuildCladeBands();
+            if (getControlPanel() != null) {
+                // the ladderize toggle icon is view state, not in the snapshot -- re-derive it from the restored tree
+                getControlPanel().syncOrderButtonIconToTree(this);
+            }
             setEdited(s.isEdited());
         }
         finally {

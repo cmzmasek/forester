@@ -123,6 +123,11 @@ public final class OrderButtonToggleTest {
         if ( !after_undo.equals( tip2 ) ) {
             return fail( "undo must restore the pre-ladderize order: expected " + tip2 + " got " + after_undo );
         }
+        // and the toggle icon re-syncs to the restored tree's direction (post-press2 = smaller-first here),
+        // instead of staying stale on the pre-undo (press3) direction -- matches icon2, and not ascending
+        if ( ( cp.getOrderButtonIconForTest() != icon2 ) || cp.isOrderAscendingForTest() ) {
+            return fail( "undo must re-sync the ladderize icon to the restored tree's direction" );
+        }
         return true;
     }
 

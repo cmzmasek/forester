@@ -72,15 +72,17 @@ public final class TreePanelUtilTest {
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
-                && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance();
+                && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance()
+                && testLadderizeState();
     }
 
     private static boolean testLadderizeProvenance() {
-        final String asc = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.TRUE, "mytree", 42 );
-        final String desc = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.FALSE, "mytree", 42 );
-        // the whole-tree toggle's two directions produce different, direction-naming sentences
-        if ( asc.equals( desc ) || !asc.contains( "smaller" ) || !desc.contains( "larger" )
-                || !asc.contains( "whole tree" ) || !asc.contains( "\"mytree\"" ) || !asc.contains( "42 tips" ) ) {
+        // larger_first==TRUE must name "larger" (matches orderAppearance order=true = larger clade drawn first)
+        final String larger = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.TRUE, "mytree", 42 );
+        final String smaller = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.FALSE, "mytree", 42 );
+        if ( larger.equals( smaller ) || !larger.contains( "larger" ) || larger.contains( "smaller" )
+                || !smaller.contains( "smaller" ) || !larger.contains( "whole tree" )
+                || !larger.contains( "\"mytree\"" ) || !larger.contains( "42 tips" ) ) {
             return false;
         }
         // the subtree form names no direction and scopes to "a subtree"
@@ -95,6 +97,42 @@ public final class TreePanelUtilTest {
             return false;
         }
         return true;
+    }
+
+    private static boolean testLadderizeState() {
+        // larger-first: root child1 is a 2-leaf clade (bigger) than child2 (a single leaf)
+        final PhylogenyNode r1 = new PhylogenyNode();
+        final PhylogenyNode c1 = new PhylogenyNode();
+        c1.addAsChild( new PhylogenyNode() );
+        c1.addAsChild( new PhylogenyNode() );
+        r1.addAsChild( c1 );
+        r1.addAsChild( new PhylogenyNode() );
+        if ( !Boolean.TRUE.equals( TreePanelUtil.ladderizeStateOf( ladderPhy( r1 ).getRoot() ) ) ) {
+            return false;
+        }
+        // smaller-first: the single leaf is child1
+        final PhylogenyNode r2 = new PhylogenyNode();
+        final PhylogenyNode c2 = new PhylogenyNode();
+        c2.addAsChild( new PhylogenyNode() );
+        c2.addAsChild( new PhylogenyNode() );
+        r2.addAsChild( new PhylogenyNode() );
+        r2.addAsChild( c2 );
+        if ( !Boolean.FALSE.equals( TreePanelUtil.ladderizeStateOf( ladderPhy( r2 ).getRoot() ) ) ) {
+            return false;
+        }
+        // balanced (equal-sized children everywhere) -> null (no unequal 2-child node to define a direction)
+        final PhylogenyNode r3 = new PhylogenyNode();
+        r3.addAsChild( new PhylogenyNode() );
+        r3.addAsChild( new PhylogenyNode() );
+        return TreePanelUtil.ladderizeStateOf( ladderPhy( r3 ).getRoot() ) == null;
+    }
+
+    private static Phylogeny ladderPhy( final PhylogenyNode root ) {
+        final Phylogeny p = new Phylogeny();
+        p.setRoot( root );
+        p.externalNodesHaveChanged();
+        p.recalculateNumberOfExternalDescendants( true );
+        return p;
     }
 
     /**
