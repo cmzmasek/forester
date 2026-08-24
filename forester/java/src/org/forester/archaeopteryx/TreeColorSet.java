@@ -98,11 +98,9 @@ public final class TreeColorSet {
             new Color( 0, 0, 0 ), // binary_domain_combinations_color
             new Color( 0, 0, 0 ), // annotation
             new Color( 220, 220, 220 ) } }; // overview
-    private Color              annotation_color;
     private Color              background_color;
     private Color              binary_domain_combinations_color;
     private Color              bootstrap_color;
-    private Color              box_color;
     private Color              branch_color;
     private Color              branch_length_color;
     private Color              collapse_fill_color;
@@ -144,10 +142,6 @@ public final class TreeColorSet {
 
     Color getBinaryDomainCombinationsColor() {
         return binary_domain_combinations_color;
-    }
-
-    Color getBoxColor() {
-        return box_color;
     }
 
     Color getBranchColor() {
@@ -242,7 +236,6 @@ public final class TreeColorSet {
         bootstrap_color = _color_schemes[ scheme ][ 3 ];
         branch_length_color = _color_schemes[ scheme ][ 4 ];
         branch_color = _color_schemes[ scheme ][ 5 ];
-        box_color = _color_schemes[ scheme ][ 6 ];
         collapse_fill_color = _color_schemes[ scheme ][ 7 ];
         applyFoundColors(); // found_color_0/1/0and1 -- computed (unified across themes), not read from the array [8..10]
         dup_box_color = _color_schemes[ scheme ][ 11 ];
@@ -251,7 +244,6 @@ public final class TreeColorSet {
         domain_label_color = _color_schemes[ scheme ][ 14 ];
         domain_base_color = _color_schemes[ scheme ][ 15 ];
         binary_domain_combinations_color = _color_schemes[ scheme ][ 16 ];
-        annotation_color = _color_schemes[ scheme ][ 17 ];
         ov_color = _color_schemes[ scheme ][ 18 ];
     }
 
@@ -262,9 +254,6 @@ public final class TreeColorSet {
         applyFoundColors();
     }
 
-    Options.FOUND_COLOR getFoundColor() {
-        return _found_color;
-    }
 
     /**
      * Derives the three found-node colors for the current scheme. UNIFIED across Light/Dark (same hue per role,

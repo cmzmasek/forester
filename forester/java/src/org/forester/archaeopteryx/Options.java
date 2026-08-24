@@ -243,7 +243,6 @@ final public class Options {
     private boolean _graphics_export_white_background;
     private NODE_LABEL_DIRECTION _node_label_direction;
     private FOUND_COLOR          _found_color;
-    private short _number_of_digits_after_comma_for_branch_length_values;
     private short _number_of_digits_after_comma_for_confidence_values;
     private OVERVIEW_PLACEMENT_TYPE _ov_placement;
     private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type;
@@ -259,7 +258,6 @@ final public class Options {
     private boolean _print_black_and_white;
     private float _print_line_width;
     private final boolean _print_using_actual_size = true;
-    private double _scale_bar_length;
     private boolean _search_case_sensitive;
     private boolean _show_confidence_stddev;
     private boolean _show_mad_confidence;
@@ -412,8 +410,6 @@ final public class Options {
         _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
         _found_color = FOUND_COLOR.ELECTRIC_VIOLET;
         _inverse_search_result = false;
-        _scale_bar_length = 0.0;
-        _number_of_digits_after_comma_for_branch_length_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
         _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
         _nh_parsing_replace_underscores = false;
         // Raster (PNG/JPG/TIFF/...) export multiplier: the figure is re-rendered onto an N-times-larger
@@ -495,10 +491,6 @@ final public class Options {
         return _found_color;
     }
 
-    final short getNumberOfDigitsAfterCommaForBranchLengthValues() {
-        return _number_of_digits_after_comma_for_branch_length_values;
-    }
-
     final short getNumberOfDigitsAfterCommaForConfidenceValues() {
         return _number_of_digits_after_comma_for_confidence_values;
     }
@@ -536,20 +528,12 @@ final public class Options {
         return _print_line_width;
     }
 
-    final double getScaleBarLength() {
-        return _scale_bar_length;
-    }
-
     final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
         return _taxonomy_extraction;
     }
 
     final boolean isAbbreviateScientificTaxonNames() {
         return _abbreviate_scientific_names;
-    }
-
-    boolean isAllowMagnificationOfTaxonomyImages() {
-        return true;
     }
 
     final boolean isAntialiasPrint() {
@@ -805,10 +789,6 @@ final public class Options {
         _default_node_shape_size = default_node_shape_size;
     }
 
-    final void setEditable(final boolean editable) {
-        _editable = editable;
-    }
-
     final void setGraphicsExportVisibleOnly(final boolean graphics_export_visible_only) {
         _graphics_export_visible_only = graphics_export_visible_only;
     }
@@ -881,10 +861,6 @@ final public class Options {
         _nh_parsing_replace_underscores = nh_parsing_replace_underscores;
     }
 
-    final void setScaleBarLength(final double scale_bar_length) {
-        _scale_bar_length = scale_bar_length;
-    }
-
     final void setSearchCaseSensitive(final boolean search_case_sensitive) {
         _search_case_sensitive = search_case_sensitive;
     }
@@ -929,9 +905,6 @@ final public class Options {
         _show_scale = show_scale;
     }
 
-    final void setTaxonomyExtraction(final TAXONOMY_EXTRACTION taxonomy_extraction) {
-        _taxonomy_extraction = taxonomy_extraction;
-    }
 
     /**
      * Returns a fresh {@code Options} at the built-in defaults ({@link #init()}, backed by

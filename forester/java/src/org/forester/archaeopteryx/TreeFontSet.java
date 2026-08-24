@@ -28,7 +28,6 @@ import java.awt.FontMetrics;
  */
 public final class TreeFontSet {
 
-    static final int            BOLD_AND_ITALIC           = Font.BOLD + Font.ITALIC;
     final static float          FONT_SIZE_CHANGE_STEP     = 1.0f;
     // bounds for the user-chosen tip-label font size (the control-panel slider range)
     static final int            MIN_FONT_SIZE             = 2;
@@ -41,13 +40,10 @@ public final class TreeFontSet {
     private FontMetrics         _fm_small;
     private Font                _large_font;
     private Font                _large_font_memory;
-    private Font                _large_font_system;
     // the owner (needed to get font metrics)
     private final MainPanel     _owner;
     // The fonts
     private Font                _small_font;
-    private Font                _small_font_memory;
-    private Font                _small_font_system;
     private int                 _small_max_ascent         = 0;
     // hold font measurements
     private int                 _small_max_descent        = 0;
@@ -77,21 +73,11 @@ public final class TreeFontSet {
         return _small_max_descent;
     }
 
-    private Font getLargeFontSystem() {
-        return _large_font_system;
-    }
 
     private void intializeFonts() {
         final int small_size = getBaseFont().getSize() - 2;
-        int italic = Font.ITALIC;
-        if ( getBaseFont().getStyle() == Font.BOLD ) {
-            italic = italic + Font.BOLD;
-        }
         _small_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
         _large_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
-        _small_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
-        _large_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
-        _small_font_memory = _small_font;
         _large_font_memory = _large_font;
         setupFontMetrics();
     }
@@ -109,7 +95,6 @@ public final class TreeFontSet {
 
     void decreaseFontSize( final int min, final boolean decreased_size_by_system ) {
         if ( decreased_size_by_system && !isDecreasedSizeBySystem() ) {
-            _small_font_memory = _small_font;
             _large_font_memory = _large_font;
         }
         setDecreasedSizeBySystem( decreased_size_by_system );
@@ -132,9 +117,6 @@ public final class TreeFontSet {
         return _large_font_memory;
     }
 
-    Font getSmallFontSystem() {
-        return _small_font_system;
-    }
 
     void increaseFontSize() {
         _small_font = _small_font.deriveFont( _small_font.getSize() + FONT_SIZE_CHANGE_STEP );
@@ -168,10 +150,6 @@ public final class TreeFontSet {
 
     boolean isDecreasedSizeBySystem() {
         return _decreased_size_by_system;
-    }
-
-    void reset() {
-        _large_font_system = _large_font;
     }
 
     void setBaseFont( final Font base_font ) {

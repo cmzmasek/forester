@@ -22,9 +22,13 @@ package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -46,10 +50,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.formdev.flatlaf.FlatClientProperties;
+
 import javax.swing.BorderFactory;
-import javax.swing.UIManager;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -171,6 +177,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _open_tax_web_item;
     private int _node_style_item;
     private JButton _order;
+    // The "order all" (ladderize) button toggles between the two ladderize directions; its icon shows the
+    // one just applied. _order_ascending holds the last-applied direction. This is transient UI state and is
+    // NOT restored by Undo/Redo (like other view state) -- after an undo the icon may show the previously-
+    // applied direction rather than the restored tree's actual order; the next press re-ladderizes as usual.
+    private static final int  LADDERIZE_ICON_SIZE       = 12;
+    private static final Icon LADDERIZE_ICON_ASCENDING  = new LadderizeIcon(true, LADDERIZE_ICON_SIZE);
+    private static final Icon LADDERIZE_ICON_DESCENDING = new LadderizeIcon(false, LADDERIZE_ICON_SIZE);
+    private boolean           _order_ascending          = false;
     private int _paste_subtree_item;
     private int _reroot_cb_item;
     private JButton _return_to_whole_tree;
@@ -462,7 +476,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         } else if (isShowSeqNames() || isShowSeqSymbols() || isShowGeneNames()) {
             pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
         }
-        PhylogenyMethods.orderAppearanceX(tp.getPhylogeny().getRoot(), true, pri);
+        tp.pushUndoCheckpoint("Ladderize"); // reversible tree-data mutation (reorders sibling clades)
+        // flip to the opposite ladderize direction, apply it, and show it on the button icon
+        _order_ascending = !_order_ascending;
+        PhylogenyMethods.orderAppearance(tp.getPhylogeny().getRoot(), _order_ascending, true, pri);
+        _order.setIcon(_order_ascending ? LADDERIZE_ICON_ASCENDING : LADDERIZE_ICON_DESCENDING);
+        final Phylogeny phy = tp.getPhylogeny();
+        final String prov = TreePanelUtil.ladderizeProvenanceSentence(true, _order_ascending, phy.getName(),
+                phy.getNumberOfExternalNodes());
+        final String existing = phy.getDescription();
+        phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
         tp.setNodeInPreorderToNull();
         tp.getPhylogeny().externalNodesHaveChanged();
         tp.getPhylogeny().clearHashIdToNodeMap();
@@ -470,6 +493,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         tp.resetNodeIdToDistToLeafMap();
         tp.setEdited(true);
         displayedPhylogenyMightHaveChanged(true);
+    }
+
+    // test hooks for the "order all" (ladderize) toggle + its two-state icon
+    boolean isOrderAscendingForTest() {
+        return _order_ascending;
+    }
+
+    Icon getOrderButtonIconForTest() {
+        return _order.getIcon();
     }
 
     void returnedToSuperTreePressed() {
@@ -861,14 +893,12 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void activateButtonsToReturnToSuperTree() {
-        _return_to_whole_tree.setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
+        // FlatLaf renders the enabled (active) vs disabled (greyed) state itself -- no manual accent needed
         _return_to_whole_tree.setEnabled(true);
-        _return_to_super_tree.setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
         _return_to_super_tree.setEnabled(true);
     }
 
     void activateButtonToUncollapseAll() {
-        _uncollapse_all.setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
         _uncollapse_all.setEnabled(true);
     }
 
@@ -921,8 +951,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _return_to_super_tree = new JButton(RETURN_UP_ONE_LEVEL_TEXT);
         _return_to_super_tree.setToolTipText("move up by one level towards the complete tree (if in a sub-tree) [Alt+R]");
         _return_to_super_tree.setEnabled(false);
-        _order = new JButton("O");
-        _order.setToolTipText("order all [Alt+O]");
+        _order = new JButton(LADDERIZE_ICON_DESCENDING);
+        _order.setToolTipText("Ladderize the whole tree; click again to flip the direction [Alt+O]");
         _uncollapse_all = new JButton("U");
         _uncollapse_all.setToolTipText("uncollapse all [Alt+U]");
         // Four buttons share the bottom row (O R R1 U); trim the default padding so the
@@ -1188,14 +1218,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void deactivateButtonsToReturnToSuperTree() {
-        _return_to_whole_tree.setForeground(UIManager.getColor("Button.foreground"));
         _return_to_whole_tree.setEnabled(false);
-        _return_to_super_tree.setForeground(UIManager.getColor("Button.foreground"));
         _return_to_super_tree.setEnabled(false);
     }
 
     void deactivateButtonToUncollapseAll() {
-        _uncollapse_all.setForeground(UIManager.getColor("Button.foreground"));
         _uncollapse_all.setEnabled(false);
     }
 
@@ -1996,12 +2023,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setDynamicHidingIsOn(final boolean is_on) {
-        if (is_on) {
-            getDynamicallyHideData().setForeground(AptxConstants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT);
-        } else {
-            // use the look-and-feel default so the label stays visible in dark themes
-            getDynamicallyHideData().setForeground(UIManager.getColor("CheckBox.foreground"));
-        }
+        // Status cue: paint the "Dyna Hide" label in the FlatLaf theme accent while hiding is active (FlatLaf
+        // resolves $Component.accentColor per the light/dark theme); clearing the STYLE reverts to the default.
+        getDynamicallyHideData().putClientProperty(FlatClientProperties.STYLE,
+                is_on ? "foreground: $Component.accentColor" : null);
     }
 
     void setSearchFoundCountsOnLabel0(final int counts) {
@@ -3776,5 +3801,54 @@ final class ControlPanel extends JPanel implements ActionListener {
             return Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM;
         }
         return Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM;
+    }
+
+    /**
+     * A small custom icon for the "order all" (ladderize) button: a vertical "root" spine with horizontal
+     * branches whose lengths cascade, depicting a ladderized-tree silhouette in one of the two directions
+     * (ascending vs descending). Painted in the button's foreground color, so it is theme-aware (light/dark)
+     * and greys automatically with a disabled button.
+     */
+    private static final class LadderizeIcon implements Icon {
+
+        private final boolean _ascending;
+        private final int     _size;
+
+        LadderizeIcon(final boolean ascending, final int size) {
+            _ascending = ascending;
+            _size = size;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return _size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return _size;
+        }
+
+        @Override
+        public void paintIcon(final Component c, final Graphics g, final int x, final int y) {
+            final Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(c.getForeground());
+                g2.setStroke(new BasicStroke(1.2f));
+                final int spine_x = x + 2;
+                g2.drawLine(spine_x, y + 1, spine_x, y + _size - 2); // the vertical "root" spine
+                final int rows = 4;
+                for (int i = 0; i < rows; i++) {
+                    final int ty = y + 1 + Math.round((i * (_size - 3)) / (float) (rows - 1));
+                    final double frac = _ascending ? (i / (double) (rows - 1)) : (1.0 - (i / (double) (rows - 1)));
+                    final int len = 2 + (int) Math.round(frac * (_size - 5)); // branch length forms the ladder
+                    g2.drawLine(spine_x, ty, spine_x + len, ty);
+                }
+            }
+            finally {
+                g2.dispose();
+            }
+        }
     }
 }

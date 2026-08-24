@@ -1992,4 +1992,19 @@ public class TreePanelUtil {
         }
         return 100;
     }
+
+    /**
+     * Provenance sentence for a ladderize (order-appearance) operation -- pure/testable; the caller appends it
+     * to the phylogeny description. {@code ascending} is {@code null} when the direction is not tracked (the
+     * per-node "Ladderize Subtree" action auto-picks a direction); non-null (the whole-tree "order all" toggle)
+     * names the applied direction.
+     */
+    final static String ladderizeProvenanceSentence( final boolean whole_tree, final Boolean ascending,
+                                                      final String tree_name, final int num_ext_nodes ) {
+        final String scope = whole_tree ? "the whole tree" : "a subtree";
+        final String dir = ( ascending == null ) ? ""
+                : ( " so that " + ( ascending ? "smaller" : "larger" ) + " clades appear first" );
+        final String name = ForesterUtil.isEmpty( tree_name ) ? "" : ( " named \"" + tree_name + "\"" );
+        return "Ladderized " + scope + dir + " (tree" + name + " with " + num_ext_nodes + " tips).";
+    }
 }

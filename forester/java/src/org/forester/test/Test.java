@@ -955,6 +955,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Order (ladderize) button toggle: ");
+        if (org.forester.archaeopteryx.OrderButtonToggleTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tanglegram linker: ");
         if (org.forester.archaeopteryx.TanglegramLinkerTest.test()) {
             System.out.println("OK.");

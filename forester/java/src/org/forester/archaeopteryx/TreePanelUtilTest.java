@@ -72,7 +72,29 @@ public final class TreePanelUtilTest {
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
-                && testTruncateToPixelWidth() && testAncestralPieData();
+                && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance();
+    }
+
+    private static boolean testLadderizeProvenance() {
+        final String asc = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.TRUE, "mytree", 42 );
+        final String desc = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.FALSE, "mytree", 42 );
+        // the whole-tree toggle's two directions produce different, direction-naming sentences
+        if ( asc.equals( desc ) || !asc.contains( "smaller" ) || !desc.contains( "larger" )
+                || !asc.contains( "whole tree" ) || !asc.contains( "\"mytree\"" ) || !asc.contains( "42 tips" ) ) {
+            return false;
+        }
+        // the subtree form names no direction and scopes to "a subtree"
+        final String sub = TreePanelUtil.ladderizeProvenanceSentence( false, null, "t", 3 );
+        if ( !sub.contains( "a subtree" ) || sub.contains( "smaller" ) || sub.contains( "larger" )
+                || !sub.contains( "\"t\"" ) || !sub.contains( "3 tips" ) ) {
+            return false;
+        }
+        // an empty tree name drops the name clause but stays well-formed
+        final String noname = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.TRUE, "", 5 );
+        if ( noname.contains( "named" ) || !noname.contains( "5 tips" ) ) {
+            return false;
+        }
+        return true;
     }
 
     /**

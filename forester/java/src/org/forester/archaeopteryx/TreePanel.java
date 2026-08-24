@@ -12668,6 +12668,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         pushUndoCheckpoint("Ladderize Subtree");
         PhylogenyMethods.orderAppearanceX(node, true, pri);
+        final String prov = TreePanelUtil.ladderizeProvenanceSentence(false, null, getPhylogeny().getName(),
+                getPhylogeny().getNumberOfExternalNodes());
+        final String existing = getPhylogeny().getDescription();
+        getPhylogeny().setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
         setNodeInPreorderToNull();
         getPhylogeny().externalNodesHaveChanged();
         getPhylogeny().clearHashIdToNodeMap();
