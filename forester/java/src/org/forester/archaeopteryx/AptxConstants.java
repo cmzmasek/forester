@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.87";
+    final static String VERSION = "0.11.88";
     final static String PRG_DATE = "2026-08-23";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
@@ -56,12 +56,13 @@ public final class AptxConstants {
     static final Dimension NODE_FRAME_SIZE = new Dimension(520, 640);
     static final int MAX_TREES_TO_LOAD = 100;
     final static float PDF_LINE_WIDTH_DEFAULT = 0.5f;
-    // "Archaeopteryx Home" and "Documentation" both point at the GitHub README for now (until a dedicated
-    // documentation site exists); the JS version points at its own repository.
-    final static String APTX_WEB_SITE = "https://github.com/cmzmasek/forester/tree/master?tab=readme-ov-file#archaeopteryx";
+    // The Archaeopteryx website. "Archaeopteryx Home" and "Documentation" both point here (there is no separate
+    // documentation site yet); APTX_GITHUB is the source repository, and the JS version points at its own repository.
+    final static String APTX_WEB_SITE = "https://cmzmasek.github.io/archaeopteryx/";
     final static String APTX_JS_WEB_SITE = "https://github.com/cmzmasek/archaeopteryx-js";
-    final static String APTX_DOC_SITE = "https://github.com/cmzmasek/forester/tree/master?tab=readme-ov-file#archaeopteryx";
-    final static String PHYLOXML_REFERENCE_URL = "http://www.biomedcentral.com/1471-2105/10/356/";
+    final static String APTX_DOC_SITE = "https://cmzmasek.github.io/archaeopteryx/";
+    final static String APTX_GITHUB = "https://github.com/cmzmasek/forester";
+    final static String PHYLOXML_REFERENCE_URL = "https://www.biomedcentral.com/1471-2105/10/356/";
     final static String PHYLOXML_REFERENCE = ForesterConstants.PHYLO_XML_REFERENCE;
     final static String PHYLOXML_REFERENCE_SHORT = "Han MV and Zmasek CM (2009), BMC Bioinformatics, 10:356";
     final static short NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT = 3;

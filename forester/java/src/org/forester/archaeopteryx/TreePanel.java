@@ -929,8 +929,108 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  this the extent would be corr * the UNCAPPED height, ballooning the preferred size (a capped internal branch
      *  makes corr large while the uncapped height stays huge -> a hugely oversized scroll extent -> clipping). */
     private double displayedTreeHeight() {
-        return breakLongBranchesActive() ? breakCappedHeight()
+        double h = breakLongBranchesActive() ? breakCappedHeight()
                 : getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh());
+        // a subtree's root branch is drawn as a fixed stub (see displayedRootBranchLength), so its length is NOT part
+        // of the depth -- exclude it (BOTH calculateHeight AND breakCappedHeight fold in the (capped) root branch) or
+        // the extent over-reserves depth by a stub-sized empty margin
+        if (isCurrentTreeIsSubtree()) {
+            h -= cappedRootBranchLength();
+        }
+        return h;
+    }
+
+    /** The root's OWN branch length as DRAWN to scale (the "root edge" offset) in the current phylogram layout, else 0.
+     *  In a rooted phylogram the root is positioned at {@code MOVE + rootBranch * xcorr} (paintPhylogeny); its callers
+     *  apply the break-cap. Returns 0 for a SUBTREE: its inherited branch to the (hidden) former parent is meaningless
+     *  in isolation, so it is drawn as a fixed short stub (MOVE + xdist) rather than to scale -- the same behaviour a
+     *  normal root_dtp=0 tree already gets, which is why a subtree then lays out (and its domains fit) consistently. */
+    private double displayedRootBranchLength() {
+        if ((_phylogeny == null) || (getControlPanel() == null) || !getControlPanel().isDrawPhylogram()
+                || isCurrentTreeIsSubtree()) {
+            return 0;
+        }
+        final double dtp = _phylogeny.getRoot().getDistanceToParent();
+        return dtp > 0 ? dtp : 0;
+    }
+
+    /** The root's branch length capped exactly as the DRAWN tree caps it under "Break Long Branches" (an outlier root
+     *  branch is truncated to the cap). {@code calculateHeight()} and {@code breakCappedHeight()} both fold this in, so
+     *  a subtree (drawn with a fixed root stub, not to scale) subtracts it from those heights. */
+    private double cappedRootBranchLength() {
+        if (_phylogeny == null) {
+            return 0;
+        }
+        final double dtp = _phylogeny.getRoot().getDistanceToParent();
+        if (dtp <= 0) {
+            return 0;
+        }
+        return (breakLongBranchesActive() && (dtp > breakLongBranchCap())) ? breakLongBranchCap() : dtp;
+    }
+
+    /** The root's OWN branch length as FOLDED INTO {@link #displayedMaxDistanceToRoot()} in the current phylogram
+     *  layout: under Break Long Branches the depth is {@code breakCappedHeight()}, which includes the CAPPED root
+     *  branch; otherwise {@code getMaxDistanceToRoot()}, which (recalculateMaxDistanceToRoot) includes the UNCAPPED
+     *  root branch only for a FULL tree -- a subtree excludes it there. A tip-aligned column anchored at the root's
+     *  Xcoord subtracts THIS (not the drawn offset displayedRootBranchLength) to land on the deepest tip without
+     *  double-counting the root edge, in every combination of subtree / full-tree-root-edge / break-long-branches. */
+    private double rootBranchInMaxDistance() {
+        if ((_phylogeny == null) || (getControlPanel() == null) || !getControlPanel().isDrawPhylogram()) {
+            return 0;
+        }
+        final double dtp = _phylogeny.getRoot().getDistanceToParent();
+        if (dtp <= 0) {
+            return 0;
+        }
+        if (breakLongBranchesActive()) {
+            return (dtp > breakLongBranchCap()) ? breakLongBranchCap() : dtp; // breakCappedHeight folds in the capped root branch
+        }
+        return isCurrentTreeIsSubtree() ? 0 : dtp; // recalculateMaxDistanceToRoot adds it only for a full tree
+    }
+
+    /** The x of the common right-edge domain-architecture column in a phylogram: the deepest tip (rootX +
+     *  root-to-tip distance*xcorr) plus the longest tip label. The root's Xcoord already carries the root-edge
+     *  offset and displayedMaxDistanceToRoot() ALSO folds in the root branch, so subtract rootBranchInMaxDistance()
+     *  once -- else the column double-counts the root edge and, in a subtree (whose root branch is nonzero) or a tree
+     *  with a genuine root edge, shifts right and clips the domains off the near edge. Shared by the draw and the
+     *  fit test so the two can never disagree. Valid only after the paint that assigns the root's Xcoord. */
+    final float alignedPhylogramDomainColumnX() {
+        return (float) (((displayedMaxDistanceToRoot() - rootBranchInMaxDistance()) * getXcorrectionFactor())
+                + _length_of_longest_text + _phylogeny.getRoot().getXcoord());
+    }
+
+    /** Test hook: the right edge of the widest aligned domain track in a phylogram (column x + the widest drawn
+     *  architecture, which fills {@code effectiveDomainStructureWidth * 0.9}); must stay within the preferred width. */
+    final float alignedDomainColumnRightEdgeForTest() {
+        return alignedPhylogramDomainColumnX() + (float) (effectiveDomainStructureWidth() * 0.9);
+    }
+
+    /** Test hook: the depth cache getMaxDistanceToRoot() (includes the root branch only when drawn to scale). */
+    final double getMaxDistanceToRootForTest() {
+        return getMaxDistanceToRoot();
+    }
+
+    /** Test hook: the root's drawn x (the fixed stub start MOVE+xdist for a subtree, else MOVE+rootBranch*xcorr). */
+    final float rootXcoordForTest() {
+        return _phylogeny.getRoot().getXcoord();
+    }
+
+    /** Test hook: the fixed-stub root x (MOVE + xdist) a subtree root should be drawn at. */
+    final float stubRootXForTest() {
+        return TreePanel.MOVE + getXdistance();
+    }
+
+    /** Test hook: the depth height feeding the preferred-width extent (excludes a subtree's stubbed root branch). */
+    final double displayedTreeHeightForTest() {
+        return displayedTreeHeight();
+    }
+
+    /** The distance the numeric scale axis spans from the root (origin_x) to the deepest tip. origin_x (rootX) already
+     *  carries the root-edge offset that getMaxDistanceToRoot() also folds in, so subtract rootBranchInMaxDistance()
+     *  -- else the axis line/ticks overshoot the deepest tip by the root branch and disagree with the scale grid.
+     *  Shared by paintScaleAxis and the fit test so the two can never disagree. */
+    final double numericScaleAxisMaxDist() {
+        return getMaxDistanceToRoot() - rootBranchInMaxDistance();
     }
 
     /** Whether the "Break Long Branches" layout COULD apply here, independent of the option being on: a rectangular-
@@ -4118,8 +4218,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // iTOL-style comparable layout); the phylogram column is past the deepest tip + longest
                 // label, the cladogram column just past the aligned tips.
                 if (getControlPanel().isDrawPhylogram()) {
-                    rds.render((float) ((displayedMaxDistanceToRoot() * getXcorrectionFactor())
-                                    + _length_of_longest_text + _phylogeny.getRoot().getXcoord()),
+                    rds.render(alignedPhylogramDomainColumnX(),
                             node.getYcoord() - (h / 2.0f),
                             g,
                             this,
@@ -4256,8 +4355,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                        final boolean to_graphics_file) {
         assignGraphicsForBranchWithColorForParentBranch(root, false, g, to_pdf, to_graphics_file);
         float d = getXdistance();
-        if (getControlPanel().isDrawPhylogram() && (root.getDistanceToParent() > 0.0)) {
-            d = (float) (getXcorrectionFactor() * root.getDistanceToParent());
+        // a subtree draws a fixed short stub (d stays getXdistance); a full-tree phylogram root edge is drawn to scale
+        if (displayedRootBranchLength() > 0.0) {
+            double root_dtp = displayedRootBranchLength();
+            if (breakLongBranchesActive() && (root_dtp > breakLongBranchCap())) {
+                root_dtp = breakLongBranchCap();
+            }
+            d = (float) (getXcorrectionFactor() * root_dtp);
         }
         if (d < MIN_ROOT_LENGTH) {
             d = MIN_ROOT_LENGTH;
@@ -4333,7 +4437,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       final int graphics_file_height) {
         final float origin_x = _phylogeny.getRoot().getXcoord();
         final float spacing = (float) (getScaleDistance() * getXcorrectionFactor());
-        final float max_x = (float) (origin_x + (displayedMaxDistanceToRoot() * getXcorrectionFactor()));
+        // grid spans root (origin_x) to the deepest tip; origin_x already carries the root-edge offset that
+        // displayedMaxDistanceToRoot() also includes, so subtract rootBranchInMaxDistance() to avoid extending
+        // the grid a root-branch past the tips (same double-count the domain column above avoids)
+        final float max_x = (float) (origin_x
+                + ((displayedMaxDistanceToRoot() - rootBranchInMaxDistance()) * getXcorrectionFactor()));
         final float[] xs = TreePanelUtil.scaleGridLineXs(origin_x, spacing, max_x);
         if (xs.length == 0) {
             return;
@@ -4456,7 +4564,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       final int graphics_file_y, final int graphics_file_height) {
         final double corr = getXcorrectionFactor();
         final float origin_x = _phylogeny.getRoot().getXcoord();
-        final double max_dist = getMaxDistanceToRoot();
+        final double max_dist = numericScaleAxisMaxDist();
         final double[] ticks = TreePanelUtil.scaleAxisTickValues(max_dist, getScaleDistance());
         if (ticks.length == 0) {
             return;
@@ -6669,6 +6777,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // ordinary height, so a well-behaved tree is unchanged. Off / cladogram / aligned / radial: full height.
             if (breakLongBranchesActive() && (breakCappedHeight() > 0)) {
                 height = breakCappedHeight();
+            }
+            // a subtree's root branch is drawn as a fixed stub (displayedRootBranchLength), not to scale, so it is NOT
+            // part of the depth -- exclude it (BOTH calculateHeight AND breakCappedHeight fold in the (capped) root
+            // branch) so the depth scale fills the width instead of leaving a stub-sized empty margin (mirrors
+            // displayedTreeHeight; ov_corr below reads the same height)
+            if (isCurrentTreeIsSubtree()) {
+                height -= cappedRootBranchLength();
             }
             if (height > 0) {
                 final float corr = (float) ((x - (2.0 * TreePanel.MOVE) - depth_label
@@ -11557,8 +11672,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // Position starting X of tree
             if (!_phylogeny.isRooted() /*|| ( _subtree_index > 0 )*/) {
                 _phylogeny.getRoot().setXcoord(TreePanel.MOVE);
-            } else if ((_phylogeny.getRoot().getDistanceToParent() > 0.0) && getControlPanel().isDrawPhylogram()) {
-                double root_dtp = _phylogeny.getRoot().getDistanceToParent();
+            } else if (displayedRootBranchLength() > 0.0) {
+                // draw the root edge to scale (only for a full-tree phylogram root; a subtree draws a fixed stub via
+                // the else branch -- see displayedRootBranchLength)
+                double root_dtp = displayedRootBranchLength();
                 if (breakLongBranchesActive() && (root_dtp > breakLongBranchCap())) {
                     root_dtp = breakLongBranchCap(); // cap a pathological root branch too (rare -- root usually has none)
                 }
@@ -11949,7 +12066,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void recalculateMaxDistanceToRoot() {
         _max_distance_to_root = PhylogenyMethods.calculateMaxDistanceToRoot(getPhylogeny());
-        if (getPhylogeny().getRoot().getDistanceToParent() > 0) {
+        // include the root's own branch length only when it is actually drawn to scale (the root-edge offset at
+        // MOVE + rootBranch*xcorr) -- NOT for a subtree, whose inherited root branch is drawn as a fixed stub, so its
+        // getMaxDistanceToRoot must exclude it (else the aligned tip-label / domain column shifts right and clips)
+        if (!isCurrentTreeIsSubtree() && (getPhylogeny().getRoot().getDistanceToParent() > 0)) {
             _max_distance_to_root += getPhylogeny().getRoot().getDistanceToParent();
         }
     }
@@ -12763,6 +12883,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // keep the overview x-scale consistent with the capped main view (see calcParametersForPainting)
             if (breakLongBranchesActive() && (breakCappedHeight() > 0)) {
                 height = breakCappedHeight();
+            }
+            // a subtree draws its root as a fixed stub, not to scale -> exclude it here too, so the overview mini-tree
+            // fills its box at the same scale as the main view (else it renders too small)
+            if (isCurrentTreeIsSubtree()) {
+                height -= cappedRootBranchLength();
             }
             if (height > 0) {
                 final float ov_corr = (float) (((getOvMaxWidth() - l) - getOvXDistance()) / height);

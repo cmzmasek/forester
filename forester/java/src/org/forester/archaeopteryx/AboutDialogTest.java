@@ -27,9 +27,9 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 
 /**
- * Guards the Help/About changes: the About text keeps the program-info + reference content but no longer has the
- * "For more information & download" or "Documentation" sections (nor their URLs); the About logo is bundled in the
- * jar and loads; and the Help-menu links point at the GitHub README / the archaeopteryx-js repo. Headless.
+ * Guards the Help/About changes: the About box is now HTML with clickable links to the website, the source
+ * repository, and the phyloXML paper; the "phyloXML location" line is gone; the About logo is bundled in the jar
+ * and loads; and the Help-menu "Documentation"/"Archaeopteryx Home" links point at the website. Headless.
  */
 public final class AboutDialogTest {
 
@@ -44,7 +44,7 @@ public final class AboutDialogTest {
 
     public static boolean test() {
         try {
-            return aboutTextTrimmed() && logoBundled() && helpUrls();
+            return aboutHtmlContent() && logoBundled() && helpUrls();
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -52,26 +52,34 @@ public final class AboutDialogTest {
         }
     }
 
-    /** The About text still has the essentials, but the two removed sections (and their URLs) are gone. */
-    private static boolean aboutTextTrimmed() {
-        final String t = MainFrame.buildAboutText();
+    /** The About HTML keeps the essentials, gains clickable website/GitHub/phyloXML-paper links, and drops the
+     *  "phyloXML location" line. */
+    private static boolean aboutHtmlContent() {
+        final String t = MainFrame.buildAboutHtml();
         if ( !t.contains( "Archaeopteryx" ) || !t.contains( AptxConstants.VERSION ) ) {
-            return fail( "About text should contain the program name and version" );
+            return fail( "About should contain the program name and version" );
         }
         if ( !t.contains( "References:" ) || !t.contains( AptxConstants.PHYLOXML_REFERENCE_SHORT ) ) {
-            return fail( "About text should keep the References section" );
+            return fail( "About should keep the References section" );
         }
         if ( !t.contains( AptxConstants.AUTHOR_EMAIL ) ) {
-            return fail( "About text should keep the Comments email" );
+            return fail( "About should keep the Comments email" );
+        }
+        // the website, source repository, and phyloXML paper are now CLICKABLE links (href), not bare text
+        if ( !t.contains( "href=\"" + AptxConstants.APTX_WEB_SITE + "\"" ) ) {
+            return fail( "About should link to the website, got: " + t );
+        }
+        if ( !t.contains( "href=\"" + AptxConstants.APTX_GITHUB + "\"" ) ) {
+            return fail( "About should link to the source repository (GitHub), got: " + t );
+        }
+        if ( !t.contains( "href=\"" + AptxConstants.PHYLOXML_REFERENCE_URL + "\"" ) ) {
+            return fail( "About should make the phyloXML reference a clickable link to the paper, got: " + t );
+        }
+        if ( t.contains( "phyloXML location" ) ) {
+            return fail( "About should no longer list the phyloXML location" );
         }
         if ( t.contains( "For more information" ) ) {
-            return fail( "About text should no longer have the 'For more information & download' section" );
-        }
-        if ( t.contains( "Documentation:" ) ) {
-            return fail( "About text should no longer have the 'Documentation' section" );
-        }
-        if ( t.contains( AptxConstants.APTX_WEB_SITE ) || t.contains( AptxConstants.APTX_DOC_SITE ) ) {
-            return fail( "About text should no longer list the website / documentation URLs (they live in the Help menu)" );
+            return fail( "About should no longer have the 'For more information & download' section" );
         }
         return true;
     }
@@ -105,16 +113,20 @@ public final class AboutDialogTest {
         }
     }
 
-    /** The three Help-menu links point where the change specifies. */
+    /** The Help-menu links point where the change specifies: "Documentation" and "Archaeopteryx Home" at the
+     *  website, "Archaeopteryx.js" at its repo, and the About "Source (GitHub)" link at the forester repo. */
     private static boolean helpUrls() {
-        if ( !AptxConstants.APTX_WEB_SITE.contains( "github.com/cmzmasek/forester" ) ) {
-            return fail( "'Archaeopteryx Home' should point at the GitHub README, got " + AptxConstants.APTX_WEB_SITE );
+        if ( !AptxConstants.APTX_WEB_SITE.contains( "cmzmasek.github.io/archaeopteryx" ) ) {
+            return fail( "'Archaeopteryx Home' should point at the website, got " + AptxConstants.APTX_WEB_SITE );
         }
-        if ( !AptxConstants.APTX_DOC_SITE.contains( "github.com/cmzmasek/forester" ) ) {
-            return fail( "'Documentation' should point at the GitHub README, got " + AptxConstants.APTX_DOC_SITE );
+        if ( !AptxConstants.APTX_DOC_SITE.contains( "cmzmasek.github.io/archaeopteryx" ) ) {
+            return fail( "'Documentation' should point at the website, got " + AptxConstants.APTX_DOC_SITE );
         }
         if ( !AptxConstants.APTX_JS_WEB_SITE.contains( "github.com/cmzmasek/archaeopteryx-js" ) ) {
             return fail( "'Archaeopteryx.js' should point at its repository, got " + AptxConstants.APTX_JS_WEB_SITE );
+        }
+        if ( !AptxConstants.APTX_GITHUB.contains( "github.com/cmzmasek/forester" ) ) {
+            return fail( "the About GitHub link should point at the forester repo, got " + AptxConstants.APTX_GITHUB );
         }
         return true;
     }

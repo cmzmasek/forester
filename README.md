@@ -8,6 +8,13 @@ part of the **forester** toolkit. It reads phyloXML, Newick/New Hampshire
 annotation, on-the-fly coloring, and export to PDF, SVG, EPS, PNG, and other
 graphics formats.
 
+**🌐 Home page: <https://cmzmasek.github.io/archaeopteryx/>**  ·
+**Archaeopteryx on GitHub: <https://github.com/cmzmasek/archaeopteryx>**
+
+The Archaeopteryx source code lives in this **forester** repository
+(<https://github.com/cmzmasek/forester>); the home page above is the project's
+front door for downloads, screenshots, and documentation.
+
 
 Download & Install
 ------------------
@@ -714,3 +721,42 @@ git tag 0.9.83 && git push origin 0.9.83
 
 CI builds the macOS `.dmg`, Windows `.msi`, and Linux `.deb`, and publishes them
 to a GitHub Release for the tag.
+
+### Publishing the home page (cmzmasek.github.io/archaeopteryx)
+
+The home page at **<https://cmzmasek.github.io/archaeopteryx/>** is **not** in
+this `forester` repository — it lives in a small, separate repository,
+**[`cmzmasek/archaeopteryx`](https://github.com/cmzmasek/archaeopteryx)**, and is
+served by **GitHub Pages** (classic project site) from that repo's **`main`
+branch, `docs/` folder**. The whole site is a single self-contained
+`docs/index.html`.
+
+To update the site:
+
+```
+git clone https://github.com/cmzmasek/archaeopteryx.git
+cd archaeopteryx
+# edit docs/index.html
+git add docs/index.html
+git commit -m "Site: <what changed>"
+git push origin main
+```
+
+Pushing to `main` triggers a Pages rebuild automatically; the change is live at
+<https://cmzmasek.github.io/archaeopteryx/> within about a minute. There is no
+build step — GitHub Pages serves `docs/index.html` as-is.
+
+> **URL case-sensitivity:** GitHub project-site paths are case-sensitive, so the
+> home URL is the lowercase `…/archaeopteryx/`. Keep every `github.com/cmzmasek`
+> repo reference and the Pages URL lowercase to match.
+
+The site's **Download** button points at that repo's own
+[releases](https://github.com/cmzmasek/archaeopteryx/releases/latest). Those
+installers are produced by a **`release.yml`** workflow **in the
+`cmzmasek/archaeopteryx` repo** (run manually from its **Actions** tab via
+`workflow_dispatch`): it checks out `forester` at a given ref, builds the three
+installers with `jpackage` (the same recipe as this repo's `installers.yml`), and
+publishes them as a GitHub Release there. So a normal `forester` release (tag →
+`installers.yml`) is independent of the home page; to also refresh the site's
+Download button, dispatch that `release.yml` (pass `prerelease=false` so the
+"latest" link updates).

@@ -56,9 +56,11 @@ import javax.swing.JDialog;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import javax.swing.JEditorPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -2787,37 +2789,80 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * Display the about box.
      */
     void about() {
-        JOptionPane.showMessageDialog(null, buildAboutText(), AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE,
-                aboutLogo());
+        final JEditorPane pane = new JEditorPane("text/html", buildAboutHtml());
+        pane.setEditable(false);
+        pane.setOpaque(false);
+        pane.setBorder(null);
+        // render the HTML in the dialog's own font, not the JEditorPane default serif
+        pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        final Font base = UIManager.getFont("Label.font");
+        if (base != null) {
+            pane.setFont(base);
+        }
+        pane.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                try {
+                    AptxUtil.openWebsite(e.getDescription());
+                }
+                catch (final IOException ex) {
+                    ForesterUtil.printErrorMessage(AptxConstants.PRG_NAME, ex.toString());
+                }
+            }
+        });
+        JOptionPane.showMessageDialog(null, pane, AptxConstants.PRG_NAME, JOptionPane.PLAIN_MESSAGE, aboutLogo());
     }
 
-    /** The About-box text (program info, environment, and the main reference). Extracted so it is testable, and so
-     *  its content stays independent of the dialog chrome. */
-    static String buildAboutText() {
-        final StringBuilder about = new StringBuilder("Archaeopteryx\nVersion " + AptxConstants.VERSION + "\n");
-        about.append("Copyright (C) 2026 Christian M Zmasek\n");
-        about.append("All Rights Reserved\n");
-        about.append("License: GNU General Public License version 3 (GPL3)\n");
-        about.append("Last modified: " + AptxConstants.PRG_DATE + "\n");
-        about.append("Based on: ").append(ForesterUtil.getForesterLibraryInformation()).append("\n");
-        about.append("phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n");
-        about.append("phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n");
+    /** The About-box content as an HTML fragment (program info, environment, and the main reference), with clickable
+     *  links to the website, the source repository, and the phyloXML paper. Extracted so it is testable, and so its
+     *  content stays independent of the dialog chrome. */
+    static String buildAboutHtml() {
+        final StringBuilder a = new StringBuilder("<html><body>");
+        a.append("<b>Archaeopteryx</b><br>");
+        a.append("Version ").append(AptxConstants.VERSION).append("<br>");
+        a.append("Copyright &copy; 2026 Christian M Zmasek<br>");
+        a.append("All Rights Reserved<br>");
+        a.append("License: GNU General Public License version 3 (GPL3)<br>");
+        a.append("Last modified: ").append(AptxConstants.PRG_DATE).append("<br>");
+        a.append("Based on: ").append(escapeHtml(ForesterUtil.getForesterLibraryInformation())).append("<br>");
+        a.append("phyloXML version: ").append(escapeHtml(ForesterConstants.PHYLO_XML_VERSION)).append("<br>");
+        a.append("<br>");
+        a.append("Website: <a href=\"").append(AptxConstants.APTX_WEB_SITE).append("\">")
+                .append(AptxConstants.APTX_WEB_SITE).append("</a><br>");
+        a.append("Source (GitHub): <a href=\"").append(AptxConstants.APTX_GITHUB).append("\">")
+                .append(AptxConstants.APTX_GITHUB).append("</a><br>");
+        a.append("<br>");
         if (!ForesterUtil.isEmpty(ForesterUtil.JAVA_VERSION) && !ForesterUtil.isEmpty(ForesterUtil.JAVA_VENDOR)) {
-            about.append("[your Java version: ").append(ForesterUtil.JAVA_VERSION).append(" ").append(ForesterUtil.JAVA_VENDOR).append("]\n");
+            a.append("[your Java version: ").append(escapeHtml(ForesterUtil.JAVA_VERSION)).append(" ")
+                    .append(escapeHtml(ForesterUtil.JAVA_VENDOR)).append("]<br>");
         }
         if (!ForesterUtil.isEmpty(ForesterUtil.OS_NAME) && !ForesterUtil.isEmpty(ForesterUtil.OS_ARCH)
                 && !ForesterUtil.isEmpty(ForesterUtil.OS_VERSION)) {
-            about.append("[your OS: ").append(ForesterUtil.OS_NAME).append(" ").append(ForesterUtil.OS_ARCH).append(" ").append(ForesterUtil.OS_VERSION).append("]\n");
+            a.append("[your OS: ").append(escapeHtml(ForesterUtil.OS_NAME)).append(" ")
+                    .append(escapeHtml(ForesterUtil.OS_ARCH)).append(" ")
+                    .append(escapeHtml(ForesterUtil.OS_VERSION)).append("]<br>");
         }
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
         final long total_memory = rt.totalMemory() / 1000000;
-        about.append("[free memory: ").append(free_memory).append("MB, total memory: ").append(total_memory).append("MB]\n");
-        about.append("[locale: ").append(Locale.getDefault()).append("]\n");
-        about.append("References:\n");
-        about.append(AptxConstants.PHYLOXML_REFERENCE_SHORT + "\n");
-        about.append("Comments: " + AptxConstants.AUTHOR_EMAIL);
-        return about.toString();
+        a.append("[free memory: ").append(free_memory).append("MB, total memory: ").append(total_memory)
+                .append("MB]<br>");
+        a.append("[locale: ").append(escapeHtml(Locale.getDefault().toString())).append("]<br>");
+        a.append("<br>");
+        a.append("References:<br>");
+        a.append("<a href=\"").append(AptxConstants.PHYLOXML_REFERENCE_URL).append("\">")
+                .append(AptxConstants.PHYLOXML_REFERENCE_SHORT).append("</a><br>");
+        a.append("<br>");
+        a.append("Comments: ").append(AptxConstants.AUTHOR_EMAIL);
+        a.append("</body></html>");
+        return a.toString();
+    }
+
+    /** Minimal HTML escaping for the dynamic (system-derived) values interpolated into the About box. */
+    private static String escapeHtml(final String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     /** The bundled Archaeopteryx logo for the About box, or {@code null} if the image is missing (best-effort: the
