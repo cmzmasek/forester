@@ -963,6 +963,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Equalizer activity icon: ");
+        if (org.forester.archaeopteryx.EqualizerIconTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Process menu animation: ");
+        if (org.forester.archaeopteryx.ProcessMenuAnimationTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tanglegram linker: ");
         if (org.forester.archaeopteryx.TanglegramLinkerTest.test()) {
             System.out.println("OK.");

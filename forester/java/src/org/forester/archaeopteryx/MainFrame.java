@@ -68,6 +68,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.JMenu;
+import javax.swing.Timer;
 import javax.swing.KeyStroke;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -366,6 +367,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JFileChooser _writetographics_filechooser;
     // process menu:
     JMenu _process_menu;
+    private EqualizerIcon _process_anim_icon;   // the gentle equalizer-bars activity indicator on the process menu
+    private Timer         _process_anim_timer;
     MainPanel _mainpanel;
     Container _contentpane;
     final LinkedList<TextFrame> _textframes = new LinkedList<>();
@@ -893,8 +896,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (_process_pool.size() > 0) {
             if (_process_menu == null) {
                 _process_menu = createMenu("", getConfiguration());
-                _process_menu.setForeground(Color.RED);
+                _process_anim_icon = new EqualizerIcon(16, 12, 4);
+                _process_menu.setIcon(_process_anim_icon);
             }
+            // a running task is "in progress", not an error -> use the FlatLaf theme accent, not red
+            final Color accent = UIManager.getColor("Component.accentColor");
+            _process_menu.setForeground(accent != null ? accent : Color.BLUE);
             _process_menu.removeAll();
             final String text = "processes running: " + _process_pool.size();
             _process_menu.setText(text);
@@ -909,7 +916,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 }
                 _process_menu.add(item);
             }
+            startProcessAnimation();
         } else {
+            stopProcessAnimation();
             if (_process_menu != null) {
                 _process_menu.removeAll();
                 _jmenubar.remove(_process_menu);
@@ -918,6 +927,33 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.validate();
         _jmenubar.repaint();
         repaint();
+    }
+
+    /** Runs the gentle equalizer-bars animation on the process menu (~6 fps: advance the phase + repaint). */
+    private void startProcessAnimation() {
+        if (_process_anim_timer == null) {
+            _process_anim_timer = new Timer(160, e -> {
+                if (_process_anim_icon != null) {
+                    _process_anim_icon.advance();
+                    if (_process_menu != null) {
+                        _process_menu.repaint();
+                    }
+                }
+            });
+        }
+        if (!_process_anim_timer.isRunning()) {
+            _process_anim_timer.start();
+        }
+    }
+
+    private void stopProcessAnimation() {
+        if ((_process_anim_timer != null) && _process_anim_timer.isRunning()) {
+            _process_anim_timer.stop();
+        }
+    }
+
+    boolean isProcessAnimationRunningForTest() {
+        return (_process_anim_timer != null) && _process_anim_timer.isRunning();
     }
 
     private void removeBranchColors() {
