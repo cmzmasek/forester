@@ -9229,7 +9229,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             final Color c = _annotation_columns.cellColor(t, i);
                             if (c != null) {
                                 drawSymbolGlyph(g, c, xi + (w / 2.0f), t.getYcoord(), Math.min(w, cell_h) - 2,
-                                        fill == AnnotationColumns.Fill.FILLED);
+                                        fill == AnnotationColumns.Fill.FILLED, _annotation_columns.symbolShape(i));
                             }
                         }
                         break;
@@ -9333,14 +9333,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         break;
                     }
                     case SYMBOL: {
-                        // rides R like the strip cells: a circle is rotation-invariant, so drawing it in LOGICAL
-                        // coords at the tip's cell center places it correctly in the horizontal band
+                        // draw the glyph UPRIGHT in the base frame (NOT under R): a circle/square/diamond is
+                        // symmetric under R's 90 deg, but a TRIANGLE would ride the rotation and point sideways.
+                        // So place it at the R-mapped device centre and draw it un-rotated -- parity with the
+                        // rectangular/circular glyph (apex up in every orientation), like the TEXT cells are anchored
+                        // to the upright frame.
                         final AnnotationColumns.Fill fill = _annotation_columns.symbolFill(t, i);
                         if (fill != AnnotationColumns.Fill.NONE) {
                             final Color c = _annotation_columns.cellColor(t, i);
                             if (c != null) {
-                                drawSymbolGlyph(g, c, xi + (w / 2.0f), t.getYcoord(), Math.min(w, cell_h) - 2,
-                                        fill == AnnotationColumns.Fill.FILLED);
+                                final Point2D.Double gp = screenPoint(xi + (w / 2.0), t.getYcoord());
+                                g.setTransform(_orientation_base_transform);
+                                drawSymbolGlyph(g, c, (float) gp.x, (float) gp.y, Math.min(w, cell_h) - 2,
+                                        fill == AnnotationColumns.Fill.FILLED, _annotation_columns.symbolShape(i));
+                                g.setTransform(withR);
                             }
                         }
                         break;
@@ -9391,25 +9397,47 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * Draws a SYMBOL-column glyph: a circle centered at (center_x, center_y) with diameter {@code diameter}
-     * (floored so it never vanishes), either FILLED (a solid disc) or a hollow OUTLINE, in {@code color}.
-     * Shared by the rectangular, vertical, and circular annotation-column paint paths (a circle is
-     * rotation-invariant, so the vertical/circular callers pass logical/ring coords unchanged). Self-contained:
-     * the outline branch saves and restores g's stroke.
+     * Draws a SYMBOL-column glyph: a shape (circle / square / diamond / triangle) centered at (center_x,
+     * center_y) inscribed in a {@code diameter}-side box (floored so it never vanishes), either FILLED (solid) or
+     * a hollow OUTLINE, in {@code color}. Shared by the rectangular, vertical, and circular annotation-column
+     * paint paths -- each passes DEVICE coordinates and draws the glyph UPRIGHT (the vertical caller maps the
+     * logical centre through R and draws in the base frame, so a triangle points up in every orientation).
+     * Self-contained: the outline branch saves and restores g's stroke.
      */
     private void drawSymbolGlyph(final Graphics2D g, final Color color, final float center_x, final float center_y,
-                                 final float diameter, final boolean filled) {
-        final double d = Math.max(3.0, diameter);
-        final double x = center_x - (d / 2.0);
-        final double y = center_y - (d / 2.0);
+                                 final float diameter, final boolean filled,
+                                 final AnnotationColumns.SymbolShape shape) {
+        final float d = (float) Math.max(3.0, diameter);
+        final float x = center_x - (d / 2.0f);
+        final float y = center_y - (d / 2.0f);
         g.setColor(color);
-        if (filled) {
-            drawOvalFilled(x, y, d, d, g);
-        }
-        else {
-            final Stroke saved_stroke = g.getStroke();
+        final Stroke saved_stroke = filled ? null : g.getStroke();
+        if (!filled) {
             g.setStroke(STROKE_1);
-            drawOval(x, y, d, d, g);
+        }
+        switch (shape) {
+            case SQUARE:
+                _rectangle.setFrame(x, y, d, d);
+                if (filled) { g.fill(_rectangle); } else { g.draw(_rectangle); }
+                break;
+            case DIAMOND:
+                setDiamond(x, y, d, d);
+                if (filled) { g.fill(_diamond); } else { g.draw(_diamond); }
+                break;
+            case TRIANGLE:
+                _polygon.reset();
+                _polygon.moveTo(x + (d / 2.0f), y); // apex, top-centre
+                _polygon.lineTo(x + d, y + d);      // base-right
+                _polygon.lineTo(x, y + d);          // base-left
+                _polygon.closePath();
+                if (filled) { g.fill(_polygon); } else { g.draw(_polygon); }
+                break;
+            case CIRCLE:
+            default:
+                if (filled) { drawOvalFilled(x, y, d, d, g); } else { drawOval(x, y, d, d, g); }
+                break;
+        }
+        if (!filled) {
             g.setStroke(saved_stroke);
         }
     }
@@ -10342,8 +10370,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         break;
                     }
                     case SYMBOL: {
-                        // a shape glyph centred in this tip's ring cell (mid-radius, on its spoke); a circle is
-                        // rotation-invariant so no spoke rotation is needed
+                        // a shape glyph centred in this tip's ring cell (mid-radius, on its spoke), drawn UPRIGHT
+                        // (no spoke rotation) so every shape -- incl. a triangle -- reads the same as in the other layouts
                         final AnnotationColumns.Fill fill = _annotation_columns.symbolFill(t, i);
                         if (fill != AnnotationColumns.Fill.NONE) {
                             final Color c = _annotation_columns.cellColor(t, i);
@@ -10353,7 +10381,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 final float py = (float) (cy + (rmid * Math.sin(a)));
                                 final double arc = rmid * (a1 - a0); // ~ the tip's arc width at this radius
                                 drawSymbolGlyph(g, c, px, py, (float) (Math.min(w, arc) - 2),
-                                        fill == AnnotationColumns.Fill.FILLED);
+                                        fill == AnnotationColumns.Fill.FILLED, _annotation_columns.symbolShape(i));
                             }
                         }
                         break;

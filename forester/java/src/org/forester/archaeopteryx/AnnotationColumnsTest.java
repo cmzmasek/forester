@@ -92,6 +92,25 @@ public final class AnnotationColumnsTest {
         if ( ac.symbolFill( tip( bphy, "yes_tip" ), 1 ) != AnnotationColumns.Fill.NONE ) {
             return fail( "symbolFill on a non-SYMBOL column must be NONE" );
         }
+        // shape picker: labels; default CIRCLE (2-arg + null coerced); the chosen shape rides into the column
+        if ( !"Circle".equals( AnnotationColumns.shapeLabel( AnnotationColumns.SymbolShape.CIRCLE ) )
+                || !"Square".equals( AnnotationColumns.shapeLabel( AnnotationColumns.SymbolShape.SQUARE ) )
+                || !"Diamond".equals( AnnotationColumns.shapeLabel( AnnotationColumns.SymbolShape.DIAMOND ) )
+                || !"Triangle".equals( AnnotationColumns.shapeLabel( AnnotationColumns.SymbolShape.TRIANGLE ) ) ) {
+            return fail( "symbol-shape labels are wrong" );
+        }
+        if ( ( new AnnotationColumns.ColumnSpec( "data:present", Type.SYMBOL )._shape
+                != AnnotationColumns.SymbolShape.CIRCLE )
+                || ( new AnnotationColumns.ColumnSpec( "data:present", Type.SYMBOL, null )._shape
+                        != AnnotationColumns.SymbolShape.CIRCLE ) ) {
+            return fail( "a SYMBOL column should default to a CIRCLE glyph (2-arg / null shape)" );
+        }
+        final List<AnnotationColumns.ColumnSpec> shaped = new ArrayList<AnnotationColumns.ColumnSpec>();
+        shaped.add( new AnnotationColumns.ColumnSpec( "data:present", Type.SYMBOL,
+                AnnotationColumns.SymbolShape.TRIANGLE ) );
+        if ( new AnnotationColumns( bphy, shaped ).symbolShape( 0 ) != AnnotationColumns.SymbolShape.TRIANGLE ) {
+            return fail( "the chosen symbol shape should ride into the resolved column" );
+        }
         return true;
     }
 

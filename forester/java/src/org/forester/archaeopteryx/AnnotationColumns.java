@@ -87,6 +87,29 @@ final class AnnotationColumns {
         return ( value != null ) && FALSY.contains( value.trim().toLowerCase( Locale.ROOT ) );
     }
 
+    /** The glyph a SYMBOL column draws -- chosen per column by the user (default {@link #CIRCLE}). Color still
+     *  encodes the value and fill still encodes presence; the shape just distinguishes one symbol column from
+     *  another (e.g. gene A = circle, gene B = square). */
+    enum SymbolShape {
+        CIRCLE, SQUARE, DIAMOND, TRIANGLE
+    }
+
+    /** A short human-readable name for a symbol shape (for the picker). */
+    static String shapeLabel( final SymbolShape shape ) {
+        switch ( shape ) {
+            case CIRCLE:
+                return "Circle";
+            case SQUARE:
+                return "Square";
+            case DIAMOND:
+                return "Diamond";
+            case TRIANGLE:
+                return "Triangle";
+            default:
+                return shape.name();
+        }
+    }
+
     /** A short human-readable name for a render type (for the picker). */
     static String label( final Type type ) {
         switch ( type ) {
@@ -107,33 +130,46 @@ final class AnnotationColumns {
         }
     }
 
-    /** A requested column: which field, rendered how. */
+    /** A requested column: which field, rendered how (and, for a SYMBOL column, which glyph shape). */
     static final class ColumnSpec {
 
-        final String _ref;
-        final Type   _type;
+        final String      _ref;
+        final Type        _type;
+        final SymbolShape _shape; // the glyph for a SYMBOL column; CIRCLE (ignored) for every other type
 
         ColumnSpec( final String ref, final Type type ) {
+            this( ref, type, SymbolShape.CIRCLE );
+        }
+
+        ColumnSpec( final String ref, final Type type, final SymbolShape shape ) {
             _ref = ref;
             _type = type;
+            _shape = ( shape == null ) ? SymbolShape.CIRCLE : shape;
         }
     }
 
-    /** A resolved column: its field, type, header, and (for non-text columns) its color scheme. */
+    /** A resolved column: its field, type, glyph shape, header, and (for non-text columns) its color scheme. */
     static final class Column {
 
         private final String              _ref;
         private final Type                _type;
+        private final SymbolShape         _shape;
         private final PropertyColorScheme _scheme; // null for TEXT
 
-        Column( final String ref, final Type type, final PropertyColorScheme scheme ) {
+        Column( final String ref, final Type type, final SymbolShape shape, final PropertyColorScheme scheme ) {
             _ref = ref;
             _type = type;
+            _shape = shape;
             _scheme = scheme;
         }
 
         Type getType() {
             return _type;
+        }
+
+        /** The glyph shape for a SYMBOL column (CIRCLE for a non-SYMBOL column). */
+        SymbolShape getSymbolShape() {
+            return _shape;
         }
 
         /** The human-readable header (the field name, namespace stripped and prettified). */
@@ -153,7 +189,7 @@ final class AnnotationColumns {
         for( final ColumnSpec spec : specs ) {
             final PropertyColorScheme scheme = ( spec._type == Type.TEXT ) ? null
                     : new PropertyColorScheme( phylogeny, spec._ref );
-            _columns.add( new Column( spec._ref, spec._type, scheme ) );
+            _columns.add( new Column( spec._ref, spec._type, spec._shape, scheme ) );
         }
         // heat-map MATRIX: one shared color scale across ALL matrix columns, so a cell's color is comparable across
         // samples. Compute the range over every matrix ref's values and stamp it onto each matrix column's scheme.
@@ -220,6 +256,11 @@ final class AnnotationColumns {
             return Fill.NONE;
         }
         return isFalsy( v ) ? Fill.OUTLINE : Fill.FILLED;
+    }
+
+    /** The glyph shape of SYMBOL column {@code i} (CIRCLE for a non-SYMBOL column). */
+    SymbolShape symbolShape( final int i ) {
+        return _columns.get( i ).getSymbolShape();
     }
 
     /**

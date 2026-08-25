@@ -1364,11 +1364,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     "No Annotation Fields", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        // pre-select whatever columns are shown now
+        // pre-select whatever columns are shown now (type AND, for a SYMBOL column, its glyph shape)
         final Map<String, AnnotationColumns.Type> current = new HashMap<String, AnnotationColumns.Type>();
+        final Map<String, AnnotationColumns.SymbolShape> current_shape = new HashMap<String, AnnotationColumns.SymbolShape>();
         if (tp.getAnnotationColumnSpecs() != null) {
             for (final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs()) {
                 current.put(s._ref, s._type);
+                current_shape.put(s._ref, s._shape);
             }
         }
         final DefaultListCellRenderer type_renderer = new DefaultListCellRenderer() {
@@ -1383,11 +1385,25 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return this;
             }
         };
-        final JPanel panel = new JPanel(new GridLayout(0, 2, 10, 3));
+        final DefaultListCellRenderer shape_renderer = new DefaultListCellRenderer() {
+
+            @Override
+            public java.awt.Component getListCellRendererComponent(final JList<?> list, final Object value,
+                    final int index, final boolean sel, final boolean focus) {
+                super.getListCellRendererComponent(list, value, index, sel, focus);
+                if (value instanceof AnnotationColumns.SymbolShape) {
+                    setText(AnnotationColumns.shapeLabel((AnnotationColumns.SymbolShape) value));
+                }
+                return this;
+            }
+        };
+        final JPanel panel = new JPanel(new GridLayout(0, 3, 10, 3));
         panel.add(new JLabel("Field"));
         panel.add(new JLabel("Show as"));
+        panel.add(new JLabel("Symbol shape"));
         final List<JCheckBox> checks = new ArrayList<JCheckBox>();
         final List<JComboBox<AnnotationColumns.Type>> combos = new ArrayList<JComboBox<AnnotationColumns.Type>>();
+        final List<JComboBox<AnnotationColumns.SymbolShape>> shape_combos = new ArrayList<JComboBox<AnnotationColumns.SymbolShape>>();
         for (final String ref : refs) {
             final JCheckBox cb = new JCheckBox(PropertyColorScheme.displayName(ref), current.containsKey(ref));
             final List<AnnotationColumns.Type> types = AnnotationColumns.allowedTypes(phy, ref);
@@ -1396,13 +1412,23 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             combo.setRenderer(type_renderer);
             combo.setSelectedItem(current.containsKey(ref) ? current.get(ref)
                     : AnnotationColumns.defaultType(phy, ref));
+            // the glyph-shape picker is only meaningful for a SYMBOL column, so it is enabled only then
+            final JComboBox<AnnotationColumns.SymbolShape> shape_combo = new JComboBox<AnnotationColumns.SymbolShape>(
+                    AnnotationColumns.SymbolShape.values());
+            shape_combo.setRenderer(shape_renderer);
+            shape_combo.setSelectedItem(current_shape.containsKey(ref) ? current_shape.get(ref)
+                    : AnnotationColumns.SymbolShape.CIRCLE);
+            shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
+            combo.addActionListener(e -> shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL));
             panel.add(cb);
             panel.add(combo);
+            panel.add(shape_combo);
             checks.add(cb);
             combos.add(combo);
+            shape_combos.add(shape_combo);
         }
         final JScrollPane sp = new JScrollPane(panel);
-        sp.setPreferredSize(new java.awt.Dimension(380, Math.min(440, 50 + (refs.size() * 30))));
+        sp.setPreferredSize(new java.awt.Dimension(480, Math.min(440, 50 + (refs.size() * 30))));
         if (JOptionPane.showConfirmDialog(this, sp, "Annotation Columns", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
@@ -1410,8 +1436,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
         for (int i = 0; i < refs.size(); ++i) {
             if (checks.get(i).isSelected()) {
-                specs.add(new AnnotationColumns.ColumnSpec(refs.get(i),
-                        (AnnotationColumns.Type) combos.get(i).getSelectedItem()));
+                final AnnotationColumns.Type t = (AnnotationColumns.Type) combos.get(i).getSelectedItem();
+                if (t == AnnotationColumns.Type.SYMBOL) {
+                    specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t,
+                            (AnnotationColumns.SymbolShape) shape_combos.get(i).getSelectedItem()));
+                }
+                else {
+                    specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t));
+                }
             }
         }
         tp.setAnnotationColumns(specs);

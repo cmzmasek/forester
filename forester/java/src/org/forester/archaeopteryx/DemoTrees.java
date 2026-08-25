@@ -98,12 +98,14 @@ final class DemoTrees {
                                  refit( mf );
                              } ) );
         demos.add( new Demo( "Symbol Columns",
-                             "Tip-aligned shape marks: a binary flag (filled = yes, hollow = no, blank = untested) + a categorical host.",
+                             "Tip-aligned shape marks: a binary flag as filled/hollow circles + a categorical host as colored squares (the glyph is picked per column).",
                              mf -> {
                                  final TreePanel tp = openTree( mf, "symbol-columns.xml" );
                                  tp.setAnnotationColumns( Arrays.asList(
-                                         new AnnotationColumns.ColumnSpec( "data:resistant", AnnotationColumns.Type.SYMBOL ),
-                                         new AnnotationColumns.ColumnSpec( "data:host", AnnotationColumns.Type.SYMBOL ) ) );
+                                         new AnnotationColumns.ColumnSpec( "data:resistant", AnnotationColumns.Type.SYMBOL,
+                                                 AnnotationColumns.SymbolShape.CIRCLE ),
+                                         new AnnotationColumns.ColumnSpec( "data:host", AnnotationColumns.Type.SYMBOL,
+                                                 AnnotationColumns.SymbolShape.SQUARE ) ) );
                                  refit( mf );
                              } ) );
         demos.add( new Demo( "Protein Domain Architectures",

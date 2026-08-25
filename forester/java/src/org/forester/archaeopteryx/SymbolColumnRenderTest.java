@@ -130,6 +130,63 @@ public final class SymbolColumnRenderTest {
                         fail( ok, "a hollow/missing symbol should draw less ink than an all-filled column: host="
                                 + host_ink + " res=" + res_ink );
                     }
+                    // shape picker: a filled SQUARE fills its cell box; a filled CIRCLE only ~pi/4 of it. The same
+                    // all-present column therefore draws MORE ink as squares than as circles -- proving the per-column
+                    // glyph shape is honored (not ignored / always a circle).
+                    tp.setAnnotationColumns( Arrays.asList( new AnnotationColumns.ColumnSpec( "data:host",
+                            AnnotationColumns.Type.SYMBOL, AnnotationColumns.SymbolShape.CIRCLE ) ) );
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final int circle_ink = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    tp.setAnnotationColumns( Arrays.asList( new AnnotationColumns.ColumnSpec( "data:host",
+                            AnnotationColumns.Type.SYMBOL, AnnotationColumns.SymbolShape.SQUARE ) ) );
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final int square_ink = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    if ( square_ink <= ( circle_ink * 1.1 ) ) {
+                        fail( ok, "a SQUARE symbol column should draw more ink than the same CIRCLE column "
+                                + "(shape ignored?): circle=" + circle_ink + " square=" + square_ink );
+                    }
+                    // TRIANGLE parity in the vertical (root-top) orientation: the glyph must stay UPRIGHT (apex up,
+                    // base down), NOT ride the 90-deg R rotation into a sideways triangle. In root-top all tips'
+                    // marks sit in ONE horizontal band, so the band's bottom-half ink vs top-half ink discriminates
+                    // upright (base-heavy, ~3:1) from sideways (top/bottom symmetric, ~1:1).
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setAnnotationColumns( Arrays.asList( new AnnotationColumns.ColumnSpec( "data:host",
+                            AnnotationColumns.Type.SYMBOL, AnnotationColumns.SymbolShape.TRIANGLE ) ) );
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage vimg = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    int min_y = Integer.MAX_VALUE, max_y = Integer.MIN_VALUE;
+                    for ( int y = 0; y < vimg.getHeight(); ++y ) {
+                        for ( int x = 0; x < vimg.getWidth(); ++x ) {
+                            if ( saturated( vimg.getRGB( x, y ) ) ) {
+                                min_y = Math.min( min_y, y );
+                                max_y = Math.max( max_y, y );
+                            }
+                        }
+                    }
+                    if ( max_y <= min_y ) {
+                        fail( ok, "no triangle glyph ink in the root-top orientation" );
+                    }
+                    else {
+                        final int mid_y = ( min_y + max_y ) / 2;
+                        int top_ink = 0, bot_ink = 0;
+                        for ( int y = min_y; y <= max_y; ++y ) {
+                            for ( int x = 0; x < vimg.getWidth(); ++x ) {
+                                if ( saturated( vimg.getRGB( x, y ) ) ) {
+                                    if ( y < mid_y ) { ++top_ink; } else { ++bot_ink; }
+                                }
+                            }
+                        }
+                        if ( bot_ink <= ( top_ink * 1.4 ) ) {
+                            fail( ok, "the TRIANGLE glyph must stay upright (base-heavy) in root-top, not point "
+                                    + "sideways under R: top=" + top_ink + " bot=" + bot_ink );
+                        }
+                    }
                 }
                 catch ( final Throwable t ) {
                     fail( ok, "unexpected: " + t );
@@ -146,15 +203,19 @@ public final class SymbolColumnRenderTest {
         }
     }
 
-    /** Saturated (non-gray, colored) pixels -- the annotation marks; the tree + labels render gray on white. */
+    /** A saturated (non-gray, colored) pixel -- an annotation mark; the tree + labels render gray on white. */
+    private static boolean saturated( final int rgb ) {
+        final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+        return ( ( Math.max( r, Math.max( g, b ) ) - Math.min( r, Math.min( g, b ) ) ) > 40 )
+                && ( Math.max( r, Math.max( g, b ) ) > 80 );
+    }
+
+    /** Count of saturated (colored) pixels -- the annotation marks. */
     private static int countSaturated( final BufferedImage img ) {
         int n = 0;
         for( int y = 0; y < img.getHeight(); ++y ) {
             for( int x = 0; x < img.getWidth(); ++x ) {
-                final int rgb = img.getRGB( x, y );
-                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
-                if ( ( ( Math.max( r, Math.max( g, b ) ) - Math.min( r, Math.min( g, b ) ) ) > 40 )
-                        && ( Math.max( r, Math.max( g, b ) ) > 80 ) ) {
+                if ( saturated( img.getRGB( x, y ) ) ) {
                     ++n;
                 }
             }

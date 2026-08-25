@@ -142,7 +142,8 @@ Just launch Archaeopteryx and pick a tree from **File → Demo Trees**:
 - **Annotation Columns** — tip-aligned color strips and a numeric heat-map
 - **Symbol Columns** — tip-aligned shape marks: a present value draws a filled mark, an
   explicit "no"/absent value a hollow mark, and a missing value nothing (a binary
-  presence/absence column); a categorical field becomes distinct colored marks
+  presence/absence column); a categorical field becomes distinct colored marks. Pick the
+  glyph (circle / square / diamond / triangle) per column
 - **Protein Domain Architectures** — multi-domain proteins drawn to scale as flat,
   rounded, distinctly-colored boxes (a soft shadow, an optional glow); label the domains
   on the boxes or gather them into a draggable, E-value-aware legend
