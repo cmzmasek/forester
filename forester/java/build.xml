@@ -33,7 +33,7 @@
              (keep this list in sync with DemoTrees.catalog(); DemoTreesGalleryTest fails if one is missing) -->
         <mkdir dir="${classes.dir}/resources/demo"/>
         <copy todir="${classes.dir}/resources/demo">
-            <fileset dir="../demo" includes="color-by-property.xml,annotation-columns.xml,symbol-columns.xml,domain-architectures.xml,bat-phylogeny.xml,ancestral-pie-charts.xml,node-hpd-bars.xml,long-branch-break.xml,sars-cov-2-time-tree.xml,nextstrain-ncov.json,filoviridae-tree.xml,dinosaur-time-tree.xml,lagomorph-time-tree.xml,ammonite-time-tree.xml,tree-of-life-deep-time.xml,tanglegram-host-tree.xml,tanglegram-parasite-tree.xml,tanglegram-association.tsv,gtdb-genomes.xml,gtdb-classifications.tsv"/>
+            <fileset dir="../demo" includes="color-by-property.xml,annotation-columns.xml,symbol-columns.xml,stacked-bar-columns.xml,domain-architectures.xml,bat-phylogeny.xml,ancestral-pie-charts.xml,node-hpd-bars.xml,long-branch-break.xml,sars-cov-2-time-tree.xml,nextstrain-ncov.json,filoviridae-tree.xml,dinosaur-time-tree.xml,lagomorph-time-tree.xml,ammonite-time-tree.xml,tree-of-life-deep-time.xml,tanglegram-host-tree.xml,tanglegram-parasite-tree.xml,tanglegram-association.tsv,gtdb-genomes.xml,gtdb-classifications.tsv"/>
         </copy>
     </target>
 

@@ -68,6 +68,10 @@ public final class AnnotationColumnsToolTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainPanel mp = mf[ 0 ].getMainPanel();
                 final TreePanel tp = mp.getCurrentTreePanel();
+                // pin the rectangular layout up front so the header-reserve / header-click assertions below are
+                // independent of the developer's persisted ~/.archaeopteryx graphics type (a standalone run inherits
+                // it; the isolated-cache suite does not) -- the documented standalone-vs-suite gotcha
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
 
                 // menu item present + tooltip
                 final JMenuItem item = toolsItem( mf[ 0 ].getJMenuBar(), "Annotation Columns" );
@@ -252,6 +256,116 @@ public final class AnnotationColumnsToolTest {
                 tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // restore for the rest
                 mf[ 0 ].showWhole();
 
+                // STACKED_BAR: three numeric fields MERGE into ONE segmented bar (each a distinctly-coloured series).
+                // The tree/labels are grayscale, so the colored-pixel count isolates the vivid stack segments.
+                tp.setFocusedAnnotationColumn( -1 );
+                tp.clearAnnotationColumns();
+                mf[ 0 ].showWhole();
+                final int stack_bare = coloredPixels( tp, w, h );
+                final List<AnnotationColumns.ColumnSpec> stacked = new ArrayList<AnnotationColumns.ColumnSpec>();
+                stacked.add( new AnnotationColumns.ColumnSpec( "data:seg_a", AnnotationColumns.Type.STACKED_BAR ) );
+                stacked.add( new AnnotationColumns.ColumnSpec( "data:seg_b", AnnotationColumns.Type.STACKED_BAR ) );
+                stacked.add( new AnnotationColumns.ColumnSpec( "data:seg_c", AnnotationColumns.Type.STACKED_BAR ) );
+                tp.setAnnotationColumns( stacked );
+                if ( tp.annotationColumnCountForTest() != 1 ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] three STACKED_BAR fields should MERGE into 1 "
+                            + "column, got " + tp.annotationColumnCountForTest() );
+                    ok[ 0 ] = false;
+                }
+                mf[ 0 ].showWhole();
+                final int stack_with = coloredPixels( tp, w, h );
+                if ( stack_with <= ( stack_bare + 50 ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] stacked-bar segments drew no colored pixels ("
+                            + stack_bare + " -> " + stack_with + ")" );
+                    ok[ 0 ] = false;
+                }
+                // the merged column shows a series-colour legend when focused
+                tp.setFocusedAnnotationColumn( 0 );
+                renderOffscreen( tp, w, h );
+                if ( !tp.hasFocusedAnnotationColumn() || ( tp.getPropertyLegendBounds() == null ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] focused stacked-bar legend not drawn" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( -1 );
+                // a NORMALIZED stacked column also renders segments (the fraction math is covered in AnnotationColumnsTest)
+                final List<AnnotationColumns.ColumnSpec> norm = new ArrayList<AnnotationColumns.ColumnSpec>();
+                norm.add( new AnnotationColumns.ColumnSpec( "data:seg_a", AnnotationColumns.Type.STACKED_BAR, true ) );
+                norm.add( new AnnotationColumns.ColumnSpec( "data:seg_b", AnnotationColumns.Type.STACKED_BAR, true ) );
+                norm.add( new AnnotationColumns.ColumnSpec( "data:seg_c", AnnotationColumns.Type.STACKED_BAR, true ) );
+                tp.setAnnotationColumns( norm );
+                mf[ 0 ].showWhole();
+                if ( coloredPixels( tp, w, h ) <= ( stack_bare + 50 ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] normalized stacked-bar drew no colored pixels" );
+                    ok[ 0 ] = false;
+                }
+                // CIRCULAR parity: the segments become stacked radial arcs (vivid, distinct from the grayscale disc)
+                tp.getOptions().setGraphicsExportWhiteBackground( true );
+                tp.getOptions().setShowOverview( false );
+                tp.setOvOn( false );
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                final int cw = 700, chh = 700;
+                tp.setPreferredSize( new java.awt.Dimension( cw, chh ) );
+                tp.setSize( cw, chh );
+                tp.clearAnnotationColumns();
+                tp.calcParametersForPainting( cw, chh );
+                final int circ_bare = countSaturated(
+                        AptxUtil.renderPhylogenyToImage( cw, chh, tp, tp.getOptions(), false, 1, false ) );
+                tp.setAnnotationColumns( stacked );
+                tp.calcParametersForPainting( cw, chh );
+                final int circ_with = countSaturated(
+                        AptxUtil.renderPhylogenyToImage( cw, chh, tp, tp.getOptions(), false, 1, false ) );
+                if ( circ_with <= ( circ_bare + 50 ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] circular stacked-bar arcs drew no colored pixels ("
+                            + circ_bare + " -> " + circ_with + ")" );
+                    ok[ 0 ] = false;
+                }
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.clearAnnotationColumns();
+                mf[ 0 ].showWhole();
+
+                // PIE: the same numeric fields as WEDGES of one pie glyph per tip (merge + rectangular + circular)
+                final List<AnnotationColumns.ColumnSpec> pies = new ArrayList<AnnotationColumns.ColumnSpec>();
+                pies.add( new AnnotationColumns.ColumnSpec( "data:seg_a", AnnotationColumns.Type.PIE ) );
+                pies.add( new AnnotationColumns.ColumnSpec( "data:seg_b", AnnotationColumns.Type.PIE ) );
+                pies.add( new AnnotationColumns.ColumnSpec( "data:seg_c", AnnotationColumns.Type.PIE ) );
+                tp.setAnnotationColumns( pies );
+                if ( tp.annotationColumnCountForTest() != 1 ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] three PIE fields should MERGE into 1 column, got "
+                            + tp.annotationColumnCountForTest() );
+                    ok[ 0 ] = false;
+                }
+                mf[ 0 ].showWhole();
+                if ( coloredPixels( tp, w, h ) <= ( stack_bare + 50 ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] pie wedges drew no colored pixels" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( 0 );
+                renderOffscreen( tp, w, h );
+                if ( !tp.hasFocusedAnnotationColumn() || ( tp.getPropertyLegendBounds() == null ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] focused pie legend not drawn" );
+                    ok[ 0 ] = false;
+                }
+                tp.setFocusedAnnotationColumn( -1 );
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                tp.setPreferredSize( new java.awt.Dimension( cw, chh ) );
+                tp.setSize( cw, chh );
+                tp.clearAnnotationColumns();
+                tp.calcParametersForPainting( cw, chh );
+                final int pie_circ_bare = countSaturated(
+                        AptxUtil.renderPhylogenyToImage( cw, chh, tp, tp.getOptions(), false, 1, false ) );
+                tp.setAnnotationColumns( pies );
+                tp.calcParametersForPainting( cw, chh );
+                final int pie_circ_with = countSaturated(
+                        AptxUtil.renderPhylogenyToImage( cw, chh, tp, tp.getOptions(), false, 1, false ) );
+                if ( pie_circ_with <= ( pie_circ_bare + 50 ) ) {
+                    System.out.println( "  [AnnotationColumnsToolTest] circular pies drew no colored pixels ("
+                            + pie_circ_bare + " -> " + pie_circ_with + ")" );
+                    ok[ 0 ] = false;
+                }
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.clearAnnotationColumns();
+                mf[ 0 ].showWhole();
+
                 // a BAR column whose values are not a numeric gradient (categorical here; or a subtree that
                 // collapsed to a single value) must NOT focus a legend -- its min/max range would be degenerate
                 final List<AnnotationColumns.ColumnSpec> deg = new ArrayList<AnnotationColumns.ColumnSpec>();
@@ -360,6 +474,11 @@ public final class AnnotationColumnsToolTest {
             final PropertiesList pl = new PropertiesList();
             pl.addProperty( new Property( "data:region", regions[ i ], "", "xsd:string", AppliesTo.NODE ) );
             pl.addProperty( new Property( "data:value", String.valueOf( ( i + 1 ) * 5 ), "", "xsd:string",
+                                          AppliesTo.NODE ) );
+            // three compositional numeric fields (varying totals) for the STACKED_BAR checks
+            pl.addProperty( new Property( "data:seg_a", String.valueOf( i + 1 ), "", "xsd:string", AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:seg_b", String.valueOf( 6 - i ), "", "xsd:string", AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:seg_c", String.valueOf( ( i % 3 ) + 1 ), "", "xsd:string",
                                           AppliesTo.NODE ) );
             leaf.getNodeData().setProperties( pl );
             in.addAsChild( leaf );

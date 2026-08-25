@@ -8884,7 +8884,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final AnnotationColumns.Type t = _annotation_columns.getColumn(i).getType();
         return (t == AnnotationColumns.Type.COLOR_STRIP) || (t == AnnotationColumns.Type.SYMBOL)
                 || (t == AnnotationColumns.Type.HEATMAP) || (t == AnnotationColumns.Type.MATRIX)
-                || (t == AnnotationColumns.Type.BAR);
+                || (t == AnnotationColumns.Type.BAR) || AnnotationColumns.isMergedType(t);
     }
 
     /** Whether the user has explicitly focused (clicked the header of) a legend-bearing annotation column. */
@@ -8941,6 +8941,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return false;
         }
         final AnnotationColumns.Column c = _annotation_columns.getColumn(col);
+        if (AnnotationColumns.isMergedType(c.getType())) {
+            // a merged (stacked-bar / pie) column has no PropertyColorScheme -- its legend is the series colour key,
+            // ready whenever it has at least one series
+            return !_annotation_columns.stackColors(col).isEmpty();
+        }
         final PropertyColorScheme s = c.getScheme();
         if ((s == null) || s.isEmpty()) {
             return false;
@@ -9044,6 +9049,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return annotationColumnWidth(col);
     }
 
+    /** Test hook: the number of RESOLVED annotation columns (a STACKED_BAR group of several fields counts as one). */
+    int annotationColumnCountForTest() {
+        return hasAnnotationColumns() ? _annotation_columns.size() : 0;
+    }
+
     /** Test hook: the vertical space (px) reserved above the first tip for the rotated column headers. */
     int annotationHeaderTopReserveForTest() {
         return annotationHeaderTopReserve();
@@ -9085,6 +9095,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final AnnotationColumns.Column col = _annotation_columns.getColumn(col_i);
+        if (AnnotationColumns.isMergedType(col.getType())) {
+            // a merged (stacked-bar / pie) column has no scheme -- its key is the series colours (name + swatch)
+            noteLegendSubject("series:" + col.getHeader());
+            drawSeriesLegend(g, bounds, draggable, col.getHeader(), col_i);
+            return;
+        }
         final PropertyColorScheme scheme = col.getScheme();
         if ((scheme == null) || scheme.isEmpty()) {
             return;
@@ -9144,6 +9160,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.drawString(min_lbl, bar_x, label_baseline);
         g.drawString(max_lbl, (bar_x + bar_w) - fm.stringWidth(max_lbl), label_baseline);
         g.setStroke(saved_stroke);
+    }
+
+    /**
+     * Legend for a focused MERGED (stacked-bar / pie) annotation column: the series colour key -- one swatch + field
+     * name per series, in series order, reusing the categorical-legend renderer (no per-series counts). A stacked bar's
+     * absolute-vs-normalized mode is a property of the whole column, not of the key, so it is not shown here.
+     */
+    private void drawSeriesLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
+                                  final String title, final int col) {
+        final java.util.List<Color> colors = _annotation_columns.stackColors(col);
+        final java.util.List<String> headers = _annotation_columns.stackHeaders(col);
+        final Map<String, Color> values = new java.util.LinkedHashMap<String, Color>(); // series order preserved
+        for (int k = 0; k < Math.min(colors.size(), headers.size()); ++k) {
+            // guarantee a UNIQUE legend key so two series whose display names collide (refs differing only by
+            // namespace, e.g. data:count / sample:count -> "Count") each keep their own row + colour instead of one
+            // overwriting the other in the map
+            String label = headers.get(k);
+            if (values.containsKey(label)) {
+                label = label + " (" + (k + 1) + ")";
+            }
+            values.put(label, colors.get(k)); // no per-series count -> null
+        }
+        drawCategoricalLegend(g, bounds, draggable, title, values, null, 0);
     }
 
     /** Total horizontal space the annotation columns occupy (0 when none), including the gaps around them.
@@ -9236,6 +9275,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         switch (_annotation_columns.getColumn(i).getType()) {
             case BAR:
                 return Math.max(24, h * 3);
+            case STACKED_BAR:
+                return Math.max(36, h * 4); // a touch wider than a single bar so the segments are legible
+            case PIE:
+                return Math.max(20, h * 2); // a square-ish cell big enough for legible wedges
             case TEXT: {
                 int max = 0;
                 for (final PhylogenyNode t : _phylogeny.getExternalNodes()) {
@@ -9321,6 +9364,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         break;
                     }
+                    case STACKED_BAR:
+                        paintStackedBarRow(g, _annotation_columns.stackFractions(t, i),
+                                _annotation_columns.stackColors(i), xi, cy, w, cell_h);
+                        break;
+                    case PIE:
+                        drawPieGlyph(g, _annotation_columns.stackFractions(t, i), _annotation_columns.stackColors(i),
+                                xi + (w / 2.0f), t.getYcoord(), Math.min(w, cell_h) - 2, fg);
+                        break;
                     case TEXT: {
                         final String v = _annotation_columns.cellText(t, i);
                         if (v.length() > 0) {
@@ -9436,6 +9487,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         break;
                     }
+                    case STACKED_BAR:
+                        // axis-aligned segment rects ride R for free (a 90deg rotation keeps them axis-aligned),
+                        // just like the BAR / COLOR_STRIP cells -- so a logical stacked column becomes a horizontal band
+                        paintStackedBarRow(g, _annotation_columns.stackFractions(t, i),
+                                _annotation_columns.stackColors(i), xi, cy, w, cell_h);
+                        break;
+                    case PIE: {
+                        // draw the pie UPRIGHT in the base frame (its wedges would rotate under R) at the R-mapped
+                        // device centre -- parity with the SYMBOL glyph and the rectangular/circular pie
+                        final Point2D.Double gp = screenPoint(xi + (w / 2.0), t.getYcoord());
+                        g.setTransform(_orientation_base_transform);
+                        drawPieGlyph(g, _annotation_columns.stackFractions(t, i), _annotation_columns.stackColors(i),
+                                (float) gp.x, (float) gp.y, Math.min(w, cell_h) - 2, fg);
+                        g.setTransform(withR);
+                        break;
+                    }
                     case TEXT: {
                         final String v = _annotation_columns.cellText(t, i);
                         if (v.length() > 0) {
@@ -9515,6 +9582,69 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 break;
         }
         if (!filled) {
+            g.setStroke(saved_stroke);
+        }
+    }
+
+    /**
+     * Draws one tip's STACKED_BAR row: the segments ({@code fractions}, parallel to {@code colors}) tiled
+     * left-to-right across the column, each filled in its series colour, with cumulative rounding at the boundaries
+     * so adjacent segments abut without a seam or overlap. A zero-length segment (missing / non-positive series
+     * value) is skipped. Shared by the rectangular and vertical annotation-column paths -- both fill axis-aligned
+     * rects (device coords, and logical coords riding R, respectively), so a stacked column becomes a horizontal
+     * band in the vertical orientations for free.
+     */
+    private void paintStackedBarRow(final Graphics2D g, final double[] fractions, final java.util.List<Color> colors,
+                                    final int xi, final int cy, final int w, final int cell_h) {
+        double off = 0;
+        for (int k = 0; k < fractions.length; ++k) {
+            final double f = fractions[k];
+            if (f > 0) {
+                final int x0 = xi + (int) Math.round(off * w);
+                final int x1 = xi + (int) Math.round((off + f) * w);
+                // a sub-pixel segment rounds to zero width and is simply invisible (a composition slice, not a
+                // single BAR whose minimum must show a stub); NO forced 1px, so it can't overpaint the next segment
+                // or, at the column edge, poke past into the gap
+                if (x1 > x0) {
+                    g.setColor(colors.get(k));
+                    g.fillRect(x0, cy, x1 - x0, cell_h);
+                }
+            }
+            off += f;
+        }
+    }
+
+    /**
+     * Draws one tip's PIE glyph: the series ({@code fractions}, parallel to {@code colors}) as wedges of a disc of
+     * diameter {@code diameter} centred at ({@code cx},{@code cy}), starting at 12 o'clock and sweeping clockwise, then
+     * a thin {@code outline} circle around it (mirroring the ancestral-state pies via the shared {@code _arc}/
+     * {@code _ellipse}). A tip with no data (all fractions 0) draws NOTHING (no empty circle). The fractions are the
+     * tip's own proportions (they sum to 1 for a tip with data), so the wedge angles are {@code fraction * 360}. Shared
+     * by the rectangular, vertical, and circular paint paths -- each passes DEVICE coordinates and draws upright.
+     */
+    private void drawPieGlyph(final Graphics2D g, final double[] fractions, final java.util.List<Color> colors,
+                              final float cx, final float cy, final float diameter, final Color outline) {
+        final float d = Math.max(3.0f, diameter);
+        final double x = cx - (d / 2.0), y = cy - (d / 2.0);
+        double start = 90.0; // begin at 12 o'clock and sweep clockwise (negative arc angle), like the ancestral pies
+        boolean any = false;
+        for (int k = 0; k < fractions.length; ++k) {
+            final double f = fractions[k];
+            if (f > 0) {
+                final double sweep = 360.0 * f;
+                g.setColor(colors.get(k));
+                _arc.setArc(x, y, d, d, start, -sweep, Arc2D.PIE);
+                g.fill(_arc);
+                start -= sweep;
+                any = true;
+            }
+        }
+        if (any) { // outline only a real pie -- an empty circle would look like a tip with (blank) data
+            final Stroke saved_stroke = g.getStroke();
+            g.setStroke(STROKE_1);
+            g.setColor(outline);
+            _ellipse.setFrame(x, y, d, d);
+            g.draw(_ellipse);
             g.setStroke(saved_stroke);
         }
     }
@@ -10474,6 +10604,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             g.setColor(fg);
                             g.fill(annularSector(cx, cy, r0, Math.max(r0 + 1, r0 + (f * w)), a0, a1));
                         }
+                        break;
+                    }
+                    case STACKED_BAR: {
+                        // the segments stack RADIALLY outward within this ring's [r0, r1] band, each a coloured annulus
+                        final double[] fr = _annotation_columns.stackFractions(t, i);
+                        final java.util.List<Color> cols = _annotation_columns.stackColors(i);
+                        double off = 0;
+                        for (int k = 0; k < fr.length; ++k) {
+                            final double f = fr[k];
+                            if (f > 0) {
+                                // f > 0 -> outer radius > inner, so the sector is non-empty; a sub-pixel slice draws
+                                // as ~nothing (no forced 1px that would overshoot the ring's outer edge)
+                                final double rs0 = r0 + (off * w);
+                                g.setColor(cols.get(k));
+                                g.fill(annularSector(cx, cy, rs0, r0 + ((off + f) * w), a0, a1));
+                            }
+                            off += f;
+                        }
+                        break;
+                    }
+                    case PIE: {
+                        // a pie centred in this tip's ring cell (mid-radius, on its spoke), drawn UPRIGHT so the wedge
+                        // order reads the same as in the other layouts
+                        final double rmid = (r0 + r1) / 2.0;
+                        final float px = (float) (cx + (rmid * Math.cos(a)));
+                        final float py = (float) (cy + (rmid * Math.sin(a)));
+                        final double arc = rmid * (a1 - a0);
+                        drawPieGlyph(g, _annotation_columns.stackFractions(t, i), _annotation_columns.stackColors(i),
+                                px, py, (float) (Math.min(w, arc) - 2), fg);
                         break;
                     }
                     case TEXT: {

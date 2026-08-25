@@ -43,7 +43,8 @@ public final class DemoTreesGalleryTest {
 
     // the resources the catalog opens (a fossil-only ammonite tree, a tanglegram pair + its association file, etc.)
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
-            "symbol-columns.xml", "domain-architectures.xml", "bat-phylogeny.xml", "ancestral-pie-charts.xml",
+            "symbol-columns.xml", "stacked-bar-columns.xml", "domain-architectures.xml", "bat-phylogeny.xml",
+            "ancestral-pie-charts.xml",
             "node-hpd-bars.xml",
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
             "dinosaur-time-tree.xml", "lagomorph-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
@@ -68,8 +69,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 17 ) {
-                return fail( "the demo catalog should have 17 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 19 ) {
+                return fail( "the demo catalog should have 19 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -221,6 +222,38 @@ public final class DemoTreesGalleryTest {
                 }
                 if ( !has_symbol ) {
                     fail( ok, "the symbol-columns demo must configure a SYMBOL column" );
+                }
+            }
+        }
+        else if ( label.startsWith( "Stacked Bar Columns" ) ) {
+            if ( !tp.hasAnnotationColumns() ) {
+                fail( ok, "the stacked-bar demo must have annotation columns" );
+            }
+            else {
+                boolean has_stacked = false;
+                for ( final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs() ) {
+                    if ( s._type == AnnotationColumns.Type.STACKED_BAR ) {
+                        has_stacked = true;
+                    }
+                }
+                if ( !has_stacked ) {
+                    fail( ok, "the stacked-bar demo must configure a STACKED_BAR column" );
+                }
+            }
+        }
+        else if ( label.startsWith( "Pie Columns" ) ) {
+            if ( !tp.hasAnnotationColumns() ) {
+                fail( ok, "the pie demo must have annotation columns" );
+            }
+            else {
+                boolean has_pie = false;
+                for ( final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs() ) {
+                    if ( s._type == AnnotationColumns.Type.PIE ) {
+                        has_pie = true;
+                    }
+                }
+                if ( !has_pie ) {
+                    fail( ok, "the pie demo must configure a PIE column" );
                 }
             }
         }

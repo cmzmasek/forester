@@ -108,6 +108,26 @@ final class DemoTrees {
                                                  AnnotationColumns.SymbolShape.SQUARE ) ) );
                                  refit( mf );
                              } ) );
+        demos.add( new Demo( "Stacked Bar Columns",
+                             "Compositional data as a segmented bar per tip: three read-count fields merge into one stacked bar (length = sequencing depth, segments = composition).",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "stacked-bar-columns.xml" );
+                                 tp.setAnnotationColumns( Arrays.asList(
+                                         new AnnotationColumns.ColumnSpec( "data:firmicutes", AnnotationColumns.Type.STACKED_BAR ),
+                                         new AnnotationColumns.ColumnSpec( "data:bacteroidetes", AnnotationColumns.Type.STACKED_BAR ),
+                                         new AnnotationColumns.ColumnSpec( "data:proteobacteria", AnnotationColumns.Type.STACKED_BAR ) ) );
+                                 refit( mf );
+                             } ) );
+        demos.add( new Demo( "Pie Columns",
+                             "The same compositional data as a pie per tip: three read-count fields merge into one pie glyph, each field a coloured wedge (the pie-chart view of a normalized stacked bar).",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "stacked-bar-columns.xml" );
+                                 tp.setAnnotationColumns( Arrays.asList(
+                                         new AnnotationColumns.ColumnSpec( "data:firmicutes", AnnotationColumns.Type.PIE ),
+                                         new AnnotationColumns.ColumnSpec( "data:bacteroidetes", AnnotationColumns.Type.PIE ),
+                                         new AnnotationColumns.ColumnSpec( "data:proteobacteria", AnnotationColumns.Type.PIE ) ) );
+                                 refit( mf );
+                             } ) );
         demos.add( new Demo( "Protein Domain Architectures",
                              "Multi-domain protein sequences drawn to scale at each tip (auto-enabled on load).",
                              mf -> openTree( mf, "domain-architectures.xml" ) ) ); // domains auto-enable + fit on load

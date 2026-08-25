@@ -71,6 +71,7 @@ public final class DemoTreeGenerator {
         write( dir, "color-by-property.xml", colorByPropertyTree() );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
         write( dir, "symbol-columns.xml", symbolColumnsTree() );
+        write( dir, "stacked-bar-columns.xml", stackedBarColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -423,6 +424,43 @@ public final class DemoTreeGenerator {
             cat( n, "data:resistant", resistant );
         }
         cat( n, "data:host", host );
+        return n;
+    }
+
+    // ----- "Stacked bar columns": metagenomic samples whose tips carry read counts for three bacterial phyla. Setting
+    //       all three to "Stacked bar" MERGES them into one segmented bar per tip (segment length = read count, so the
+    //       bar's total length shows sequencing depth AND its segments show composition); a normalized bar fills the
+    //       width and shows pure proportion. Load -> Tools > Annotation Columns. (Compositional / proportional data.)
+    private static Phylogeny stackedBarColumnsTree() {
+        final PhylogenyNode[] tips = {
+                sample( "gut_01", 820, 140, 40 ),
+                sample( "gut_02", 610, 300, 90 ),
+                sample( "gut_03", 450, 380, 170 ),
+                sample( "oral_01", 300, 250, 1450 ), // a much larger total -> its absolute bar fills the column width
+                sample( "oral_02", 260, 210, 980 ),
+                sample( "skin_01", 900, 60, 40 ),
+                sample( "skin_02", 780, 120, 100 ),
+                sample( "soil_01", 200, 700, 300 ),
+                sample( "soil_02", 150, 640, 210 ),
+                sample( "water_01", 120, 400, 480 ) };
+        final PhylogenyNode root = clade( 0, clade( 0.05, tips[ 0 ], tips[ 1 ], tips[ 2 ] ),
+                                          clade( 0.05, clade( 0.03, tips[ 3 ], tips[ 4 ] ),
+                                                 clade( 0.03, tips[ 5 ], tips[ 6 ] ) ),
+                                          clade( 0.05, tips[ 7 ], tips[ 8 ], tips[ 9 ] ) );
+        return tree( root, "Stacked bar columns (demo)",
+                     "Synthetic metagenomic-sample tree: each tip carries read counts for three bacterial phyla "
+                             + "('firmicutes', 'bacteroidetes', 'proteobacteria'). Try Tools > Annotation Columns, set "
+                             + "all three to 'Stacked bar' -- they merge into one segmented bar per tip (segment length "
+                             + "= the read count, so the bar's total length shows sequencing depth AND its segments show "
+                             + "composition). Tick 'Normalize stacked bars to 100%' for pure proportional composition." );
+    }
+
+    private static PhylogenyNode sample( final String name, final int firmicutes, final int bacteroidetes,
+                                         final int proteobacteria ) {
+        final PhylogenyNode n = leaf( name );
+        num( n, "data:firmicutes", Integer.toString( firmicutes ) );
+        num( n, "data:bacteroidetes", Integer.toString( bacteroidetes ) );
+        num( n, "data:proteobacteria", Integer.toString( proteobacteria ) );
         return n;
     }
 

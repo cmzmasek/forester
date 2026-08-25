@@ -1367,10 +1367,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // pre-select whatever columns are shown now (type AND, for a SYMBOL column, its glyph shape)
         final Map<String, AnnotationColumns.Type> current = new HashMap<String, AnnotationColumns.Type>();
         final Map<String, AnnotationColumns.SymbolShape> current_shape = new HashMap<String, AnnotationColumns.SymbolShape>();
+        boolean current_normalize = false; // the STACKED_BAR group shares one normalize flag
+        boolean saw_stacked_spec = false;
         if (tp.getAnnotationColumnSpecs() != null) {
             for (final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs()) {
                 current.put(s._ref, s._type);
                 current_shape.put(s._ref, s._shape);
+                if ((s._type == AnnotationColumns.Type.STACKED_BAR) && !saw_stacked_spec) {
+                    current_normalize = s._normalized; // read the FIRST stacked field, matching how the merge takes it
+                    saw_stacked_spec = true;
+                }
             }
         }
         final DefaultListCellRenderer type_renderer = new DefaultListCellRenderer() {
@@ -1404,6 +1410,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final List<JCheckBox> checks = new ArrayList<JCheckBox>();
         final List<JComboBox<AnnotationColumns.Type>> combos = new ArrayList<JComboBox<AnnotationColumns.Type>>();
         final List<JComboBox<AnnotationColumns.SymbolShape>> shape_combos = new ArrayList<JComboBox<AnnotationColumns.SymbolShape>>();
+        // several fields set to "Stacked bar" MERGE into one segmented bar; this one flag governs that merged bar
+        final JCheckBox normalize_cb = new JCheckBox("Normalize stacked bars to 100% (else absolute lengths)",
+                current_normalize);
+        final Runnable sync_normalize = () -> {
+            boolean any_stacked = false;
+            for (final JComboBox<AnnotationColumns.Type> c : combos) {
+                if (c.getSelectedItem() == AnnotationColumns.Type.STACKED_BAR) {
+                    any_stacked = true;
+                    break;
+                }
+            }
+            normalize_cb.setEnabled(any_stacked);
+        };
         for (final String ref : refs) {
             final JCheckBox cb = new JCheckBox(PropertyColorScheme.displayName(ref), current.containsKey(ref));
             final List<AnnotationColumns.Type> types = AnnotationColumns.allowedTypes(phy, ref);
@@ -1419,7 +1438,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             shape_combo.setSelectedItem(current_shape.containsKey(ref) ? current_shape.get(ref)
                     : AnnotationColumns.SymbolShape.CIRCLE);
             shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
-            combo.addActionListener(e -> shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL));
+            combo.addActionListener(e -> {
+                shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
+                sync_normalize.run();
+            });
             panel.add(cb);
             panel.add(combo);
             panel.add(shape_combo);
@@ -1427,9 +1449,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             combos.add(combo);
             shape_combos.add(shape_combo);
         }
+        sync_normalize.run(); // enable the normalize checkbox only when a Stacked bar column is actually selected
         final JScrollPane sp = new JScrollPane(panel);
         sp.setPreferredSize(new java.awt.Dimension(480, Math.min(440, 50 + (refs.size() * 30))));
-        if (JOptionPane.showConfirmDialog(this, sp, "Annotation Columns", JOptionPane.OK_CANCEL_OPTION,
+        final JPanel content = new JPanel(new java.awt.BorderLayout(0, 6));
+        content.add(sp, java.awt.BorderLayout.CENTER);
+        content.add(normalize_cb, java.awt.BorderLayout.SOUTH);
+        if (JOptionPane.showConfirmDialog(this, content, "Annotation Columns", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
@@ -1440,6 +1466,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 if (t == AnnotationColumns.Type.SYMBOL) {
                     specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t,
                             (AnnotationColumns.SymbolShape) shape_combos.get(i).getSelectedItem()));
+                }
+                else if (t == AnnotationColumns.Type.STACKED_BAR) {
+                    specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t, normalize_cb.isSelected()));
                 }
                 else {
                     specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t));

@@ -92,6 +92,11 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "symbol-columns.xml", 8 );
         ok &= hasCategoricalRef( "symbol-columns.xml", "data:resistant" );
         ok &= hasCategoricalRef( "symbol-columns.xml", "data:host" );
+        // stacked bar columns: three numeric read-count fields that MERGE into one segmented (stacked) bar per tip
+        ok &= hasAtLeastTips( "stacked-bar-columns.xml", 8 );
+        ok &= hasNumericRef( "stacked-bar-columns.xml", "data:firmicutes" );
+        ok &= hasNumericRef( "stacked-bar-columns.xml", "data:bacteroidetes" );
+        ok &= hasNumericRef( "stacked-bar-columns.xml", "data:proteobacteria" );
         // colorize by rank / clade bands: each TIP carries its 'order' in-tree, so it colorizes OFFLINE (no prompt)
         // into 3 clades -- even though the Carnivora clade root is deliberately mis-annotated 'Rodentia' (a tip's
         // own identity wins over the wrong internal annotation)

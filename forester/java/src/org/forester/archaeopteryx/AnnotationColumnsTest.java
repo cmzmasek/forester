@@ -44,7 +44,197 @@ public final class AnnotationColumnsTest {
     }
 
     public static boolean test() {
-        return testTypeSuggestion() && testCells() && testHeaders() && testLabels() && testMatrix() && testSymbol();
+        return testTypeSuggestion() && testCells() && testHeaders() && testLabels() && testMatrix() && testSymbol()
+                && testStackedBar() && testPie();
+    }
+
+    // ---- PIE column: several numeric fields MERGE into one pie glyph, wedge angle = the tip's own proportion ----
+    private static boolean testPie() {
+        final Phylogeny phy = stackTree();
+        if ( !"Pie".equals( AnnotationColumns.label( Type.PIE ) ) ) {
+            return fail( "PIE label should be 'Pie'" );
+        }
+        if ( !AnnotationColumns.isMergedType( Type.PIE ) || !AnnotationColumns.isMergedType( Type.STACKED_BAR )
+                || AnnotationColumns.isMergedType( Type.BAR ) || AnnotationColumns.isMergedType( Type.COLOR_STRIP ) ) {
+            return fail( "isMergedType should be true only for STACKED_BAR and PIE" );
+        }
+        if ( !AnnotationColumns.allowedTypes( phy, "data:a" ).contains( Type.PIE ) ) {
+            return fail( "a numeric field should allow PIE" );
+        }
+        // three PIE fields MERGE into ONE pie column
+        final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
+        specs.add( new AnnotationColumns.ColumnSpec( "data:a", Type.PIE ) );
+        specs.add( new AnnotationColumns.ColumnSpec( "data:b", Type.PIE ) );
+        specs.add( new AnnotationColumns.ColumnSpec( "data:c", Type.PIE ) );
+        final AnnotationColumns pie = new AnnotationColumns( phy, specs );
+        if ( pie.size() != 1 ) {
+            return fail( "three PIE fields must MERGE into one column, got " + pie.size() );
+        }
+        if ( ( pie.getColumn( 0 ).getType() != Type.PIE ) || !"Pie".equals( pie.getColumn( 0 ).getHeader() ) ) {
+            return fail( "the merged column should be a PIE with the generic 'Pie' header" );
+        }
+        if ( ( pie.stackColors( 0 ).size() != 3 ) || ( pie.stackHeaders( 0 ).size() != 3 )
+                || !"A".equals( pie.stackHeaders( 0 ).get( 0 ) ) || !"C".equals( pie.stackHeaders( 0 ).get( 2 ) ) ) {
+            return fail( "a 3-series pie should expose 3 colours + headers in series order, got " + pie.stackHeaders( 0 ) );
+        }
+        // wedge fractions = the tip's OWN proportions (a pie is inherently normalized), summing to 1
+        final double[] pf = pie.stackFractions( tip( phy, "P" ), 0 );
+        if ( !approx( pf, new double[] { 1.0 / 4, 2.0 / 4, 1.0 / 4 } ) || ( Math.abs( sum( pf ) - 1.0 ) > 1e-9 ) ) {
+            return fail( "pie P wedges should be the tip's own proportions (sum 1): " + java.util.Arrays.toString( pf ) );
+        }
+        if ( sum( pie.stackFractions( tip( phy, "R" ), 0 ) ) != 0.0 ) {
+            return fail( "a tip missing all series should have no pie (all-zero fractions)" );
+        }
+        if ( pie.stackFractions( tip( phy, "N" ), 0 )[ 0 ] != 0.0 ) {
+            return fail( "a negative series value should count as 0 in a pie" );
+        }
+        // STACKED_BAR and PIE fields form TWO SEPARATE merged columns (in first-seen-per-type order)
+        final List<AnnotationColumns.ColumnSpec> mixed = new ArrayList<AnnotationColumns.ColumnSpec>();
+        mixed.add( new AnnotationColumns.ColumnSpec( "data:a", Type.STACKED_BAR ) );
+        mixed.add( new AnnotationColumns.ColumnSpec( "data:b", Type.STACKED_BAR ) );
+        mixed.add( new AnnotationColumns.ColumnSpec( "data:a", Type.PIE ) );
+        mixed.add( new AnnotationColumns.ColumnSpec( "data:b", Type.PIE ) );
+        final AnnotationColumns both = new AnnotationColumns( phy, mixed );
+        if ( ( both.size() != 2 ) || ( both.getColumn( 0 ).getType() != Type.STACKED_BAR )
+                || ( both.getColumn( 1 ).getType() != Type.PIE ) ) {
+            return fail( "STACKED_BAR + PIE fields should form 2 merged columns [STACKED_BAR, PIE], got size "
+                    + both.size() );
+        }
+        return true;
+    }
+
+    // ---- STACKED_BAR column: several numeric fields MERGE into one segmented bar, absolute or normalized ----
+    private static boolean testStackedBar() {
+        final Phylogeny phy = stackTree();
+        if ( !"Stacked bar".equals( AnnotationColumns.label( Type.STACKED_BAR ) ) ) {
+            return fail( "STACKED_BAR label should be 'Stacked bar'" );
+        }
+        // offered only for a numeric field
+        if ( !AnnotationColumns.allowedTypes( phy, "data:a" ).contains( Type.STACKED_BAR ) ) {
+            return fail( "a numeric field should allow STACKED_BAR" );
+        }
+        // three STACKED_BAR fields MERGE into ONE column, at the first stacked field's position
+        final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
+        specs.add( new AnnotationColumns.ColumnSpec( "data:a", Type.STACKED_BAR ) );
+        specs.add( new AnnotationColumns.ColumnSpec( "data:b", Type.STACKED_BAR ) );
+        specs.add( new AnnotationColumns.ColumnSpec( "data:c", Type.STACKED_BAR ) );
+        final AnnotationColumns abs = new AnnotationColumns( phy, specs );
+        if ( abs.size() != 1 ) {
+            return fail( "three STACKED_BAR fields must MERGE into one column, got " + abs.size() );
+        }
+        if ( ( abs.getColumn( 0 ).getType() != Type.STACKED_BAR )
+                || !"Stacked bar".equals( abs.getColumn( 0 ).getHeader() ) ) {
+            return fail( "the merged column should be a STACKED_BAR with the generic 'Stacked bar' header" );
+        }
+        // series colours + headers: 3, distinct, parallel and in series order
+        if ( ( abs.stackColors( 0 ).size() != 3 ) || ( abs.stackHeaders( 0 ).size() != 3 ) ) {
+            return fail( "a 3-series stacked bar should expose 3 colours and 3 headers" );
+        }
+        if ( abs.stackColors( 0 ).get( 0 ).equals( abs.stackColors( 0 ).get( 1 ) )
+                || abs.stackColors( 0 ).get( 1 ).equals( abs.stackColors( 0 ).get( 2 ) )
+                || abs.stackColors( 0 ).get( 0 ).equals( abs.stackColors( 0 ).get( 2 ) ) ) {
+            return fail( "the stacked-bar series should have distinct colours" );
+        }
+        if ( !"A".equals( abs.stackHeaders( 0 ).get( 0 ) ) || !"B".equals( abs.stackHeaders( 0 ).get( 1 ) )
+                || !"C".equals( abs.stackHeaders( 0 ).get( 2 ) ) ) {
+            return fail( "series headers should be the prettified field names in series order, got "
+                    + abs.stackHeaders( 0 ) );
+        }
+        // ABSOLUTE fractions: value / the LARGEST per-tip total (max total = 8 at Q). P totals 4 -> half-width bar.
+        if ( !approx( abs.stackFractions( tip( phy, "P" ), 0 ), new double[] { 1.0 / 8, 2.0 / 8, 1.0 / 8 } ) ) {
+            return fail( "absolute P fractions wrong: "
+                    + java.util.Arrays.toString( abs.stackFractions( tip( phy, "P" ), 0 ) ) );
+        }
+        final double[] qf = abs.stackFractions( tip( phy, "Q" ), 0 );
+        if ( !approx( qf, new double[] { 4.0 / 8, 4.0 / 8, 0.0 } ) || ( Math.abs( sum( qf ) - 1.0 ) > 1e-9 ) ) {
+            return fail( "the largest-total tip's absolute bar should fill the width (sum 1): "
+                    + java.util.Arrays.toString( qf ) );
+        }
+        // a tip missing ALL series -> all-zero (draws nothing), distinct from a full bar
+        if ( sum( abs.stackFractions( tip( phy, "R" ), 0 ) ) != 0.0 ) {
+            return fail( "a tip missing all series should have all-zero stacked fractions" );
+        }
+        // a NEGATIVE series value counts as 0 (a stacked bar is non-negative)
+        if ( abs.stackFractions( tip( phy, "N" ), 0 )[ 0 ] != 0.0 ) {
+            return fail( "a negative series value should count as 0 in a stacked bar" );
+        }
+        // NORMALIZED: value / the tip's OWN total -> every tip WITH data fills the width (sum 1)
+        final List<AnnotationColumns.ColumnSpec> nspecs = new ArrayList<AnnotationColumns.ColumnSpec>();
+        nspecs.add( new AnnotationColumns.ColumnSpec( "data:a", Type.STACKED_BAR, true ) );
+        nspecs.add( new AnnotationColumns.ColumnSpec( "data:b", Type.STACKED_BAR, true ) );
+        nspecs.add( new AnnotationColumns.ColumnSpec( "data:c", Type.STACKED_BAR, true ) );
+        final AnnotationColumns norm = new AnnotationColumns( phy, nspecs );
+        final double[] npf = norm.stackFractions( tip( phy, "P" ), 0 );
+        if ( !approx( npf, new double[] { 1.0 / 4, 2.0 / 4, 1.0 / 4 } ) || ( Math.abs( sum( npf ) - 1.0 ) > 1e-9 ) ) {
+            return fail( "normalized P fractions should be the tip's own proportions (sum 1): "
+                    + java.util.Arrays.toString( npf ) );
+        }
+        if ( Math.abs( sum( norm.stackFractions( tip( phy, "Q" ), 0 ) ) - 1.0 ) > 1e-9 ) {
+            return fail( "normalized Q bar should also fill the width" );
+        }
+        if ( sum( norm.stackFractions( tip( phy, "R" ), 0 ) ) != 0.0 ) {
+            return fail( "normalized: a tip with no data should still draw nothing" );
+        }
+        // a NON-stacked column exposes no stacked fractions/colours/headers
+        final List<AnnotationColumns.ColumnSpec> bar_only = new ArrayList<AnnotationColumns.ColumnSpec>();
+        bar_only.add( new AnnotationColumns.ColumnSpec( "data:a", Type.BAR ) );
+        final AnnotationColumns bar = new AnnotationColumns( phy, bar_only );
+        if ( ( bar.stackFractions( tip( phy, "P" ), 0 ).length != 0 ) || !bar.stackColors( 0 ).isEmpty()
+                || !bar.stackHeaders( 0 ).isEmpty() ) {
+            return fail( "a non-stacked column should expose no stacked fractions/colours/headers" );
+        }
+        return true;
+    }
+
+    private static Phylogeny stackTree() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( stackLeaf( "P", "1", "2", "1" ) );  // total 4
+        root.addAsChild( stackLeaf( "Q", "4", "4", "0" ) );  // total 8 (the max)
+        root.addAsChild( stackLeaf( "R", null, null, null ) ); // missing all
+        root.addAsChild( stackLeaf( "N", "-1", "2", "1" ) ); // negative a -> counts as 0 (total 3)
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    private static PhylogenyNode stackLeaf( final String name, final String a, final String b, final String c ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        if ( ( a != null ) || ( b != null ) || ( c != null ) ) {
+            final PropertiesList pl = new PropertiesList();
+            if ( a != null ) {
+                pl.addProperty( new Property( "data:a", a, "", "xsd:string", AppliesTo.NODE ) );
+            }
+            if ( b != null ) {
+                pl.addProperty( new Property( "data:b", b, "", "xsd:string", AppliesTo.NODE ) );
+            }
+            if ( c != null ) {
+                pl.addProperty( new Property( "data:c", c, "", "xsd:string", AppliesTo.NODE ) );
+            }
+            n.getNodeData().setProperties( pl );
+        }
+        return n;
+    }
+
+    private static boolean approx( final double[] a, final double[] b ) {
+        if ( ( a == null ) || ( b == null ) || ( a.length != b.length ) ) {
+            return false;
+        }
+        for( int i = 0; i < a.length; ++i ) {
+            if ( Math.abs( a[ i ] - b[ i ] ) > 1e-9 ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static double sum( final double[] a ) {
+        double s = 0;
+        for( final double v : a ) {
+            s += v;
+        }
+        return s;
     }
 
     // ---- SYMBOL column: a shape glyph colored like a strip, with presence-driven fill ----
@@ -214,6 +404,8 @@ public final class AnnotationColumnsTest {
                 || !"Symbol".equals( AnnotationColumns.label( Type.SYMBOL ) )
                 || !"Heat map".equals( AnnotationColumns.label( Type.HEATMAP ) )
                 || !"Bar".equals( AnnotationColumns.label( Type.BAR ) )
+                || !"Stacked bar".equals( AnnotationColumns.label( Type.STACKED_BAR ) )
+                || !"Pie".equals( AnnotationColumns.label( Type.PIE ) )
                 || !"Text".equals( AnnotationColumns.label( Type.TEXT ) ) ) {
             return fail( "render-type labels are wrong" );
         }
@@ -232,15 +424,17 @@ public final class AnnotationColumnsTest {
         final List<Type> host_types = AnnotationColumns.allowedTypes( phy, "repseq:host" );
         if ( ( host_types.size() != 3 ) || !host_types.contains( Type.COLOR_STRIP )
                 || !host_types.contains( Type.SYMBOL ) || !host_types.contains( Type.TEXT )
-                || host_types.contains( Type.HEATMAP ) ) {
-            return fail( "a categorical field should allow COLOR_STRIP + SYMBOL + TEXT" );
+                || host_types.contains( Type.HEATMAP ) || host_types.contains( Type.STACKED_BAR )
+                || host_types.contains( Type.PIE ) ) {
+            return fail( "a categorical field should allow COLOR_STRIP + SYMBOL + TEXT (no STACKED_BAR/PIE)" );
         }
         final List<Type> score_types = AnnotationColumns.allowedTypes( phy, "data:score" );
-        if ( ( score_types.size() != 4 ) || !score_types.contains( Type.HEATMAP )
+        if ( ( score_types.size() != 6 ) || !score_types.contains( Type.HEATMAP )
                 || !score_types.contains( Type.MATRIX ) || !score_types.contains( Type.BAR )
+                || !score_types.contains( Type.STACKED_BAR ) || !score_types.contains( Type.PIE )
                 || !score_types.contains( Type.TEXT ) || score_types.contains( Type.COLOR_STRIP )
                 || score_types.contains( Type.SYMBOL ) ) {
-            return fail( "a numeric field should allow HEATMAP + MATRIX + BAR + TEXT" );
+            return fail( "a numeric field should allow HEATMAP + MATRIX + BAR + STACKED_BAR + PIE + TEXT" );
         }
         return true;
     }

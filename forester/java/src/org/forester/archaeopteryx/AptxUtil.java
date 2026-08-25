@@ -174,6 +174,22 @@ public final class AptxUtil {
         return result;
     }
 
+    /**
+     * {@code n} visually distinct colours in INDEX order -- the same even-hue qualitative palette
+     * {@link #assignDistinctColors} paints taxa with, but for series that have a natural ORDER rather than names
+     * (e.g. the coloured segments of a stacked-bar annotation column). Deterministic, so exports are reproducible.
+     */
+    final static java.util.List<Color> distinctColors( final int n ) {
+        final java.util.List<Color> result = new java.util.ArrayList<Color>();
+        for( int i = 0; i < n; ++i ) {
+            final float hue = ( n > 0 ) ? ( (float) i / (float) n ) : 0f;
+            final float sat = ( ( i % 2 ) == 0 ) ? 0.75f : 0.95f;
+            final float bri = ( ( i % 2 ) == 0 ) ? 0.95f : 0.78f;
+            result.add( Color.getHSBColor( hue, sat, bri ) );
+        }
+        return result;
+    }
+
     // Golden-ratio-conjugate hue step: consecutive items land ~137.5° apart on the wheel, so a SORTED set whose
     // adjacent names are merely SPELLING-similar gets maximally-SEPARATED hues -- the opposite of the plain i/n sweep,
     // which gives adjacent names near-identical hues. That i/n sweep ({@link #assignDistinctColors}) is deliberately

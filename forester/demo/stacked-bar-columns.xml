@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Stacked bar columns (demo)</name>
+  <description>Synthetic metagenomic-sample tree: each tip carries read counts for three bacterial phyla (&apos;firmicutes&apos;, &apos;bacteroidetes&apos;, &apos;proteobacteria&apos;). Try Tools &gt; Annotation Columns, set all three to &apos;Stacked bar&apos; -- they merge into one segmented bar per tip (segment length = the read count, so the bar&apos;s total length shows sequencing depth AND its segments show composition). Tick &apos;Normalize stacked bars to 100%&apos; for pure proportional composition.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>gut_01</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">40</property>
+        <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">820</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">140</property>
+      </clade>
+      <clade>
+        <name>gut_02</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">90</property>
+        <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">610</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">300</property>
+      </clade>
+      <clade>
+        <name>gut_03</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">170</property>
+        <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">450</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">380</property>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>oral_01</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">1450</property>
+          <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">300</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">250</property>
+        </clade>
+        <clade>
+          <name>oral_02</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">980</property>
+          <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">260</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">210</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>skin_01</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">40</property>
+          <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">900</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">60</property>
+        </clade>
+        <clade>
+          <name>skin_02</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">100</property>
+          <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">780</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">120</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <name>soil_01</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">300</property>
+        <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">200</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">700</property>
+      </clade>
+      <clade>
+        <name>soil_02</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">210</property>
+        <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">150</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">640</property>
+      </clade>
+      <clade>
+        <name>water_01</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">480</property>
+        <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">120</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">400</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
