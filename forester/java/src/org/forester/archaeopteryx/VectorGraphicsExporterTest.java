@@ -149,6 +149,45 @@ public final class VectorGraphicsExporterTest {
                     || !Format.EPS.id().equals( GraphicsExportType.EPS.toString() ) ) {
                 return fail( "format id / GraphicsExportType suffix mismatch" );
             }
+
+            // ---- Regression: domain-tree SVG/EPS export (Archaeopteryx's only GradientPaint is the domain box).
+            // VectorGraphics2D rasterizes a non-Color (gradient) fill into a BufferedImage the size of the shape's
+            // ROUNDED bounds -- and it stays ARMED after a gradient (cleared only by a dispose the single-context
+            // paint pass never issues), so EVERY later fill is rasterized too. Two failures, both reproduced on real
+            // domain trees: (a) a following SUB-PIXEL fill (a second domain's Color shadow, an empty glyph) rounds to
+            // 0 -> new BufferedImage(0, ..) -> IllegalArgumentException aborts the whole export; (b) normal content
+            // after a gradient (labels, boxes) embeds as a gradient-TINTED <image> instead of vector.
+            // GuardedVectorGraphics2D flattens the gradient to a solid Color up front, so the filter is never armed.
+            // This painter reproduces the stale-arming chain; exercises BOTH the outlining and non-outlining
+            // Graphics2D, for BOTH formats. If render() threw (crash not fixed), the outer catch fails the test.
+            final Consumer<Graphics2D> gradient_painter = g -> {
+                g.setPaint( new java.awt.GradientPaint( 0, 0, Color.RED, 0, 10, Color.BLUE ) );
+                g.fill( new java.awt.geom.Rectangle2D.Float( 20, 20, 40f, 12f ) ); // a domain body (gradient)
+                g.setColor( new Color( 8, 18, 21, 90 ) );                          // a following shadow (Color)
+                g.fill( new java.awt.geom.Rectangle2D.Float( 5, 5, 0.3f, 8f ) );   // sub-pixel AFTER gradient -> crashed
+                g.setColor( Color.BLACK );
+                g.drawString( "X", 60, 40 );                                       // a label after gradient -> tinted
+            };
+            for( final Format f : new Format[] { Format.SVG, Format.EPS } ) {
+                for( final boolean outline : new boolean[] { true, false } ) {
+                    final byte[] doc = VectorGraphicsExporter.render( 120, 60, f, outline, gradient_painter );
+                    if ( doc.length < 80 ) { // a real document, not a trivial stub
+                        return fail( f + "(outline=" + outline + "): domain-style gradient export produced no document" );
+                    }
+                }
+            }
+            // the gradient content must be CLEAN VECTOR, not a rasterized (and tinted) <image>: flattening the
+            // gradient to a solid Color yields a real <rect>, and nothing after it is rasterized.
+            final String grad_svg = new String( VectorGraphicsExporter.render( 120, 60, Format.SVG, true,
+                                                                               gradient_painter ),
+                                                StandardCharsets.UTF_8 );
+            if ( grad_svg.contains( "<image" ) ) {
+                return fail( "svg: a gradient fill must export as flat vector, not a rasterized <image> (which also "
+                        + "tints the content drawn after it): " + head( grad_svg ) );
+            }
+            if ( !grad_svg.contains( "<rect" ) ) {
+                return fail( "svg: the flattened gradient box should render as a <rect>: " + head( grad_svg ) );
+            }
             return true;
         }
         catch ( final Exception e ) {

@@ -27,10 +27,8 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.text.AttributedCharacterIterator;
 
-import de.erichseifert.vectorgraphics2d.VectorGraphics2D;
-
 /**
- * A {@link VectorGraphics2D} that renders every text string as filled glyph OUTLINES instead of
+ * A {@link GuardedVectorGraphics2D} that renders every text string as filled glyph OUTLINES instead of
  * font-referenced text.
  *
  * <p>VectorGraphics2D embeds no fonts: it emits font-family names and lets the viewer supply the glyphs.
@@ -49,7 +47,7 @@ import de.erichseifert.vectorgraphics2d.VectorGraphics2D;
  * non-embedding backend. The PDF path (OpenPDF, which embeds fonts) is unaffected and keeps selectable
  * text. The on-screen paint path never calls {@code create()}, so a single instance covers a whole export.
  */
-final class OutliningVectorGraphics2D extends VectorGraphics2D {
+final class OutliningVectorGraphics2D extends GuardedVectorGraphics2D {
 
     private static final FontRenderContext FRC = new FontRenderContext( null, true, true );
 

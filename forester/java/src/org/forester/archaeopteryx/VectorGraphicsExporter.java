@@ -108,8 +108,10 @@ final class VectorGraphicsExporter {
             throws IOException {
         // When outline_text, every text string is rendered as glyph outlines: VectorGraphics2D embeds no
         // fonts, so font-referenced text would be substituted by the viewer (EPS -> Times serif, SVG ->
-        // generic sans, italics lost). See OutliningVectorGraphics2D. Off keeps selectable text.
-        final VectorGraphics2D g = outline_text ? new OutliningVectorGraphics2D() : new VectorGraphics2D();
+        // generic sans, italics lost). See OutliningVectorGraphics2D. Off keeps selectable text. Both paths use
+        // a GuardedVectorGraphics2D so a sub-pixel GradientPaint fill (a fraction-of-a-pixel domain box) can't
+        // abort the export at document assembly (FillPaintedShapeAsImageFilter's 0-size BufferedImage crash).
+        final VectorGraphics2D g = outline_text ? new OutliningVectorGraphics2D() : new GuardedVectorGraphics2D();
         final PageSize page;
         if ( fmt == Format.SVG ) {
             page = new PageSize( width, height );
