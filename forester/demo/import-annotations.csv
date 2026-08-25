@@ -1,13 +1,13 @@
-name,host,country,reads
-isolate_01,mosquito,USA,1200
-isolate_02,mosquito,USA,980
-isolate_03,bat,China,1543
-isolate_04,bat,China,760
-isolate_05,pig,Vietnam,410
-isolate_06,pig,Vietnam,1330
-isolate_07,bird,"Congo, DR",275
-isolate_08,bird,Kenya,1890
-isolate_09,mosquito,Brazil,640
-isolate_10,mosquito,Brazil,1120
-isolate_11,pig,Vietnam,505
-isolate_12,bat,China,1450
+name,host,country,reads,resistant
+isolate_01,mosquito,USA,1200,yes
+isolate_02,mosquito,USA,980,no
+isolate_03,bat,China,1543,yes
+isolate_04,bat,China,760,
+isolate_05,pig,Vietnam,410,no
+isolate_06,pig,Vietnam,1330,yes
+isolate_07,bird,"Congo, DR",275,no
+isolate_08,bird,Kenya,1890,yes
+isolate_09,mosquito,Brazil,640,
+isolate_10,mosquito,Brazil,1120,yes
+isolate_11,pig,Vietnam,505,no
+isolate_12,bat,China,1450,yes

@@ -261,6 +261,11 @@ public final class ResetToDefaultsTest {
                         fail( ok, "precondition: the 'Ancestral pie' dropdown should show location before reset, got "
                                 + cp.getAncestralPieSelection() );
                     }
+                    tp.setAnnotationColumns( java.util.Arrays.asList(
+                            new AnnotationColumns.ColumnSpec( "data:sz", AnnotationColumns.Type.HEATMAP ) ) );
+                    if ( !tp.hasAnnotationColumns() ) {
+                        fail( ok, "precondition: annotation columns should be active before reset" );
+                    }
                     frame.setDarkMode( true );
                     //    (c) always-visible ControlPanel controls held STALE: the Dark theme radio + the Inverse
                     //        search checkbox (plus its Options field), which would clobber the reset on the next click
@@ -353,6 +358,10 @@ public final class ResetToDefaultsTest {
                     if ( !"None".equals( cp.getAncestralPieSelection() ) ) {
                         fail( ok, "the 'Ancestral pie' dropdown must be re-seeded to None after reset, got "
                                 + cp.getAncestralPieSelection() );
+                    }
+                    // 3f-ter. per-tab annotation columns cleared (a fresh install has none)
+                    if ( tp.hasAnnotationColumns() ) {
+                        fail( ok, "annotation columns must be cleared by reset" );
                     }
                     // 3g. persisted settings file deleted (so the reset survives a restart)
                     if ( Files.exists( settings ) ) {

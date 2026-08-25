@@ -44,7 +44,77 @@ public final class AnnotationColumnsTest {
     }
 
     public static boolean test() {
-        return testTypeSuggestion() && testCells() && testHeaders() && testLabels() && testMatrix();
+        return testTypeSuggestion() && testCells() && testHeaders() && testLabels() && testMatrix() && testSymbol();
+    }
+
+    // ---- SYMBOL column: a shape glyph colored like a strip, with presence-driven fill ----
+    private static boolean testSymbol() {
+        // isFalsy: the explicit false/absent tokens (case-insensitive, trimmed) render as a hollow OUTLINE
+        if ( !AnnotationColumns.isFalsy( "no" ) || !AnnotationColumns.isFalsy( "No" )
+                || !AnnotationColumns.isFalsy( " 0 " ) || !AnnotationColumns.isFalsy( "FALSE" )
+                || !AnnotationColumns.isFalsy( "absent" ) || !AnnotationColumns.isFalsy( "-" )
+                || !AnnotationColumns.isFalsy( "n" ) ) {
+            return fail( "isFalsy should accept the false/absent tokens (case-insensitive, trimmed)" );
+        }
+        if ( AnnotationColumns.isFalsy( "yes" ) || AnnotationColumns.isFalsy( "human" )
+                || AnnotationColumns.isFalsy( "1" ) || AnnotationColumns.isFalsy( "positive" )
+                || AnnotationColumns.isFalsy( "" ) || AnnotationColumns.isFalsy( null ) ) {
+            return fail( "isFalsy should reject present/other values (blank/null are handled as NONE, not falsy)" );
+        }
+        // a SYMBOL is offered for a categorical field (with COLOR_STRIP + TEXT) but NOT for a numeric one
+        final Phylogeny phy = tree();
+        if ( !AnnotationColumns.allowedTypes( phy, "repseq:host" ).contains( Type.SYMBOL ) ) {
+            return fail( "a categorical field should allow SYMBOL" );
+        }
+        if ( AnnotationColumns.allowedTypes( phy, "data:score" ).contains( Type.SYMBOL ) ) {
+            return fail( "a numeric field should NOT allow SYMBOL" );
+        }
+        // symbolFill: present -> FILLED, explicit-false -> OUTLINE, missing -> NONE
+        final Phylogeny bphy = binaryTree();
+        final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
+        specs.add( new AnnotationColumns.ColumnSpec( "data:present", Type.SYMBOL ) );      // 0
+        specs.add( new AnnotationColumns.ColumnSpec( "data:present", Type.COLOR_STRIP ) ); // 1 (non-SYMBOL)
+        final AnnotationColumns ac = new AnnotationColumns( bphy, specs );
+        if ( ac.symbolFill( tip( bphy, "yes_tip" ), 0 ) != AnnotationColumns.Fill.FILLED ) {
+            return fail( "a present value should be a FILLED symbol" );
+        }
+        if ( ac.symbolFill( tip( bphy, "no_tip" ), 0 ) != AnnotationColumns.Fill.OUTLINE ) {
+            return fail( "an explicitly-false value should be a hollow OUTLINE symbol" );
+        }
+        if ( ac.symbolFill( tip( bphy, "blank_tip" ), 0 ) != AnnotationColumns.Fill.NONE ) {
+            return fail( "a missing value should draw NONE" );
+        }
+        // a SYMBOL column carries a (categorical) cell color, so it colors like a strip and gets a legend
+        if ( ac.cellColor( tip( bphy, "yes_tip" ), 0 ) == null ) {
+            return fail( "a SYMBOL column should carry a categorical cell color" );
+        }
+        // symbolFill is always NONE for a non-SYMBOL column
+        if ( ac.symbolFill( tip( bphy, "yes_tip" ), 1 ) != AnnotationColumns.Fill.NONE ) {
+            return fail( "symbolFill on a non-SYMBOL column must be NONE" );
+        }
+        return true;
+    }
+
+    private static Phylogeny binaryTree() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( binaryLeaf( "yes_tip", "yes" ) );
+        root.addAsChild( binaryLeaf( "no_tip", "no" ) );
+        root.addAsChild( binaryLeaf( "blank_tip", null ) ); // no property -> a missing value
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    private static PhylogenyNode binaryLeaf( final String name, final String present ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        if ( present != null ) {
+            final PropertiesList pl = new PropertiesList();
+            pl.addProperty( new Property( "data:present", present, "", "xsd:string", AppliesTo.NODE ) );
+            n.getNodeData().setProperties( pl );
+        }
+        return n;
     }
 
     // ---- heat-map MATRIX: all matrix columns share ONE color scale ----
@@ -122,6 +192,7 @@ public final class AnnotationColumnsTest {
     // ---- friendly render-type labels ----
     private static boolean testLabels() {
         if ( !"Color strip".equals( AnnotationColumns.label( Type.COLOR_STRIP ) )
+                || !"Symbol".equals( AnnotationColumns.label( Type.SYMBOL ) )
                 || !"Heat map".equals( AnnotationColumns.label( Type.HEATMAP ) )
                 || !"Bar".equals( AnnotationColumns.label( Type.BAR ) )
                 || !"Text".equals( AnnotationColumns.label( Type.TEXT ) ) ) {
@@ -140,14 +211,16 @@ public final class AnnotationColumnsTest {
             return fail( "a numeric field should default to HEATMAP" );
         }
         final List<Type> host_types = AnnotationColumns.allowedTypes( phy, "repseq:host" );
-        if ( ( host_types.size() != 2 ) || !host_types.contains( Type.COLOR_STRIP )
-                || !host_types.contains( Type.TEXT ) || host_types.contains( Type.HEATMAP ) ) {
-            return fail( "a categorical field should allow only COLOR_STRIP + TEXT" );
+        if ( ( host_types.size() != 3 ) || !host_types.contains( Type.COLOR_STRIP )
+                || !host_types.contains( Type.SYMBOL ) || !host_types.contains( Type.TEXT )
+                || host_types.contains( Type.HEATMAP ) ) {
+            return fail( "a categorical field should allow COLOR_STRIP + SYMBOL + TEXT" );
         }
         final List<Type> score_types = AnnotationColumns.allowedTypes( phy, "data:score" );
         if ( ( score_types.size() != 4 ) || !score_types.contains( Type.HEATMAP )
                 || !score_types.contains( Type.MATRIX ) || !score_types.contains( Type.BAR )
-                || !score_types.contains( Type.TEXT ) || score_types.contains( Type.COLOR_STRIP ) ) {
+                || !score_types.contains( Type.TEXT ) || score_types.contains( Type.COLOR_STRIP )
+                || score_types.contains( Type.SYMBOL ) ) {
             return fail( "a numeric field should allow HEATMAP + MATRIX + BAR + TEXT" );
         }
         return true;

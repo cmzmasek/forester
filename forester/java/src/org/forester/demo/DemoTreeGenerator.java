@@ -70,6 +70,7 @@ public final class DemoTreeGenerator {
         write( dir, "size-by-property.xml", sizeByPropertyTree() );
         write( dir, "color-by-property.xml", colorByPropertyTree() );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
+        write( dir, "symbol-columns.xml", symbolColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -194,21 +195,24 @@ public final class DemoTreeGenerator {
                              + "the tips -- then Color by host, or show reads as an annotation column." );
     }
 
-    /** The companion table for {@link #importAnnotationsTree()} (one quoted field with an embedded comma, for CSV realism). */
+    /** The companion table for {@link #importAnnotationsTree()}: a categorical 'host', a quoted 'country' (with an
+     *  embedded comma, for CSV realism), a numeric 'reads', and a binary 'resistant' (yes / no, with two blanks =
+     *  untested -- so it renders as a filled / hollow / nothing Symbol column after import). 'resistant' is the LAST
+     *  column so 'reads' stays column index 3 (the import tool test renames that column by index). */
     private static String importAnnotationsCsv() {
-        return "name,host,country,reads\n"
-                + "isolate_01,mosquito,USA,1200\n"
-                + "isolate_02,mosquito,USA,980\n"
-                + "isolate_03,bat,China,1543\n"
-                + "isolate_04,bat,China,760\n"
-                + "isolate_05,pig,Vietnam,410\n"
-                + "isolate_06,pig,Vietnam,1330\n"
-                + "isolate_07,bird,\"Congo, DR\",275\n"
-                + "isolate_08,bird,Kenya,1890\n"
-                + "isolate_09,mosquito,Brazil,640\n"
-                + "isolate_10,mosquito,Brazil,1120\n"
-                + "isolate_11,pig,Vietnam,505\n"
-                + "isolate_12,bat,China,1450\n";
+        return "name,host,country,reads,resistant\n"
+                + "isolate_01,mosquito,USA,1200,yes\n"
+                + "isolate_02,mosquito,USA,980,no\n"
+                + "isolate_03,bat,China,1543,yes\n"
+                + "isolate_04,bat,China,760,\n"
+                + "isolate_05,pig,Vietnam,410,no\n"
+                + "isolate_06,pig,Vietnam,1330,yes\n"
+                + "isolate_07,bird,\"Congo, DR\",275,no\n"
+                + "isolate_08,bird,Kenya,1890,yes\n"
+                + "isolate_09,mosquito,Brazil,640,\n"
+                + "isolate_10,mosquito,Brazil,1120,yes\n"
+                + "isolate_11,pig,Vietnam,505,no\n"
+                + "isolate_12,bat,China,1450,yes\n";
     }
 
     // ----- "Import GTDB Taxonomy": a tree of Bacteria + Archaea genomes named ONLY by their assembly accession
@@ -388,6 +392,37 @@ public final class DemoTreeGenerator {
         cat( n, "data:segment", segment );
         cat( n, "data:clade", clade ); // free-text label -> text column
         num( n, "data:viral_load", Double.toString( viral_load ) );
+        return n;
+    }
+
+    // ----- "Symbol columns": tips carry a BINARY flag (yes / no / untested) plus a categorical host, so a SYMBOL
+    //       annotation column renders filled / hollow / nothing marks -- a presence/absence (binary) mark column.
+    private static Phylogeny symbolColumnsTree() {
+        final PhylogenyNode[] tips = {
+                symbolTip( "isolate_01", "yes", "Human" ),
+                symbolTip( "isolate_02", "no", "Avian" ),
+                symbolTip( "isolate_03", "yes", "Avian" ),
+                symbolTip( "isolate_04", null, "Swine" ),   // untested -> nothing is drawn for this tip
+                symbolTip( "isolate_05", "yes", "Human" ),
+                symbolTip( "isolate_06", "no", "Swine" ),
+                symbolTip( "isolate_07", "no", "Avian" ),
+                symbolTip( "isolate_08", "yes", "Equine" ) };
+        final PhylogenyNode root = clade( 0, clade( 0.05, tips[ 0 ], tips[ 1 ], tips[ 2 ], tips[ 3 ] ),
+                                          clade( 0.05, tips[ 4 ], tips[ 5 ], tips[ 6 ], tips[ 7 ] ) );
+        return tree( root, "Symbol columns (demo)",
+                     "Synthetic tree whose tips carry a binary 'resistant' flag (yes / no / untested) and a "
+                             + "categorical 'host'. Try Tools > Annotation Columns and pick the 'Symbol' render "
+                             + "type: a present value draws a filled mark, an explicit 'no' a hollow mark, and an "
+                             + "untested tip nothing -- a presence/absence (binary) mark column. A many-valued "
+                             + "categorical field ('host') becomes distinct colored marks." );
+    }
+
+    private static PhylogenyNode symbolTip( final String name, final String resistant, final String host ) {
+        final PhylogenyNode n = leaf( name );
+        if ( resistant != null ) {
+            cat( n, "data:resistant", resistant );
+        }
+        cat( n, "data:host", host );
         return n;
     }
 

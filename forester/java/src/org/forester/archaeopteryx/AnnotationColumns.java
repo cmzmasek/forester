@@ -22,7 +22,11 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -46,6 +50,11 @@ final class AnnotationColumns {
     enum Type {
         /** A filled cell colored by the value's categorical color. */
         COLOR_STRIP,
+        /** A centered shape glyph colored by the value's categorical color (the same palette a COLOR_STRIP uses):
+         *  FILLED when the value is present, a hollow OUTLINE when the value reads as explicitly false/absent
+         *  (see {@link #isFalsy}), and nothing at all when the value is missing. One clean tip-aligned mark column
+         *  covering the presence/absence (binary), symbol, and external-shape annotation cases. */
+        SYMBOL,
         /** A filled cell colored by the value's position in the numeric gradient. */
         HEATMAP,
         /** Like HEATMAP, but all MATRIX columns share ONE color scale (one min/max, one legend) and draw as a
@@ -57,11 +66,34 @@ final class AnnotationColumns {
         TEXT
     }
 
+    /** How a {@link Type#SYMBOL} cell renders for a given tip. */
+    enum Fill {
+        /** A solid glyph -- the value is present and not explicitly false. */
+        FILLED,
+        /** A hollow (outlined) glyph -- the value reads as explicitly false/absent. */
+        OUTLINE,
+        /** Nothing is drawn -- the value is missing (or the column is not a SYMBOL column). */
+        NONE
+    }
+
+    /** Values (case-insensitive, trimmed) that a SYMBOL column renders as a hollow OUTLINE rather than a
+     *  filled glyph -- the "explicitly false/absent" tokens (a present-but-negative binary state). Anything
+     *  else present is FILLED; a missing value draws NONE. */
+    private static final Set<String> FALSY = new HashSet<String>( Arrays.asList( "0", "false", "no", "n",
+            "absent", "-" ) );
+
+    /** True iff {@code value} reads as explicitly false/absent (see {@link #FALSY}); a hollow SYMBOL glyph. */
+    static boolean isFalsy( final String value ) {
+        return ( value != null ) && FALSY.contains( value.trim().toLowerCase( Locale.ROOT ) );
+    }
+
     /** A short human-readable name for a render type (for the picker). */
     static String label( final Type type ) {
         switch ( type ) {
             case COLOR_STRIP:
                 return "Color strip";
+            case SYMBOL:
+                return "Symbol";
             case HEATMAP:
                 return "Heat map";
             case MATRIX:
@@ -174,6 +206,23 @@ final class AnnotationColumns {
     }
 
     /**
+     * For a SYMBOL column, whether {@code node}'s cell draws a FILLED glyph, a hollow OUTLINE, or NONE: NONE when
+     * the node has no value there, OUTLINE when the value reads as explicitly false/absent (see {@link #isFalsy}),
+     * else FILLED. Always NONE for a non-SYMBOL column. The glyph color comes from {@link #cellColor}.
+     */
+    Fill symbolFill( final PhylogenyNode node, final int i ) {
+        final Column c = _columns.get( i );
+        if ( c._type != Type.SYMBOL ) {
+            return Fill.NONE;
+        }
+        final String v = valueOrEmpty( node, c._ref );
+        if ( ForesterUtil.isEmpty( v ) ) {
+            return Fill.NONE;
+        }
+        return isFalsy( v ) ? Fill.OUTLINE : Fill.FILLED;
+    }
+
+    /**
      * For a bar column, {@code node}'s value as a fraction of the numeric range in {@code [0, 1]}; {@code NaN}
      * when the column is not a bar or the node has no numeric value (draw nothing).
      */
@@ -221,6 +270,7 @@ final class AnnotationColumns {
         }
         else {
             types.add( Type.COLOR_STRIP );
+            types.add( Type.SYMBOL );
             types.add( Type.TEXT );
         }
         return types;

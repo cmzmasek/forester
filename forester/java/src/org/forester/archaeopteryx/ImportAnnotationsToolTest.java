@@ -107,6 +107,14 @@ public final class ImportAnnotationsToolTest {
                             || ( propertyValue( t1, "data:reads" ) != null ) ) {
                         fail( ok, "isolate_01 should carry data:host=mosquito and the RENAMED data:depth=1200 (not data:reads)" );
                     }
+                    // the binary 'resistant' column (last col) imported too, and a BLANK cell is left ABSENT
+                    // (never-clobber) -- which is exactly what makes it render as a "nothing" Symbol mark
+                    if ( !"yes".equals( propertyValue( t1, "data:resistant" ) ) ) {
+                        fail( ok, "isolate_01 should carry the imported data:resistant=yes" );
+                    }
+                    if ( propertyValue( tip( live, "isolate_04" ), "data:resistant" ) != null ) {
+                        fail( ok, "isolate_04's blank 'resistant' cell must import NO data:resistant property" );
+                    }
                     // the quoted CSV field with an embedded comma survived the parse + join
                     if ( !"Congo, DR".equals( propertyValue( tip( live, "isolate_07" ), "data:country" ) ) ) {
                         fail( ok, "the quoted country with an embedded comma should import intact: "

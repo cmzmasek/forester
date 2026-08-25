@@ -2702,6 +2702,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.setPhylogenyGraphicsType(type);
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
                 tp.resetNextstrainBranchModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
+                tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Columns selection (fresh install has none)
             }
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {

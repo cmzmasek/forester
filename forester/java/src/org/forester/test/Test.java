@@ -1091,6 +1091,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Symbol column (render): ");
+        if (org.forester.archaeopteryx.SymbolColumnRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Clustergram preset: ");
         if (org.forester.archaeopteryx.ClustergramPresetTest.test()) {
             System.out.println("OK.");

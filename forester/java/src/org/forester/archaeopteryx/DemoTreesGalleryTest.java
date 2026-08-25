@@ -43,7 +43,8 @@ public final class DemoTreesGalleryTest {
 
     // the resources the catalog opens (a fossil-only ammonite tree, a tanglegram pair + its association file, etc.)
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
-            "domain-architectures.xml", "bat-phylogeny.xml", "ancestral-pie-charts.xml", "node-hpd-bars.xml",
+            "symbol-columns.xml", "domain-architectures.xml", "bat-phylogeny.xml", "ancestral-pie-charts.xml",
+            "node-hpd-bars.xml",
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
             "dinosaur-time-tree.xml", "lagomorph-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
             "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml", "gtdb-genomes.xml" };
@@ -67,8 +68,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 16 ) {
-                return fail( "the demo catalog should have 16 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 17 ) {
+                return fail( "the demo catalog should have 17 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -205,6 +206,22 @@ public final class DemoTreesGalleryTest {
         else if ( label.startsWith( "Annotation Columns" ) ) {
             if ( !tp.hasAnnotationColumns() ) {
                 fail( ok, "the annotation-columns demo must have annotation columns" );
+            }
+        }
+        else if ( label.startsWith( "Symbol Columns" ) ) {
+            if ( !tp.hasAnnotationColumns() ) {
+                fail( ok, "the symbol-columns demo must have annotation columns" );
+            }
+            else {
+                boolean has_symbol = false;
+                for ( final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs() ) {
+                    if ( s._type == AnnotationColumns.Type.SYMBOL ) {
+                        has_symbol = true;
+                    }
+                }
+                if ( !has_symbol ) {
+                    fail( ok, "the symbol-columns demo must configure a SYMBOL column" );
+                }
             }
         }
         else if ( label.startsWith( "Ancestral State Pies" ) ) {

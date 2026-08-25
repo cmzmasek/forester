@@ -8801,11 +8801,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** Strip / heat map (color key) and bar (length/range key) columns have a legend; text columns do not. */
+    /** Strip / symbol (categorical color key), heat map (color key) and bar (length/range key) columns have a
+     *  legend; text columns do not. */
     private boolean columnHasLegend(final int i) {
         final AnnotationColumns.Type t = _annotation_columns.getColumn(i).getType();
-        return (t == AnnotationColumns.Type.COLOR_STRIP) || (t == AnnotationColumns.Type.HEATMAP)
-                || (t == AnnotationColumns.Type.MATRIX) || (t == AnnotationColumns.Type.BAR);
+        return (t == AnnotationColumns.Type.COLOR_STRIP) || (t == AnnotationColumns.Type.SYMBOL)
+                || (t == AnnotationColumns.Type.HEATMAP) || (t == AnnotationColumns.Type.MATRIX)
+                || (t == AnnotationColumns.Type.BAR);
     }
 
     /** Whether the user has explicitly focused (clicked the header of) a legend-bearing annotation column. */
@@ -9219,6 +9221,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         break;
                     }
+                    case SYMBOL: {
+                        // a centered shape glyph: FILLED when present, a hollow OUTLINE for an explicitly
+                        // false/absent value, nothing for a missing value -- colored like a COLOR_STRIP cell
+                        final AnnotationColumns.Fill fill = _annotation_columns.symbolFill(t, i);
+                        if (fill != AnnotationColumns.Fill.NONE) {
+                            final Color c = _annotation_columns.cellColor(t, i);
+                            if (c != null) {
+                                drawSymbolGlyph(g, c, xi + (w / 2.0f), t.getYcoord(), Math.min(w, cell_h) - 2,
+                                        fill == AnnotationColumns.Fill.FILLED);
+                            }
+                        }
+                        break;
+                    }
                     case BAR: {
                         // a present value always draws at least a 1px stub (so the minimum value is visible and
                         // distinct from a missing value, which is NaN and draws nothing)
@@ -9317,6 +9332,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         break;
                     }
+                    case SYMBOL: {
+                        // rides R like the strip cells: a circle is rotation-invariant, so drawing it in LOGICAL
+                        // coords at the tip's cell center places it correctly in the horizontal band
+                        final AnnotationColumns.Fill fill = _annotation_columns.symbolFill(t, i);
+                        if (fill != AnnotationColumns.Fill.NONE) {
+                            final Color c = _annotation_columns.cellColor(t, i);
+                            if (c != null) {
+                                drawSymbolGlyph(g, c, xi + (w / 2.0f), t.getYcoord(), Math.min(w, cell_h) - 2,
+                                        fill == AnnotationColumns.Fill.FILLED);
+                            }
+                        }
+                        break;
+                    }
                     case BAR: {
                         final double f = _annotation_columns.barFraction(t, i);
                         if (!Double.isNaN(f)) {
@@ -9360,6 +9388,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setTransform(withR);
         g.setColor(saved_color);
         g.setFont(saved_font);
+    }
+
+    /**
+     * Draws a SYMBOL-column glyph: a circle centered at (center_x, center_y) with diameter {@code diameter}
+     * (floored so it never vanishes), either FILLED (a solid disc) or a hollow OUTLINE, in {@code color}.
+     * Shared by the rectangular, vertical, and circular annotation-column paint paths (a circle is
+     * rotation-invariant, so the vertical/circular callers pass logical/ring coords unchanged). Self-contained:
+     * the outline branch saves and restores g's stroke.
+     */
+    private void drawSymbolGlyph(final Graphics2D g, final Color color, final float center_x, final float center_y,
+                                 final float diameter, final boolean filled) {
+        final double d = Math.max(3.0, diameter);
+        final double x = center_x - (d / 2.0);
+        final double y = center_y - (d / 2.0);
+        g.setColor(color);
+        if (filled) {
+            drawOvalFilled(x, y, d, d, g);
+        }
+        else {
+            final Stroke saved_stroke = g.getStroke();
+            g.setStroke(STROKE_1);
+            drawOval(x, y, d, d, g);
+            g.setStroke(saved_stroke);
+        }
     }
 
     private static String fitText(final String s, final int max_w, final FontMetrics fm) {
@@ -10286,6 +10338,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         if (c != null) {
                             g.setColor(c);
                             g.fill(annularSector(cx, cy, r0, r1, a0, a1));
+                        }
+                        break;
+                    }
+                    case SYMBOL: {
+                        // a shape glyph centred in this tip's ring cell (mid-radius, on its spoke); a circle is
+                        // rotation-invariant so no spoke rotation is needed
+                        final AnnotationColumns.Fill fill = _annotation_columns.symbolFill(t, i);
+                        if (fill != AnnotationColumns.Fill.NONE) {
+                            final Color c = _annotation_columns.cellColor(t, i);
+                            if (c != null) {
+                                final double rmid = (r0 + r1) / 2.0;
+                                final float px = (float) (cx + (rmid * Math.cos(a)));
+                                final float py = (float) (cy + (rmid * Math.sin(a)));
+                                final double arc = rmid * (a1 - a0); // ~ the tip's arc width at this radius
+                                drawSymbolGlyph(g, c, px, py, (float) (Math.min(w, arc) - 2),
+                                        fill == AnnotationColumns.Fill.FILLED);
+                            }
                         }
                         break;
                     }

@@ -88,6 +88,10 @@ public final class DemoTreesTest {
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:host" );
         ok &= hasNumericRef( "annotation-columns.xml", "data:viral_load" );
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:clade" );
+        // symbol columns: a binary flag + a categorical host, both rendered as shape (SYMBOL) marks
+        ok &= hasAtLeastTips( "symbol-columns.xml", 8 );
+        ok &= hasCategoricalRef( "symbol-columns.xml", "data:resistant" );
+        ok &= hasCategoricalRef( "symbol-columns.xml", "data:host" );
         // colorize by rank / clade bands: each TIP carries its 'order' in-tree, so it colorizes OFFLINE (no prompt)
         // into 3 clades -- even though the Carnivora clade root is deliberately mis-annotated 'Rodentia' (a tip's
         // own identity wins over the wrong internal annotation)

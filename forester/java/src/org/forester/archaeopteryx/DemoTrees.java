@@ -97,6 +97,15 @@ final class DemoTrees {
                                          new AnnotationColumns.ColumnSpec( "data:viral_load", AnnotationColumns.Type.HEATMAP ) ) );
                                  refit( mf );
                              } ) );
+        demos.add( new Demo( "Symbol Columns",
+                             "Tip-aligned shape marks: a binary flag (filled = yes, hollow = no, blank = untested) + a categorical host.",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "symbol-columns.xml" );
+                                 tp.setAnnotationColumns( Arrays.asList(
+                                         new AnnotationColumns.ColumnSpec( "data:resistant", AnnotationColumns.Type.SYMBOL ),
+                                         new AnnotationColumns.ColumnSpec( "data:host", AnnotationColumns.Type.SYMBOL ) ) );
+                                 refit( mf );
+                             } ) );
         demos.add( new Demo( "Protein Domain Architectures",
                              "Multi-domain protein sequences drawn to scale at each tip (auto-enabled on load).",
                              mf -> openTree( mf, "domain-architectures.xml" ) ) ); // domains auto-enable + fit on load
