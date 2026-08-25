@@ -1473,6 +1473,44 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         bg.add(boxes_rb);
         bg.add(bars_rb);
         bg.add(brackets_rb);
+        // a bar/bracket over a single-tip clade is a degenerate one-row stub; skip those by default (Bars/Brackets
+        // only -- a shaded box over one tip is a harmless soft highlight, so Boxes ignore this)
+        final JCheckBox skip_singletons_cb = new JCheckBox("Skip single-member clades", true);
+        skip_singletons_cb.setToolTipText(
+                "Don't draw a bar/bracket for a taxon represented by a single tip (applies to Bars and Brackets).");
+        // label angle for Bars/Brackets (root-left layout): Horizontal / Diagonal avoid the overlap the compact
+        // Vertical labels cause when small clades sit close together
+        final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box = new JComboBox<>(TreePanel.CLADE_LABEL_ANGLE.values());
+        angle_box.setToolTipText("Angle of the bar/bracket taxon labels (root-left layout). Try Horizontal or Diagonal"
+                + " when the labels of small clades close together overlap.");
+        angle_box.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public java.awt.Component getListCellRendererComponent(final JList<?> list, final Object value,
+                    final int index, final boolean sel, final boolean focus) {
+                super.getListCellRendererComponent(list, value, index, sel, focus);
+                if (value == TreePanel.CLADE_LABEL_ANGLE.VERTICAL) {
+                    setText("Labels: Vertical (90°)");
+                }
+                else if (value == TreePanel.CLADE_LABEL_ANGLE.DIAGONAL) {
+                    setText("Labels: Diagonal (45°)");
+                }
+                else if (value == TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL) {
+                    setText("Labels: Horizontal");
+                }
+                return this;
+            }
+        });
+        skip_singletons_cb.setEnabled(false); // Boxes is the default selection
+        angle_box.setEnabled(false);
+        final java.awt.event.ActionListener syncBarBracket = e -> {
+            final boolean on = bars_rb.isSelected() || brackets_rb.isSelected();
+            skip_singletons_cb.setEnabled(on);
+            angle_box.setEnabled(on);
+        };
+        boxes_rb.addActionListener(syncBarBracket);
+        bars_rb.addActionListener(syncBarBracket);
+        brackets_rb.addActionListener(syncBarBracket);
         final JCheckBox write_cb = new JCheckBox("Also write the clade taxa into the tree (rank + NCBI id; undoable)",
                 false);
         final JCheckBox overwrite_cb = new JCheckBox("    ...overwriting existing internal-node taxonomies", false);
@@ -1484,6 +1522,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         panel.add(boxes_rb);
         panel.add(bars_rb);
         panel.add(brackets_rb);
+        panel.add(skip_singletons_cb);
+        panel.add(angle_box);
         panel.add(new JLabel(" "));
         panel.add(write_cb);
         panel.add(overwrite_cb);
@@ -1493,6 +1533,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final boolean write = write_cb.isSelected();
         final boolean overwrite = write && overwrite_cb.isSelected();
+        final boolean skip_singletons = skip_singletons_cb.isSelected();
+        final TreePanel.CLADE_LABEL_ANGLE label_angle = (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem();
         String rank = (String) rank_box.getSelectedItem();
         if (ForesterUtil.isEmpty(rank)) {
             return;
@@ -1516,11 +1558,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
-                        err -> reportCladeBands(tp, r, mode, write, overwrite, err))).start();
+                        err -> reportCladeBands(tp, r, mode, write, overwrite, skip_singletons, label_angle, err)))
+                                .start();
                 return;
             }
         }
-        reportCladeBands(tp, r, mode, write, overwrite, null);
+        reportCladeBands(tp, r, mode, write, overwrite, skip_singletons, label_angle, null);
     }
 
     /**
@@ -1536,13 +1579,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     private void reportCladeBands(final TreePanel tp, final String rank, final TreePanel.CLADE_VIS mode,
-                                  final boolean write, final boolean overwrite, final String error) {
+                                  final boolean write, final boolean overwrite, final boolean skip_singletons,
+                                  final TreePanel.CLADE_LABEL_ANGLE label_angle, final String error) {
         int wrote = 0;
         if (write) {
             tp.pushUndoCheckpoint("Annotate Clade Taxa"); // a tree-data mutation -> checkpoint before writing
             wrote = tp.writeCladeTaxonomiesByRank(rank, overwrite);
         }
-        final int n = tp.setCladeBands(rank, mode);
+        final int n = tp.setCladeBands(rank, mode, skip_singletons, label_angle);
         if (n > 0) {
             tp.setEdited(true);
             // bars/brackets extend to the right of the labels; fit the width so they are immediately
@@ -1566,6 +1610,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if ((n > 0) || (wrote > 0)) {
             JOptionPane.showMessageDialog(this, msg.toString(), "Annotate Clades by Rank (" + rank + ")",
                     JOptionPane.INFORMATION_MESSAGE);
+        } else if (tp.cladeBandCount() > 0) {
+            // every placed clade at this rank is a single-member clade and "Skip single-member clades" hid them all
+            // -- distinct from "no tip could be placed" (0 bands): here the tips WERE placed, the legend was built.
+            final int total = tp.cladeBandCount();
+            JOptionPane.showMessageDialog(this,
+                    "Placed " + total + (total == 1 ? " clade" : " clades") + " at rank \"" + rank + "\", but "
+                            + (total == 1 ? "it is a single-member clade" : "they are all single-member clades")
+                            + " and \"Skip single-member clades\" hid " + (total == 1 ? "it" : "them") + ".\n"
+                            + "Turn that option off (or use Boxes) to show " + (total == 1 ? "it" : "them")
+                            + " -- or pick a coarser rank with multi-tip clades.",
+                    "Annotate Clades by Rank (" + rank + ")", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Could not place any tip at rank \"" + rank + "\".\n"
                     + "Try a different rank, or check that the tips carry resolvable taxonomic names.",

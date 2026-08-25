@@ -59,7 +59,146 @@ public final class RankLegendTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return testRankColorizeLegend() && testCladeBandLegend();
+        return testRankColorizeLegend() && testCladeBandLegend() && testSingleMemberSkip() && testLabelAngle();
+    }
+
+    /** Clade-bar/bracket label ANGLE (root-left): HORIZONTAL / DIAGONAL labels extend rightward and reserve more
+     *  right-margin than the compact VERTICAL labels, so the labels of small clades close together don't overlap. */
+    private static boolean testLabelAngle() {
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { orderTree() }, conf, "ang" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // the angle applies here
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, false, TreePanel.CLADE_LABEL_ANGLE.VERTICAL );
+                final int r_vert = tp.cladeBandRightReserveForTest();
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, false, TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL );
+                final int r_horiz = tp.cladeBandRightReserveForTest();
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, false, TreePanel.CLADE_LABEL_ANGLE.DIAGONAL );
+                final int r_diag = tp.cladeBandRightReserveForTest();
+                // "Coleoptera"/"Diptera"/"Hymenoptera" are much wider than one line, so HORIZONTAL reserves far more
+                if ( r_horiz <= ( r_vert + 20 ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  HORIZONTAL labels must reserve more right-margin than VERTICAL: vert="
+                            + r_vert + " horiz=" + r_horiz );
+                }
+                if ( ( r_diag <= r_vert ) || ( r_diag > r_horiz ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  DIAGONAL reserve should sit between VERTICAL and HORIZONTAL: vert=" + r_vert
+                            + " diag=" + r_diag + " horiz=" + r_horiz );
+                }
+                ( (JFrame) mf[ 0 ] ).dispose();
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** "Skip single-member clades" (Bars/Brackets, on by default): a bar/bracket over a single-tip clade is a
+     *  degenerate stub, so it is not drawn (the drawn count excludes it); OFF draws it; BOXES ignore the option. */
+    private static boolean testSingleMemberSkip() {
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { mixedSizeOrderTree() }, conf, "sm" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                // two clades at rank 'order': Grupo (3 tips, multi-member) + Solitaria (1 tip, single-member)
+                final int all = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BRACKETS, false );
+                if ( all != 2 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  expected 2 clade bands (Grupo + Solitaria), got " + all );
+                }
+                final int brackets = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BRACKETS, true );
+                if ( brackets != 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  skip-singletons: only the 3-tip clade should get a bracket (1), got " + brackets );
+                }
+                final int bars = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, true );
+                if ( bars != 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  skip-singletons applies to BARS too (expected 1), got " + bars );
+                }
+                final int boxes = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES, true );
+                if ( boxes != 2 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  BOXES must ignore skip-singletons (draw all 2), got " + boxes );
+                }
+                // cladeBandCount() reports ALL placed clades (2) even when a bar/bracket run skips one -- the total the
+                // "all placed but all single-member" message keys on (distinct from the drawn count).
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, true ); // drawn 1, but 2 clades were placed
+                if ( tp.cladeBandCount() != 2 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  cladeBandCount() must report all 2 placed clades, got " + tp.cladeBandCount() );
+                }
+                // COLLAPSE-INDEPENDENCE: collapse the 3-tip Grupo clade so its DISPLAY count becomes 1; a real multi-tip
+                // clade must STILL draw its bar (single-member is the STRUCTURAL tip count, not the collapsed count), so
+                // skip does NOT drop it. (Mutation: keying isSingleMemberClade on getNumberOfExternalNodes() -> 0 drawn.)
+                final Phylogeny phy = tp.getPhylogeny();
+                final PhylogenyNode grupo = phy.getRoot().getChildNode( 0 );
+                grupo.setCollapse( true );
+                phy.recalculateNumberOfExternalDescendants( true );
+                if ( grupo.getNumberOfExternalNodes() != 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  collapse should drop the display count to 1, got " + grupo.getNumberOfExternalNodes() );
+                }
+                final int after_collapse = tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, true );
+                if ( after_collapse != 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  a COLLAPSED multi-tip clade must still draw its bar (expected 1), got " + after_collapse );
+                }
+                ( (JFrame) mf[ 0 ] ).dispose();
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Two clades at rank 'order': "Grupo" over 3 leaves (multi-member) and a lone "Solitaria" leaf (single-member).
+     *  Each is resolvable OFFLINE (in-tree order taxonomy), so no network / no "resolve online" prompt. */
+    private static Phylogeny mixedSizeOrderTree() {
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode grupo = new PhylogenyNode();
+        grupo.getNodeData().setTaxonomy( orderTaxon( "Grupo" ) );
+        for( int c = 0; c < 3; ++c ) {
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName( "g" + c );
+            grupo.addAsChild( leaf ); // inherits the ancestor 'order' annotation
+        }
+        root.addAsChild( grupo );
+        final PhylogenyNode solo = new PhylogenyNode(); // a single leaf carrying its OWN order (a 1-member clade)
+        solo.setName( "s0" );
+        solo.getNodeData().setTaxonomy( orderTaxon( "Solitaria" ) );
+        root.addAsChild( solo );
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        phy.recalculateNumberOfExternalDescendants( false );
+        return phy;
+    }
+
+    private static Taxonomy orderTaxon( final String name ) {
+        final Taxonomy tax = new Taxonomy();
+        tax.setScientificName( name );
+        try {
+            tax.setRank( "order" );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        return tax;
     }
 
     /** Clade bands ("Annotate Clades by Rank") must reuse the same draggable taxon-&gt;color legend, so the

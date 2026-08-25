@@ -4086,17 +4086,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (isAlignedTipLabel(node)) {
                     drawConnection(node.getXcoord(), labelTextStartX(node), node.getYcoord(), 5, 20, g);
                 }
-                final int[] label_w = { 0 }; // capture the label's pixel width to place the domain track past it
                 if (effectiveTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL) {
                     // UPRIGHT tip label, centred under (root-top) / over (root-bottom) the tip -- the cleanest look for
                     // short names / sparse trees, and the one a rotated-bitmap export can't produce (its text tilts).
-                    label_w[0] = paintTipLabelHorizontal(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
+                    paintTipLabelHorizontal(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
                 } else {
                     withNodeTextFrame(g, labelTextStartX(node), node.getYcoord(), tipLabelAngle(),
-                            () -> label_w[0] = paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0));
+                            () -> paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, 0));
                 }
-                // renderable domain architecture: a per-tip vertical bar just past the label (boxes ride R, no labels).
-                paintDomainsVertical(g, node, label_w[0], to_pdf, to_graphics_file);
+                // renderable domain architecture: a vertical bar in the COMMON aligned column past the labels (boxes
+                // ride R, no labels) -- lined up like the horizontal layout, matching what depthLabelReserve() reserves.
+                paintDomainsVertical(g, node, to_pdf, to_graphics_file);
             } else {
                 // internal-node label: horizontal, right-aligned, LEFT of the branch midpoint. This path deliberately
                 // does NOT route through paintNodeData, so the renderable domain overlay it draws is DEFERRED for
@@ -4115,7 +4115,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  into a thin vertical track just past the tilted tip label (domain-name labels suppressed -- they would collide
      *  with neighbouring tips' tracks). Per tip at its own depth, so the track hangs off the tip. No-op unless domains
      *  are shown, external data is shown, and the tip carries a renderable architecture. */
-    private void paintDomainsVertical(final Graphics2D g, final PhylogenyNode node, final int label_w,
+    private void paintDomainsVertical(final Graphics2D g, final PhylogenyNode node,
                                       final boolean to_pdf, final boolean to_graphics_file) {
         if (!getControlPanel().isShowDomainArchitectures() || !getControlPanel().isShowExternalData()) {
             return;
@@ -4137,15 +4137,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float yd = getYdistance();
         final int hgt = TreePanelUtil.domainBoxHeight(yd, DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
         rds.setRenderingHeight(hgt);
-        // start just past the label's DEPTH footprint -- the same bounding-box projection depthLabelReserve() reserves
-        // (label_w*|sin| + lineH*|cos|), so a tilted 45-degree label's track doesn't overlap the label's lower edge and
-        // an upright 0-degree label's track clears the one-line-tall label. Anchor at the label column (labelTextStartX),
-        // NOT the tip, so an ALIGNED phylogram's track sits past the lined-up labels. Rides R into a vertical bar.
+        // draw in the COMMON aligned column (past the deepest tip + the longest label's depth footprint) so every
+        // tip's track lines up -- the alignment the horizontal layout gives via alignedPhylogramDomainColumnX(), and
+        // exactly the depth depthLabelReserve() reserves. Rides R into a vertical bar.
+        rds.render(verticalDomainColumnStart(), node.getYcoord() - (hgt / 2.0f), g, this, to_pdf, false);
+    }
+
+    /** The COMMON depth (logical x) where the domain track starts in a VERTICAL orientation, so all tips' tracks line
+     *  up in one band: past the deepest tip + the longest tip label's tilt-projected DEPTH footprint. Mirrors the
+     *  {@link #depthLabelReserve()} label-end (which reserves exactly this), so the aligned tracks never clip. */
+    private float verticalDomainColumnStart() {
         final double a = tipLabelAngle();
         final int line_h = getFontMetricsForLargeDefaultFont().getHeight();
-        final double depth_reach = (label_w * Math.abs(Math.sin(a))) + (line_h * Math.abs(Math.cos(a)));
-        final double start_x = labelTextStartX(node) + depth_reach + VERTICAL_DOMAIN_GAP;
-        rds.render((float) start_x, node.getYcoord() - (hgt / 2.0f), g, this, to_pdf, false);
+        final int anchor_offset = maxTipEffectiveHalfBoxSize() + LABEL_GAP_AFTER_NODE_SHAPE;
+        final int upright_gap = (effectiveTipLabelDirection() == Options.TIP_LABEL_DIRECTION.HORIZONTAL)
+                ? TIP_LABEL_DEPTH_GAP : 0;
+        final double text_depth = (_length_of_longest_text_only * Math.abs(Math.sin(a)))
+                + (line_h * Math.abs(Math.cos(a)));
+        final float deepest_tip_x = getControlPanel().isDrawPhylogram()
+                ? (float) (((displayedMaxDistanceToRoot() - rootBranchInMaxDistance()) * getXcorrectionFactor())
+                        + _phylogeny.getRoot().getXcoord())
+                : getPhylogeny().getFirstExternalNode().getXcoord();
+        return (float) (deepest_tip_x + anchor_offset + text_depth + upright_gap + VERTICAL_DOMAIN_GAP);
     }
 
     /** Draws an external tip's label UPRIGHT (0 degrees), centred on the tip along the breadth and placed just past it
@@ -7082,6 +7095,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private java.util.List<CladeBand> _clade_bands = null;
     private CLADE_VIS                 _clade_bands_mode = CLADE_VIS.BOXES;
     private String                    _clade_bands_rank = null;
+    private boolean                   _clade_bands_skip_singletons = true; // BARS/BRACKETS: skip a single-tip clade
+
+    /** On-screen angle of a clade bar/bracket taxon label in the root-left layout (root-top/bottom labels are always
+     *  upright, circular labels ride the spoke). VERTICAL (90deg, reads up -- the compact default) can overlap when
+     *  small clades sit close together; DIAGONAL (45deg) and HORIZONTAL (0deg, reads right) trade horizontal space
+     *  for less vertical overlap. */
+    enum CLADE_LABEL_ANGLE {
+        VERTICAL, DIAGONAL, HORIZONTAL
+    }
+    private CLADE_LABEL_ANGLE          _clade_bands_label_angle = CLADE_LABEL_ANGLE.VERTICAL;
     private final static int          CLADE_BOX_ALPHA = 46;
     private final static int          CLADE_BAR_WIDTH = 9;
     private final static int          CLADE_BAR_GAP   = 16;
@@ -8544,11 +8567,65 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Annotates the tree's clades with boxes or bars at {@code rank}; returns the number of bands. */
     final int setCladeBands(final String rank, final CLADE_VIS mode) {
+        return setCladeBands(rank, mode, _clade_bands_skip_singletons, _clade_bands_label_angle);
+    }
+
+    final int setCladeBands(final String rank, final CLADE_VIS mode, final boolean skip_singletons) {
+        return setCladeBands(rank, mode, skip_singletons, _clade_bands_label_angle);
+    }
+
+    /** Sets the clade bands, whether a single-member clade's bar/bracket is skipped (a degenerate one-row mark), and
+     *  the root-left taxon-label angle. Returns the number of marks that will actually be DRAWN (see
+     *  {@link #drawnCladeBandCount}). */
+    final int setCladeBands(final String rank, final CLADE_VIS mode, final boolean skip_singletons,
+                            final CLADE_LABEL_ANGLE label_angle) {
         _clade_bands_rank = rank;
         _clade_bands_mode = mode;
+        _clade_bands_skip_singletons = skip_singletons;
+        _clade_bands_label_angle = label_angle;
         rebuildCladeBands();
         repaint();
-        return (_clade_bands == null) ? 0 : _clade_bands.size();
+        return drawnCladeBandCount();
+    }
+
+    /** A clade represented by a single tip -- a degenerate one-row bar/bracket. Counts the STRUCTURAL external
+     *  descendants (collapse-independent), NOT getNumberOfExternalNodes(): the latter returns 1 for a DISPLAY-collapsed
+     *  node, which would wrongly skip a real multi-tip clade's bar the moment the user collapses it (and would drift
+     *  from the drawn-count computed at annotate time). getAllExternalDescendants() is a pure tree walk, so a collapsed
+     *  clade still counts its real tips. */
+    private static boolean isSingleMemberClade(final CladeBand band) {
+        return band.getRoot().getAllExternalDescendants().size() <= 1;
+    }
+
+    /** True when {@code band}'s bar/bracket is suppressed as a single-member clade. Only BARS and BRACKETS honor
+     *  the option (a BOXES single-row wash is a harmless soft highlight, so boxes always draw). */
+    private boolean skipCladeBand(final CladeBand band) {
+        return _clade_bands_skip_singletons && (_clade_bands_mode != CLADE_VIS.BOXES) && isSingleMemberClade(band);
+    }
+
+    /** How many clade marks are actually DRAWN in the current mode -- the count of bands the render does NOT skip
+     *  (single-member bars/brackets are skipped when the option is on), for the "drew N bar(s)/bracket(s)" report.
+     *  Uses the SAME {@link #skipCladeBand} predicate the render loops do, so the count can't drift from what draws.
+     *  The legend still lists every taxon. */
+    private int drawnCladeBandCount() {
+        if (!hasCladeBands()) {
+            return 0;
+        }
+        int n = 0;
+        for (final CladeBand band : _clade_bands) {
+            if (!skipCladeBand(band)) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+    /** Total clade bands built for the current rank -- every placed taxon, including single-member clades whose
+     *  bar/bracket is skipped (they still get a legend row). Compare with {@link #drawnCladeBandCount()} (drawn marks)
+     *  to tell "no tip could be placed" (0 total) apart from "all placed clades are single-member and were skipped"
+     *  (total &gt; 0 but drawn 0). */
+    final int cladeBandCount() {
+        return hasCladeBands() ? _clade_bands.size() : 0;
     }
 
     /**
@@ -10185,6 +10262,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
         final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
         for (final CladeBand band : _clade_bands) {
+            if (skipCladeBand(band)) { // single-member clades: no bar/bracket (boxes still draw)
+                continue;
+            }
             final double[] ar = circularCladeAngleRange(band.getRoot());
             if (ar == null) {
                 continue;
@@ -10527,13 +10607,51 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (hasCladeBands()) {
             if (_clade_bands_mode == CLADE_VIS.BOXES) {
                 extra += CLADE_BAND_RIGHT_PAD;
-            } else {
+            } else if (drawnCladeBandCount() > 0) { // no bar/bracket reserve if every band is a skipped single-member clade
                 final int label_h = getFontMetricsForLargeDefaultFont().getHeight();
                 final int mark = (_clade_bands_mode == CLADE_VIS.BARS) ? (CLADE_BAR_WIDTH + 3) : 4;
-                extra += CLADE_BAND_RIGHT_PAD + CLADE_BAR_GAP + mark + label_h + 4;
+                extra += CLADE_BAND_RIGHT_PAD + CLADE_BAR_GAP + mark + cladeLabelDepthExtent(label_h) + 4;
             }
         }
         return extra;
+    }
+
+    /** The depth-axis (horizontal, in the root-left layout) footprint of a clade bar/bracket taxon label, given its
+     *  angle: HORIZONTAL reserves the full label width, DIAGONAL ~width/sqrt2, VERTICAL just one line height.
+     *  Root-top/bottom labels are always upright, so their depth footprint is one line height. */
+    private int cladeLabelDepthExtent(final int label_h) {
+        if (isVerticalOrientation()) {
+            return label_h;
+        }
+        switch (_clade_bands_label_angle) {
+            case HORIZONTAL:
+                return Math.max(label_h, maxCladeLabelWidth());
+            case DIAGONAL:
+                return Math.max(label_h, Math.round((maxCladeLabelWidth() + label_h) / 1.41f));
+            default: // VERTICAL
+                return label_h;
+        }
+    }
+
+    /** Test hook: the horizontal reserve past the labels (annotation columns + any clade marks and their labels). */
+    int cladeBandRightReserveForTest() {
+        return rightMarginExtraWidth();
+    }
+
+    /** The widest DRAWN clade taxon label (in the large font), for reserving horizontal/diagonal label space; 0 if
+     *  none. Skipped single-member clades don't draw, so they don't reserve. */
+    private int maxCladeLabelWidth() {
+        if (!hasCladeBands()) {
+            return 0;
+        }
+        final FontMetrics fm = getFontMetricsForLargeDefaultFont();
+        int max = 0;
+        for (final CladeBand band : _clade_bands) {
+            if (!skipCladeBand(band)) {
+                max = Math.max(max, fm.stringWidth(band.getTaxon()));
+            }
+        }
+        return max;
     }
 
     /** {@code {yTop, yBottom}} of a clade's tips in current paint coordinates, or null if none. */
@@ -10585,6 +10703,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (yr == null) {
                 continue;
             }
+            if (skipCladeBand(band)) { // "Skip single-member clades": a single-tip clade's bar is a degenerate stub
+                continue;
+            }
             final int y = Math.round(yr[0] - pad);
             final int h = Math.max(1, Math.round((yr[1] - yr[0]) + (2 * pad)));
             g.setColor(band.getColor());
@@ -10617,6 +10738,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (yr == null) {
                 continue;
             }
+            if (skipCladeBand(band)) { // "Skip single-member clades": a single-tip clade's bracket is a degenerate stub
+                continue;
+            }
             final int x = Math.round(spine_x);
             final int y0 = Math.round(yr[0] - pad);
             final int y1 = Math.round(yr[1] + pad);
@@ -10643,13 +10767,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int tw = fm.stringWidth(taxon);
         final AffineTransform saved = g.getTransform();
         if (isVerticalOrientation()) {
+            // root-top/bottom: always upright (the "horizontal" reading), re-anchored to the base frame
             final Point2D.Double lp = screenPoint(label_x, mid_y);
             g.setTransform(_orientation_base_transform);
             g.drawString(taxon, (float) (lp.x - (tw / 2.0)), (float) (lp.y + (fm.getAscent() / 2.0f)));
         }
         else {
-            g.rotate(-Math.PI / 2.0, label_x, mid_y);
-            g.drawString(taxon, label_x - (tw / 2.0f), mid_y + fm.getAscent());
+            switch (_clade_bands_label_angle) {
+                case HORIZONTAL: // reads left-to-right, beside the mark -- least vertical overlap, most horizontal space
+                    g.drawString(taxon, label_x, mid_y + ((fm.getAscent() - fm.getDescent()) / 2.0f));
+                    break;
+                case DIAGONAL: // reads up-and-to-the-right from the mark (45 deg)
+                    g.rotate(-Math.PI / 4.0, label_x, mid_y);
+                    g.drawString(taxon, label_x + 2, mid_y + ((fm.getAscent() - fm.getDescent()) / 2.0f));
+                    break;
+                default: // VERTICAL (90 deg): reads bottom-to-top, centered on the clade -- the compact default
+                    g.rotate(-Math.PI / 2.0, label_x, mid_y);
+                    g.drawString(taxon, label_x - (tw / 2.0f), mid_y + fm.getAscent());
+                    break;
+            }
         }
         g.setTransform(saved);
     }

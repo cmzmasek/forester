@@ -90,10 +90,20 @@ public final class DomainArchitectureVerticalRenderTest {
                     frame.showWhole();
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
-                    final int vert = countColorful( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
+                    final BufferedImage vimg = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    final int vert = countColorful( vimg );
                     if ( vert < ( horiz / 2 ) ) {
                         fail( ok, "the domain architectures should draw in a vertical orientation (vertical=" + vert
                                 + " horizontal=" + horiz + ")" );
+                    }
+                    // ALIGNMENT: on this UNALIGNED phylogram the tips sit at RAGGED depths, but the domain tracks must
+                    // still line up in a COMMON column (like the horizontal layout) -- so every track's TOP is at the
+                    // same depth and the per-column top-of-domain spread is small. A per-tip (ragged) layout spreads
+                    // the tops across the tree height. Measured over the left 60% (clear of the bottom-right legend).
+                    final int spread = domainTrackTopSpread( vimg, w, h );
+                    if ( spread > 50 ) {
+                        fail( ok, "vertical domain tracks must line up in a common column, not hang ragged off each tip"
+                                + " (top-of-domain spread=" + spread + "px)" );
                     }
                     // and root-at-bottom too
                     o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_BOTTOM );
@@ -136,6 +146,27 @@ public final class DomainArchitectureVerticalRenderTest {
             }
         }
         return n;
+    }
+
+    /** Spread (max - min) of the per-column TOP of domain ink in a root-top render, over the left 60% of the width
+     *  (clear of the bottom-right legend). Small when the tracks line up in a common column; large when each hangs
+     *  ragged off its own ragged-depth tip. Only the domain boxes are "colorful"; branches and text are not. */
+    private static int domainTrackTopSpread( final BufferedImage img, final int w, final int h ) {
+        final int x_end = ( w * 60 ) / 100;
+        int min_top = Integer.MAX_VALUE, max_top = Integer.MIN_VALUE;
+        for( int x = 0; x < x_end; ++x ) {
+            for( int y = 0; y < h; ++y ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                final int max = Math.max( r, Math.max( g, b ) ), min = Math.min( r, Math.min( g, b ) );
+                if ( ( ( max - min ) > 40 ) && ( max > 90 ) ) {
+                    min_top = Math.min( min_top, y ); // first (top) colorful pixel in this column
+                    max_top = Math.max( max_top, y );
+                    break;
+                }
+            }
+        }
+        return ( max_top < min_top ) ? 0 : ( max_top - min_top );
     }
 
     private static boolean fail( final String msg ) {
