@@ -77,6 +77,37 @@ public final class NodeEditPanelTest {
             if ( editable( jt, root ) ) {
                 return fail( "the root node must NOT be editable" );
             }
+
+            // A non-empty field's value does NOT auto-open the editor (that path already works by clicking) ...
+            if ( panel.wouldOpenEditorForEmptyFieldForTest( new TreePath( name_value.getPath() ) ) ) {
+                return fail( "a NON-empty field value must not auto-open the editor" );
+            }
+            // ... nor does a field-name label.
+            if ( panel.wouldOpenEditorForEmptyFieldForTest( new TreePath( name_label.getPath() ) ) ) {
+                return fail( "a field-name label must not auto-open the editor" );
+            }
+
+            // an EMPTY field must stay editable AND be the one that auto-opens the inline editor (a blank tree row has
+            // no clickable hit region to start editing on, so empty fields could not otherwise be filled in)
+            final PhylogenyNode nameless = new PhylogenyNode(); // no name -> the "Name" field is empty
+            final NodeEditPanel panel2 = new NodeEditPanel( nameless, null, null );
+            final JTree jt2 = panel2.getJTreeForTest();
+            final DefaultMutableTreeNode basic2 = childByLabel( (DefaultMutableTreeNode) jt2.getModel().getRoot(),
+                                                                NodePanel.BASIC );
+            final DefaultMutableTreeNode name_label2 = childByLabel( basic2, NodePanel.NODE_NAME );
+            if ( ( name_label2 == null ) || ( name_label2.getChildCount() != 1 ) ) {
+                return fail( "the nameless node's 'Name' field should have one value child" );
+            }
+            final DefaultMutableTreeNode empty_value = (DefaultMutableTreeNode) name_label2.getChildAt( 0 );
+            if ( !String.valueOf( empty_value.getUserObject() ).isEmpty() ) {
+                return fail( "a nameless node's 'Name' value should be empty" );
+            }
+            if ( !editable( jt2, empty_value ) ) {
+                return fail( "an EMPTY field value must remain editable" );
+            }
+            if ( !panel2.wouldOpenEditorForEmptyFieldForTest( new TreePath( empty_value.getPath() ) ) ) {
+                return fail( "an EMPTY field must auto-open the inline editor so it can be filled in" );
+            }
             return true;
         }
         catch ( final Throwable e ) {
@@ -90,6 +121,9 @@ public final class NodeEditPanelTest {
     }
 
     private static DefaultMutableTreeNode childByLabel( final DefaultMutableTreeNode parent, final String label ) {
+        if ( parent == null ) {
+            return null;
+        }
         for( int i = 0; i < parent.getChildCount(); ++i ) {
             final DefaultMutableTreeNode c = (DefaultMutableTreeNode) parent.getChildAt( i );
             if ( label.equals( String.valueOf( c.getUserObject() ) ) ) {

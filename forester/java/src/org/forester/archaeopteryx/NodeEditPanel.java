@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.Position;
@@ -242,6 +243,13 @@ class NodeEditPanel extends JPanel {
                 // checkboxes are shown for the (in-place mutated) tree.
                 tree_panel.getControlPanel().updateDataCheckboxVisibility( true );
                 getTreePanel().repaint();
+                // An EMPTY field renders as a blank tree row with essentially no clickable/editable hit region, so a
+                // mouse click never starts the inline editor -- empty fields could not be filled in. When the user
+                // lands on an empty editable VALUE node (by clicking it or arrowing onto it), open the editor
+                // programmatically so they can type a value into the previously-blank field.
+                if ( ( new_path != null ) && isEditableValueNode( new_path ) && isEmptyTreeNodeValue( new_path ) ) {
+                    SwingUtilities.invokeLater( () -> getJTree().startEditingAtPath( new_path ) );
+                }
             }
         } );
         
@@ -654,6 +662,12 @@ class NodeEditPanel extends JPanel {
         return _tree;
     }
 
+    /** Whether landing on {@code path} would open the inline editor for an empty field (an editable value node whose
+     *  value is currently blank) -- the condition the selection listener uses to make empty fields fillable. */
+    boolean wouldOpenEditorForEmptyFieldForTest( final TreePath path ) {
+        return isEditableValueNode( path ) && isEmptyTreeNodeValue( path );
+    }
+
     private Map<DefaultMutableTreeNode, TagNumber> getMap() {
         return _map;
     }
@@ -682,6 +696,16 @@ class NodeEditPanel extends JPanel {
         }
         final Object parent = node.getParent();
         return ( parent instanceof DefaultMutableTreeNode ) && getMap().containsKey( parent );
+    }
+
+    /** Whether the tree node at {@code path} currently displays an empty value (so the editor should be opened for it
+     *  programmatically -- a blank row has no clickable hit region to start editing on). */
+    private static boolean isEmptyTreeNodeValue( final TreePath path ) {
+        final Object last = ( path == null ) ? null : path.getLastPathComponent();
+        if ( !( last instanceof DefaultMutableTreeNode ) ) {
+            return false;
+        }
+        return ForesterUtil.isEmpty( String.valueOf( ( (DefaultMutableTreeNode) last ).getUserObject() ) );
     }
 
     private DefaultMutableTreeNode getSelectedTreeNode() {
