@@ -226,6 +226,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node edit panel: ");
+        if (org.forester.archaeopteryx.NodeEditPanelTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Import annotations tool: ");
         if (org.forester.archaeopteryx.ImportAnnotationsToolTest.test()) {
             System.out.println("OK.");

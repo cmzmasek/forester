@@ -153,7 +153,18 @@ class NodeEditPanel extends JPanel {
         }
         final DefaultMutableTreeNode top = new DefaultMutableTreeNode( "Node " + node_name );
         createNodes( top, phylogeny_node );
-        _tree = new JTree( top );
+        _tree = new JTree( top ) {
+
+            private static final long serialVersionUID = 1L;
+
+            // The UI calls this before editing begins. Only a field's VALUE may be edited -- never the field-NAME
+            // labels ("Name", "Date value", ...) or the category headers ("Basic", "Taxonomy", ...), which are the
+            // dialog's structure, not data. (Without this every node is editable because the tree is setEditable(true).)
+            @Override
+            public boolean isPathEditable( final TreePath path ) {
+                return isEditable() && isEditableValueNode( path );
+            }
+        };
         getJTree().setEditable( true );
         getJTree().setFocusable( true );
         getJTree().setToggleClickCount( 1 );
@@ -639,12 +650,38 @@ class NodeEditPanel extends JPanel {
         return _tree;
     }
 
+    JTree getJTreeForTest() {
+        return _tree;
+    }
+
     private Map<DefaultMutableTreeNode, TagNumber> getMap() {
         return _map;
     }
 
     private TagNumber getMapping( final DefaultMutableTreeNode mtn ) {
         return getMap().get( mtn );
+    }
+
+    /**
+     * Whether {@code path} points at an editable field VALUE: a LEAF whose parent is a mapped field-name label (every
+     * value is added as {@code category -> name-label -> value-leaf} by {@link #addSubelementEditable}). The field-name
+     * labels are mapped but have children (so not leaves), and the category headers are neither leaves nor mapped -- so
+     * both are correctly excluded, and only the actual data values can be edited.
+     */
+    private boolean isEditableValueNode( final TreePath path ) {
+        if ( path == null ) {
+            return false;
+        }
+        final Object last = path.getLastPathComponent();
+        if ( !( last instanceof DefaultMutableTreeNode ) ) {
+            return false;
+        }
+        final DefaultMutableTreeNode node = ( DefaultMutableTreeNode ) last;
+        if ( !node.isLeaf() ) {
+            return false; // a category header or a field-name label -> structure, not data
+        }
+        final Object parent = node.getParent();
+        return ( parent instanceof DefaultMutableTreeNode ) && getMap().containsKey( parent );
     }
 
     private DefaultMutableTreeNode getSelectedTreeNode() {
