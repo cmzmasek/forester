@@ -78,17 +78,18 @@ public final class NodeEditPanelTest {
                 return fail( "the root node must NOT be editable" );
             }
 
-            // A non-empty field's value does NOT auto-open the editor (that path already works by clicking) ...
-            if ( panel.wouldOpenEditorForEmptyFieldForTest( new TreePath( name_value.getPath() ) ) ) {
-                return fail( "a NON-empty field value must not auto-open the editor" );
+            // Clicking a NON-empty field's value opens no editor programmatically (it already edits by clicking) ...
+            if ( panel.emptyValueNodeToEditForTest( new TreePath( name_value.getPath() ) ) != null ) {
+                return fail( "a NON-empty field value must not trigger the empty-field editor" );
             }
-            // ... nor does a field-name label.
-            if ( panel.wouldOpenEditorForEmptyFieldForTest( new TreePath( name_label.getPath() ) ) ) {
-                return fail( "a field-name label must not auto-open the editor" );
+            // ... nor does clicking the label of a field that HAS a value.
+            if ( panel.emptyValueNodeToEditForTest( new TreePath( name_label.getPath() ) ) != null ) {
+                return fail( "the label of a field with a value must not trigger the empty-field editor" );
             }
 
-            // an EMPTY field must stay editable AND be the one that auto-opens the inline editor (a blank tree row has
-            // no clickable hit region to start editing on, so empty fields could not otherwise be filled in)
+            // an EMPTY field must stay editable, and BOTH clicking its (blank) value row AND -- crucially -- clicking
+            // its field-NAME label must open the editor for that empty value (the blank value row has no clickable
+            // width, so the user clicks the label; that is what could not fill in empty fields before)
             final PhylogenyNode nameless = new PhylogenyNode(); // no name -> the "Name" field is empty
             final NodeEditPanel panel2 = new NodeEditPanel( nameless, null, null );
             final JTree jt2 = panel2.getJTreeForTest();
@@ -105,8 +106,11 @@ public final class NodeEditPanelTest {
             if ( !editable( jt2, empty_value ) ) {
                 return fail( "an EMPTY field value must remain editable" );
             }
-            if ( !panel2.wouldOpenEditorForEmptyFieldForTest( new TreePath( empty_value.getPath() ) ) ) {
-                return fail( "an EMPTY field must auto-open the inline editor so it can be filled in" );
+            if ( panel2.emptyValueNodeToEditForTest( new TreePath( empty_value.getPath() ) ) != empty_value ) {
+                return fail( "clicking the empty value row must target it for editing" );
+            }
+            if ( panel2.emptyValueNodeToEditForTest( new TreePath( name_label2.getPath() ) ) != empty_value ) {
+                return fail( "clicking an empty field's NAME label must open the editor for its empty value" );
             }
             return true;
         }
