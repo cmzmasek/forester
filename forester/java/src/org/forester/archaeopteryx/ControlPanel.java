@@ -1486,6 +1486,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
+    void setShowExternalDataForTest(final boolean selected) {
+        if (_display_external_data != null) {
+            _display_external_data.setSelected(selected);
+        }
+    }
+
     /**
      * Gives a text field its own Undo/Redo (Cmd/Ctrl-Z, Cmd/Ctrl-Shift-Z) bound at WHEN_FOCUSED scope, so
      * those keystrokes edit the field's text instead of falling through to the tree-level Undo menu

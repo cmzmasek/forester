@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.93";
+    final static String VERSION = "0.11.95";
     final static String PRG_DATE = "2026-08-25";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
@@ -79,6 +79,7 @@ public final class AptxConstants {
             0,
             0);
     final static short DEFAULT_NODE_SHAPE_SIZE_DEFAULT = 5;
+    final static int   TIP_IMAGE_SIZE_DEFAULT           = 40; // tip-image target height (px); user-adjustable
     static final int MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
     // External node names longer than this (e.g. whole UniProt/NCBI FASTA-header descriptions pasted in
     // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that

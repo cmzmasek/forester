@@ -255,6 +255,21 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_fossil_range_bars_cbmi ) );
         add( c, cb( _mf._show_zebra_stripes_cbmi ) );
         add( c, cb( _mf._show_internal_taxonomy_key_cbmi ) );
+        // Tip images (raster; PNG/JPG): a picture at each tip, from a local path or http(s) URL in a node property
+        // (the Import Annotations / CSV path) or a taxonomy <uri>. Options-direct (no menu item); re-layouts so the
+        // tip labels shift to make room. Renders in all five display types (rectangular x3 + circular + unrooted).
+        final JCheckBox tip_images = new JCheckBox( "Tip Images", _mf.getOptions().isShowTipImages() );
+        tip_images.setToolTipText( "Draw an image at each tip (from a local path or URL in a node property / <uri>). "
+                + "Add the paths with Tools → Import Annotations." );
+        tip_images.addActionListener( e -> {
+            _mf.getOptions().setShowTipImages( tip_images.isSelected() );
+            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+        } );
+        add( c, tip_images );
+        add( c, labeled( "Tip image size:", intSpinner( _mf.getOptions().getTipImageSize(), 12, 200, 4, v -> {
+            _mf.getOptions().setTipImageSize( v );
+            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+        } ) ) );
         // The Time Axis is PER-TREE (per-tab): a SARS-CoV-2 (calendar) tab and a Dinosaur (geologic) tab show
         // different axes at once. These controls act on the CURRENT tab and are seeded from it at open (like the
         // Tree style / palette combos above -- so they reflect the tab that was current when the dialog opened).

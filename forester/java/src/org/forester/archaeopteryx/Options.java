@@ -280,6 +280,8 @@ final public class Options {
     private boolean _show_hpd_bars;
     private boolean _show_fossil_range_bars;
     private boolean _show_zebra_stripes;
+    private boolean _show_tip_images;
+    private int     _tip_image_size;
     private boolean _break_long_branches;
     private boolean _show_internal_taxonomy_key;
     private boolean _reverse_tip_order;
@@ -363,6 +365,8 @@ final public class Options {
         _show_hpd_bars = false;
         _show_fossil_range_bars = false;
         _show_zebra_stripes = false;
+        _show_tip_images = false;
+        _tip_image_size = AptxConstants.TIP_IMAGE_SIZE_DEFAULT;
         _break_long_branches = false;
         _show_internal_taxonomy_key = false;
         _reverse_tip_order = false;
@@ -703,6 +707,22 @@ final public class Options {
 
     final void setShowFossilRangeBars(final boolean show_fossil_range_bars) {
         _show_fossil_range_bars = show_fossil_range_bars;
+    }
+
+    final boolean isShowTipImages() {
+        return _show_tip_images;
+    }
+
+    final void setShowTipImages(final boolean show_tip_images) {
+        _show_tip_images = show_tip_images;
+    }
+
+    final int getTipImageSize() {
+        return _tip_image_size;
+    }
+
+    final void setTipImageSize(final int tip_image_size) {
+        _tip_image_size = tip_image_size;
     }
 
     final boolean isShowZebraStripes() {

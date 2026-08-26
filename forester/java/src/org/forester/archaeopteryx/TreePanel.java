@@ -154,6 +154,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // taxonomy label ends. When the two differed (taxonomy 3, node data 2), the node data started a pixel inside
     // the taxonomy box and an italic scientific name's right overhang overlapped the following node name.
     private final static int LABEL_GAP_AFTER_NODE_SHAPE = 2;
+    // tip images: a fixed-width slot per imaged tip (= size * max-aspect) so the label offset is deterministic
+    // (known without waiting for the async image load); an image is scaled to fit the slot, aspect preserved.
+    private final static float TIP_IMAGE_MAX_ASPECT      = 1.8f;
+    private final static int   TIP_IMAGE_GAP             = 3;
     // The domain-architecture box height tracks the tip-row spacing (getYdistance()), CLAMPED to [MIN, MAX]: it grows
     // as the tree is expanded vertically (responds to Y+/Y-) instead of staying at a fixed size; MIN keeps a very
     // zoomed-out tree's boxes visible, MAX keeps a very zoomed-in tree's boxes as bars, not tall blocks (and << the
@@ -454,6 +458,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final PhylogenyNode[] _sub_phylogenies_temp_roots = new PhylogenyNode[TreePanel.MAX_SUBTREES];
     private int _subtree_index = 0;
     private File _treefile = null;
+    private TipImageCache _tip_image_cache = null; // lazily created; loads/caches the tip images (local + URL)
     private float _urt_factor = 1;
     private float _urt_factor_ov = 1;
     // the radial (circular/unrooted) layout is drawn in a SQUARE canvas of this side (px); it is the single knob for
@@ -3409,6 +3414,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             x += add;
         }
         final int half_box_size = effectiveNodeHalfBoxSize(node);
+        x += tipImageAdvance(node); // shift this tip's label past its image (0 for a non-imaged/aligned tip)
         final boolean want_dot = (isColorByProperty() && (node.isExternal() || node.isCollapse()))
                 || (isSizeByProperty() && node.isExternal());
         // at a pie node the pie IS the marker, so suppress the plain color/size dot (which the later-drawn pie
@@ -3828,6 +3834,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!getControlPanel().isShowExternalData() && node.isExternal()) {
             return;
         }
+        // A tip image (if any) is drawn UPRIGHT just outside the tip along its spoke -- in DEVICE space, before the
+        // label's rotate/flip below -- so a frog looks like a frog. Offset by HALF the image's spoke footprint so its
+        // near edge just clears the node box (not the branch), and the label is pushed out past its far edge via
+        // `img_footprint` in `gap` below. Drawn here (before the text early-return) so an image-only tip still shows.
+        final double img_theta = hasTipImage(node)
+                ? ((_graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) ? _urt_nodeid_angle_map.get(node.getId())
+                        : ur_angle)
+                : 0;
+        final double img_footprint = hasTipImage(node) ? tipImageRadialFootprint(node, img_theta) : 0;
+        if (hasTipImage(node)) {
+            final double r_off = effectiveNodeHalfBoxSize(node) + 3.0 + (img_footprint / 2.0);
+            drawTipImageUpright(g, node, (float) (anchor.x + (r_off * Math.cos(img_theta))),
+                    (float) (anchor.y + (r_off * Math.sin(img_theta))), getOptions().getTipImageSize());
+        }
         // The TAXONOMY label is drawn via the shared taxonomyLabel part-walker (so the scientific-name part is italic,
         // the rank is included, and the "Abbreviate Scientific Names" option applies) -- matching the rectangular
         // layout. The trailing node name / sequence text is built into _sb and drawn after it.
@@ -3870,7 +3890,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
         setFont(g, node);
         final Font base_font = g.getFont();
-        final float gap = effectiveNodeHalfBoxSize(node) + 3f; // start the label just off the node box (per-node size aware)
+        // start the label just off the node box (per-node size aware), pushed out past a tip image's spoke footprint
+        final float gap = effectiveNodeHalfBoxSize(node) + 3f
+                + (hasTipImage(node) ? (float) (img_footprint + TIP_IMAGE_GAP) : 0);
         final int tax_w = show_tax ? taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base_font) : 0;
         // Radial layouts: a full label in a circle runs ~twice the radius (off the canvas), so truncate the node-name/
         // sequence part with an ellipsis to the label budget left after the taxonomy, keeping tree + labels + domains
@@ -6900,6 +6922,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (sum > longest_text_only) {
                 longest_text_only = sum; // capture BEFORE the domain track width is added
             }
+            if (!isRadialLayout()) {
+                // reserve the tip-image slot (the label is shifted right/along-depth by tipImageAdvance) so annotation
+                // columns and clade bands anchor PAST the image instead of overprinting it. Radial reserves the image's
+                // spoke footprint separately (see paintNodeDataUnrootedCirc); 0 for a non-imaged/aligned/off tip.
+                sum += tipImageAdvance(node);
+            }
             if (getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
                     && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
                 // FIXME
@@ -9054,6 +9082,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return hasAnnotationColumns() ? _annotation_columns.size() : 0;
     }
 
+    /** Test hook: the horizontal label advance (px) a tip image reserves for {@code node} (0 for a non-imaged tip). */
+    int tipImageAdvanceForTest(final PhylogenyNode node) {
+        return tipImageAdvance(node);
+    }
+
+    /** Test hook: synchronously wait (off the EDT) until every imaged tip's image has loaded or failed, so a
+     *  subsequent render is deterministic (the loads are otherwise asynchronous). */
+    void preloadTipImagesForTest(final long timeout_ms) {
+        if (_phylogeny == null) {
+            return;
+        }
+        final File base = imageBaseDir();
+        final long end = System.currentTimeMillis() + timeout_ms;
+        for (final PhylogenyNode t : _phylogeny.getExternalNodes()) {
+            final String ref = TipImages.imageRefFor(t);
+            if (ref == null) {
+                continue;
+            }
+            while ((tipImageCache().get(ref, base) == null) && !tipImageCache().isFailed(ref, base)
+                    && (System.currentTimeMillis() < end)) {
+                try {
+                    Thread.sleep(20);
+                }
+                catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+    }
+
     /** Test hook: the vertical space (px) reserved above the first tip for the rotated column headers. */
     int annotationHeaderTopReserveForTest() {
         return annotationHeaderTopReserve();
@@ -9646,6 +9705,204 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _ellipse.setFrame(x, y, d, d);
             g.draw(_ellipse);
             g.setStroke(saved_stroke);
+        }
+    }
+
+    /** The lazily-created tip-image cache; on a completed background load it invalidates the label-width reservation
+     *  and repaints, so a freshly-loaded image (and its label shift) appears on the next frame. */
+    private TipImageCache tipImageCache() {
+        if (_tip_image_cache == null) {
+            _tip_image_cache = new TipImageCache();
+            _tip_image_cache.setRepaintCallback(() -> {
+                calculateLongestExtNodeInfo(); // the tips' label reach may change once images load
+                repaint();
+            });
+        }
+        return _tip_image_cache;
+    }
+
+    /** The directory local (relative) image paths resolve against: the loaded tree file's directory, or null (then a
+     *  relative path resolves against the working directory). Keep the tree, the annotation table, and the images
+     *  together. */
+    private File imageBaseDir() {
+        return (_treefile != null) ? _treefile.getParentFile() : null;
+    }
+
+    /** Whether {@code node} is an external tip that carries an image reference and tip images are shown. Cheap
+     *  (no image loading) -- used by the label offset and the paint loop. */
+    private boolean hasTipImage(final PhylogenyNode node) {
+        return getOptions().isShowTipImages() && (node != null) && node.isExternal()
+                && (TipImages.imageRefFor(node) != null);
+    }
+
+    /** The fixed slot width (px) reserved for a tip image = the target height times the max aspect. */
+    private int tipImageSlotWidth() {
+        return Math.round(getOptions().getTipImageSize() * TIP_IMAGE_MAX_ASPECT);
+    }
+
+    /**
+     * The extra horizontal advance (px) the tip label is shifted by to sit AFTER the tip image, so the image occupies
+     * the branch end (its true position on a time tree) and the name follows. Zero unless the node is an imaged tip
+     * whose label starts at the branch end -- so an aligned-phylogram / clustergram label (drawn at a common far
+     * column, past all branch ends, where an at-branch-end image doesn't collide) is not shifted.
+     */
+    private int tipImageAdvance(final PhylogenyNode node) {
+        if (!hasTipImage(node) || isAlignedTipLabel(node) || tipLabelsBelowColumns()) {
+            return 0;
+        }
+        // the image's extent along the DEPTH axis (which the label is pushed past): the image is drawn UPRIGHT, so in
+        // a vertical orientation the depth axis is the image HEIGHT (the target size), in root-left it is the WIDTH
+        // (up to the slot width).
+        return (isVerticalOrientation() ? getOptions().getTipImageSize() : tipImageSlotWidth()) + TIP_IMAGE_GAP;
+    }
+
+    /**
+     * The tip image's footprint (px) along the SPOKE at device angle {@code theta} -- for a radial (circular /
+     * unrooted) layout, where the image is drawn UPRIGHT but the branch and label run along the spoke. An upright
+     * {@code w x h} rectangle's extent along a direction is {@code w*|cos| + h*|sin|}, so a WIDE photo at an oblique
+     * spoke reaches further along the branch than its height would suggest -- using this (not just the height) for the
+     * image offset AND the label push keeps the image clear of both the branch and the label. Uses the loaded image's
+     * drawn size when available, else a conservative default until it loads.
+     */
+    private double tipImageRadialFootprint(final PhylogenyNode node, final double theta) {
+        final int size = getOptions().getTipImageSize();
+        final java.awt.image.BufferedImage img = tipImageCache().get(TipImages.imageRefFor(node), imageBaseDir());
+        int dw, dh;
+        if (img != null) {
+            final int[] wh = TipImages.scaledSize(img.getWidth(), img.getHeight(), size, tipImageSlotWidth());
+            dw = wh[0];
+            dh = wh[1];
+        }
+        else {
+            dw = tipImageSlotWidth(); // not loaded / broken marker: reserve the widest possible slot
+            dh = size;
+        }
+        return (Math.abs(dw * Math.cos(theta)) + Math.abs(dh * Math.sin(theta)));
+    }
+
+    /**
+     * Draws each visible external tip's image at the branch end (rectangular root-left family), scaled to the target
+     * height (aspect preserved, clamped to the slot width), centred on the tip row and starting just past the node
+     * mark -- in the gap the label was shifted right to open ({@link #tipImageAdvance}). A not-yet-loaded image draws
+     * nothing this frame (the async load repaints when ready); a broken reference draws nothing. Only in the
+     * rectangular non-vertical layout for now.
+     */
+    private void paintTipImages(final Graphics2D g) {
+        if (!getOptions().isShowTipImages()
+                || ((getControlPanel() != null) && !getControlPanel().isShowExternalData())) {
+            return; // tip images are external data -> suppressed with "Show External Data" off, as in the radial layout
+        }
+        final int target_h = getOptions().getTipImageSize();
+        final int slot_w = tipImageSlotWidth();
+        final File base = imageBaseDir();
+        final Object hint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
+            if (isHiddenUnderCollapse(node) || !hasTipImage(node)) {
+                continue;
+            }
+            final String ref = TipImages.imageRefFor(node);
+            final java.awt.image.BufferedImage img = tipImageCache().get(ref, base);
+            if (img == null) {
+                if ((target_h > 0) && tipImageCache().isFailed(ref, base)) {
+                    // the reference was recognized but the image could not be loaded (missing file, or a URL that
+                    // isn't a direct image -- e.g. a web PAGE link rather than the image file) -> a faint broken-image
+                    // marker, so the failure is visible rather than silent (and the reserved space is not just blank)
+                    drawBrokenImagePlaceholder(g, node, target_h);
+                }
+                continue; // else still loading -> nothing this frame (the async load repaints when ready)
+            }
+            final int[] wh = TipImages.scaledSize(img.getWidth(), img.getHeight(), target_h, slot_w);
+            if ((wh[0] <= 0) || (wh[1] <= 0)) {
+                continue;
+            }
+            final int x = Math.round(node.getXcoord()) + effectiveNodeHalfBoxSize(node) + LABEL_GAP_AFTER_NODE_SHAPE;
+            final int y = Math.round(node.getYcoord() - (wh[1] / 2.0f));
+            g.drawImage(img, x, y, wh[0], wh[1], null);
+        }
+        restoreInterpolationHint(g, hint);
+    }
+
+    /** Restores the interpolation hint we set to BILINEAR for image scaling; when it was unset (null, the default),
+     *  reset it to the Java2D default (nearest-neighbour) rather than leaking BILINEAR onto whatever paints next. */
+    private static void restoreInterpolationHint(final Graphics2D g, final Object previous) {
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                (previous != null) ? previous : RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+    }
+
+    /** A faint broken-image marker at a tip whose image failed to load (missing file / a non-image URL such as a web
+     *  page link), with its LEFT edge at the branch end (rectangular root-left) -- so a broken reference is VISIBLE. */
+    private void drawBrokenImagePlaceholder(final Graphics2D g, final PhylogenyNode node, final int size) {
+        final int w = Math.max(8, Math.round(size * 0.85f));
+        final int left = Math.round(node.getXcoord()) + effectiveNodeHalfBoxSize(node) + LABEL_GAP_AFTER_NODE_SHAPE;
+        drawBrokenImagePlaceholderAt(g, left + (w / 2.0f), node.getYcoord(), size);
+    }
+
+    /** A faint outlined box with an X, centred at ({@code cx},{@code cy}) -- the shared broken-image marker (drawn in
+     *  device coords, so the vertical/circular callers pass an R-mapped, upright centre). */
+    private void drawBrokenImagePlaceholderAt(final Graphics2D g, final float cx, final float cy, final int size) {
+        final int w = Math.max(8, Math.round(size * 0.85f));
+        final int h = Math.max(8, size);
+        final int x = Math.round(cx - (w / 2.0f));
+        final int y = Math.round(cy - (h / 2.0f));
+        final Color fg = getTreeColorSet().getSequenceColor();
+        final Stroke saved = g.getStroke();
+        g.setStroke(STROKE_1);
+        g.setColor(new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 95)); // faint
+        g.drawRect(x, y, w, h);
+        g.drawLine(x, y, x + w, y + h);
+        g.drawLine(x + w, y, x, y + h);
+        g.setStroke(saved);
+        g.setColor(fg);
+    }
+
+    /**
+     * Vertical-orientation (root-top/bottom) twin of {@link #paintTipImages}: each imaged tip's picture drawn UPRIGHT
+     * (never rotated under R -- a frog looks like a frog in every layout) at the slot centre just past the tip along
+     * the depth axis, mapped to device coords. Called while g is rotated by R (paintPhylogeny), so it maps the centre
+     * through screenPoint and draws in the base frame, like the SYMBOL glyph and TEXT cells.
+     */
+    private void paintTipImagesVertical(final Graphics2D g) {
+        if (!getOptions().isShowTipImages()
+                || ((getControlPanel() != null) && !getControlPanel().isShowExternalData())) {
+            return; // tip images are external data -> suppressed with "Show External Data" off, as in the radial layout
+        }
+        final int size = getOptions().getTipImageSize();
+        final AffineTransform withR = g.getTransform();
+        final Object hint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
+            if (isHiddenUnderCollapse(node) || !hasTipImage(node)) {
+                continue;
+            }
+            final double lx = node.getXcoord() + effectiveNodeHalfBoxSize(node) + LABEL_GAP_AFTER_NODE_SHAPE
+                    + (size / 2.0);
+            final Point2D.Double gp = screenPoint(lx, node.getYcoord());
+            g.setTransform(_orientation_base_transform);
+            drawTipImageUpright(g, node, (float) gp.x, (float) gp.y, size);
+            g.setTransform(withR);
+        }
+        restoreInterpolationHint(g, hint);
+    }
+
+    /**
+     * Draws {@code node}'s tip image (or its broken-image marker) UPRIGHT, centred at device ({@code cx},{@code cy}),
+     * scaled to height {@code size} (aspect preserved, width clamped to the slot). Shared by the vertical and radial
+     * (circular / unrooted) paths, which draw the image un-rotated at an R-mapped / spoke-offset centre.
+     */
+    private void drawTipImageUpright(final Graphics2D g, final PhylogenyNode node, final float cx, final float cy,
+                                     final int size) {
+        final File base = imageBaseDir();
+        final String ref = TipImages.imageRefFor(node);
+        final java.awt.image.BufferedImage img = tipImageCache().get(ref, base);
+        if (img != null) {
+            final int[] wh = TipImages.scaledSize(img.getWidth(), img.getHeight(), size, tipImageSlotWidth());
+            if ((wh[0] > 0) && (wh[1] > 0)) {
+                g.drawImage(img, Math.round(cx - (wh[0] / 2.0f)), Math.round(cy - (wh[1] / 2.0f)), wh[0], wh[1], null);
+            }
+        }
+        else if (tipImageCache().isFailed(ref, base)) {
+            drawBrokenImagePlaceholderAt(g, cx, cy, size);
         }
     }
 
@@ -12146,6 +12403,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
                 paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies, on top -- coords set above
+                paintTipImages(g); // tip images at the branch end (the label was shifted right to make room)
             }
             else {
                 // vertical parity: these overlays are drawn while g is rotated by R. Their geometry (zebra bands,
@@ -12159,6 +12417,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintAnnotationColumnsVertical(g);
                 paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
                 paintAncestralPies(g, to_pdf, to_graphics_file); // pies ride R: the disc stays a disc, wedges rotate
+                paintTipImagesVertical(g); // tip images drawn UPRIGHT (not rotated under R) at the branch end
                 if (geologicAxisApplies()) {
                     // the two-band geologic axis rides R into a side band down the breadth edge (bands + labels rotate)
                     paintGeologicTimeAxisVertical(g, to_pdf, to_graphics_file);
@@ -12819,7 +13078,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (tipLabelsBelowColumns() && (node.isExternal() || node.isCollapse())) {
             return labelSegmentStartX(annotationColumnsEndX(), half_box, 0);
         }
-        return labelSegmentStartX(isAlignedTipLabel(node) ? alignedLabelColumnX() : node.getXcoord(), half_box, 0);
+        // an imaged tip's label is shifted right by the image slot so the image occupies the branch end (tipImageAdvance
+        // is 0 for a non-imaged tip / aligned label, so nothing else moves)
+        return labelSegmentStartX(isAlignedTipLabel(node) ? alignedLabelColumnX() : node.getXcoord(), half_box,
+                tipImageAdvance(node));
     }
 
     /** Whether a branch-length value should be drawn for {@code node} -- the same gate {@link #paintNodeData} used

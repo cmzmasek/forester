@@ -3725,6 +3725,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             tp.getControlPanel().populateSizeByPropertyBox(); // and any numeric ones in "Size by:"
             tp.getControlPanel().populateAncestralPieBox(); // and any discrete-trait ones in "Ancestral pie:"
             tp.getControlPanel().rebuildSearchFields(true); // and as searchable fields (forced: same tree, new data)
+            if (TipImages.hasTipImages(phy)) {
+                tp.getOptions().setShowTipImages(true); // an imported image-path column -> show the tip images at once
+            }
             showWhole();
             tp.setEdited(true);
         }

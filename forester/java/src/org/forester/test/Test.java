@@ -210,6 +210,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tip images: ");
+        if (org.forester.archaeopteryx.TipImageTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tip images render: ");
+        if (org.forester.archaeopteryx.TipImageRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Import annotations tool: ");
         if (org.forester.archaeopteryx.ImportAnnotationsToolTest.test()) {
             System.out.println("OK.");

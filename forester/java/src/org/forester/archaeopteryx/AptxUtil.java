@@ -1443,6 +1443,12 @@ public final class AptxUtil {
             // state is authoritative. The paint path still gates each bar on a phylogram + branch lengths, so a
             // counted-but-branchless tree draws nothing.
             reconcileDataDrivenOverlayToggles(cp.getMainPanel());
+            // A tree whose tips carry image references (a local path or URL in a node property / taxonomy <uri>) --
+            // turn Tip Images on so the pictures show right away (data-driven, ON-only: it never forces the toggle off
+            // on a tree without images, so a user who enabled it keeps it).
+            if (TipImages.hasTipImages(t)) {
+                cp.getMainPanel().getOptions().setShowTipImages(true);
+            }
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);
         }

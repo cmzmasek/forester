@@ -157,6 +157,9 @@ final class GuiPreferences {
             // palette is ignored, keeping the default) so a stale file can't select a non-existent palette
             stringPref( "color_palette", Options::getColorPaletteName, Options::setColorPaletteName,
                         v -> PropertyColorScheme.paletteNames().contains( v ) ),
+            // Tip-image size (a display dimension, like the node-shape size; the show/hide toggle itself is NOT
+            // persisted -- it is data-driven, auto-enabled on load when the tree carries image references).
+            intPref( "tip_image_size", Options::getTipImageSize, Options::setTipImageSize, 12, 200 ),
             // Export appearance: raster scale + the two background toggles (white background already persisted above)
             intPref( "raster_export_scale", Options::getRasterExportScale, Options::setRasterExportScale, 1, 8 ),
             boolPref( "transparent_export_background", Options::isTransparentExportBackground,
