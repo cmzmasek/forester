@@ -157,65 +157,54 @@ public final class AptxUtil {
      * {@link #calculateColorFromString} (which derives a color from a name's spelling, so similar
      * names collide into near-identical, muddy colors). Returns a map in the same order as the input.
      */
+    /**
+     * Tableau 10 -- the shared, curated qualitative palette for ALL categorical annotation coloring
+     * (taxonomy rank / clade bands, stacked-bar &amp; pie series, protein domains, and -- via
+     * {@link PropertyColorScheme} -- color strips / symbols / color-by-property). Muted and balanced, so
+     * many categories read as distinct without clashing. {@link #qualitativeColor} extends it past ten.
+     */
+    final static Color[] TABLEAU_10 = { new Color( 0x4E79A7 ), new Color( 0xF28E2B ), new Color( 0xE15759 ),
+            new Color( 0x76B7B2 ), new Color( 0x59A14F ), new Color( 0xEDC948 ), new Color( 0xB07AA1 ),
+            new Color( 0xFF9DA7 ), new Color( 0x9C755F ), new Color( 0xBAB0AC ) };
+
+    /**
+     * A qualitative color for index {@code i} from {@code base}. Within the palette it is {@code base[i]};
+     * BEYOND it, the palette is extended by lightening (odd extra cycles) / darkening (even) toward white /
+     * black rather than plainly repeating, so a large number of categories stays distinguishable and on-palette.
+     */
+    final static Color qualitativeColor( final Color[] base, final int i ) {
+        final int len = base.length;
+        final Color c = base[ i % len ];
+        final int cycle = i / len;
+        if ( cycle == 0 ) {
+            return c;
+        }
+        final double f = Math.min( 0.55, 0.2 * cycle );
+        return ( ( cycle % 2 ) == 1 ) ? TreePanelUtil.blend( c, Color.WHITE, f )
+                                      : TreePanelUtil.blend( c, Color.BLACK, f );
+    }
+
     final static Map<String, Color> assignDistinctColors(final SortedSet<String> taxa) {
         final Map<String, Color> result = new LinkedHashMap<String, Color>();
         if ((taxa == null) || taxa.isEmpty()) {
             return result;
         }
-        final int n = taxa.size();
         int i = 0;
         for (final String taxon : taxa) {
-            final float hue = (float) i / (float) n;
-            final float sat = ((i % 2) == 0) ? 0.75f : 0.95f;
-            final float bri = ((i % 2) == 0) ? 0.95f : 0.78f;
-            result.put(taxon, Color.getHSBColor(hue, sat, bri));
-            ++i;
+            result.put(taxon, qualitativeColor(TABLEAU_10, i++));
         }
         return result;
     }
 
     /**
-     * {@code n} visually distinct colours in INDEX order -- the same even-hue qualitative palette
+     * {@code n} visually distinct colours in INDEX order -- the same curated qualitative palette (Tableau 10)
      * {@link #assignDistinctColors} paints taxa with, but for series that have a natural ORDER rather than names
      * (e.g. the coloured segments of a stacked-bar annotation column). Deterministic, so exports are reproducible.
      */
     final static java.util.List<Color> distinctColors( final int n ) {
         final java.util.List<Color> result = new java.util.ArrayList<Color>();
         for( int i = 0; i < n; ++i ) {
-            final float hue = ( n > 0 ) ? ( (float) i / (float) n ) : 0f;
-            final float sat = ( ( i % 2 ) == 0 ) ? 0.75f : 0.95f;
-            final float bri = ( ( i % 2 ) == 0 ) ? 0.95f : 0.78f;
-            result.add( Color.getHSBColor( hue, sat, bri ) );
-        }
-        return result;
-    }
-
-    // Golden-ratio-conjugate hue step: consecutive items land ~137.5° apart on the wheel, so a SORTED set whose
-    // adjacent names are merely SPELLING-similar gets maximally-SEPARATED hues -- the opposite of the plain i/n sweep,
-    // which gives adjacent names near-identical hues. That i/n sweep ({@link #assignDistinctColors}) is deliberately
-    // kept for TAXONOMY (alphabetical adjacency implies relatedness); protein domains want no name->hue relationship
-    // (e.g. Flavi_glycoprot / Flavi_glycoprot_C / Flavi_E_stem should be visually distinct, not the same blue).
-    private static final double GOLDEN_CONJUGATE = 0.6180339887498949;
-
-    /**
-     * Assigns each name a colour whose HUE is scattered by the golden angle, so alphabetically-adjacent names get
-     * FAR-APART colours (unlike {@link #assignDistinctColors}, whose i/n sweep is right for taxonomy but clusters
-     * spelling-similar domain names into one hue band). Deterministic in the input's sorted order; a saturation /
-     * brightness alternation adds extra separation where two hues happen to land near each other. Used for protein
-     * domains.
-     */
-    final static Map<String, Color> assignScatteredColors(final SortedSet<String> names) {
-        final Map<String, Color> result = new LinkedHashMap<String, Color>();
-        if ((names == null) || names.isEmpty()) {
-            return result;
-        }
-        int i = 0;
-        for (final String name : names) {
-            final float hue = (float) ((i * GOLDEN_CONJUGATE) % 1.0);
-            final float sat = ((i % 2) == 0) ? 0.72f : 0.90f;
-            final float bri = ((i % 2) == 0) ? 0.92f : 0.76f;
-            result.put(name, Color.getHSBColor(hue, sat, bri));
-            ++i;
+            result.add( qualitativeColor( TABLEAU_10, i ) );
         }
         return result;
     }
@@ -373,7 +362,7 @@ public final class AptxUtil {
             }
         }
         if (!names.isEmpty()) {
-            RenderableDomainArchitecture.setColorMap(assignScatteredColors(names));
+            RenderableDomainArchitecture.setColorMap(assignDistinctColors(names));
         }
     }
 

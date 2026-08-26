@@ -91,12 +91,13 @@ public final class HeatmapMatrixRenderTest {
                     if ( colored < 2000 ) {
                         fail( ok, "the heat-map matrix should paint many colored cells, got " + colored );
                     }
-                    // the grid spans the gradient: the global MAX value (9) reads warm (r>b) and the global MIN (0)
-                    // cool (b>r). Count clearly-warm vs clearly-cool cells; a matrix on a real gradient must have both.
+                    // the grid spans the Viridis gradient: the global MAX value (9) reads yellow (high) and the
+                    // global MIN (0) dark purple (low). Count clearly-high vs clearly-low cells; a matrix on a real
+                    // gradient must have both.
                     final int warm = countWarm( img ), cool = countCool( img );
                     if ( ( warm < 200 ) || ( cool < 200 ) ) {
-                        fail( ok, "the matrix should span cool (low) to warm (high) cells, warm=" + warm
-                                + " cool=" + cool );
+                        fail( ok, "the matrix should span low (dark purple) to high (yellow) cells, high=" + warm
+                                + " low=" + cool );
                     }
                     // ALWAYS-ON matrix legend: a heat-map matrix shows its shared-scale legend with NO header click.
                     if ( tp.hasFocusedAnnotationColumn() ) {
@@ -161,14 +162,14 @@ public final class HeatmapMatrixRenderTest {
         return n;
     }
 
-    /** Clearly warm (red-dominant) cells -- the high end of the shared gradient. */
+    /** Clearly high-value cells: yellow (the Viridis high end -- red AND green high, blue low). */
     private static int countWarm( final BufferedImage img ) {
         int n = 0;
         for( int y = 0; y < img.getHeight(); ++y ) {
             for( int x = 0; x < img.getWidth(); ++x ) {
                 final int rgb = img.getRGB( x, y );
                 final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
-                if ( ( r > 150 ) && ( r > ( b + 60 ) ) && ( r > ( g + 40 ) ) ) {
+                if ( ( r > 180 ) && ( g > 150 ) && ( b < 130 ) ) {
                     ++n;
                 }
             }
@@ -176,14 +177,14 @@ public final class HeatmapMatrixRenderTest {
         return n;
     }
 
-    /** Clearly cool (blue-dominant) cells -- the low end of the shared gradient. */
+    /** Clearly low-value cells: dark purple (the Viridis low end -- dim, blue over red, green near zero). */
     private static int countCool( final BufferedImage img ) {
         int n = 0;
         for( int y = 0; y < img.getHeight(); ++y ) {
             for( int x = 0; x < img.getWidth(); ++x ) {
                 final int rgb = img.getRGB( x, y );
                 final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
-                if ( ( b > 150 ) && ( b > ( r + 60 ) ) ) {
+                if ( ( g < 70 ) && ( b > r ) && ( r > 30 ) && ( r < 120 ) && ( b < 150 ) ) {
                     ++n;
                 }
             }

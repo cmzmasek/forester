@@ -296,9 +296,9 @@ public final class PropertyColorSchemeTest {
         final String ref = "repseq:host";
         // "common" is the most frequent value, so it gets the first color of the chosen palette
         final Phylogeny phy = treeWith( ref, "common", "common", "common", "rare" );
-        if ( !new Color( 0xE6194B ).equals( colorForValue( new PropertyColorScheme( phy, ref, null, "Default" ), phy,
+        if ( !new Color( 0x4E79A7 ).equals( colorForValue( new PropertyColorScheme( phy, ref, null, "Default" ), phy,
                                                            ref, "common" ) ) ) {
-            return fail( "Default palette: 'common' should get the first default color" );
+            return fail( "Default palette: 'common' should get the first default (Tableau 10) color" );
         }
         if ( !new Color( 0xE69F00 ).equals( colorForValue( new PropertyColorScheme( phy, ref, null,
                                                                                     "Colorblind-friendly" ),
@@ -306,7 +306,7 @@ public final class PropertyColorSchemeTest {
             return fail( "Colorblind palette: 'common' should get the first colorblind color" );
         }
         // an unknown palette name falls back to the default
-        if ( !new Color( 0xE6194B ).equals( colorForValue( new PropertyColorScheme( phy, ref, null, "Nonexistent" ),
+        if ( !new Color( 0x4E79A7 ).equals( colorForValue( new PropertyColorScheme( phy, ref, null, "Nonexistent" ),
                                                            phy, ref, "common" ) ) ) {
             return fail( "unknown palette name should fall back to Default" );
         }

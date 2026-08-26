@@ -63,15 +63,10 @@ import org.forester.util.ForesterUtil;
  */
 final class PropertyColorScheme {
 
-    // A categorical palette of reasonably distinct colors that read on a white or a
-    // dark canvas; cycled when a property has more distinct values than entries.
-    private static final Color[] DEFAULT_PALETTE = { new Color( 0xE6194B ), new Color( 0x3CB44B ), new Color( 0x4363D8 ),
-            new Color( 0xF58231 ), new Color( 0x911EB4 ), new Color( 0x469990 ), new Color( 0xF032E6 ),
-            new Color( 0x9A6324 ), new Color( 0x800000 ), new Color( 0x000075 ), new Color( 0x808000 ),
-            new Color( 0xE67E22 ), new Color( 0x2980B9 ), new Color( 0x16A085 ), new Color( 0xC0392B ),
-            new Color( 0x8E44AD ), new Color( 0xD35400 ), new Color( 0x27AE60 ), new Color( 0x7F8C8D ),
-            new Color( 0xB7950B ), new Color( 0x1F618D ), new Color( 0x6C3483 ), new Color( 0xBD1E51 ),
-            new Color( 0x117864 ) };
+    // The default categorical palette IS the shared Tableau 10 (AptxUtil.TABLEAU_10), so color strips, symbol
+    // columns, and color-by-property match the rank/clade/series coloring. Extended past ten (rather than plainly
+    // repeated) by AptxUtil.qualitativeColor when a property has more distinct values than palette entries.
+    private static final Color[] DEFAULT_PALETTE = AptxUtil.TABLEAU_10;
     // The Okabe-Ito colorblind-safe set (grey instead of black so it reads on a dark canvas too).
     private static final Color[] COLORBLIND_PALETTE = { new Color( 0xE69F00 ), new Color( 0x56B4E9 ),
             new Color( 0x009E73 ), new Color( 0xF0E442 ), new Color( 0x0072B2 ), new Color( 0xD55E00 ),
@@ -207,7 +202,7 @@ final class PropertyColorScheme {
             } );
             int i = 0;
             for( final String[] g : groups ) {
-                Color color = _palette[ i++ % _palette.length ];
+                Color color = AptxUtil.qualitativeColor( _palette, i++ );
                 if ( ( overrides != null ) && overrides.containsKey( g[ 1 ] ) ) {
                     color = overrides.get( g[ 1 ] ); // user-assigned color for this value
                 }
@@ -335,12 +330,25 @@ final class PropertyColorScheme {
     }
 
     /** Color at fraction {@code t} (0..1, low value to high value) of the gradient. */
+    // Viridis: a perceptually-uniform sequential ramp (dark blue-purple -> teal -> green -> yellow) -- calmer
+    // and colorblind-safe versus a blue->red hue sweep, and it reads on both the white and the dark canvas.
+    // Ten anchor stops, linearly interpolated in RGB.
+    private static final int[] VIRIDIS = { 0x440154, 0x482878, 0x3E4A89, 0x31688E, 0x26828E, 0x1F9E89, 0x35B779,
+            0x6DCD59, 0xB4DE2C, 0xFDE725 };
+
     Color gradientColorAt( final double t ) {
         final double tt = ( t < 0.0 ) ? 0.0 : ( ( t > 1.0 ) ? 1.0 : t );
-        // hue sweep blue (low) -> red (high), at a fixed saturation/brightness so every
-        // step stays legible on both the white and the dark canvas.
-        final float hue = (float) ( 0.66 * ( 1.0 - tt ) );
-        return Color.getHSBColor( hue, 0.78f, 0.92f );
+        final double x = tt * ( VIRIDIS.length - 1 );
+        final int i = (int) Math.floor( x );
+        if ( i >= ( VIRIDIS.length - 1 ) ) {
+            return new Color( VIRIDIS[ VIRIDIS.length - 1 ] );
+        }
+        final double f = x - i;
+        final Color a = new Color( VIRIDIS[ i ] );
+        final Color b = new Color( VIRIDIS[ i + 1 ] );
+        return new Color( (int) Math.round( a.getRed() + ( f * ( b.getRed() - a.getRed() ) ) ),
+                          (int) Math.round( a.getGreen() + ( f * ( b.getGreen() - a.getGreen() ) ) ),
+                          (int) Math.round( a.getBlue() + ( f * ( b.getBlue() - a.getBlue() ) ) ) );
     }
 
     String getGradientMinLabel() {

@@ -66,7 +66,7 @@ public final class AptxUtilTest {
         return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChoices()
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
-                && testAssignDistinctColors() && testAssignScatteredColors() && testGatherDomainNames() && testShortenLabel()
+                && testAssignDistinctColors() && testQualitativePalette() && testGatherDomainNames() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
                 && testPreferredDisplayTypeForBranchLengthTree() && testDetectTimeTree()
                 && testDeriveTimeAxisType();
@@ -425,36 +425,37 @@ public final class AptxUtilTest {
         return true;
     }
 
-    private static boolean testAssignScatteredColors() {
-        if (!AptxUtil.assignScatteredColors(null).isEmpty()
-                || !AptxUtil.assignScatteredColors(new java.util.TreeSet<String>()).isEmpty()) {
-            return fail("null/empty names must yield an empty color map");
+    // The shared curated qualitative palette (Tableau 10) + its wrap-around extension past ten.
+    private static boolean testQualitativePalette() {
+        if (AptxUtil.TABLEAU_10.length != 10) {
+            return fail("Tableau 10 palette must have 10 colors");
         }
-        final java.util.SortedSet<String> doms = new java.util.TreeSet<String>(java.util.Arrays.asList("DUF1", "DUF11",
-                "DUF2", "DUF3", "DUF4", "Flavi_E_stem", "Flavi_glycop_C", "Flavi_glycoprot"));
-        final Map<String, Color> scat = AptxUtil.assignScatteredColors(doms);
-        if (scat.size() != doms.size()) {
-            return fail("every domain name must get a color");
+        // distinctColors(n) is the palette in index order
+        final java.util.List<Color> d = AptxUtil.distinctColors(3);
+        if ((d.size() != 3) || !d.get(0).equals(AptxUtil.TABLEAU_10[0]) || !d.get(1).equals(AptxUtil.TABLEAU_10[1])
+                || !d.get(2).equals(AptxUtil.TABLEAU_10[2])) {
+            return fail("distinctColors(n) must be the Tableau palette in index order; got " + d);
         }
-        if (new java.util.HashSet<Color>(scat.values()).size() != doms.size()) {
-            return fail("scattered colors must be pairwise distinct; got " + scat.values());
+        // past ten: exactly n colors, all pairwise distinct, and NOT a plain repeat of the base palette
+        final java.util.List<Color> w = AptxUtil.distinctColors(13);
+        if (w.size() != 13) {
+            return fail("distinctColors must return exactly n colors");
         }
-        // consecutive sorted names jump FAR in hue (golden angle ~0.382 circular), NOT 1/n as the taxonomy sweep gives
-        final java.util.List<String> order = new java.util.ArrayList<String>(scat.keySet());
-        for (int i = 0; (i + 1) < order.size(); ++i) {
-            final Color c0 = scat.get(order.get(i));
-            final Color c1 = scat.get(order.get(i + 1));
-            final float h0 = Color.RGBtoHSB(c0.getRed(), c0.getGreen(), c0.getBlue(), null)[0];
-            final float h1 = Color.RGBtoHSB(c1.getRed(), c1.getGreen(), c1.getBlue(), null)[0];
-            final float d = Math.abs(h0 - h1);
-            final float circ = Math.min(d, 1f - d);
-            if (circ < 0.20f) {
-                return fail("adjacent-sorted domain names must get far-apart hues, got circular distance " + circ
-                        + " between '" + order.get(i) + "' and '" + order.get(i + 1) + "'");
-            }
+        if (new java.util.HashSet<Color>(w).size() != 13) {
+            return fail("extended palette colors must stay pairwise distinct; got " + w);
         }
-        if (!scat.equals(AptxUtil.assignScatteredColors(doms))) {
-            return fail("assignScatteredColors must be deterministic");
+        if (w.get(10).equals(AptxUtil.TABLEAU_10[0])) {
+            return fail("past the palette length, colors must be tinted, not a plain repeat");
+        }
+        // assignDistinctColors maps a sorted set onto the same palette, in order, deterministically
+        final java.util.SortedSet<String> taxa = new java.util.TreeSet<String>(java.util.Arrays.asList("b", "a", "c"));
+        final Map<String, Color> m = AptxUtil.assignDistinctColors(taxa);
+        final java.util.List<Color> mc = new java.util.ArrayList<Color>(m.values());
+        if (!mc.get(0).equals(AptxUtil.TABLEAU_10[0]) || !mc.get(2).equals(AptxUtil.TABLEAU_10[2])) {
+            return fail("assignDistinctColors must paint sorted names with the Tableau palette in order");
+        }
+        if (!m.equals(AptxUtil.assignDistinctColors(taxa))) {
+            return fail("assignDistinctColors must be deterministic");
         }
         return true;
     }
