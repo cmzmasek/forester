@@ -1571,6 +1571,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Nexus tree + alignment parsing: ");
+        if (Test.testNexusTreeAndAlignment()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("BEAST annotation parsing: ");
         if (org.forester.io.parsers.nhx.BeastAnnotationParserTest.test()) {
             System.out.println("OK.");
@@ -9000,6 +9008,236 @@ public final class Test {
             return false;
         }
         return true;
+    }
+
+    // A Nexus file that bundles a tree and a DATA/CHARACTERS sequence matrix: the matrix rows
+    // must be attached to the tips as aligned molecular sequences. Covers the sequential matrix,
+    // the direct-names case (no TAXLABELS/TRANSLATE table), and an interleaved matrix (whose
+    // repeated ids must be concatenated, not overwritten).
+    private static boolean testNexusTreeAndAlignment() {
+        try {
+            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
+            // (1) sequential matrix, taxa via a TAXLABELS block
+            final StringBuffer seq_tl = new StringBuffer();
+            seq_tl.append("#NEXUS\n");
+            seq_tl.append("BEGIN TAXA;\n DIMENSIONS NTAX=4;\n TAXLABELS A B C D;\nEND;\n");
+            seq_tl.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=10;\n FORMAT DATATYPE=DNA MISSING=? GAP=-;\n MATRIX\n");
+            seq_tl.append("  A ACGT-ACGTA\n  B ACGTAACGTA\n  C ACGTTTCGTA\n  D ACGTTACG-A\n ;\nEND;\n");
+            seq_tl.append("BEGIN TREES;\n TREE t1 = ((A,B),(C,D));\nEND;\n");
+            parser.setSource(seq_tl);
+            Phylogeny[] p = parser.parse();
+            if (p.length != 1) {
+                return false;
+            }
+            if (p[0].getNumberOfExternalNodes() != 4) {
+                return false;
+            }
+            if (countAlignedTips(p[0]) != 4) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "A").equals("ACGT-ACGTA")) {
+                return false;
+            }
+            // (2) direct-names: no TAXA/TAXLABELS and no TRANSLATE (the tree names its taxa directly).
+            // Without the attach-gate fix this dropped the alignment entirely (0 tips).
+            final StringBuffer direct = new StringBuffer();
+            direct.append("#NEXUS\n");
+            direct.append("BEGIN DATA;\n DIMENSIONS NTAX=4 NCHAR=10;\n FORMAT DATATYPE=DNA MISSING=? GAP=-;\n MATRIX\n");
+            direct.append("  A ACGT-ACGTA\n  B ACGTAACGTA\n  C ACGTTTCGTA\n  D ACGTTACG-A\n ;\nEND;\n");
+            direct.append("BEGIN TREES;\n TREE t1 = ((A,B),(C,D));\nEND;\n");
+            parser.setSource(direct);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 4)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "C").equals("ACGTTTCGTA")) {
+                return false;
+            }
+            // (3) interleaved matrix: each id appears in two blocks and must be concatenated.
+            // Without the concatenation fix only the last block survived (len 5, not 10).
+            final StringBuffer inter = new StringBuffer();
+            inter.append("#NEXUS\n");
+            inter.append("BEGIN TAXA;\n DIMENSIONS NTAX=4;\n TAXLABELS A B C D;\nEND;\n");
+            inter.append("BEGIN CHARACTERS;\n DIMENSIONS NTAX=4 NCHAR=10;\n FORMAT DATATYPE=DNA MISSING=? GAP=- INTERLEAVE;\n MATRIX\n");
+            inter.append("  A ACGTT\n  B ACGTA\n  C ACGTT\n  D ACGTT\n\n");
+            inter.append("  A ACGTA\n  B ACGTA\n  C ACGTA\n  D ACG-A\n ;\nEND;\n");
+            inter.append("BEGIN TREES;\n TREE t1 = ((A,B),(C,D));\nEND;\n");
+            parser.setSource(inter);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 4)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "A").equals("ACGTTACGTA") || (alignedSeqOf(p[0], "A").length() != 10)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "D").equals("ACGTTACG-A")) {
+                return false;
+            }
+            // (4) residues split into space-separated blocks (a common readability convention):
+            // the id is the first token, all following residue blocks are concatenated.
+            final StringBuffer grouped = new StringBuffer();
+            grouped.append("#NEXUS\n");
+            grouped.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS fish frog;\nEND;\n");
+            grouped.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=10;\n FORMAT DATATYPE=DNA;\n MATRIX\n");
+            grouped.append("  fish  ACATA GAGGG\n  frog  ACATA GAGGT\n ;\nEND;\n");
+            grouped.append("BEGIN TREES;\n TREE t = (fish, frog);\nEND;\n");
+            parser.setSource(grouped);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "fish").equals("ACATAGAGGG") || (alignedSeqOf(p[0], "fish").length() != 10)) {
+                return false;
+            }
+            // (5) a CHARLABELS sub-command (ending in ';') sits between FORMAT and MATRIX. It must be
+            // skipped, not mistaken for the end of the block (which used to drop the whole matrix).
+            final StringBuffer charlabels = new StringBuffer();
+            charlabels.append("#NEXUS\n");
+            charlabels.append("BEGIN TAXA;\n dimensions ntax=2;\n taxlabels A B;\nEND;\n");
+            charlabels.append("BEGIN CHARACTERS;\n dimensions nchar=5;\n format datatype=protein gap=-;\n");
+            charlabels.append(" charlabels 1 2 3 4 Five;\n matrix\nA MA-LL\nB MEATY\nEND;\n");
+            charlabels.append("BEGIN TREES;\n tree t = ((A,B));\nEND;\n");
+            parser.setSource(charlabels);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "A").equals("MA-LL") || !alignedSeqOf(p[0], "B").equals("MEATY")) {
+                return false;
+            }
+            // (6) MATCHCHAR ('.' = same as the first/reference taxon at that position) + Nexus [ ] comments
+            // (a standalone comment line and an inline one). Both must resolve/strip, not corrupt the row.
+            final StringBuffer mc = new StringBuffer();
+            mc.append("#NEXUS\n");
+            mc.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS Ref Other;\nEND;\n");
+            mc.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=6;\n FORMAT DATATYPE=DNA MATCHCHAR=.;\n MATRIX\n");
+            mc.append("[ a standalone comment ]\n  Ref   ACGTAC\n  Other .C..T. [ inline comment ]\n ;\nEND;\n");
+            mc.append("BEGIN TREES;\n TREE t = (Ref, Other);\nEND;\n");
+            parser.setSource(mc);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            // '.' resolves against Ref (ACGTAC), it does NOT become a gap
+            if (!alignedSeqOf(p[0], "Ref").equals("ACGTAC") || !alignedSeqOf(p[0], "Other").equals("ACGTTC")) {
+                return false;
+            }
+            // (7) the matrix capitalizes the taxon names differently from the TAXLABELS/tree
+            // ("Fish" vs "fish") -- the join must be case-insensitive.
+            final StringBuffer casemix = new StringBuffer();
+            casemix.append("#NEXUS\n");
+            casemix.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS fish frog;\nEND;\n");
+            casemix.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=4;\n FORMAT DATATYPE=DNA;\n MATRIX\n");
+            casemix.append("  Fish ACGT\n  Frog ACGA\n ;\nEND;\n");
+            casemix.append("BEGIN TREES;\n TREE t = (fish, frog);\nEND;\n");
+            parser.setSource(casemix);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "fish").equals("ACGT")) {
+                return false;
+            }
+            // (8) interleaved matrix WITH matchchar -- the cross-block absolute-offset resolution.
+            final StringBuffer im = new StringBuffer();
+            im.append("#NEXUS\n");
+            im.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS Ref Other;\nEND;\n");
+            im.append("BEGIN CHARACTERS;\n DIMENSIONS NTAX=2 NCHAR=8;\n FORMAT DATATYPE=DNA MATCHCHAR=. INTERLEAVE;\n MATRIX\n");
+            im.append("  Ref   ACGT\n  Other .C.T\n\n  Ref   GGCA\n  Other ..A.\n ;\nEND;\n");
+            im.append("BEGIN TREES;\n TREE t = (Ref, Other);\nEND;\n");
+            parser.setSource(im);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "Ref").equals("ACGTGGCA") || !alignedSeqOf(p[0], "Other").equals("ACGTGGAA")) {
+                return false;
+            }
+            // (9) a non-molecular (STANDARD/binary) matrix must attach NO sequences; the tree still parses.
+            final StringBuffer std = new StringBuffer();
+            std.append("#NEXUS\n");
+            std.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS A B;\nEND;\n");
+            std.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=4;\n FORMAT DATATYPE=STANDARD SYMBOLS=\"01\";\n MATRIX\n");
+            std.append("  A 0101\n  B 0011\n ;\nEND;\n");
+            std.append("BEGIN TREES;\n TREE t = (A, B);\nEND;\n");
+            parser.setSource(std);
+            p = parser.parse();
+            if ((p.length != 1) || (p[0].getNumberOfExternalNodes() != 2) || (countAlignedTips(p[0]) != 0)) {
+                return false;
+            }
+            // (10) a MULTI-LINE [ ] comment inside the matrix must be fully stripped -- not leak a prose
+            // line as a spurious row (which could hijack the MATCHCHAR reference and corrupt other rows).
+            final StringBuffer mlc = new StringBuffer();
+            mlc.append("#NEXUS\n");
+            mlc.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS Ref Other;\nEND;\n");
+            mlc.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=6;\n FORMAT DATATYPE=DNA MATCHCHAR=.;\n MATRIX\n");
+            mlc.append("[ a multi-line\n  comment here ]\n  Ref   ACGTAC\n  Other .C..T.\n ;\nEND;\n");
+            mlc.append("BEGIN TREES;\n TREE t = (Ref, Other);\nEND;\n");
+            parser.setSource(mlc);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "Ref").equals("ACGTAC") || !alignedSeqOf(p[0], "Other").equals("ACGTTC")) {
+                return false;
+            }
+            // (11) underscore/space equivalence: with replace-underscores ON the tip becomes "Homo sapiens"
+            // while the matrix keeps "Homo_sapiens" -- the join must canonicalize both.
+            final NexusPhylogeniesParser underscore_parser = new NexusPhylogeniesParser();
+            underscore_parser.setReplaceUnderscores(true);
+            final StringBuffer us = new StringBuffer();
+            us.append("#NEXUS\n");
+            us.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS Homo_sapiens Pan_troglodytes;\nEND;\n");
+            us.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=4;\n FORMAT DATATYPE=DNA;\n MATRIX\n");
+            us.append("  Homo_sapiens    ACGT\n  Pan_troglodytes ACGA\n ;\nEND;\n");
+            us.append("BEGIN TREES;\n TREE t = (Homo_sapiens, Pan_troglodytes);\nEND;\n");
+            underscore_parser.setSource(us);
+            p = underscore_parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "Homo sapiens").equals("ACGT")) {
+                return false;
+            }
+            // (12) a quoted matrix taxon label containing a space ('Homo sapiens') must join to the tip.
+            final StringBuffer q = new StringBuffer();
+            q.append("#NEXUS\n");
+            q.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS 'Homo sapiens' 'Pan troglodytes';\nEND;\n");
+            q.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=4;\n FORMAT DATATYPE=DNA;\n MATRIX\n");
+            q.append("  'Homo sapiens'    ACGT\n  'Pan troglodytes' ACGA\n ;\nEND;\n");
+            q.append("BEGIN TREES;\n TREE t = (Homo_sapiens, Pan_troglodytes);\nEND;\n");
+            parser.setSource(q);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "Homo_sapiens").equals("ACGT")) {
+                return false;
+            }
+        }
+        catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+        return true;
+    }
+
+    private static int countAlignedTips(final Phylogeny p) {
+        int n = 0;
+        for (final PhylogenyNode node : p.getExternalNodes()) {
+            if (node.getNodeData().isHasSequence()) {
+                final org.forester.phylogeny.data.Sequence s = node.getNodeData().getSequence();
+                final String ms = s.getMolecularSequence();
+                if (s.isMolecularSequenceAligned() && (ms != null) && (ms.length() > 0)) {
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
+    private static String alignedSeqOf(final Phylogeny p, final String name) {
+        return p.getNode(name).getNodeData().getSequence().getMolecularSequence();
     }
 
     private static boolean testNexusTreeParsing() {
