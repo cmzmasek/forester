@@ -97,6 +97,13 @@ final class AlgorithmReferences {
                         + "convention of plotting taxon stratigraphic ranges against a time-calibrated phylogeny follows "
                         + "the strap R package: Bell MA, Lloyd GT (2015): \"strap: an R package for plotting phylogenies "
                         + "against stratigraphy and assessing their stratigraphic congruence\", Palaeontology 58(2):379–389." ) );
+        refs.add( new Reference( "Sequence-alignment display (Settings → Overlays → Sequence Alignment; File → Load Alignment)",
+                "Draws a multiple sequence alignment beside the tree as coloured residue cells, one row per tip. Amino "
+                        + "acids are coloured by a fixed physico-chemical (Zappo-style) scheme -- aliphatic / aromatic / "
+                        + "positive / negative / hydrophilic / conformationally-special / cysteine; nucleotides by the "
+                        + "standard A/C/G/T(U) convention; gaps are left blank. The residue-colouring conventions follow "
+                        + "Jalview: Waterhouse AM, Procter JB, Martin DMA, Clamp M, Barton GJ (2009): \"Jalview Version 2 "
+                        + "-- a multiple sequence alignment editor and analysis workbench\", Bioinformatics 25(9):1189–1191." ) );
         refs.add( new Reference( "Node age bars / spindles (HPD) (Settings → Overlays → Data Overlays)",
                 "On a dated (time-calibrated) phylogram, draws each internal node's divergence-time uncertainty from its "
                         + "phyloXML date -- the point estimate (median/mean height) and the 95% Highest Posterior Density "

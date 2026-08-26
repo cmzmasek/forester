@@ -43,7 +43,8 @@ public final class DemoTreesGalleryTest {
 
     // the resources the catalog opens (a fossil-only ammonite tree, a tanglegram pair + its association file, etc.)
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
-            "symbol-columns.xml", "stacked-bar-columns.xml", "domain-architectures.xml", "bat-phylogeny.xml",
+            "symbol-columns.xml", "stacked-bar-columns.xml", "domain-architectures.xml", "alignment.xml",
+            "bat-phylogeny.xml",
             "ancestral-pie-charts.xml",
             "node-hpd-bars.xml",
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
@@ -69,8 +70,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 19 ) {
-                return fail( "the demo catalog should have 19 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 20 ) {
+                return fail( "the demo catalog should have 20 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -207,6 +208,11 @@ public final class DemoTreesGalleryTest {
         else if ( label.startsWith( "Annotation Columns" ) ) {
             if ( !tp.hasAnnotationColumns() ) {
                 fail( ok, "the annotation-columns demo must have annotation columns" );
+            }
+        }
+        else if ( label.startsWith( "Alignment" ) ) {
+            if ( !tp.getOptions().isShowMsa() || !AptxUtil.hasAlignedSequences( tp.getPhylogeny() ) ) {
+                fail( ok, "the alignment demo must auto-enable the alignment display over aligned tip sequences" );
             }
         }
         else if ( label.startsWith( "Symbol Columns" ) ) {

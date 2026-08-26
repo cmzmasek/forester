@@ -160,6 +160,8 @@ final class GuiPreferences {
             // Tip-image size (a display dimension, like the node-shape size; the show/hide toggle itself is NOT
             // persisted -- it is data-driven, auto-enabled on load when the tree carries image references).
             intPref( "tip_image_size", Options::getTipImageSize, Options::setTipImageSize, 12, 200 ),
+            intPref( "msa_column_width", Options::getMsaColumnWidth, Options::setMsaColumnWidth,
+                    AptxConstants.MSA_COLUMN_WIDTH_MIN, AptxConstants.MSA_COLUMN_WIDTH_MAX ),
             // Export appearance: raster scale + the two background toggles (white background already persisted above)
             intPref( "raster_export_scale", Options::getRasterExportScale, Options::setRasterExportScale, 1, 8 ),
             boolPref( "transparent_export_background", Options::isTransparentExportBackground,

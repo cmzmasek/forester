@@ -131,6 +131,10 @@ final class DemoTrees {
         demos.add( new Demo( "Protein Domain Architectures",
                              "Multi-domain protein sequences drawn to scale at each tip (auto-enabled on load).",
                              mf -> openTree( mf, "domain-architectures.xml" ) ) ); // domains auto-enable + fit on load
+        demos.add( new Demo( "Alignment next to Tree",
+                             "A multiple sequence alignment shown beside the tree as colored residue cells "
+                                     + "(auto-enabled on load; root-left).",
+                             mf -> openTree( mf, "alignment.xml" ) ) ); // the alignment display auto-enables on load
         demos.add( new Demo( "Bat Phylogeny (Taxonomy by Rank)",
                              "A 34-species tree of the bats (Chiroptera): common + scientific names + synonyms at the "
                                      + "tips, every clade annotated by rank, colorized by family -- all offline.",

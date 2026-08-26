@@ -91,6 +91,7 @@ public final class DemoTreeGenerator {
         write( dir, "domain-architectures.xml", domainArchitecturesTree() );
         write( dir, "heatmap-matrix.xml", heatmapMatrixTree() );
         write( dir, "import-annotations.xml", importAnnotationsTree() );
+        write( dir, "alignment.xml", alignmentTree() );
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
@@ -1359,6 +1360,44 @@ public final class DemoTreeGenerator {
         n.setName( name );
         n.setDistanceToParent( 0.02 );
         return n;
+    }
+
+    // ---- sequence alignment (embedded aligned mol_seqs; shown with Settings -> Overlays -> Sequence Alignment) ------
+
+    private static Phylogeny alignmentTree() {
+        final String base = "MKTAYIAKQR-QISFVKSHFSRQLEERLGLIEVQ"; // 34 columns, one aligned gap (protein)
+        final Phylogeny phy = new Phylogeny();
+        phy.setName( "Sequence Alignment" );
+        phy.setRoot( clade( 0.0,
+                clade( 0.05,
+                        alignedLeaf( "Human", 0.03, base ),
+                        alignedLeaf( "Chimp", 0.03, sub( base, 24, 'D' ) ) ),
+                clade( 0.05,
+                        alignedLeaf( "Gorilla", 0.04, sub( base, 12, 'V' ) ),
+                        clade( 0.04,
+                                alignedLeaf( "Mouse", 0.06, sub( sub( base, 20, 'K' ), 24, 'D' ) ),
+                                clade( 0.03,
+                                        alignedLeaf( "Chicken", 0.08, sub( sub( base, 3, 'G' ), 25, 'K' ) ),
+                                        alignedLeaf( "Frog", 0.09, sub( sub( base, 2, 'S' ), 30, 'V' ) ) ) ) ) ) );
+        phy.setRooted( true );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    private static PhylogenyNode alignedLeaf( final String name, final double branch_length, final String aligned_seq ) {
+        final PhylogenyNode n = blLeaf( name, branch_length );
+        final Sequence s = new Sequence();
+        s.setMolecularSequence( aligned_seq );
+        s.setMolecularSequenceAligned( true );
+        n.getNodeData().addSequence( s );
+        return n;
+    }
+
+    /** {@code s} with the character at {@code i} replaced by {@code c} (same length -- keeps the alignment rectangular). */
+    private static String sub( final String s, final int i, final char c ) {
+        final char[] a = s.toCharArray();
+        a[ i ] = c;
+        return new String( a );
     }
 
     private static PhylogenyNode clade( final double branch_length, final PhylogenyNode... children ) {

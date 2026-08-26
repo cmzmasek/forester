@@ -282,6 +282,8 @@ final public class Options {
     private boolean _show_zebra_stripes;
     private boolean _show_tip_images;
     private int     _tip_image_size;
+    private boolean _show_msa;
+    private int     _msa_column_width;
     private boolean _break_long_branches;
     private boolean _show_internal_taxonomy_key;
     private boolean _reverse_tip_order;
@@ -367,6 +369,8 @@ final public class Options {
         _show_zebra_stripes = false;
         _show_tip_images = false;
         _tip_image_size = AptxConstants.TIP_IMAGE_SIZE_DEFAULT;
+        _show_msa = false;
+        _msa_column_width = AptxConstants.MSA_COLUMN_WIDTH_DEFAULT;
         _break_long_branches = false;
         _show_internal_taxonomy_key = false;
         _reverse_tip_order = false;
@@ -723,6 +727,22 @@ final public class Options {
 
     final void setTipImageSize(final int tip_image_size) {
         _tip_image_size = tip_image_size;
+    }
+
+    final boolean isShowMsa() {
+        return _show_msa;
+    }
+
+    final void setShowMsa(final boolean show_msa) {
+        _show_msa = show_msa;
+    }
+
+    final int getMsaColumnWidth() {
+        return _msa_column_width;
+    }
+
+    final void setMsaColumnWidth(final int msa_column_width) {
+        _msa_column_width = msa_column_width;
     }
 
     final boolean isShowZebraStripes() {

@@ -1582,6 +1582,11 @@ public final class MainFrameApplication extends MainFrame {
                 + "each rank becomes a <i>gtdb:&lt;rank&gt;</i> property (so you can Color by / add an Annotation Column "
                 + "for gtdb:phylum, gtdb:family, gtdb:genus …) plus a taxonomy at the most specific rank. Entirely "
                 + "offline. Undoable.</html>");
+        _file_jmenu.add(_load_alignment_item = new JMenuItem("Load Alignment (FASTA)..."));
+        _load_alignment_item.setToolTipText("<html>Read an aligned FASTA and show the alignment beside the tree: each "
+                + "sequence is matched to the tip whose name equals its header, and drawn as colored residue cells to "
+                + "the right of the labels (rectangular root-left).<br><i>The alignment becomes part of the tree "
+                + "(searchable, round-trips to phyloXML). Undoable.</i></html>");
         _file_jmenu.addSeparator();
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
@@ -1608,6 +1613,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem(_import_annotations_url_item);
         customizeJMenuItem(_reimport_annotations_item);
         customizeJMenuItem(_import_gtdb_item);
+        customizeJMenuItem(_load_alignment_item);
         customizeJMenuItem(_exit_item);
         // Keyboard shortcuts for the common File actions. The platform menu-shortcut key is Cmd on macOS, Ctrl
         // elsewhere. Copy Image uses Shift too, deliberately NOT plain Cmd-C, so it can't hijack text copy in the

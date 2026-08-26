@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
@@ -119,6 +120,19 @@ public class MainPanel extends JPanel implements ComponentListener {
         final JPanel treegraphic_scroll_pane_panel = new JPanel();
         treegraphic_scroll_pane_panel.setLayout(new BorderLayout());
         treegraphic_scroll_pane_panel.add(treegraphic_scroll_pane, BorderLayout.CENTER);
+        // A dedicated horizontal scroller for the sequence-alignment window, under the tree canvas. Hidden unless the
+        // alignment is wider than its window (managed by TreePanel.updateMsaScrollBar); pans only the MSA columns, so
+        // the tree + labels stay put. Dragging it just changes the first shown column and repaints.
+        final JScrollBar msa_scrollbar = new JScrollBar(JScrollBar.HORIZONTAL);
+        msa_scrollbar.setVisible(false);
+        msa_scrollbar.addAdjustmentListener(e -> {
+            if (msa_scrollbar.getValue() != treepanel.getMsaColumnOffset()) {
+                treepanel.setMsaColumnOffset(msa_scrollbar.getValue());
+                treepanel.repaint();
+            }
+        });
+        treegraphic_scroll_pane_panel.add(msa_scrollbar, BorderLayout.SOUTH);
+        treepanel.setMsaScrollBar(msa_scrollbar);
         _treegraphic_scroll_pane_panels.add(treegraphic_scroll_pane_panel);
         _treegraphic_scroll_panes.add(treegraphic_scroll_pane);
         getTabbedPane().addTab(name, null, treegraphic_scroll_pane_panel, "");

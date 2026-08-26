@@ -97,6 +97,7 @@ import org.forester.archaeopteryx.tools.TipDateExtractor.DayMonthOrder;
 import org.forester.archaeopteryx.tools.TipDateExtractor.Summary;
 import org.forester.archaeopteryx.tools.TipDateExtractor.TipDate;
 import org.forester.archaeopteryx.tools.NodeDataExporter;
+import org.forester.archaeopteryx.tools.AlignmentImporter;
 import org.forester.archaeopteryx.tools.NodeDataImporter;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
@@ -260,6 +261,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _export_node_data_item;
     JMenuItem _import_annotations_item;
     JMenuItem _import_annotations_url_item;
+    JMenuItem _load_alignment_item;
     JMenuItem _import_gtdb_item;
     JMenuItem _reimport_annotations_item;
     // tools menu:
@@ -704,6 +706,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             exportNodeDataAsTsv();
         } else if (o == _import_annotations_item) {
             importAnnotations();
+        } else if (o == _load_alignment_item) {
+            loadAlignmentFasta();
         } else if (o == _import_gtdb_item) {
             importGtdbTaxonomy();
         } else if (o == _import_annotations_url_item) {
@@ -3745,6 +3749,86 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             sb.append(" Columns: ").append(String.join(", ", property_columns)).append(".");
         }
         return sb.toString();
+    }
+
+    /**
+     * File -> Load Alignment (FASTA): read an aligned FASTA and write each sequence onto the tip whose name matches
+     * its header, as an aligned molecular sequence -- so the alignment shows beside the tree, becomes searchable, and
+     * round-trips to phyloXML. Undoable (it edits the tree data). The alignment display is auto-enabled.
+     */
+    void loadAlignmentFasta() {
+        final Phylogeny phy = currentPhylogenyForExport();
+        if (phy == null) {
+            return;
+        }
+        final JFileChooser fc = new JFileChooser();
+        fc.setMultiSelectionEnabled(false);
+        fc.setDialogTitle("Load Sequence Alignment (aligned FASTA)");
+        fc.setFileFilter(new FileNameExtensionFilter("Aligned FASTA (*.fasta, *.fa, *.fna, *.aln, *.afa, *.fas)",
+                "fasta", "fa", "fna", "aln", "afa", "fas"));
+        if (getCurrentDir(DirectoryPreferences.Category.OPEN) != null) {
+            fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.OPEN));
+        }
+        if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        final File file = fc.getSelectedFile();
+        if (file == null) {
+            return;
+        }
+        setCurrentDir(DirectoryPreferences.Category.OPEN, fc.getCurrentDirectory());
+        final org.forester.msa.Msa msa;
+        try {
+            msa = org.forester.io.parsers.FastaParser.parseMsa(file);
+        }
+        catch (final IOException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Could not read an alignment from \"" + file.getName() + "\":\n" + e.getMessage()
+                            + "\n\n(The file must be an aligned FASTA -- all sequences the same length.)",
+                    "Alignment Load Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if ((msa == null) || (msa.getNumberOfSequences() < 1)) {
+            JOptionPane.showMessageDialog(this, "No sequences found in \"" + file.getName() + "\".",
+                    "Alignment Load Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        final AlignmentImporter.Result result = applyAlignmentAndRefit(phy, msa, file.getName());
+        if (result.getTipsAligned() == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "None of the " + msa.getNumberOfSequences() + " alignment sequences matched a tip name.",
+                    "No Tips Matched", JOptionPane.WARNING_MESSAGE);
+        }
+        else {
+            final boolean warn = (result.getUnmatchedRows() > 0) || (result.getTipsWithoutSequence() > 0);
+            JOptionPane.showMessageDialog(this, result.summary(), "Alignment Loaded",
+                    warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    /** Dialog-free core of {@link #loadAlignmentFasta}: undo snapshot + provenance + write the alignment onto the tips +
+     *  auto-enable the display + refit. Testable. Mirrors {@link #importAnnotationsAndRefit}. */
+    AlignmentImporter.Result applyAlignmentAndRefit(final Phylogeny phy, final org.forester.msa.Msa msa,
+            final String source_name) {
+        final TreePanel tp = getCurrentTreePanel();
+        final Phylogeny before = (tp != null) ? phy.copy() : null;
+        final boolean was_edited = (tp != null) && tp.isEdited();
+        final int total_tips = phy.getNumberOfExternalNodes();
+        final AlignmentImporter.Result result = AlignmentImporter.apply(phy, msa);
+        if ((result.getTipsAligned() > 0) && (tp != null)) {
+            tp.pushUndoSnapshot(before, was_edited, "Load Alignment"); // now we know it changed the tree
+            final String prov = "Loaded a sequence alignment from \"" + source_name + "\" ("
+                    + result.getAlignmentLength() + " columns) onto " + result.getTipsAligned() + " of " + total_tips
+                    + (total_tips == 1 ? " tip." : " tips.");
+            final String existing = phy.getDescription();
+            phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
+            tp.setTree(phy); // recompute the layout so the alignment track shows
+            tp.getControlPanel().rebuildSearchFields(true); // the molecular sequence becomes searchable
+            tp.getOptions().setShowMsa(true); // show the alignment at once
+            showWhole();
+            tp.setEdited(true);
+        }
+        return result;
     }
 
     /**

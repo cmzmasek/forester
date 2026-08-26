@@ -234,6 +234,38 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Click-to order: ");
+        if (org.forester.archaeopteryx.ClickToOrderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("MSA colors: ");
+        if (org.forester.archaeopteryx.MsaColorsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Alignment importer: ");
+        if (org.forester.archaeopteryx.AlignmentImporterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("MSA track render: ");
+        if (org.forester.archaeopteryx.MsaTrackRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Import annotations tool: ");
         if (org.forester.archaeopteryx.ImportAnnotationsToolTest.test()) {
             System.out.println("OK.");

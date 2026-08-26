@@ -131,6 +131,9 @@ public final class DemoTreesTest {
         ok &= hasBranchLengths( "domain-architectures.xml" );
         ok &= hasDomainArchitectures( "domain-architectures.xml", 6 );
 
+        // sequence alignment: tips carry equal-length aligned molecular sequences (the alignment shown beside the tree)
+        ok &= alignmentDemoOk( "alignment.xml" );
+
         // bat phylogeny: a large taxonomy tree (common + scientific names + synonyms at the tips, ranks on the clades)
         ok &= batTreeOk( "bat-phylogeny.xml" );
 
@@ -467,6 +470,37 @@ public final class DemoTreesTest {
         }
         if ( styled < min ) {
             return note( file_name + " must have at least " + min + " tips with a visual style; found " + styled );
+        }
+        return true;
+    }
+
+    /** The alignment demo: enough tips, they carry aligned molecular sequences, and all aligned rows are the same
+     *  length (a real alignment) with a reasonable number of columns. */
+    private static boolean alignmentDemoOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() < 6 ) {
+            return note( file_name + " must have at least 6 tips" );
+        }
+        if ( !AptxUtil.hasAlignedSequences( phy ) ) {
+            return note( file_name + " must carry aligned molecular sequences (the alignment)" );
+        }
+        int len = -1;
+        for ( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( ext.getNodeData().isHasSequence() && ext.getNodeData().getSequence().isMolecularSequenceAligned() ) {
+                final String mol = ext.getNodeData().getSequence().getMolecularSequence();
+                if ( len < 0 ) {
+                    len = mol.length();
+                }
+                else if ( mol.length() != len ) {
+                    return note( file_name + " aligned rows must all be the same length (it is an alignment)" );
+                }
+            }
+        }
+        if ( len < 10 ) {
+            return note( file_name + " alignment must have at least 10 columns" );
         }
         return true;
     }

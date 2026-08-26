@@ -812,13 +812,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         selected_index = clickToSelectedIndex(selected_index, _node_style_item, default_option, ClickToOption.NODE_STYLE);
         _color_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.COLOR_SUBTREE);
         selected_index = clickToSelectedIndex(selected_index, _color_subtree_cb_item, default_option, ClickToOption.COLOR_SUBTREE);
-        if (editable) {
-            _edit_node_data_item = addClickToOption(cb_index++, ClickToOption.EDIT_NODE_DATA);
-            selected_index = clickToSelectedIndex(selected_index, _edit_node_data_item, default_option, ClickToOption.EDIT_NODE_DATA);
-        }
         _reroot_cb_item = addClickToOption(cb_index++, ClickToOption.REROOT);
         selected_index = clickToSelectedIndex(selected_index, _reroot_cb_item, default_option, ClickToOption.REROOT);
         if (editable) {
+            _edit_node_data_item = addClickToOption(cb_index++, ClickToOption.EDIT_NODE_DATA);
+            selected_index = clickToSelectedIndex(selected_index, _edit_node_data_item, default_option, ClickToOption.EDIT_NODE_DATA);
             _delete_node_or_subtree_item = addClickToOption(cb_index++, ClickToOption.DELETE_SUBTREE_OR_NODE);
             selected_index = clickToSelectedIndex(selected_index, _delete_node_or_subtree_item, default_option, ClickToOption.DELETE_SUBTREE_OR_NODE);
             _add_new_node_item = addClickToOption(cb_index++, ClickToOption.ADD_NEW_NODE);

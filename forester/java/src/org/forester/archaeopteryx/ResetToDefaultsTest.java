@@ -113,6 +113,8 @@ public final class ResetToDefaultsTest {
         o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE ); // default is BAR
         o.setDomainLabelMode( Options.DOMAIN_LABEL_MODE.LEGEND ); // default is ON_DOMAINS
         o.setShowDomainGlow( true ); // default is false
+        o.setShowMsa( true ); // default is false
+        o.setMsaColumnWidth( AptxConstants.MSA_COLUMN_WIDTH_MAX ); // default is MSA_COLUMN_WIDTH_DEFAULT
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
         o.setMatchWholeTermsOnly( true );
@@ -177,6 +179,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "nodeAgeShape", o.getNodeAgeShape(), def.getNodeAgeShape() );
         ok &= eq( "domainLabelMode", o.getDomainLabelMode(), def.getDomainLabelMode() );
         ok &= eq( "showDomainGlow", o.isShowDomainGlow(), def.isShowDomainGlow() );
+        ok &= eq( "showMsa", o.isShowMsa(), def.isShowMsa() );
+        ok &= eq( "msaColumnWidth", o.getMsaColumnWidth(), def.getMsaColumnWidth() );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );
         ok &= eq( "searchWholeWords", o.isMatchWholeTermsOnly(), def.isMatchWholeTermsOnly() );
         ok &= eq( "searchRegex", o.isSearchWithRegex(), def.isSearchWithRegex() );

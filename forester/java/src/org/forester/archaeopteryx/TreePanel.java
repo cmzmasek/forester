@@ -158,6 +158,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // (known without waiting for the async image load); an image is scaled to fit the slot, aspect preserved.
     private final static float TIP_IMAGE_MAX_ASPECT      = 1.8f;
     private final static int   TIP_IMAGE_GAP             = 3;
+    private final static int   MSA_TRACK_GAP             = 8;                                  // gap before the MSA track
+    private final static float MSA_LETTER_MIN_WIDTH      = 7f;                                 // draw residue letters at/above this cell width
+    private final static double MSA_MAX_VIEWPORT_FRACTION = 0.6;                               // the MSA window takes at most this share of the viewport (the tree keeps the rest)
+    private final static int   MSA_MIN_BAND_PX           = 120;                                // but never narrower than this
+    private final static int   MSA_RULER_TICK_LEN        = 4;                                  // column-position ruler tick length
     // The domain-architecture box height tracks the tip-row spacing (getYdistance()), CLAMPED to [MIN, MAX]: it grows
     // as the tree is expanded vertically (responds to Y+/Y-) instead of staying at a fixed size; MIN keeps a very
     // zoomed-out tree's boxes visible, MAX keeps a very zoomed-in tree's boxes as bars, not tall blocks (and << the
@@ -459,6 +464,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _subtree_index = 0;
     private File _treefile = null;
     private TipImageCache _tip_image_cache = null; // lazily created; loads/caches the tip images (local + URL)
+    private int _msa_col_offset = 0;               // first alignment column shown in the MSA track's window
+    private javax.swing.JScrollBar _msa_scrollbar = null; // this tab's dedicated horizontal scroller for the MSA window
     private float _urt_factor = 1;
     private float _urt_factor_ov = 1;
     // the radial (circular/unrooted) layout is drawn in a SQUARE canvas of this side (px); it is the single knob for
@@ -6789,7 +6796,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // vertical orientation (verticalScaleAxisReserve), a bottom band in a horizontal one (scaleAxisBottomReserve)
             // -- the two are mutually exclusive by orientation, and both are 0 when the axis is off. Reserving it here
             // (and in treeBreadthExtent) is what keeps the axis from overlapping the bottommost tip on a dense fit.
-            final int axis_reserve = verticalScaleAxisReserve() + scaleAxisBottomReserve();
+            final int axis_reserve = verticalScaleAxisReserve() + scaleAxisBottomReserve() + msaRulerReserve();
             float ydist = (float) ((y - TreePanel.MOVE - (2 * verticalBreadthPad()) - top_reserve - breadth_label
                     - axis_reserve) / (ext_nodes * 2.0));
             if (xdist < 0.0) {
@@ -6853,6 +6860,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             //
         }
         invalidateOrientationTransform(); // the layout params (ydistance/xcorrection/...) just changed -> R is stale
+        updateMsaScrollBar(); // the MSA window / scrollability may have changed with the new layout (or orientation)
     }
 
     final void calculateLongestExtNodeInfo() {
@@ -11007,9 +11015,360 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (annotationColumnsStartX() - ANN_COL_GAP) + annotationColumnsWidth();
     }
 
-    /** The x where clade bands/bars start: past the tip labels and any tip-aligned annotation columns. */
+    /** The x where clade bands/bars start: past the tip labels, any tip-aligned annotation columns, and the MSA track. */
     private float cladeBandRightEdge() {
-        return labelsRightEdge() + annotationColumnsWidth() + CLADE_BAND_RIGHT_PAD;
+        return labelsRightEdge() + annotationColumnsWidth() + msaTrackWidth() + CLADE_BAND_RIGHT_PAD;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------------
+    // Sequence-alignment (MSA) track -- colored residue cells beside the tips, rectangular root-left only.
+    // ------------------------------------------------------------------------------------------------------------------
+
+    /** Whether the alignment track is drawn now: option on, a root-left rectangular layout, and the tree carries an
+     *  aligned sequence (so vertical/circular reserve nothing and draw nothing -- the approved per-item exception). */
+    private boolean msaShown() {
+        return getOptions().isShowMsa() && !isVerticalOrientation() && !isRadialLayout() && (alignmentLength() > 0);
+    }
+
+    /** The number of alignment columns = the longest aligned tip sequence (uncached; O(tips), called a few times per
+     *  layout/paint). Tips with a shorter/absent sequence simply run out of cells. */
+    private int alignmentLength() {
+        int max = 0;
+        if ((_phylogeny == null) || _phylogeny.isEmpty()) {
+            return 0;
+        }
+        for (final PhylogenyNode ext : _phylogeny.getExternalNodes()) {
+            if (ext.getNodeData().isHasSequence()) {
+                final Sequence s = ext.getNodeData().getSequence();
+                if (s.isMolecularSequenceAligned()) {
+                    final String mol = s.getMolecularSequence();
+                    if ((mol != null) && (mol.length() > max)) {
+                        max = mol.length();
+                    }
+                }
+            }
+        }
+        return max;
+    }
+
+    /** The MSA window's total pixel width RESERVED to the right of the annotation columns (0 when not shown). The
+     *  window is bounded to a share of the viewport so a LONG alignment never drags the tree off-screen -- a short
+     *  alignment shows in full, a longer one shows a scrollable window (its own {@link #_msa_scrollbar}). */
+    private int msaTrackWidth() {
+        if (!msaShown()) {
+            return 0;
+        }
+        final int full_px = Math.round(alignmentLength() * getOptions().getMsaColumnWidth());
+        return MSA_TRACK_GAP + Math.min(full_px, msaBandBudgetPx());
+    }
+
+    /** The maximum pixel width the MSA window may occupy: a share of the scroll-pane viewport (the tree keeps the rest).
+     *  Viewport-derived, so it is stable across a layout pass -- independent of the tree's own depth reservation. */
+    private int msaBandBudgetPx() {
+        int viewport_w = 0;
+        if ((getMainPanel() != null) && (getMainPanel().getSizeOfViewport() != null)) {
+            viewport_w = getMainPanel().getSizeOfViewport().width;
+        }
+        if (viewport_w <= 0) {
+            viewport_w = (getWidth() > 0) ? getWidth() : 800; // fallback before the viewport is realized
+        }
+        return Math.max(MSA_MIN_BAND_PX, (int) Math.round(viewport_w * MSA_MAX_VIEWPORT_FRACTION));
+    }
+
+    /** How many alignment columns fit in the drawn window (the reserved band minus the leading gap). */
+    private int msaVisibleColumns() {
+        if (!msaShown()) {
+            return 0;
+        }
+        final float cw = getOptions().getMsaColumnWidth();
+        if (cw <= 0) {
+            return alignmentLength();
+        }
+        return Math.max(1, Math.min(alignmentLength(), (int) Math.floor((msaTrackWidth() - MSA_TRACK_GAP) / cw)));
+    }
+
+    /** True when the alignment is wider than its window, so the dedicated MSA scroller is needed. */
+    private boolean isMsaScrollable() {
+        return msaShown() && (alignmentLength() > msaVisibleColumns());
+    }
+
+    /** Height (px) of the column-position ruler band (a line + ticks + one label row), reserved just below the tips. */
+    private int msaRulerBandHeight() {
+        return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + MSA_RULER_TICK_LEN + 4;
+    }
+
+    /** Breadth (px) reserved at the bottom for the MSA column ruler, so it sits clear just below the last tip (added to
+     *  the breadth budget + extent alongside {@link #scaleAxisBottomReserve()}). 0 unless the alignment is shown. */
+    private int msaRulerReserve() {
+        return msaShown() ? msaRulerBandHeight() : 0;
+    }
+
+    /** A "nice" tick step (1/2/5 x 10^k) for a column ruler spanning {@code span} columns (~5-8 ticks). */
+    private static int niceColumnStep(final int span) {
+        final double raw = Math.max(1, span) / 6.0;
+        if (raw <= 1) {
+            return 1;
+        }
+        final double mag = Math.pow(10, Math.floor(Math.log10(raw)));
+        final double norm = raw / mag;
+        final double nice = (norm <= 1) ? 1 : (norm <= 2) ? 2 : (norm <= 5) ? 5 : 10;
+        return Math.max(1, (int) Math.round(nice * mag));
+    }
+
+    /** The first alignment column shown in the window, clamped so the window never runs past the last column. */
+    private int msaColumnOffset() {
+        final int max_off = Math.max(0, alignmentLength() - msaVisibleColumns());
+        if (_msa_col_offset > max_off) {
+            _msa_col_offset = max_off;
+        }
+        if (_msa_col_offset < 0) {
+            _msa_col_offset = 0;
+        }
+        return _msa_col_offset;
+    }
+
+    /** Package hook for the scroller listener (and tests): set the first shown column. */
+    void setMsaColumnOffset(final int offset) {
+        _msa_col_offset = offset;
+    }
+
+    int getMsaColumnOffset() {
+        return msaColumnOffset();
+    }
+
+    boolean isMsaScrollableForTest() {
+        return isMsaScrollable();
+    }
+
+    int getMsaVisibleColumnsForTest() {
+        return msaVisibleColumns();
+    }
+
+    /** Whether the real START-of-alignment boundary line is drawn now (column 0 is in the window). */
+    boolean msaStartBoundaryVisibleForTest() {
+        return msaShown() && (msaColumnOffset() <= 0);
+    }
+
+    /** Whether the real END-of-alignment boundary line is drawn now (the last column is in the window). */
+    boolean msaEndBoundaryVisibleForTest() {
+        return msaShown() && ((msaColumnOffset() + msaVisibleColumns()) >= alignmentLength());
+    }
+
+    int msaRulerReserveForTest() {
+        return msaRulerReserve();
+    }
+
+    static int niceColumnStepForTest(final int span) {
+        return niceColumnStep(span);
+    }
+
+    /** Wires this tab's dedicated horizontal MSA scroller (created by MainPanel, shown under the tree canvas). */
+    void setMsaScrollBar(final javax.swing.JScrollBar bar) {
+        _msa_scrollbar = bar;
+    }
+
+    /** Syncs the MSA scroller to the current window (value = first column, extent = visible columns, max = total
+     *  columns) and shows it only when the alignment is scrollable. A {@code setValues} with an unchanged value fires
+     *  no adjustment event, so this can run from either the layout or the paint without a feedback loop. */
+    void updateMsaScrollBar() {
+        if (_msa_scrollbar == null) {
+            return;
+        }
+        if (isMsaScrollable()) {
+            final int total = alignmentLength();
+            final int extent = msaVisibleColumns();
+            final int value = msaColumnOffset();
+            if ((_msa_scrollbar.getValue() != value) || (_msa_scrollbar.getVisibleAmount() != extent)
+                    || (_msa_scrollbar.getMaximum() != total)) {
+                _msa_scrollbar.setValues(value, extent, 0, total);
+                _msa_scrollbar.setUnitIncrement(1);
+                _msa_scrollbar.setBlockIncrement(Math.max(1, extent - 1));
+            }
+            if (!_msa_scrollbar.isVisible()) {
+                _msa_scrollbar.setVisible(true);
+            }
+        }
+        else if (_msa_scrollbar.isVisible()) {
+            _msa_scrollbar.setVisible(false);
+        }
+    }
+
+    /** True iff the alignment reads as nucleotide (samples the first aligned tip); drives the residue color scheme. */
+    private boolean msaIsNucleotide() {
+        for (final PhylogenyNode ext : _phylogeny.getExternalNodes()) {
+            if (ext.getNodeData().isHasSequence()) {
+                final Sequence s = ext.getNodeData().getSequence();
+                if (s.isMolecularSequenceAligned() && !ForesterUtil.isEmpty(s.getMolecularSequence())) {
+                    return MsaColors.isNucleotide(s.getMolecularSequence());
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Draws the alignment as colored residue cells, one row per visible tip, starting just right of the annotation
+     * columns. Rectangular root-left only (dispatched in the {@code !vertical} block and gated by {@link #msaShown()}).
+     * Only the columns within the current clip are drawn, so a very wide alignment stays cheap. Residue letters are
+     * overlaid once the column is wide enough to read. Rides every export path via {@code paintPhylogeny} (WYSIWYG).
+     */
+    private void paintMsaTrack(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                               final int graphics_file_y, final int graphics_file_height) {
+        updateMsaScrollBar(); // keep the dedicated scroller in sync (also hides it when off / short)
+        if (!msaShown()) {
+            return;
+        }
+        final int total = alignmentLength();
+        final int offset = msaColumnOffset();   // the first column shown in the window
+        final int visible = msaVisibleColumns(); // columns the window can show
+        final float cw = getOptions().getMsaColumnWidth();
+        final float origin_x = annotationColumnsEndX() + MSA_TRACK_GAP;
+        // draw only window positions [first_i, last_i] (0-based within the window), clipped to the graphics clip too
+        int first_i = 0;
+        int last_i = visible - 1;
+        final Rectangle clip = g.getClipBounds();
+        if ((clip != null) && (cw > 0)) {
+            first_i = Math.max(0, (int) Math.floor((clip.x - origin_x) / cw));
+            last_i = Math.min(visible - 1, (int) Math.ceil(((clip.x + clip.width) - origin_x) / cw));
+        }
+        if (first_i > last_i) {
+            return;
+        }
+        final boolean nucleotide = msaIsNucleotide();
+        final float row_h = 2f * getYdistance();
+        final boolean draw_letters = cw >= MSA_LETTER_MIN_WIDTH;
+        Font letter_font = null;
+        FontMetrics fm = null;
+        if (draw_letters) {
+            final int size = Math.max(6, Math.min(13, Math.round(Math.min(cw, row_h) * 0.8f)));
+            letter_font = new Font(Font.MONOSPACED, Font.PLAIN, size);
+            fm = getFontMetrics(letter_font);
+        }
+        final Color saved_color = g.getColor();
+        final Font saved_font = g.getFont();
+        final Stroke saved_stroke = g.getStroke();
+        // A gap is drawn as a faint horizontal line (not blank) so the alignment's extent -- where each row's aligned
+        // sequence begins/ends -- is visible; consecutive gaps join into a continuous dash.
+        final Color fg = getTreeColorSet().getSequenceColor();
+        final Color gap_line_color = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 38);
+        final Color boundary_color = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 165);
+        g.setStroke(STROKE_1);
+        int y_top = Integer.MAX_VALUE; // vertical span of the aligned rows (for the start/end boundary lines)
+        int y_bottom = Integer.MIN_VALUE;
+        for (final PhylogenyNode tip : visibleExternalTips()) {
+            if (!tip.getNodeData().isHasSequence()) {
+                continue;
+            }
+            final Sequence s = tip.getNodeData().getSequence();
+            if (!s.isMolecularSequenceAligned()) {
+                continue;
+            }
+            final String mol = s.getMolecularSequence();
+            if (ForesterUtil.isEmpty(mol)) {
+                continue;
+            }
+            final float pad = getYdistance();
+            final int cy = Math.round(tip.getYcoord() - pad);
+            final int cell_h = Math.max(1, Math.round(tip.getYcoord() + pad) - cy);
+            y_top = Math.min(y_top, cy);
+            y_bottom = Math.max(y_bottom, cy + cell_h);
+            for (int i = first_i; i <= last_i; ++i) {
+                final int c = offset + i; // the actual alignment column at window position i
+                if ((c >= total) || (c >= mol.length())) {
+                    break; // ran out of columns / this tip's sequence
+                }
+                final char res = mol.charAt(c);
+                final int cx = Math.round(origin_x + (i * cw)); // window position i, so the window stays put
+                final int cell_w = Math.max(1, Math.round(origin_x + ((i + 1) * cw)) - cx);
+                final Color col = MsaColors.colorFor(res, nucleotide);
+                if (col == null) {
+                    final int mid = cy + (cell_h / 2); // a gap -> faint horizontal line spanning the cell
+                    g.setColor(gap_line_color);
+                    g.drawLine(cx, mid, cx + cell_w, mid);
+                    continue;
+                }
+                g.setColor(col);
+                g.fillRect(cx, cy, cell_w, cell_h);
+                if (draw_letters && (cell_h >= (fm.getAscent() + fm.getDescent()))) {
+                    final String ch = String.valueOf(Character.toUpperCase(res));
+                    final int lw = fm.stringWidth(ch);
+                    g.setFont(letter_font);
+                    g.setColor(MsaColors.letterColor(col));
+                    g.drawString(ch, cx + ((cell_w - lw) / 2), cy + (((cell_h + fm.getAscent()) - fm.getDescent()) / 2));
+                }
+            }
+        }
+        // Boundary lines at the REAL start/end of the alignment -- drawn only when that edge is actually in the window
+        // (offset 0 shows the start; the window reaching the last column shows the end), so the user can tell a true
+        // edge from a scroll cutoff. A middle-scrolled window shows neither.
+        if (y_bottom > y_top) {
+            g.setColor(boundary_color);
+            if (offset <= 0) {
+                final int sx = Math.round(origin_x);
+                g.drawLine(sx, y_top, sx, y_bottom);
+            }
+            if ((offset + visible) >= total) {
+                final int ex = Math.round(origin_x + ((total - offset) * cw));
+                g.drawLine(ex, y_top, ex, y_bottom);
+            }
+        }
+        paintMsaRuler(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height, origin_x, cw, offset, visible,
+                total);
+        g.setColor(saved_color);
+        g.setFont(saved_font);
+        g.setStroke(saved_stroke);
+    }
+
+    /**
+     * A column-position ruler in the reserved band just below the alignment: a baseline spanning the visible window with
+     * ticks + 1-based column numbers at "nice" intervals, plus the first (1) and last (total) columns whenever they are
+     * in view -- so the user can read WHICH columns the scrolled window is showing. Floats at the viewport bottom on
+     * screen (always visible, like the distance scale axis), anchored to the tree/export bottom in an export (WYSIWYG),
+     * and sits above the distance-scale band if that is also shown.
+     */
+    private void paintMsaRuler(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
+                               final int graphics_file_y, final int graphics_file_height, final float origin_x,
+                               final float cw, final int offset, final int visible, final int total) {
+        final Rectangle vr = getVisibleRect();
+        final int canvas_bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
+                graphics_file_height, getHeight(), vr.y + vr.height);
+        final int ruler_y = (canvas_bottom - scaleAxisBottomReserve() - msaRulerBandHeight()) + 2;
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics rfm = g.getFontMetrics();
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_1);
+        final int shown = Math.min(visible, total - offset); // columns actually in the window
+        final int base_x0 = Math.round(origin_x);
+        final int base_x1 = Math.round(origin_x + (shown * cw));
+        drawLine(base_x0, ruler_y, base_x1, ruler_y, g); // the ruler baseline, spanning the visible columns
+        final int label_baseline = ruler_y + MSA_RULER_TICK_LEN + rfm.getAscent() + 1;
+        final int step = niceColumnStep(shown);
+        final int first_1b = offset + 1;
+        final int last_1b = offset + shown;
+        final java.util.TreeSet<Integer> marks = new java.util.TreeSet<Integer>();
+        if (offset <= 0) {
+            marks.add(1); // the true start
+        }
+        if ((offset + visible) >= total) {
+            marks.add(total); // the true end
+        }
+        for (int p = ((first_1b + step - 1) / step) * step; p <= last_1b; p += step) {
+            if (p >= 1) {
+                marks.add(p);
+            }
+        }
+        int last_label_right = Integer.MIN_VALUE; // decimate labels (keep all ticks) so numbers never overlap
+        for (final int p : marks) {
+            final int i = (p - 1) - offset; // window position of the 1-based column p
+            final int cx = Math.round(origin_x + (i * cw) + (cw / 2f)); // the column centre
+            drawLine(cx, ruler_y, cx, ruler_y + MSA_RULER_TICK_LEN, g);
+            final String label = Integer.toString(p);
+            final int half = rfm.stringWidth(label) / 2;
+            if ((cx - half) >= (last_label_right + 4)) {
+                g.drawString(label, cx - half, label_baseline);
+                last_label_right = cx + half;
+            }
+        }
     }
 
     /**
@@ -11019,7 +11378,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * label whose horizontal extent is the font height). 0 when neither columns nor bands are shown.
      */
     private int rightMarginExtraWidth() {
-        int extra = annotationColumnsWidth();
+        int extra = annotationColumnsWidth() + msaTrackWidth();
         if (hasCladeBands()) {
             if (_clade_bands_mode == CLADE_VIS.BOXES) {
                 extra += CLADE_BAND_RIGHT_PAD;
@@ -12401,6 +12760,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
                 paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD stratigraphic-range bars on fossil tips
                 paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
+                paintMsaTrack(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height); // MSA cells + ruler
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
                 paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies, on top -- coords set above
                 paintTipImages(g); // tip images at the branch end (the label was shifted right to make room)
@@ -12892,6 +13252,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int treeBreadthExtent() {
         return TreePanel.MOVE + (2 * verticalBreadthPad()) + annotationHeaderTopReserve() + verticalScaleAxisReserve()
                 + scaleAxisBottomReserve() // horizontal-orientation bottom axis band (0 in vertical; mutually exclusive)
+                + msaRulerReserve() // the MSA column ruler's bottom band (root-left only; 0 otherwise)
                 + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
     }
 

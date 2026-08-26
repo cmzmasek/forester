@@ -108,6 +108,12 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] fossil range bars (FAD/LAD) reference/citation is missing" );
             ok = false;
         }
+        // the sequence-alignment display must be described, with the Jalview (Waterhouse et al. 2009) colouring citation
+        if ( !text.contains( "Sequence-alignment display" ) || !text.contains( "Zappo" )
+                || !text.contains( "Jalview Version 2" ) || !text.contains( "Bioinformatics 25(9):1189" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] sequence-alignment display reference/citation is missing" );
+            ok = false;
+        }
         // the node-age bars/spindles must be described (incl. the honest "schematic, not raw posterior" caveat) + BEAST
         if ( !text.contains( "Node age bars / spindles" ) || !text.contains( "Highest Posterior Density" )
                 || !text.contains( "SCHEMATIC" ) || !text.contains( "BEAST 1.10" ) ) {

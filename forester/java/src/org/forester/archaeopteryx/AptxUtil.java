@@ -332,6 +332,23 @@ public final class AptxUtil {
         return false;
     }
 
+    /** Whether at least one EXTERNAL tip carries an ALIGNED, non-empty molecular sequence -- i.e. the tree holds an
+     *  alignment to show beside it (from a loaded FASTA written onto the tips, or embedded phyloXML {@code <mol_seq>}). */
+    final static public boolean hasAlignedSequences(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty()) {
+            return false;
+        }
+        for (final PhylogenyNode ext : phy.getExternalNodes()) {
+            if (ext.getNodeData().isHasSequence()) {
+                final org.forester.phylogeny.data.Sequence seq = ext.getNodeData().getSequence();
+                if (seq.isMolecularSequenceAligned() && !ForesterUtil.isEmpty(seq.getMolecularSequence())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Assign an aesthetically distinct colour to every protein-domain NAME present in {@code phy} -- the modern
      * palette the flat domain renderer uses, replacing the old name-hash colours ({@link #calculateColorFromString}).
@@ -1448,6 +1465,11 @@ public final class AptxUtil {
             // on a tree without images, so a user who enabled it keeps it).
             if (TipImages.hasTipImages(t)) {
                 cp.getMainPanel().getOptions().setShowTipImages(true);
+            }
+            // A tree whose tips carry an aligned molecular sequence (loaded FASTA / phyloXML <mol_seq>) -- show the
+            // alignment beside the tree right away (data-driven, ON-only).
+            if (hasAlignedSequences(t)) {
+                cp.getMainPanel().getOptions().setShowMsa(true);
             }
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);

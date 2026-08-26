@@ -270,6 +270,22 @@ final class SettingsDialog extends JDialog {
             _mf.getOptions().setTipImageSize( v );
             _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
         } ) ) );
+        // Sequence alignment: colored residue cells beside the tips (rectangular root-left only). Options-direct;
+        // auto-enabled when the tree carries an aligned molecular sequence (loaded FASTA / phyloXML <mol_seq>).
+        final JCheckBox show_msa = new JCheckBox( "Sequence Alignment", _mf.getOptions().isShowMsa() );
+        show_msa.setToolTipText( "Show a multiple sequence alignment next to the tree (rectangular root-left). "
+                + "Load it with File → Load Alignment (FASTA)." );
+        show_msa.addActionListener( e -> {
+            _mf.getOptions().setShowMsa( show_msa.isSelected() );
+            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+        } );
+        add( c, show_msa );
+        add( c, labeled( "Alignment column width:",
+                intSpinner( _mf.getOptions().getMsaColumnWidth(), AptxConstants.MSA_COLUMN_WIDTH_MIN,
+                        AptxConstants.MSA_COLUMN_WIDTH_MAX, 1, v -> {
+                            _mf.getOptions().setMsaColumnWidth( v );
+                            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+                        } ) ) );
         // The Time Axis is PER-TREE (per-tab): a SARS-CoV-2 (calendar) tab and a Dinosaur (geologic) tab show
         // different axes at once. These controls act on the CURRENT tab and are seeded from it at open (like the
         // Tree style / palette combos above -- so they reflect the tab that was current when the dialog opened).
