@@ -99,7 +99,7 @@ final class GuiPreferences {
                       Options::setAbbreviateScientificTaxonNames ),
             boolPref( "use_italic_scientific_names", Options::isUseItalicScientificNames,
                       Options::setUseItalicScientificNames ),
-            boolPref( "antialias_print", Options::isAntialiasPrint, Options::setAntialiasPrint ),
+            boolPref( "antialias_print", Options::isAntialiasExport, Options::setAntialiasExport ),
             boolPref( "graphics_export_white_background", Options::isGraphicsExportWhiteBackground,
                       Options::setGraphicsExportWhiteBackground ),
             enumPref( "default_node_shape", Options::getDefaultNodeShape, Options::setDefaultNodeShape,
@@ -167,7 +167,19 @@ final class GuiPreferences {
             boolPref( "transparent_export_background", Options::isTransparentExportBackground,
                       Options::setTransparentExportBackground ),
             boolPref( "graphics_export_visible_only", Options::isGraphicsExportVisibleOnly,
-                      Options::setGraphicsExportVisibleOnly ) );
+                      Options::setGraphicsExportVisibleOnly ),
+            // "Export at a fixed size": the toggle + unit + width/height + DPI (see ExportSizeSpec), so a preferred
+            // figure size survives restarts. Dimensions use one generous unit-agnostic clamp so switching units on
+            // load never truncates (a 170 mm value and a 2000 px value both fit); DPI is clamped to its spinner range.
+            boolPref( "export_use_fixed_size", Options::isExportUseFixedSize, Options::setExportUseFixedSize ),
+            enumPref( "export_size_unit", Options::getExportSizeUnit, Options::setExportSizeUnit,
+                      ExportSizeSpec.Unit::valueOf ),
+            doublePref( "export_width", Options::getExportWidth, Options::setExportWidth,
+                        AptxConstants.EXPORT_SIZE_DIM_MIN, AptxConstants.EXPORT_SIZE_DIM_MAX ),
+            doublePref( "export_height", Options::getExportHeight, Options::setExportHeight,
+                        AptxConstants.EXPORT_SIZE_DIM_MIN, AptxConstants.EXPORT_SIZE_DIM_MAX ),
+            intPref( "export_dpi", Options::getExportDpi, Options::setExportDpi,
+                     AptxConstants.EXPORT_SIZE_DPI_MIN, AptxConstants.EXPORT_SIZE_DPI_MAX ) );
 
     /** A boolean setting, stored as {@code "true"}/{@code "false"}. Trimmed so a hand-edited {@code "true "} still
      *  parses (Properties keeps trailing whitespace). */

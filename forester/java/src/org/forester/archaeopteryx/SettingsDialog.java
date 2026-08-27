@@ -80,6 +80,7 @@ final class SettingsDialog extends JDialog {
     // left-open modeless dialog re-seeds them via these reseeders, under a guard that suppresses their own listeners
     private final java.util.List<Runnable> _tab_reseeders = new java.util.ArrayList<>();
     private boolean           _refreshing = false;
+    private boolean           _export_size_adjusting = false; // guards the programmatic W/H update on a unit switch
     private JComboBox<String> _axis_combo; // the per-tab Time-Axis combo ("Auto" + Off/Geologic/Calendar; test hook)
 
     SettingsDialog( final MainFrame mf ) {
@@ -91,7 +92,7 @@ final class SettingsDialog extends JDialog {
         tabs.addTab( "Labels & Colors", scroll( labelsColorsTab() ) );
         tabs.addTab( "Overlays", scroll( overlaysTab() ) );
         tabs.addTab( "Fonts, Nodes and Branches", scroll( nodesTab() ) );
-        tabs.addTab( "Export & Print", scroll( exportTab() ) );
+        tabs.addTab( "Graphics Export", scroll( exportTab() ) );
         tabs.addTab( "File Reading", scroll( readTab() ) );
         tabs.addTab( "File Saving", scroll( saveTab() ) );
         _cache_tab_index = tabs.getTabCount();
@@ -379,23 +380,137 @@ final class SettingsDialog extends JDialog {
 
     private JPanel exportTab() {
         final JPanel c = column();
-        c.add( header( "Graphics Export & Printing" ) );
+        c.add( header( "Graphics Export" ) );
         final JSpinner raster_scale = intSpinner( _mf.getOptions().getRasterExportScale(), 1, 8, 1,
                                                   v -> _mf.getOptions().setRasterExportScale( v ) );
         raster_scale.setToolTipText( "<html>Resolution multiplier for raster (PNG/JPG/TIFF) export: the figure is "
-                + "re-rendered onto an N&times;-larger canvas for crisp, print-quality output<br>"
+                + "re-rendered onto an N&times;-larger canvas for crisp, publication-quality output<br>"
                 + "(a true re-render, not pixel doubling). 1 = on-screen size. Higher = larger files/memory; "
                 + "very large figures are capped automatically.<br>Does not affect vector (SVG/EPS/PDF) export.</html>" );
         add( c, labeled( "Raster export scale (×):", raster_scale ) );
         add( c, cb( _mf._transparent_export_background_cbmi ) );
         add( c, cb( _mf._graphics_export_white_background_cbmi ) );
         add( c, cb( _mf._outline_fonts_in_vector_export_cbmi ) );
-        add( c, cb( _mf._antialias_print_cbmi ) );
-        add( c, cb( _mf._print_black_and_white_cbmi ) );
+        add( c, cb( _mf._antialias_export_cbmi ) );
+        add( c, cb( _mf._export_black_and_white_cbmi ) );
         add( c, cb( _mf._graphics_export_visible_only_cbmi ) );
-        add( c, labeled( "PDF line width:", doubleSpinner( _mf.getOptions().getPrintLineWidth(), 0.5, 20, 0.5,
-                                                           v -> _mf.getOptions().setPrintLineWidth( v.floatValue() ) ) ) );
+        add( c, labeled( "PDF line width:", doubleSpinner( _mf.getOptions().getPdfLineWidth(), 0.5, 20, 0.5,
+                                                           v -> _mf.getOptions().setPdfLineWidth( v.floatValue() ) ) ) );
+        addFixedExportSizeSection( c );
         return c;
+    }
+
+    /**
+     * "Fixed Export Size": a checkbox that makes every graphics export render at EXACTLY the size below (see
+     * {@link ExportSizeSpec}), plus a unit combo, width/height/DPI spinners, journal-column presets and a live
+     * "Output:" summary. All Options-direct (no menu item). Switching units converts the numeric width/height so
+     * the physical size is preserved; a live summary shows exactly what the file will be.
+     */
+    private void addFixedExportSizeSection( final JPanel c ) {
+        c.add( header( "Fixed Export Size" ) );
+        final Options o = _mf.getOptions();
+        final JLabel summary = new JLabel();
+        final Runnable refresh = () -> summary.setText(
+                "<html><div style='width:520px'>Output: " + o.exportSizeSpec().summary() + "</div></html>" );
+        // Seed clamped into [MIN,MAX]: a unit conversion (below) can push the stored value out of range, and a
+        // SpinnerNumberModel THROWS (not clamps) on an out-of-range seed -- which would break reopening the dialog.
+        final JSpinner width = doubleSpinner( clampExportDim( o.getExportWidth() ), AptxConstants.EXPORT_SIZE_DIM_MIN,
+                                              AptxConstants.EXPORT_SIZE_DIM_MAX, 1.0, v -> {
+                                                  if ( _export_size_adjusting ) {
+                                                      return; // a programmatic unit conversion -- Options already set
+                                                  }
+                                                  o.setExportWidth( v );
+                                                  refresh.run();
+                                              } );
+        final JSpinner height = doubleSpinner( clampExportDim( o.getExportHeight() ), AptxConstants.EXPORT_SIZE_DIM_MIN,
+                                               AptxConstants.EXPORT_SIZE_DIM_MAX, 1.0, v -> {
+                                                   if ( _export_size_adjusting ) {
+                                                       return;
+                                                   }
+                                                   o.setExportHeight( v );
+                                                   refresh.run();
+                                               } );
+        final JSpinner dpi = intSpinner( o.getExportDpi(), AptxConstants.EXPORT_SIZE_DPI_MIN,
+                                         AptxConstants.EXPORT_SIZE_DPI_MAX, 10, v -> {
+                                             o.setExportDpi( v );
+                                             refresh.run();
+                                         } );
+        final JComboBox<ExportSizeSpec.Unit> unit = enumCombo( ExportSizeSpec.Unit.values(), o.getExportSizeUnit(),
+                new_unit -> {
+                    final ExportSizeSpec.Unit old_unit = o.getExportSizeUnit();
+                    if ( new_unit != old_unit ) {
+                        // preserve the physical size across the unit switch: convert the numeric width/height
+                        final ExportSizeSpec cur = new ExportSizeSpec( old_unit, o.getExportWidth(),
+                                                                       o.getExportHeight(), o.getExportDpi() );
+                        // clamp into the spinner range so a conversion to a higher-multiplier unit (e.g. in->px at a
+                        // high DPI) can't store an out-of-range value that would later throw when the dialog reopens
+                        final double nw = clampExportDim( ExportSizeSpec.fromInches( cur.widthInches(), new_unit,
+                                                                                     o.getExportDpi() ) );
+                        final double nh = clampExportDim( ExportSizeSpec.fromInches( cur.heightInches(), new_unit,
+                                                                                     o.getExportDpi() ) );
+                        o.setExportSizeUnit( new_unit );
+                        o.setExportWidth( nw );
+                        o.setExportHeight( nh );
+                        _export_size_adjusting = true;
+                        width.setValue( nw );
+                        height.setValue( nh );
+                        _export_size_adjusting = false;
+                    }
+                    refresh.run();
+                } );
+        final JPanel presets = new JPanel( new FlowLayout( FlowLayout.LEFT, 6, 1 ) );
+        presets.add( new JLabel( "Presets:" ) );
+        presets.add( button( "Single column (85 mm)", () -> applySizePreset( unit, width, 85 ) ) );
+        presets.add( button( "Double column (170 mm)", () -> applySizePreset( unit, width, 170 ) ) );
+        presets.setMaximumSize( new Dimension( Integer.MAX_VALUE, presets.getPreferredSize().height ) );
+        final JComponent[] sub = { labeled( "Unit:", unit ), labeled( "Width:", width ), labeled( "Height:", height ),
+                labeled( "Resolution (DPI, raster only):", dpi ), presets, summary };
+        final JCheckBox fixed = new JCheckBox( "Export at a fixed figure size", o.isExportUseFixedSize() );
+        fixed.setToolTipText( "<html>When on, every graphics export (PDF / SVG / EPS / PNG / JPG / TIFF) is rendered at "
+                + "EXACTLY the size below,<br>laying the tree out to fill that frame -- so the file matches your target "
+                + "figure size (e.g. a journal column width).<br>The whole tree is exported (the raster scale and "
+                + "\"visible region only\" options above do not apply to a fixed-size export).</html>" );
+        fixed.addActionListener( e -> {
+            o.setExportUseFixedSize( fixed.isSelected() );
+            setEnabledDeep( sub, fixed.isSelected() );
+        } );
+        add( c, fixed );
+        for ( final JComponent s : sub ) {
+            add( c, s );
+        }
+        setEnabledDeep( sub, o.isExportUseFixedSize() );
+        refresh.run();
+    }
+
+    /** Clamps a fixed-export width/height into the spinner's [MIN,MAX] range. A {@link SpinnerNumberModel} THROWS
+     *  (not clamps) on an out-of-range seed, and a unit conversion can overshoot the max, so both the seed and the
+     *  conversion clamp through here -- otherwise reopening the dialog after such a conversion would fail. */
+    private static double clampExportDim( final double v ) {
+        return Math.max( AptxConstants.EXPORT_SIZE_DIM_MIN, Math.min( AptxConstants.EXPORT_SIZE_DIM_MAX, v ) );
+    }
+
+    /** A journal-column preset: sets the unit to millimetres (converting the current height) and the width to
+     *  {@code mm}. Both {@code setSelectedItem}/{@code setValue} fire the real listeners, which write Options. */
+    private void applySizePreset( final JComboBox<ExportSizeSpec.Unit> unit, final JSpinner width, final double mm ) {
+        unit.setSelectedItem( ExportSizeSpec.Unit.MILLIMETERS );
+        width.setValue( mm );
+    }
+
+    /** Enables/disables each component AND all its descendants (a disabled Swing container does not grey its
+     *  children, so the labels/controls inside the {@code labeled(...)} rows must be toggled directly). */
+    private static void setEnabledDeep( final JComponent[] comps, final boolean enabled ) {
+        for ( final JComponent comp : comps ) {
+            setEnabledDeep( comp, enabled );
+        }
+    }
+
+    private static void setEnabledDeep( final Component comp, final boolean enabled ) {
+        comp.setEnabled( enabled );
+        if ( comp instanceof java.awt.Container ) {
+            for ( final Component child : ( (java.awt.Container) comp ).getComponents() ) {
+                setEnabledDeep( child, enabled );
+            }
+        }
     }
 
     private JPanel readTab() {

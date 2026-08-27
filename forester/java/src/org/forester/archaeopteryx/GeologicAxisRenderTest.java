@@ -331,12 +331,12 @@ public final class GeologicAxisRenderTest {
                     // B&W circular export: the annuli render as light grey (geologicRingFill), and the period-name
                     // labels must use BLACK ink on that grey (not labelInkOn(vivid), which vanishes) -- exercise the
                     // path renders grey bands + does not crash
-                    o.setPrintBlackAndWhite( true );
+                    o.setExportBlackAndWhite( true );
                     final int grey = countLightGrey( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
                     if ( grey < 3000 ) {
                         fail( ok, "B&W circular geologic export should render light-grey annuli (got " + grey + " px)" );
                     }
-                    o.setPrintBlackAndWhite( false );
+                    o.setExportBlackAndWhite( false );
 
                     // UNROOTED is N/A (an approved biological exception): neither predicate applies there
                     o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );

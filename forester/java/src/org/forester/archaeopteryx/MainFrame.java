@@ -284,7 +284,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _delete_not_selected_nodes_item;
     // font size menu:
     // options menu:
-    // _  screen and print
+    // _  screen and export
     JCheckBoxMenuItem _label_direction_cbmi;
     // _  screen display
     JRadioButtonMenuItem _non_lined_up_cladograms_rbmi;
@@ -319,11 +319,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_mad_confidence_cbmi;
     JCheckBoxMenuItem _collapsed_with_average_height_cbmi;
     JCheckBoxMenuItem _show_abbreviated_labels_for_collapsed_nodes_cbmi;
-    // _  print
+    // _  export
     JCheckBoxMenuItem _graphics_export_visible_only_cbmi;
-    JCheckBoxMenuItem _antialias_print_cbmi;
-    JCheckBoxMenuItem _print_black_and_white_cbmi;
-    //JMenuItem                        _print_size_mi;
+    JCheckBoxMenuItem _antialias_export_cbmi;
+    JCheckBoxMenuItem _export_black_and_white_cbmi;
     // _  parsing
     JCheckBoxMenuItem _internal_number_are_confidence_for_nh_parsing_cbmi;
     JCheckBoxMenuItem _replace_underscores_cbmi;
@@ -726,9 +725,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         } else if (o == _graphics_export_visible_only_cbmi) {
             updateOptions(getOptions());
-        } else if (o == _antialias_print_cbmi) {
+        } else if (o == _antialias_export_cbmi) {
             updateOptions(getOptions());
-        } else if (o == _print_black_and_white_cbmi) {
+        } else if (o == _export_black_and_white_cbmi) {
             updateOptions(getOptions());
         } else if (o == _lineage_inference) {
             if (isSubtreeDisplayed()) {
@@ -2668,7 +2667,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowConfidenceStddev((_show_confidence_stddev_cbmi != null)
                 && _show_confidence_stddev_cbmi.isSelected());
         options.setShowMadConfidence((_show_mad_confidence_cbmi != null) && _show_mad_confidence_cbmi.isSelected());
-        options.setAntialiasPrint((_antialias_print_cbmi != null) && _antialias_print_cbmi.isSelected());
+        options.setAntialiasExport((_antialias_export_cbmi != null) && _antialias_export_cbmi.isSelected());
         if ((_use_brackets_for_conf_in_nh_export_cbmi != null)
                 && _use_brackets_for_conf_in_nh_export_cbmi.isSelected()) {
             options.setNhConversionSupportValueStyle(NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS);
@@ -2678,8 +2677,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else {
             options.setNhConversionSupportValueStyle(NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE);
         }
-        options.setPrintBlackAndWhite((_print_black_and_white_cbmi != null)
-                && _print_black_and_white_cbmi.isSelected());
+        options.setExportBlackAndWhite((_export_black_and_white_cbmi != null)
+                && _export_black_and_white_cbmi.isSelected());
         options.setInternalNumberAreConfidenceForNhParsing((_internal_number_are_confidence_for_nh_parsing_cbmi != null)
                 && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected());
         // Taxonomy extraction from node names has no GUI control any more; Options keeps its default
@@ -2757,8 +2756,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_overview_cbmi, options.isShowOverview());
         setSelected(_show_confidence_stddev_cbmi, options.isShowConfidenceStddev());
         setSelected(_show_mad_confidence_cbmi, options.isShowMadConfidence());
-        setSelected(_antialias_print_cbmi, options.isAntialiasPrint());
-        setSelected(_print_black_and_white_cbmi, options.isPrintBlackAndWhite());
+        setSelected(_antialias_export_cbmi, options.isAntialiasExport());
+        setSelected(_export_black_and_white_cbmi, options.isExportBlackAndWhite());
         setSelected(_internal_number_are_confidence_for_nh_parsing_cbmi,
                 options.isInternalNumberAreConfidenceForNhParsing());
         setSelected(_replace_underscores_cbmi, options.isReplaceUnderscoresInNhParsing());
@@ -3083,11 +3082,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         String pdf_written_to = "";
         boolean error = false;
         try {
-            if (opts.isPrintUsingActualSize()) {
+            if (opts.isExportUseFixedSize()) {
+                // "Export at a fixed size": the PDF page is exactly the configured point size; the tree is laid out
+                // to fill it and the on-screen layout is restored afterwards.
+                final ExportSizeSpec spec = opts.exportSizeSpec();
+                final int[] token = tp.layoutForExportSize(spec.layoutWidthPt(), spec.layoutHeightPt());
+                try {
+                    pdf_written_to = PdfExporter.writePhylogenyToPdfExactSize(file_name, tp, spec.layoutWidthPt(),
+                            spec.layoutHeightPt(), opts.isGraphicsExportWhiteBackground());
+                } finally {
+                    tp.restoreLayoutAfterExport(token);
+                }
+            } else {
                 pdf_written_to = PdfExporter.writePhylogenyToPdf(file_name, tp, tp.getWidth(), tp.getHeight(),
                         opts.isGraphicsExportWhiteBackground());
-            } else {
-                // Never false.
             }
         } catch (final IOException e) {
             error = true;
@@ -3096,8 +3104,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (!error) {
             if (!ForesterUtil.isEmpty(pdf_written_to)) {
                 JOptionPane.showMessageDialog(comp,
-                        "Wrote PDF to: " + pdf_written_to,
-                        "Information",
+                        "Wrote graphics file:\n\n" + pdf_written_to,
+                        "Graphics Export",
                         JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(comp,
@@ -3106,9 +3114,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
-        }
-        if (!opts.isPrintUsingActualSize()) {
-            tp.getControlPanel().showWhole();
         }
     }
 
@@ -3157,18 +3162,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                              final MainPanel mp,
                                              final Component comp,
                                              final Container contentpane) {
-        mp.getCurrentTreePanel().calcParametersForPainting(mp.getCurrentTreePanel().getWidth(),
-                mp.getCurrentTreePanel().getHeight());
+        final TreePanel tp = mp.getCurrentTreePanel();
+        final Options opts = mp.getOptions();
         String file_written_to = "";
         boolean error = false;
         try {
-            file_written_to = AptxUtil.writePhylogenyToGraphicsFile(file_name,
-                    mp.getCurrentTreePanel().getWidth(),
-                    mp.getCurrentTreePanel().getHeight(),
-                    mp.getCurrentTreePanel(),
-                    mp.getControlPanel(),
-                    type,
-                    mp.getOptions());
+            if (opts.isExportUseFixedSize()) {
+                // "Export at a fixed size": render at exactly the configured physical/pixel size; the tree is
+                // laid out to fill that frame and the on-screen layout is restored, all inside this call.
+                file_written_to = AptxUtil.writePhylogenyToGraphicsFileAtSize(file_name, tp, type, opts,
+                        opts.exportSizeSpec());
+            } else {
+                tp.calcParametersForPainting(tp.getWidth(), tp.getHeight());
+                file_written_to = AptxUtil.writePhylogenyToGraphicsFile(file_name, tp.getWidth(), tp.getHeight(),
+                        tp, mp.getControlPanel(), type, opts);
+            }
         } catch (final IOException e) {
             error = true;
             JOptionPane.showMessageDialog(comp, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -3176,7 +3184,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (!error) {
             if ((file_written_to != null) && (file_written_to.length() > 0)) {
                 JOptionPane.showMessageDialog(comp,
-                        "Wrote image to: " + file_written_to,
+                        "Wrote graphics file:\n\n" + file_written_to,
                         "Graphics Export",
                         JOptionPane.INFORMATION_MESSAGE);
             } else {

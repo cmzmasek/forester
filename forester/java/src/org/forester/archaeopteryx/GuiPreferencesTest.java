@@ -63,7 +63,7 @@ public final class GuiPreferencesTest {
             final boolean tree_name = !src.isShowTreeName();
             final boolean scale = !src.isShowScale();
             final boolean italic = !src.isUseItalicScientificNames();
-            final boolean antialias = !src.isAntialiasPrint();
+            final boolean antialias = !src.isAntialiasExport();
             final boolean white_bg = !src.isGraphicsExportWhiteBackground(); // the only default-TRUE key -> flips to false
             // non-boolean settings round-trip too: enums (node shape/fill, support viz), a short (node size),
             // a float (branch width) and doubles (support threshold, min-confidence fraction)
@@ -101,10 +101,18 @@ public final class GuiPreferencesTest {
             final int raster_scale = src.getRasterExportScale() + 2;
             final boolean transparent = !src.isTransparentExportBackground();
             final boolean visible_only = !src.isGraphicsExportVisibleOnly();
+            // "Export at a fixed size" (5 keys): the enable toggle, the unit (enum), width/height (doubles inside
+            // [0.1,20000]), DPI (int inside [72,1200])
+            final boolean fixed_size = !src.isExportUseFixedSize();
+            final ExportSizeSpec.Unit export_unit = ( src.getExportSizeUnit() == ExportSizeSpec.Unit.MILLIMETERS )
+                    ? ExportSizeSpec.Unit.PIXELS : ExportSizeSpec.Unit.MILLIMETERS;
+            final double export_w = src.getExportWidth() + 25;
+            final double export_h = src.getExportHeight() + 15;
+            final int export_dpi = ( src.getExportDpi() == 600 ) ? 300 : 600;
             src.setShowTreeName( tree_name );
             src.setShowScale( scale );
             src.setUseItalicScientificNames( italic );
-            src.setAntialiasPrint( antialias );
+            src.setAntialiasExport( antialias );
             src.setGraphicsExportWhiteBackground( white_bg );
             src.setDefaultNodeShape( shape );
             src.setDefaultNodeShapeSize( node_size );
@@ -125,6 +133,11 @@ public final class GuiPreferencesTest {
             src.setRasterExportScale( raster_scale );
             src.setTransparentExportBackground( transparent );
             src.setGraphicsExportVisibleOnly( visible_only );
+            src.setExportUseFixedSize( fixed_size );
+            src.setExportSizeUnit( export_unit );
+            src.setExportWidth( export_w );
+            src.setExportHeight( export_h );
+            src.setExportDpi( export_dpi );
             new GuiPreferences( file ).saveFrom( src );
             if ( !Files.exists( file ) ) {
                 return fail( "saveFrom did not write the settings file" );
@@ -140,7 +153,7 @@ public final class GuiPreferencesTest {
             if ( dst.isUseItalicScientificNames() != italic ) {
                 return fail( "use_italic_scientific_names did not round-trip" );
             }
-            if ( dst.isAntialiasPrint() != antialias ) {
+            if ( dst.isAntialiasExport() != antialias ) {
                 return fail( "antialias_print did not round-trip" );
             }
             if ( dst.isGraphicsExportWhiteBackground() != white_bg ) {
@@ -202,6 +215,21 @@ public final class GuiPreferencesTest {
             }
             if ( dst.isGraphicsExportVisibleOnly() != visible_only ) {
                 return fail( "graphics_export_visible_only did not round-trip" );
+            }
+            if ( dst.isExportUseFixedSize() != fixed_size ) {
+                return fail( "export_use_fixed_size did not round-trip" );
+            }
+            if ( dst.getExportSizeUnit() != export_unit ) {
+                return fail( "export_size_unit did not round-trip" );
+            }
+            if ( dst.getExportWidth() != export_w ) {
+                return fail( "export_width did not round-trip, got " + dst.getExportWidth() );
+            }
+            if ( dst.getExportHeight() != export_h ) {
+                return fail( "export_height did not round-trip, got " + dst.getExportHeight() );
+            }
+            if ( dst.getExportDpi() != export_dpi ) {
+                return fail( "export_dpi did not round-trip, got " + dst.getExportDpi() );
             }
 
             // a key absent from the file must leave that option at its current (default) value

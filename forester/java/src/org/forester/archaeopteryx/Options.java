@@ -218,7 +218,7 @@ final public class Options {
     static final double SUPPORT_THRESHOLD_DEFAULT = 0.95;
     private boolean _abbreviate_scientific_names;
     private boolean _allow_errors_in_distance_to_parent;
-    private boolean _antialias_print;
+    private boolean _antialias_export;
     private Font _base_font;
     private CLADOGRAM_TYPE _cladogram_type;
     private boolean _color_labels_same_as_parent_branch;
@@ -226,7 +226,6 @@ final public class Options {
     private NodeVisualData.NodeShape _default_node_shape;
     private short _default_node_shape_size;
     private boolean _editable;
-    private final boolean _graphics_export_using_actual_size = true;
     private boolean _graphics_export_visible_only;
     private boolean _internal_number_are_confidence_for_nh_parsing;
     private boolean _inverse_search_result;
@@ -241,6 +240,13 @@ final public class Options {
     private int _raster_export_scale;
     private boolean _transparent_export_background;
     private boolean _graphics_export_white_background;
+    // "Export at a fixed figure size": when on, every graphics export renders at EXACTLY this physical/pixel size
+    // (see ExportSizeSpec), instead of the on-screen size. Off by default -- exports stay WYSIWYG.
+    private boolean _export_use_fixed_size;
+    private ExportSizeSpec.Unit _export_size_unit;
+    private double _export_width;
+    private double _export_height;
+    private int _export_dpi;
     private NODE_LABEL_DIRECTION _node_label_direction;
     private FOUND_COLOR          _found_color;
     private short _number_of_digits_after_comma_for_confidence_values;
@@ -255,9 +261,8 @@ final public class Options {
     // The default categorical palette for "Color by property". Held here (not just per TreePanel) so the last
     // palette the user chose becomes the default for new tabs/sessions and can be persisted (see GuiPreferences).
     private String _color_palette_name;
-    private boolean _print_black_and_white;
-    private float _print_line_width;
-    private final boolean _print_using_actual_size = true;
+    private boolean _export_black_and_white;
+    private float _pdf_line_width;
     private boolean _search_case_sensitive;
     private boolean _show_confidence_stddev;
     private boolean _show_mad_confidence;
@@ -378,7 +383,7 @@ final public class Options {
         _dim_non_matches = true;   // on by default: fade non-matching labels/numbers so search hits stand out
         _pulse_found_nodes = true; // on by default: a gentle halo pulse around found/selected nodes
         _show_tree_name = true; // show the tree's name in the lower-left of the canvas by default
-        _antialias_print = true;
+        _antialias_export = true;
         _graphics_export_visible_only = false;
         _editable = true;
         _allow_errors_in_distance_to_parent = false;
@@ -402,7 +407,7 @@ final public class Options {
         _support_visualization = SUPPORT_VISUALIZATION.NONE;
         _node_age_shape = NODE_AGE_SHAPE.BAR;
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
-        _print_black_and_white = false;
+        _export_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _phylogeny_display_type = PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM;
         _tree_orientation = TREE_ORIENTATION.ROOT_LEFT;
@@ -412,7 +417,7 @@ final public class Options {
         _match_whole_terms_only = false;
         _search_with_regex = false;
         _search_case_sensitive = false;
-        _print_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
+        _pdf_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
         _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
@@ -431,6 +436,13 @@ final public class Options {
         // document-ready -- no dark box, and not light-on-white/invisible. Off = WYSIWYG. See ExportTheme.
         // Overridden by transparent-PNG.
         _graphics_export_white_background = true;
+        // "Export at a fixed size": off by default (exports stay WYSIWYG at the on-screen size). The defaults are
+        // sensible journal-figure values -- a double-column width at 300 DPI -- so turning it on is immediately useful.
+        _export_use_fixed_size = false;
+        _export_size_unit = ExportSizeSpec.Unit.MILLIMETERS;
+        _export_width = AptxConstants.EXPORT_SIZE_WIDTH_MM_DEFAULT;
+        _export_height = AptxConstants.EXPORT_SIZE_HEIGHT_MM_DEFAULT;
+        _export_dpi = AptxConstants.EXPORT_SIZE_DPI_DEFAULT;
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = AptxConstants.CLADOGRAM_TYPE_DEFAULT;
         _domain_label_mode = DOMAIN_LABEL_MODE.ON_DOMAINS;
@@ -532,8 +544,8 @@ final public class Options {
         _color_palette_name = color_palette_name;
     }
 
-    final float getPrintLineWidth() {
-        return _print_line_width;
+    final float getPdfLineWidth() {
+        return _pdf_line_width;
     }
 
     final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
@@ -544,8 +556,8 @@ final public class Options {
         return _abbreviate_scientific_names;
     }
 
-    final boolean isAntialiasPrint() {
-        return _antialias_print;
+    final boolean isAntialiasExport() {
+        return _antialias_export;
     }
 
     final boolean isColorLabelsSameAsParentBranch() {
@@ -554,10 +566,6 @@ final public class Options {
 
     final boolean isEditable() {
         return _editable;
-    }
-
-    final boolean isGraphicsExportUsingActualSize() {
-        return _graphics_export_using_actual_size;
     }
 
     final boolean isGraphicsExportVisibleOnly() {
@@ -585,12 +593,8 @@ final public class Options {
         return _match_whole_terms_only;
     }
 
-    final boolean isPrintBlackAndWhite() {
-        return _print_black_and_white;
-    }
-
-    final boolean isPrintUsingActualSize() {
-        return _print_using_actual_size;
+    final boolean isExportBlackAndWhite() {
+        return _export_black_and_white;
     }
 
     final boolean isReplaceUnderscoresInNhParsing() {
@@ -619,6 +623,51 @@ final public class Options {
 
     final void setTransparentExportBackground(final boolean transparent_export_background) {
         _transparent_export_background = transparent_export_background;
+    }
+
+    final boolean isExportUseFixedSize() {
+        return _export_use_fixed_size;
+    }
+
+    final void setExportUseFixedSize(final boolean export_use_fixed_size) {
+        _export_use_fixed_size = export_use_fixed_size;
+    }
+
+    final ExportSizeSpec.Unit getExportSizeUnit() {
+        return _export_size_unit;
+    }
+
+    final void setExportSizeUnit(final ExportSizeSpec.Unit export_size_unit) {
+        _export_size_unit = export_size_unit;
+    }
+
+    final double getExportWidth() {
+        return _export_width;
+    }
+
+    final void setExportWidth(final double export_width) {
+        _export_width = export_width;
+    }
+
+    final double getExportHeight() {
+        return _export_height;
+    }
+
+    final void setExportHeight(final double export_height) {
+        _export_height = export_height;
+    }
+
+    final int getExportDpi() {
+        return _export_dpi;
+    }
+
+    final void setExportDpi(final int export_dpi) {
+        _export_dpi = export_dpi;
+    }
+
+    /** The resolved fixed export size (unit + width/height + DPI) as a pure {@link ExportSizeSpec}. */
+    final ExportSizeSpec exportSizeSpec() {
+        return new ExportSizeSpec( _export_size_unit, _export_width, _export_height, _export_dpi );
     }
 
     final boolean isSearchCaseSensitive() {
@@ -805,8 +854,8 @@ final public class Options {
         _abbreviate_scientific_names = abbreviate_scientific_names;
     }
 
-    final void setAntialiasPrint(final boolean antialias_print) {
-        _antialias_print = antialias_print;
+    final void setAntialiasExport(final boolean antialias_export) {
+        _antialias_export = antialias_export;
     }
 
     final void setBaseFont(final Font base_font) {
@@ -889,12 +938,12 @@ final public class Options {
         _tip_label_direction = tip_label_direction;
     }
 
-    final void setPrintBlackAndWhite(final boolean print_black_and_white) {
-        _print_black_and_white = print_black_and_white;
+    final void setExportBlackAndWhite(final boolean export_black_and_white) {
+        _export_black_and_white = export_black_and_white;
     }
 
-    final void setPrintLineWidth(final float print_line_width) {
-        _print_line_width = print_line_width;
+    final void setPdfLineWidth(final float pdf_line_width) {
+        _pdf_line_width = pdf_line_width;
     }
 
     final void setReplaceUnderscoresInNhParsing(final boolean nh_parsing_replace_underscores) {

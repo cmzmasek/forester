@@ -102,23 +102,37 @@ final class PdfExporter {
         return file.toString() + " [size: " + my_width + ", " + my_height + "]";
     }
 
+    /**
+     * WYSIWYG tree PDF export: the tree is laid out at {@code width} x {@code height} (its on-screen size), and the
+     * page is that plus a small margin. This is the default File -> Export to PDF path.
+     */
     static String writePhylogenyToPdf( final String file_name, final TreePanel tree_panel, final int width,
                                        final int height, final boolean white_background )
             throws IOException {
-        final int my_height;
-        final int my_width;
-        if ( height < HEIGHT_LIMIT ) {
-            my_height = HEIGHT_LIMIT + 2 * MARGIN_Y;
-        }
-        else {
-            my_height = height + 2 * MARGIN_Y;
-        }
-        if ( width < WIDTH_LIMIT ) {
-            my_width = WIDTH_LIMIT +  2 * MARGIN_X;
-        }
-        else {
-            my_width = width +  2 * MARGIN_X;
-        }
+        final int page_h = ( ( height < HEIGHT_LIMIT ) ? HEIGHT_LIMIT : height ) + ( 2 * MARGIN_Y );
+        final int page_w = ( ( width < WIDTH_LIMIT ) ? WIDTH_LIMIT : width ) + ( 2 * MARGIN_X );
+        return renderPhylogenyToPdf( file_name, tree_panel, page_w, page_h, white_background, false );
+    }
+
+    /**
+     * Fixed-size ("export at exactly this size") PDF export: the PDF page is EXACTLY {@code page_w} x {@code page_h}
+     * points (no added margin), and the tree was already laid out to fill that frame by the caller (see
+     * {@link TreePanel#layoutForExportSize}). A small floor keeps a degenerate size renderable.
+     */
+    static String writePhylogenyToPdfExactSize( final String file_name, final TreePanel tree_panel,
+                                                final int page_w, final int page_h, final boolean white_background )
+            throws IOException {
+        return renderPhylogenyToPdf( file_name, tree_panel, Math.max( page_w, WIDTH_LIMIT ),
+                                     Math.max( page_h, HEIGHT_LIMIT ), white_background, true );
+    }
+
+    /** Shared core: renders the tree onto a PDF page of EXACTLY {@code page_w} x {@code page_h} points. Text is drawn
+     *  as vector outlines (createGraphicsShapes), so the figure needs no font embedding/mapping and is fully
+     *  portable; it also sidesteps the bold-glyph stroke-color bleed that the glyph-font path has in iText/OpenPDF. */
+    private static String renderPhylogenyToPdf( final String file_name, final TreePanel tree_panel,
+                                                final int page_w, final int page_h, final boolean white_background,
+                                                final boolean fixed_size )
+            throws IOException {
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
             return "";
@@ -134,22 +148,20 @@ final class PdfExporter {
             throw new IOException( "[" + file_name + "] is a directory" );
         }
         final Document document = new Document();
-        document.setPageSize( new Rectangle( my_width, my_height ) );
-        document.setMargins( MARGIN_X, MARGIN_X, MARGIN_Y, MARGIN_Y );
-        PdfWriter writer = null;
+        document.setPageSize( new Rectangle( page_w, page_h ) );
+        // the figure lays out into the full page (with its own internal margin); createGraphicsShapes draws to the
+        // content byte directly, so the document margins are cosmetic -- 0, like the generic writeToPdf path
+        document.setMargins( 0, 0, 0, 0 );
+        PdfWriter writer;
         try {
             writer = PdfWriter.getInstance( document, new FileOutputStream( file_name ) );
-           
         }
         catch ( final DocumentException e ) {
             throw new IOException( e );
         }
         document.open();
-        // Text is rendered as vector outlines (createGraphicsShapes), so the figure needs no font
-        // embedding/mapping and is fully portable; it also sidesteps the bold-glyph stroke-color
-        // bleed that the glyph-font path has in iText/OpenPDF.
         final PdfContentByte cb = writer.getDirectContent();
-        final Graphics2D g2 = cb.createGraphicsShapes(my_width, my_height);
+        final Graphics2D g2 = cb.createGraphicsShapes( page_w, page_h );
         // Document-ready (light theme) export when requested, so a dark-theme figure isn't light-on-white on
         // the white PDF page; restored afterwards. Same behavior as raster/clipboard/SVG export. The paint
         // exception (if any) is reported AFTER restore(), so its modal dialog never pumps the EDT while the
@@ -159,9 +171,9 @@ final class PdfExporter {
         try {
             if ( white_background ) {
                 g2.setColor( java.awt.Color.WHITE );
-                g2.fillRect( 0, 0, my_width, my_height );
+                g2.fillRect( 0, 0, page_w, page_h );
             }
-            tree_panel.paintPhylogeny( g2, true, false, my_width, my_height, 0, 0 );
+            tree_panel.paintPhylogeny( g2, true, false, page_w, page_h, 0, 0 );
         }
         catch ( final Exception e ) {
             paint_error = e;
@@ -186,7 +198,8 @@ final class PdfExporter {
         if ( paint_error != null ) {
             AptxUtil.unexpectedException( paint_error );
         }
-        final String msg = file.toString() +  " [size: " + my_width + ", " + my_height + "]";
-        return msg;
+        // A fixed-size caller restores the layout AFTER this returns, so the font size + dyna-hide state read for
+        // the report still reflect the export layout.
+        return AptxUtil.formatExportReport( file.toString(), tree_panel, page_w, page_h, true, 72, fixed_size );
     }
 }

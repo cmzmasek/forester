@@ -75,7 +75,7 @@ public final class ResetToDefaultsTest {
         // drive a broad set of fields away from their defaults
         o.setShowScale( true );
         o.setShowTreeName( false );
-        o.setAntialiasPrint( false );
+        o.setAntialiasExport( false );
         o.setShowOverview( false );
         o.setUseItalicScientificNames( false );
         o.setGraphicsExportWhiteBackground( false );
@@ -115,6 +115,12 @@ public final class ResetToDefaultsTest {
         o.setShowDomainGlow( true ); // default is false
         o.setShowMsa( true ); // default is false
         o.setMsaColumnWidth( AptxConstants.MSA_COLUMN_WIDTH_MAX ); // default is MSA_COLUMN_WIDTH_DEFAULT
+        // "Export at a fixed size" (default off / MILLIMETERS / 170 x 120 mm / 300 DPI)
+        o.setExportUseFixedSize( true );
+        o.setExportSizeUnit( ExportSizeSpec.Unit.PIXELS );
+        o.setExportWidth( 3000 );
+        o.setExportHeight( 2000 );
+        o.setExportDpi( 600 );
         // search options (reset by init, resynced onto the control-panel checkboxes by Reset to Defaults)
         o.setSearchCaseSensitive( true );
         o.setMatchWholeTermsOnly( true );
@@ -133,7 +139,7 @@ public final class ResetToDefaultsTest {
         boolean ok = true;
         ok &= eq( "showScale", o.isShowScale(), def.isShowScale() );
         ok &= eq( "showTreeName", o.isShowTreeName(), def.isShowTreeName() );
-        ok &= eq( "antialiasPrint", o.isAntialiasPrint(), def.isAntialiasPrint() );
+        ok &= eq( "antialiasExport", o.isAntialiasExport(), def.isAntialiasExport() );
         ok &= eq( "showOverview", o.isShowOverview(), def.isShowOverview() );
         ok &= eq( "italicNames", o.isUseItalicScientificNames(), def.isUseItalicScientificNames() );
         ok &= eq( "whiteBg", o.isGraphicsExportWhiteBackground(), def.isGraphicsExportWhiteBackground() );
@@ -181,6 +187,13 @@ public final class ResetToDefaultsTest {
         ok &= eq( "showDomainGlow", o.isShowDomainGlow(), def.isShowDomainGlow() );
         ok &= eq( "showMsa", o.isShowMsa(), def.isShowMsa() );
         ok &= eq( "msaColumnWidth", o.getMsaColumnWidth(), def.getMsaColumnWidth() );
+        ok &= eq( "exportUseFixedSize", o.isExportUseFixedSize(), def.isExportUseFixedSize() );
+        ok &= eq( "exportSizeUnit", o.getExportSizeUnit(), def.getExportSizeUnit() );
+        ok &= eq( "exportWidth", o.getExportWidth(), def.getExportWidth() );
+        ok &= eq( "exportHeight", o.getExportHeight(), def.getExportHeight() );
+        ok &= eq( "exportDpi", o.getExportDpi(), def.getExportDpi() );
+        // pin the shipped default (off) so an accidental default flip to ON is caught
+        ok &= eq( "exportUseFixedSize default OFF", def.isExportUseFixedSize(), false );
         ok &= eq( "searchCase", o.isSearchCaseSensitive(), def.isSearchCaseSensitive() );
         ok &= eq( "searchWholeWords", o.isMatchWholeTermsOnly(), def.isMatchWholeTermsOnly() );
         ok &= eq( "searchRegex", o.isSearchWithRegex(), def.isSearchWithRegex() );
@@ -227,7 +240,7 @@ public final class ResetToDefaultsTest {
                           frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._pulse_found_nodes_cbmi,
                           frame._show_scale_cbmi, frame._show_tree_name_cbmi,
                           frame._show_overview_cbmi, frame._show_confidence_stddev_cbmi, frame._show_mad_confidence_cbmi,
-                          frame._antialias_print_cbmi, frame._print_black_and_white_cbmi,
+                          frame._antialias_export_cbmi, frame._export_black_and_white_cbmi,
                           frame._internal_number_are_confidence_for_nh_parsing_cbmi, frame._replace_underscores_cbmi,
                           frame._allow_errors_in_distance_to_parent_cbmi, frame._graphics_export_visible_only_cbmi,
                           frame._parse_beast_style_extended_nexus_tags_cbmi, frame._collapsed_with_average_height_cbmi,

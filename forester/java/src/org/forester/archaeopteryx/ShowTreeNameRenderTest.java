@@ -103,7 +103,7 @@ public final class ShowTreeNameRenderTest {
                     // reference is a known W (deterministic, and it exercises the graphics-file branch a figure
                     // export actually uses) rather than the viewport-dependent screen width.
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
-                    mf[ 0 ].getOptions().setPrintBlackAndWhite( false ); // keep the export name in the branch-length color
+                    mf[ 0 ].getOptions().setExportBlackAndWhite( false ); // keep the export name in the branch-length color
                     mf[ 0 ].getOptions().setShowScale( true );
                     mf[ 0 ].getOptions().setShowTreeName( true );
                     final BufferedImage exported = renderExport( tp );

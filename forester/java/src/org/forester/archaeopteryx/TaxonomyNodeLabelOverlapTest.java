@@ -111,7 +111,7 @@ public final class TaxonomyNodeLabelOverlapTest {
                     tp.getControlPanel().setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
                     tp.getControlPanel().setCheckbox( DisplayOption.SHOW_SEQ_NAMES, true );
                     final Options o = frame.getOptions();
-                    o.setAntialiasPrint( false ); // crisp single-color glyphs, so a pixel is exactly one segment's color
+                    o.setAntialiasExport( false ); // crisp single-color glyphs, so a pixel is exactly one segment's color
                     o.setUseItalicScientificNames( true );
                     o.setGraphicsExportWhiteBackground( false ); // keep our forced colors (no light-theme override)
                     // Markers deliberately magenta / cyan, NOT pure red/green/blue/yellow: a scheme's own
@@ -205,7 +205,7 @@ public final class TaxonomyNodeLabelOverlapTest {
                     tp.getControlPanel().setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
                     tp.getControlPanel().setCheckbox( DisplayOption.SHOW_SEQ_NAMES, true );
                     final Options o = frame.getOptions();
-                    o.setAntialiasPrint( false );
+                    o.setAntialiasExport( false );
                     o.setUseItalicScientificNames( true );
                     o.setGraphicsExportWhiteBackground( false );
                     final int tax = 0xFF00FF, seq = 0x00FFFF;

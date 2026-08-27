@@ -362,7 +362,7 @@ public final class PropertySizeScaleTest {
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     final Options o = frame.getOptions();
-                    o.setAntialiasPrint( false );
+                    o.setAntialiasExport( false );
                     o.setGraphicsExportWhiteBackground( false );
                     final int dot = 0x00FFFF; // the size-only dot is drawn in the SEQUENCE color -- force it to cyan
                     tp.getTreeColorSet().setColorforDefault( TreeColorSet.BACKGROUND, new Color( 255, 255, 255 ) );

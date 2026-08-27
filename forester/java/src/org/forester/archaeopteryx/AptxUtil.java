@@ -1625,11 +1625,71 @@ public final class AptxUtil {
             ImageIO.write(buffered_img, type.toString(), file);
         }
         System.gc();
-        String msg = file.toString();
-        if ((width > 0) && (height > 0)) {
-            msg += " [size: " + width + ", " + height + "]";
+        // Notional DPI = the effective scale x 72 (what a PNG embeds); drives the report's mm conversion for every
+        // raster format. The tree_panel layout is the current on-screen one (set by the caller), so the font size +
+        // dyna-hide state read for the report reflect what was actually rendered.
+        final double effective_dpi = ((double) buffered_img.getWidth() / Math.max(1, width)) * 72.0;
+        return formatExportReport(file.toString(), tree_panel, buffered_img.getWidth(), buffered_img.getHeight(),
+                false, effective_dpi, false);
+    }
+
+    /**
+     * Fixed-size ("export at exactly this size") graphics export: writes the tree to {@code file_name} at the exact
+     * size described by {@code spec}. For vector formats (SVG/EPS) the page is exactly the spec's point size; for
+     * raster (TIFF/PNG/JPG) the image is the spec's pixel size and a PNG carries the requested DPI. The tree is
+     * laid out to FILL the target frame (fonts stay at their point size) and the prior on-screen layout is restored
+     * afterwards -- see {@link TreePanel#layoutForExportSize} / {@link TreePanel#restoreLayoutAfterExport}. Always
+     * the WHOLE tree: the visible-only export toggle does not apply to a fixed-size render.
+     */
+    final static String writePhylogenyToGraphicsFileAtSize(final String file_name,
+                                                           final TreePanel tree_panel,
+                                                           final GraphicsExportType type,
+                                                           final Options options,
+                                                           final ExportSizeSpec spec) throws IOException {
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ((phylogeny == null) || phylogeny.isEmpty()) {
+            return "";
         }
-        return msg;
+        final int[] restore_token = tree_panel.layoutForExportSize(spec.layoutWidthPt(), spec.layoutHeightPt());
+        try {
+            if ((type == GraphicsExportType.SVG) || (type == GraphicsExportType.EPS)) {
+                return VectorGraphicsExporter.writePhylogenyToVectorGraphicsFileExactSize(file_name,
+                        tree_panel,
+                        spec.layoutWidthPt(),
+                        spec.layoutHeightPt(),
+                        (type == GraphicsExportType.SVG) ? VectorGraphicsExporter.Format.SVG
+                                : VectorGraphicsExporter.Format.EPS,
+                        options.isOutlineFontsInVectorExport(),
+                        options.isGraphicsExportWhiteBackground());
+            }
+            final File file = new File(file_name);
+            if (file.isDirectory()) {
+                throw new IOException("\"" + file_name + "\" is a directory");
+            }
+            final BufferedImage buffered_img = renderPhylogenyToImage(spec.layoutWidthPt(), spec.layoutHeightPt(),
+                    tree_panel, options, type == GraphicsExportType.PNG, spec.rasterScale(), false);
+            if (buffered_img == null) {
+                return "";
+            }
+            // The DPI to embed/report: derive it from the ACTUAL image vs the point-space layout width
+            // (image / layoutPt * 72). This equals the requested spec.dpi() in the normal case, but stays HONEST if
+            // the ~100 MP memory cap reduced the image below the requested pixel size (then the physical size is
+            // preserved: image / effective_dpi = layoutPt/72 = the requested inches).
+            final double effective_dpi = ((double) buffered_img.getWidth() / Math.max(1, spec.layoutWidthPt())) * 72.0;
+            if (type == GraphicsExportType.TIFF) {
+                writeToTiff(file, buffered_img);
+            } else if (type == GraphicsExportType.PNG) {
+                writePngWithDpi(buffered_img, file, effective_dpi);
+            } else {
+                ImageIO.write(buffered_img, type.toString(), file);
+            }
+            System.gc();
+            // build the report while the export layout is still active (font size + dyna-hide state), before restore
+            return formatExportReport(file.toString(), tree_panel, buffered_img.getWidth(), buffered_img.getHeight(),
+                    false, effective_dpi, true);
+        } finally {
+            tree_panel.restoreLayoutAfterExport(restore_token);
+        }
     }
 
     /**
@@ -1648,7 +1708,7 @@ public final class AptxUtil {
                                                       final TreePanel tree_panel,
                                                       final Options options,
                                                       final boolean allow_transparent,
-                                                      final int render_scale,
+                                                      final double render_scale,
                                                       final boolean visible_only) {
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ((phylogeny == null) || phylogeny.isEmpty()) {
@@ -1657,7 +1717,7 @@ public final class AptxUtil {
         final RenderingHints rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         rendering_hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-        if (options.isAntialiasPrint()) {
+        if (options.isAntialiasExport()) {
             rendering_hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             rendering_hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         } else {
@@ -1675,19 +1735,32 @@ public final class AptxUtil {
         }
         // Cap the effective scale so a large figure x a high multiplier can't blow up memory (~100 MP /
         // 400 MB ceiling); normal-sized figures keep the requested scale.
-        int scale = (render_scale < 1) ? 1 : render_scale;
+        // The scale can be FRACTIONAL for a fixed-size export (dpi/72, e.g. 300/72 = 4.166...); the ordinary
+        // raster-export multiplier is an integer (which widens to a whole double, so that path is unchanged). The
+        // output image is round(width*scale) x round(height*scale).
+        double scale = (render_scale < 1.0) ? 1.0 : render_scale;
         final long max_export_pixels = 100_000_000L;
-        while ((scale > 1) && ((((long) width * scale) * ((long) height * scale)) > max_export_pixels)) {
-            --scale;
+        while ((scale > 1.0)
+                && (((long) Math.round(width * scale) * (long) Math.round(height * scale)) > max_export_pixels)) {
+            scale = Math.max(1.0, scale - 1.0);
         }
+        // Last resort: if even at the floored scale the BASE layout alone (width x height) exceeds the cap -- an
+        // absurdly large fixed-size request, which the ordinary scale-only loop above can't shrink -- downscale
+        // BELOW 1.0 so the image can't blow up memory. The figure comes out smaller than requested rather than
+        // OOM; the completion report + embedded DPI use the ACTUAL image size, so it stays self-consistent.
+        if ((((long) width * height) > max_export_pixels)) {
+            scale = Math.min(scale, Math.sqrt((double) max_export_pixels / ((double) width * height)));
+        }
+        final int out_w = (int) Math.round(width * scale);
+        final int out_h = (int) Math.round(height * scale);
         final boolean transparent = allow_transparent && options.isTransparentExportBackground();
-        final BufferedImage buffered_img = new BufferedImage(width * scale, height * scale,
+        final BufferedImage buffered_img = new BufferedImage(out_w, out_h,
                 transparent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
         // Keep the base context so BOTH it and any derived (translated) context are disposed -- even if
         // paintPhylogeny throws -- otherwise the base Graphics2D leaks native resources on the visible-only path.
         final Graphics2D base_g2d = buffered_img.createGraphics();
         base_g2d.setRenderingHints(rendering_hints);
-        if (scale != 1) {
+        if (scale != 1.0) {
             base_g2d.scale(scale, scale);
         }
         int x = 0;
@@ -1715,9 +1788,6 @@ public final class AptxUtil {
                 g2d.dispose();
             }
             base_g2d.dispose();
-        }
-        if (!options.isGraphicsExportUsingActualSize()) {
-            tree_panel.getMainPanel().getControlPanel().showWhole();
         }
         return buffered_img;
     }
@@ -1806,6 +1876,49 @@ public final class AptxUtil {
         finally {
             writer.dispose();
         }
+    }
+
+    /**
+     * Builds the multi-line "Graphics Export" completion report shown to the user, one fact per line: the file,
+     * the output size in pixels (raster) or points (vector), the physical size in mm, whether a fixed size was
+     * used, the font size actually rendered, and -- when it applies -- a warning that some labels were hidden by
+     * "Dyna Hide" at this size. {@code dim1}/{@code dim2} are px for a raster export or points for a vector one;
+     * {@code dpi} converts them to mm ({@code dim/dpi*25.4}; pass 72 for a vector point size). The font size and
+     * the dyna-hide state are read from {@code tp}, so this must be called while the export layout is still active
+     * (before any restore).
+     */
+    static String formatExportReport(final String file, final TreePanel tp, final int dim1, final int dim2,
+                                     final boolean vector, final double dpi, final boolean fixed_size) {
+        final double mm_w = (dpi > 0) ? ((dim1 / dpi) * 25.4) : 0;
+        final double mm_h = (dpi > 0) ? ((dim2 / dpi) * 25.4) : 0;
+        final int font_size = tp.getMainPanel().getTreeFontSet().getLargeFont().getSize();
+        final boolean labels_hidden = tp.labelsDynamicallyHidden();
+        final StringBuilder sb = new StringBuilder();
+        sb.append(file).append('\n').append('\n');
+        if (vector) {
+            sb.append("Page size:  ").append(dim1).append(" × ").append(dim2).append(" pt\n");
+        } else {
+            sb.append("Image size: ").append(dim1).append(" × ").append(dim2).append(" px @ ")
+                    .append((int) Math.round(dpi)).append(" DPI\n");
+        }
+        sb.append("Physical:   ").append(mmString(mm_w)).append(" × ").append(mmString(mm_h)).append(" mm\n");
+        sb.append("Fixed size: ").append(fixed_size ? "yes" : "no").append('\n');
+        sb.append("Font size:  ").append(font_size).append(" pt");
+        if (labels_hidden) {
+            // plain "Warning:" (not a ⚠ glyph) so it can't render as tofu in the JOptionPane's L&F font
+            sb.append('\n').append("Warning: some labels were hidden by \"Dyna Hide\" to avoid overlap at this size.");
+        }
+        return sb.toString();
+    }
+
+    /** A physical dimension in mm: near-integer values print without a decimal (the 0.15 mm snap hides the
+     *  point-vs-pixel quantization, so a round request like 120 mm reads "120" on both the vector and raster
+     *  paths), else one decimal place. */
+    private static String mmString(final double mm) {
+        if (Math.abs(mm - Math.rint(mm)) < 0.15) {
+            return Long.toString(Math.round(mm));
+        }
+        return String.format(java.util.Locale.ROOT, "%.1f", mm);
     }
 
     final static Map<String, Integer> getRankCounts(final Phylogeny tree) {

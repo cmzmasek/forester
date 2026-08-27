@@ -141,6 +141,39 @@ final class VectorGraphicsExporter {
                                                       final boolean outline_text,
                                                       final boolean white_background )
             throws IOException {
+        final int my_width = ( ( width < WIDTH_LIMIT ) ? WIDTH_LIMIT : width ) + ( 2 * MARGIN_X );
+        final int my_height = ( ( height < HEIGHT_LIMIT ) ? HEIGHT_LIMIT : height ) + ( 2 * MARGIN_Y );
+        return writeVectorGraphics( file_name, tree_panel, my_width, my_height, fmt, outline_text, white_background,
+                                    false );
+    }
+
+    /**
+     * Fixed-size ("export at exactly this size") vector export: the SVG/EPS page is EXACTLY {@code page_w} x
+     * {@code page_h} points (no added margin), and the tree was already laid out to fill that frame by the caller
+     * (see {@link TreePanel#layoutForExportSize}). A small floor keeps a degenerate size renderable.
+     */
+    static String writePhylogenyToVectorGraphicsFileExactSize( final String file_name,
+                                                               final TreePanel tree_panel,
+                                                               final int page_w,
+                                                               final int page_h,
+                                                               final Format fmt,
+                                                               final boolean outline_text,
+                                                               final boolean white_background )
+            throws IOException {
+        return writeVectorGraphics( file_name, tree_panel, Math.max( page_w, WIDTH_LIMIT ),
+                                    Math.max( page_h, HEIGHT_LIMIT ), fmt, outline_text, white_background, true );
+    }
+
+    /** Shared core: renders the tree onto a vector page of EXACTLY {@code my_width} x {@code my_height} points. */
+    private static String writeVectorGraphics( final String file_name,
+                                               final TreePanel tree_panel,
+                                               final int my_width,
+                                               final int my_height,
+                                               final Format fmt,
+                                               final boolean outline_text,
+                                               final boolean white_background,
+                                               final boolean fixed_size )
+            throws IOException {
         final Phylogeny phylogeny = tree_panel.getPhylogeny();
         if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
             return "";
@@ -155,8 +188,6 @@ final class VectorGraphicsExporter {
         if ( file.isDirectory() ) {
             throw new IOException( "[" + file_name + "] is a directory" );
         }
-        final int my_width = ( width < WIDTH_LIMIT ? WIDTH_LIMIT : width ) + ( 2 * MARGIN_X );
-        final int my_height = ( height < HEIGHT_LIMIT ? HEIGHT_LIMIT : height ) + ( 2 * MARGIN_Y );
         // Document-ready (light theme) export when requested -- same behavior as raster/clipboard, so a
         // dark-theme vector figure isn't light-on-(page-)white; restored afterwards. The paint exception (if any)
         // is captured and reported AFTER restore(), so the modal error dialog never pumps the EDT while the
@@ -185,6 +216,8 @@ final class VectorGraphicsExporter {
         if ( paint_error[ 0 ] != null ) {
             AptxUtil.unexpectedException( paint_error[ 0 ] );
         }
-        return file.toString() + " [size: " + my_width + ", " + my_height + "]";
+        // ExportTheme.restore() only reverts colors, not the layout/fonts, so the font size + dyna-hide state read
+        // for the report still reflect the export layout (a fixed-size caller restores the layout AFTER this returns).
+        return AptxUtil.formatExportReport( file.toString(), tree_panel, my_width, my_height, true, 72, fixed_size );
     }
 }

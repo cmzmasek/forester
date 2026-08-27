@@ -715,6 +715,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Export size spec: ");
+        if (org.forester.archaeopteryx.ExportSizeSpecTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Fixed export size: ");
+        if (org.forester.archaeopteryx.FixedExportSizeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Collapse menu font: ");
         if (org.forester.archaeopteryx.CollapseMenuFontTest.test()) {
             System.out.println("OK.");

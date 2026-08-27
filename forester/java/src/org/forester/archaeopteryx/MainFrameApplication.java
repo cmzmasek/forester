@@ -1697,8 +1697,8 @@ public final class MainFrameApplication extends MainFrame {
         _graphics_export_white_background_cbmi.setToolTipText(MainFrame.WHITE_BG_TIP);
         _label_direction_cbmi = new JCheckBoxMenuItem(LABEL_DIRECTION_LABEL);
         _label_direction_cbmi.setToolTipText(LABEL_DIRECTION_TIP);
-        _antialias_print_cbmi = new JCheckBoxMenuItem("Antialias (export)");
-        _print_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White");
+        _antialias_export_cbmi = new JCheckBoxMenuItem("Antialias (export)");
+        _export_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White");
         _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export");
         _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem("Internal Node Names are Confidence Values");
         _replace_underscores_cbmi = new JCheckBoxMenuItem("Replace Underscores with Spaces");
@@ -1756,8 +1756,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_show_overview_cbmi, getOptions().isShowOverview());
         customizeCheckBoxMenuItem(_label_direction_cbmi,
                 getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL);
-        customizeCheckBoxMenuItem(_antialias_print_cbmi, getOptions().isAntialiasPrint());
-        customizeCheckBoxMenuItem(_print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite());
+        customizeCheckBoxMenuItem(_antialias_export_cbmi, getOptions().isAntialiasExport());
+        customizeCheckBoxMenuItem(_export_black_and_white_cbmi, getOptions().isExportBlackAndWhite());
         customizeCheckBoxMenuItem(_internal_number_are_confidence_for_nh_parsing_cbmi,
                 getOptions().isInternalNumberAreConfidenceForNhParsing());
         customizeCheckBoxMenuItem(_replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing());

@@ -788,7 +788,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                                        final boolean to_pdf,
                                                                        final boolean to_graphics_file) {
         final NodeClickAction action = _control_panel.getActionWhenNodeClicked();
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+        if ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) {
             g.setColor(Color.BLACK);
         } else if (((action == NodeClickAction.COPY_SUBTREE) || (action == NodeClickAction.CUT_SUBTREE)
                 || (action == NodeClickAction.DELETE_NODE_OR_SUBTREE) || (action == NodeClickAction.PASTE_SUBTREE)
@@ -824,6 +824,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     private final int calcDynamicHidingFactor() {
         return (int) (0.5 + (getFontMetricsForLargeDefaultFont().getHeight() / (1.5 * getYdistance())));
+    }
+
+    /** Whether the CURRENT layout hides tip labels via "Dyna Hide" (the option is on AND the labels are too dense
+     *  to fit) -- used to warn on a graphics export at a small size that some labels were dropped. Reads the live
+     *  layout (getYdistance), so it is meaningful only right after a layout/paint. Rectangular family only: the
+     *  radial layouts have their own hiding logic, so return false there rather than mis-warn. */
+    final boolean labelsDynamicallyHidden() {
+        return !isRadialLayout() && (getControlPanel() != null) && getControlPanel().isDynamicallyHideData()
+                && (calcDynamicHidingFactor() > 1);
     }
 
     final private int calcLengthOfLongestText() {
@@ -2420,7 +2429,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                          final boolean to_pdf,
                                          final boolean to_graphics_file) {
         g.setFont(getTreeFontSet().getSmallFont());
-        final boolean bl_bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bl_bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         // fade a non-hit's branch-length number too (same dimNonMatch wash as the name/taxonomy labels)
         g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getBranchLengthColor()),
                 isInFoundNodes(node), bl_bw));
@@ -2671,7 +2680,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           final boolean to_pdf,
                                           final boolean is_in_found_nodes) {
         Color c = null;
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         // A collapsed clade's tips are hidden, so signal any selection/search hits ON the triangle itself:
         // fill it in the found colour when EVERY tip is a hit (reads as "this whole group is selected"), or just
         // outline it (below) when only some are. Selection is clade-wide (collapse is a view state), so a
@@ -2852,7 +2861,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED) {
                 x += ROUNDED_D;
             }
-            final boolean conf_bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+            final boolean conf_bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
             // fade a non-hit's confidence value too (same dimNonMatch wash as the name/taxonomy labels)
             g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getConfidenceColor()),
                     isInFoundNodes(node), conf_bw));
@@ -2897,7 +2906,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final AffineTransform saved = g.getTransform();
         g.setTransform(_orientation_base_transform);
         g.setFont(getTreeFontSet().getSmallFont());
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         final boolean found = isInFoundNodes(node);
         final float baseline = (float) (mid.y + (getTreeFontSet().getSmallMaxAscent() / 2.0) - 1);
         float x = (float) (mid.x + VERTICAL_BRANCH_LABEL_PAD);
@@ -2949,7 +2958,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
         final int gap_w = (support.isEmpty() || length.isEmpty()) ? 0 : fm.stringWidth(" ");
         final int total_w = fm.stringWidth(support) + gap_w + fm.stringWidth(length);
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         final boolean found = isInFoundNodes(node);
         double m = branch_angle % TWO_PI;
         if (m < 0) {
@@ -2989,7 +2998,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  the tip count on a log scale, like the rectangular triangle. */
     private void paintRadialCollapsedMarker(final Graphics2D g, final PhylogenyNode node, final double out_angle,
                                             final boolean to_pdf, final boolean to_graphics_file) {
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         final int[] fc = collapsedCladeFoundCounts(node); // {hits set 0, hits set 1, tips hit, total tips}
         Color found_c = null;
         if (!bw && (fc[2] > 0)) {
@@ -3191,7 +3200,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (to_pdf && (c == getTreeColorSet().getBranchColor())) {
             c = getTreeColorSet().getBranchColorForPdf();
         }
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+        if ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) {
             c = Color.BLACK;
         }
         g.setColor(c);
@@ -3267,7 +3276,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final float half_box_size = box_size / 2.0f;
             Color outline_color = null;
-            if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+            if ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) {
                 outline_color = Color.BLACK;
             } else if (isInFoundNodes(node)) {
                 outline_color = getColorForFoundNode(node);
@@ -4944,14 +4953,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Ink color shared by the scale bar / scale axis / tree name: black in a B&W export, else the branch-length color. */
     private Color scaleInkColor(final boolean to_pdf, final boolean to_graphics_file) {
-        return ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite())
+        return ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite())
                 ? Color.BLACK
                 : getTreeColorSet().getBranchLengthColor();
     }
 
     /** Faint, theme-aware color for the scale grid: the background nudged slightly toward the branch-length color. */
     private Color scaleGridColor(final boolean to_pdf, final boolean to_graphics_file) {
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+        if ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) {
             return new Color(220, 220, 220);
         }
         return TreePanelUtil.blend(getTreeColorSet().getBackgroundColor(),
@@ -5150,7 +5159,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 continue;
             }
             final int lx = cx - (fm.stringWidth(iv.name()) / 2);
-            final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+            final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
             if (!bw) {
                 // an opaque ICS-coloured chip so the name reads over both the pale band and any branch at 12 o'clock;
                 // ink contrast-picked against that chip colour
@@ -5189,7 +5198,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int line_h = fm.getHeight();
         final Color bg = getTreeColorSet().getBackgroundColor();
         final Color ink = scaleInkColor(to_pdf, to_graphics_file);
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         // each coarse interval's OLDER edge is a boundary; youngest first = outer first (smallest ly), decimate down.
         // Skip boundaries in the crowded OUTER region (near the tip ring, where the thin outer annuli + their name
         // chips collide) -- scale-adaptive, so a wider zoom shows more ages; the deep, well-spaced boundaries stay.
@@ -5234,7 +5243,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Translucent fill for a circular geologic band: the official ICS colour softened with alpha so the tree + rings
      *  read over it (a light grey in a B&W export -- the band is a colour key, muted when colour is unavailable). */
     private Color geologicRingFill(final Color c, final boolean to_pdf, final boolean to_graphics_file) {
-        if ((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) {
+        if ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) {
             return new Color(235, 235, 235);
         }
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), GEOLOGIC_RING_ALPHA);
@@ -6058,16 +6067,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _bold_derived_font;
     }
 
+    /** The X of the radial (circular/unrooted) canvas centre. For a FULL export the drawing canvas is the passed
+     *  graphics-file width -- a FIXED-SIZE export lays the tree into a canvas whose size differs from the on-screen
+     *  panel, so centring at getWidth()/2 would push the ring off the export canvas. On screen, and for a visible-only
+     *  export (whose Graphics is translated to crop), the drawing space is the panel's own width, so getWidth() is
+     *  correct. (For the ordinary full export the caller passes getWidth() as the canvas, so the two agree.) */
+    private int radialCanvasCenterX(final int graphics_file_width, final boolean to_pdf,
+                                    final boolean to_graphics_file) {
+        final boolean full_export = (to_pdf || to_graphics_file) && !getOptions().isGraphicsExportVisibleOnly();
+        return (full_export ? graphics_file_width : getWidth()) / 2;
+    }
+
+    private int radialCanvasCenterY(final int graphics_file_height, final boolean to_pdf,
+                                    final boolean to_graphics_file) {
+        final boolean full_export = (to_pdf || to_graphics_file) && !getOptions().isGraphicsExportVisibleOnly();
+        return (full_export ? graphics_file_height : getHeight()) / 2;
+    }
+
     final private void paintUnrooted(final PhylogenyNode n,
                                      final double low_angle,
                                      final double high_angle,
                                      final boolean radial_labels,
                                      final Graphics2D g,
                                      final boolean to_pdf,
-                                     final boolean to_graphics_file) {
+                                     final boolean to_graphics_file,
+                                     final int graphics_file_width,
+                                     final int graphics_file_height) {
         if (n.isRoot()) {
-            n.setXcoord(getWidth() / 2);
-            n.setYcoord(getHeight() / 2);
+            n.setXcoord(radialCanvasCenterX(graphics_file_width, to_pdf, to_graphics_file));
+            n.setYcoord(radialCanvasCenterY(graphics_file_height, to_pdf, to_graphics_file));
         }
         if (n.isExternal()) {
             paintNodeDataUnrootedCirc(g,
@@ -6147,7 +6175,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float new_y = (float) (y + (Math.sin(mid_angle) * length));
             desc.setXcoord(new_x);
             desc.setYcoord(new_y);
-            paintUnrooted(desc, current_angle, current_angle + arc_size, radial_labels, g, to_pdf, to_graphics_file);
+            paintUnrooted(desc, current_angle, current_angle + arc_size, radial_labels, g, to_pdf, to_graphics_file,
+                    graphics_file_width, graphics_file_height);
             current_angle += arc_size;
             assignGraphicsForBranchWithColorForParentBranch(desc, false, g, to_pdf, to_graphics_file);
             drawLine(x, y, new_x, new_y, g);
@@ -6313,7 +6342,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                           final boolean to_pdf,
                           final boolean is_in_found_nodes,
                           final Color default_color) {
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         Color c;
         if (bw) {
             c = Color.BLACK;
@@ -6349,7 +6378,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** The ink color for a text element (branch-length / confidence number): BLACK on any PDF or on a B&W raster
      *  export, else the given scheme color. Centralizes the pdf/black-and-white policy the two number sites share. */
     private Color inkColor(final boolean to_pdf, final boolean to_graphics_file, final Color default_color) {
-        return (to_pdf || (to_graphics_file && getOptions().isPrintBlackAndWhite())) ? Color.BLACK : default_color;
+        return (to_pdf || (to_graphics_file && getOptions().isExportBlackAndWhite())) ? Color.BLACK : default_color;
     }
 
     final private void setCopiedAndPastedNodes(final Set<Long> nodeIds) {
@@ -6751,7 +6780,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * Set parameters for printing the displayed tree
+     * Set parameters for painting/rendering the displayed tree
      */
     final void calcParametersForPainting(final int x_in, final int y_in) {
         // Root-top/bottom: the depth axis (root->tip) is drawn VERTICALLY, so it must fit the viewport HEIGHT, and
@@ -9965,7 +9994,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private void paintFoundNodeHalos(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
         final boolean to_screen = !to_pdf && !to_graphics_file;
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         if (!getOptions().isPulseFoundNodes() || (_phylogeny == null) || bw || !hasFoundNodes()) {
             return;
         }
@@ -10264,7 +10293,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 : radial_corr0;
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
-        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? HPD_BAR_COLOR_BW
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? HPD_BAR_COLOR_BW
                 : HPD_BAR_COLOR);
         g.setStroke(new BasicStroke(HPD_BAR_HEIGHT, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
@@ -10348,7 +10377,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // negate corr so hpdBarXRange places the earlier bound to the left and the later bound to the right
         final double signed_corr = (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR) ? -corr : corr;
         final Color saved = g.getColor();
-        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? HPD_BAR_COLOR_BW
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? HPD_BAR_COLOR_BW
                 : HPD_BAR_COLOR);
         for (final PhylogenyNode node : _nodes_in_preorder) {
             if (node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
@@ -10420,7 +10449,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
-        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? FOSSIL_BAR_COLOR_BW
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? FOSSIL_BAR_COLOR_BW
                 : FOSSIL_BAR_COLOR);
         g.setStroke(STROKE_1); // thin, deterministic end-cap ticks (independent of the ambient branch stroke)
         for (final PhylogenyNode node : _nodes_in_preorder) {
@@ -10468,7 +10497,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final double radial_corr = radius / max_dist; // px per distance/time unit along the spoke (== the phylogram scale)
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
-        g.setColor(((to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite()) ? FOSSIL_BAR_COLOR_BW
+        g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? FOSSIL_BAR_COLOR_BW
                 : FOSSIL_BAR_COLOR);
         g.setStroke(new BasicStroke(FOSSIL_BAR_HEIGHT, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
@@ -10517,7 +10546,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!isShowAncestralPies() || (_ancestral_pie_dist == null)) {
             return;
         }
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite();
+        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         final int n = _ancestral_pie_colors.size();
         final double d = ancestralPieDiameter();
         final double r = d / 2.0;
@@ -12405,6 +12434,43 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _radial_diameter = 0;
     }
 
+    /**
+     * Lays the tree out to FILL a fixed-size export canvas of {@code w} x {@code h} points (see
+     * {@link AptxUtil#writePhylogenyToGraphicsFileAtSize} and {@link ExportSizeSpec}), for all five display types:
+     * the rectangular family via the depth/breadth machinery in {@link #calcParametersForPainting}, and
+     * circular/unrooted via the radial diameter. Returns an opaque token capturing the prior on-screen layout (the
+     * component size, and the radial zoom) to hand to {@link #restoreLayoutAfterExport}. MUST be paired with a
+     * restore (in a finally), so a fixed-size export can never leave the on-screen tree laid out at the export size.
+     */
+    final int[] layoutForExportSize(final int w, final int h) {
+        final int[] prior = { getWidth(), getHeight(), _radial_diameter };
+        if (isRadialLayout()) {
+            // the radial canvas is a SQUARE driven by _radial_diameter; fit it to the export frame BEFORE
+            // calcParametersForPainting so setUpUrtFactor (invoked from there) reads the fitted diameter
+            fitRadialTo(w, h);
+        }
+        calcParametersForPainting(w, h);
+        return prior;
+    }
+
+    /** Restores the on-screen layout captured by {@link #layoutForExportSize} and repaints: the radial zoom from the
+     *  captured diameter, and the layout by re-fitting at the component size. A fixed-size (usually narrower) export
+     *  can auto-shrink the shared displayed font, and the auto-fit is hysteretic (it shrinks and grows at different
+     *  thresholds), so re-fitting from the shrunk size could settle on a different font than the on-screen one; reset
+     *  the font to the user/base size FIRST so the re-fit approaches from the base -- the canonical on-screen state. */
+    final void restoreLayoutAfterExport(final int[] prior) {
+        if (prior == null) {
+            return;
+        }
+        if (isRadialLayout()) {
+            _radial_diameter = prior[2];
+        }
+        final TreeFontSet fonts = getMainPanel().getTreeFontSet();
+        fonts.setUserFontSize(fonts.getUserFontSize()); // reset displayed->base + clear the export's auto-shrink
+        calcParametersForPainting(prior[0], prior[1]);
+        repaint();
+    }
+
     final void paintBranchCircular(final PhylogenyNode p,
                                    final PhylogenyNode c,
                                    final Graphics2D g,
@@ -12689,7 +12755,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (!to_graphics_file) {
                 g.fill(r);
             } else if (!_export_transparent_background) {
-                if (getOptions().isPrintBlackAndWhite()) {
+                if (getOptions().isExportBlackAndWhite()) {
                     g.setColor(Color.WHITE);
                 }
                 g.fillRect(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
@@ -12697,7 +12763,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // else: transparent PNG export -- leave the (ARGB) canvas unfilled
             setupStroke(g);
         } else {
-            g.setStroke(new BasicStroke(getOptions().getPrintLineWidth()));
+            g.setStroke(new BasicStroke(getOptions().getPdfLineWidth()));
         }
         if ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED)
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
@@ -12922,7 +12988,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     radial_labels,
                     g,
                     to_pdf,
-                    to_graphics_file);
+                    to_graphics_file,
+                    graphics_file_width,
+                    graphics_file_height);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             if (getOptions().isShowScale()) {
                 if (!(to_graphics_file || to_pdf)) {
@@ -12957,8 +13025,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // visible-only export TRANSLATES g to crop, so drawing at the full-panel centre yields the correct crop --
             // using graphics_file_width/height here would instead re-centre the whole ring into the cropped canvas).
             final int radius = circularRadius(radialDiameter());
-            final int center_x = getWidth() / 2;
-            final int center_y = getHeight() / 2;
+            // centre in the drawing canvas: getWidth()/getHeight() on screen (and for a visible-only crop export),
+            // the passed graphics-file size for a FULL export -- so a fixed-size export (canvas != panel) is centred,
+            // not pushed off-canvas. For an ordinary full export the caller passes getWidth(), so the two agree.
+            final int center_x = radialCanvasCenterX(graphics_file_width, to_pdf, to_graphics_file);
+            final int center_y = radialCanvasCenterY(graphics_file_height, to_pdf, to_graphics_file);
             _circular_center_x = center_x; // so circularLabelAnchor / the ring hit-test match this exact geometry
             _circular_center_y = center_y;
             _circular_radius = radius;
@@ -13075,7 +13146,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Rectangle legend_bounds = to_screen ? getVisibleRect()
                     : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
             drawAncestralPieLegend(g, legend_bounds, to_screen,
-                    (to_pdf || to_graphics_file) && getOptions().isPrintBlackAndWhite());
+                    (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite());
         }
         // the internal-taxonomy key has its OWN text key (taxa by rank), drawn last (on top) so it can appear
         // alongside the others; a no-op unless the option is on AND the tree carries internal taxa.

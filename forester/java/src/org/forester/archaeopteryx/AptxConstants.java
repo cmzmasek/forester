@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.102";
-    final static String PRG_DATE = "2026-08-26";
+    final static String VERSION = "0.11.103";
+    final static String PRG_DATE = "2026-08-27";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -83,6 +83,14 @@ public final class AptxConstants {
     final static int   MSA_COLUMN_WIDTH_DEFAULT         = 7;  // alignment cell width (px/residue); user-adjustable
     final static int   MSA_COLUMN_WIDTH_MIN             = 1;
     final static int   MSA_COLUMN_WIDTH_MAX             = 40;
+    // "Export at a fixed size" (ExportSizeSpec): DPI + width/height bounds and the default journal-figure size.
+    final static int    EXPORT_SIZE_DPI_DEFAULT         = 300; // publication default
+    final static int    EXPORT_SIZE_DPI_MIN             = 72;
+    final static int    EXPORT_SIZE_DPI_MAX             = 1200;
+    final static double EXPORT_SIZE_DIM_MIN             = 0.1;    // min width/height, in the selected unit
+    final static double EXPORT_SIZE_DIM_MAX             = 20000;  // max width/height, in the selected unit
+    final static double EXPORT_SIZE_WIDTH_MM_DEFAULT    = 170;    // double-column journal figure width (mm)
+    final static double EXPORT_SIZE_HEIGHT_MM_DEFAULT   = 120;
     static final int MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
     // External node names longer than this (e.g. whole UniProt/NCBI FASTA-header descriptions pasted in
     // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that
