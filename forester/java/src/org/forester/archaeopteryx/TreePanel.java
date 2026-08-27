@@ -2148,7 +2148,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     private final void nodeDataAsSB(final PhylogenyNode node, final StringBuilder sb) {
         if (node != null) {
-            if (getControlPanel().isShowNodeNames() && (!ForesterUtil.isEmpty(node.getName()))) {
+            if (getControlPanel().isShowNodeNames() && (!ForesterUtil.isEmpty(node.getName()))
+                    && !nameDuplicatesShownTaxonomy(node)) {
                 if (sb.length() > 0) {
                     sb.append(" ");
                 }
@@ -2253,17 +2254,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final boolean has_common = !ForesterUtil.isEmpty(taxonomy.getCommonName());
         if (show_sci && show_common) {
             if (has_sci && has_common) {
-                v.visit(scientificNameForDisplay(taxonomy), true);
+                v.visit(scientificNameForDisplay(taxonomy), isItalicName(taxonomy));
                 v.visit(" (" + taxonomy.getCommonName() + ") ", false);
             } else if (has_sci) {
-                v.visit(scientificNameForDisplay(taxonomy), true);
+                v.visit(scientificNameForDisplay(taxonomy), isItalicName(taxonomy));
                 v.visit(" ", false);
             } else if (has_common) {
                 v.visit(taxonomy.getCommonName() + " ", false);
             }
         } else if (show_sci) {
             if (has_sci) {
-                v.visit(scientificNameForDisplay(taxonomy), true);
+                v.visit(scientificNameForDisplay(taxonomy), isItalicName(taxonomy));
                 v.visit(" ", false);
             }
         } else if (show_common) {
@@ -2283,6 +2284,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return TreePanelUtil.abbreviateScientificName(sn);
         }
         return sn;
+    }
+
+    /**
+     * Whether a taxonomy's scientific name should be drawn in italics -- gated on the display option, then true only
+     * for genus/species-level names (see {@link TreePanelUtil#scientificNameIsItalic}), so family/order/higher render
+     * upright per the taxonomic convention.
+     */
+    private boolean isItalicName(final Taxonomy taxonomy) {
+        return getOptions().isUseItalicScientificNames()
+                && TreePanelUtil.scientificNameIsItalic(taxonomy.getRank(), taxonomy.getScientificName());
+    }
+
+    /**
+     * True when the node's own name merely repeats a taxonomy label already being drawn (e.g. a node named
+     * "Filoviridae" that also carries a {@code <taxonomy>} whose scientific/common name is "Filoviridae"), so the
+     * same word is not printed twice. Only suppresses when that taxonomy field is actually shown.
+     */
+    private boolean nameDuplicatesShownTaxonomy(final PhylogenyNode node) {
+        if (!node.getNodeData().isHasTaxonomy()) {
+            return false;
+        }
+        final Taxonomy tax = node.getNodeData().getTaxonomy();
+        return TreePanelUtil.nodeNameDuplicatesTaxonomy(node.getName(), tax.getScientificName(), tax.getCommonName(),
+                getControlPanel().isShowTaxonomyScientificNames(), getControlPanel().isShowTaxonomyCommonNames());
     }
 
     final private void openSeqWeb(final PhylogenyNode node) {

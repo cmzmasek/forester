@@ -663,6 +663,63 @@ public class TreePanelUtil {
         return sb.toString();
     }
 
+    // Ranks whose scientific name is italicized by convention (genus and below). Family/order/etc. are roman.
+    private static final java.util.Set<String> ITALIC_RANKS = new java.util.HashSet<String>( java.util.Arrays.asList(
+            "genus", "subgenus", "species", "subspecies", "species group", "species subgroup", "varietas", "variety",
+            "subvariety", "forma", "form", "form species", "strain", "isolate", "biotype", "serotype", "pathovar" ) );
+    // Suffixes of higher-rank names (family/order/...), to keep them roman when a tree carries no rank field.
+    private static final String[] HIGHER_RANK_SUFFIXES = { "idae", "aceae", "inae", "oideae", "acea", "ineae", "ales",
+            "oidea", "ini", "formes", "phyta", "mycota", "phyceae", "opsida", "viridae", "virales", "viricetes",
+            "viricota", "virinae" };
+
+    /**
+     * Whether a taxonomy scientific name is italicized by taxonomic convention -- true only for genus/species-level
+     * names, so family/order/higher names stay upright. Uses {@code rank} when present; otherwise a shape/suffix
+     * heuristic (a binomial is a species; a single word ending in a known higher-rank suffix is not italic, else it
+     * is assumed to be a genus). Does NOT consider the display option (the caller gates on that).
+     */
+    final static boolean scientificNameIsItalic( final String rank, final String name ) {
+        if ( !ForesterUtil.isEmpty( rank ) ) {
+            return ITALIC_RANKS.contains( rank.trim().toLowerCase( java.util.Locale.ROOT ) );
+        }
+        if ( ForesterUtil.isEmpty( name ) ) {
+            return false;
+        }
+        final String n = name.trim();
+        final int sp = n.indexOf( ' ' );
+        if ( sp > 0 ) {
+            return Character.isLowerCase( n.charAt( sp + 1 ) ); // "Genus epithet" -> a species name
+        }
+        final String lc = n.toLowerCase( java.util.Locale.ROOT );
+        for( final String suffix : HIGHER_RANK_SUFFIXES ) {
+            if ( lc.endsWith( suffix ) ) {
+                return false;
+            }
+        }
+        return true; // a single word that is not a known higher-rank name -> assume a genus
+    }
+
+    /**
+     * Whether a node's own name merely repeats a taxonomy label already being shown (so the same word is not drawn
+     * twice). Compares case-insensitively against the scientific / common name, each only when that field is shown.
+     */
+    final static boolean nodeNameDuplicatesTaxonomy( final String node_name, final String scientific_name,
+                                                     final String common_name, final boolean show_scientific,
+                                                     final boolean show_common ) {
+        if ( ForesterUtil.isEmpty( node_name ) ) {
+            return false;
+        }
+        final String n = node_name.trim();
+        if ( show_scientific && !ForesterUtil.isEmpty( scientific_name )
+                && n.equalsIgnoreCase( scientific_name.trim() ) ) {
+            return true;
+        }
+        if ( show_common && !ForesterUtil.isEmpty( common_name ) && n.equalsIgnoreCase( common_name.trim() ) ) {
+            return true;
+        }
+        return false;
+    }
+
     /** The best display label for a taxonomy: scientific name, else common name, else taxonomy code, else "". */
     final static String taxonomyLabel( final Taxonomy tax ) {
         if ( tax != null ) {

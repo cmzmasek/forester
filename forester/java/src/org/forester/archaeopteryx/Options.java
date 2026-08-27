@@ -444,7 +444,7 @@ final public class Options {
         _collapsed_with_average_height = true;
         _show_abbreviated_labels_for_collapsed_nodes = true;
         _search_properties = true;
-        _default_branch_width = 1;
+        _default_branch_width = 1.5f; // a touch bolder than a hairline -> a more solid, publication-ready line
     }
 
     final Font getBaseFont() {

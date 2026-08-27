@@ -77,7 +77,7 @@ public final class GuiPreferencesTest {
             final short node_size = (short) ( src.getDefaultNodeShapeSize() + 3 );
             // all numeric flips stay INSIDE the persisted [min,max] (branch width [0.5,20], support/min-conf [0,1],
             // raster scale [1,8]) so they survive the clamp on load; out-of-range clamping is checked separately below
-            final float branch_width = src.getDefaultBranchWidth() + 2.5f; // 1 -> 3.5
+            final float branch_width = src.getDefaultBranchWidth() + 2.5f; // 1.5 -> 4.0
             final double support_threshold = ( src.getSupportThreshold() > 0.5 ) ? 0.25 : 0.75;
             final double min_conf = ( src.getMinConfidenceFraction() > 0.5 ) ? 0.1 : 0.7;
             // Display-tab layout + export settings: enums, an int, booleans and a validated string (palette)

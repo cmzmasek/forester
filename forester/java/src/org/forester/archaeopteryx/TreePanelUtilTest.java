@@ -73,7 +73,60 @@ public final class TreePanelUtilTest {
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
                 && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance()
-                && testLadderizeState();
+                && testLadderizeState() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
+    }
+
+    private static boolean testScientificNameIsItalic() {
+        // rank-driven: genus/species italic, family/order/higher roman
+        if ( !TreePanelUtil.scientificNameIsItalic( "species", "Homo sapiens" )
+                || !TreePanelUtil.scientificNameIsItalic( "genus", "Homo" )
+                || !TreePanelUtil.scientificNameIsItalic( "Subspecies", "Homo sapiens neanderthalensis" ) ) {
+            return fail( "genus/species-rank names must be italic" );
+        }
+        if ( TreePanelUtil.scientificNameIsItalic( "family", "Filoviridae" )
+                || TreePanelUtil.scientificNameIsItalic( "order", "Chiroptera" )
+                || TreePanelUtil.scientificNameIsItalic( "superfamily", "Rhinolophoidea" ) ) {
+            return fail( "family/order/higher-rank names must NOT be italic" );
+        }
+        // no rank: a binomial (lower-case epithet) is a species -> italic; a single word ending in a higher-rank
+        // suffix -> roman; any other single word -> assume a genus -> italic
+        if ( !TreePanelUtil.scientificNameIsItalic( null, "Homo sapiens" )
+                || !TreePanelUtil.scientificNameIsItalic( "", "Escherichia" ) ) {
+            return fail( "no-rank binomial / plain single word must be italic" );
+        }
+        // (a no-rank name is only caught by suffix; an irregular order like "Primates" without a rank field
+        // falls through to italic -- acceptable, as real trees carry ranks, as the demos do)
+        if ( TreePanelUtil.scientificNameIsItalic( null, "Filoviridae" )
+                || TreePanelUtil.scientificNameIsItalic( null, "Pteropodidae" )
+                || TreePanelUtil.scientificNameIsItalic( null, "Rosaceae" ) ) {
+            return fail( "no-rank family-suffixed names must NOT be italic" );
+        }
+        if ( TreePanelUtil.scientificNameIsItalic( null, null ) || TreePanelUtil.scientificNameIsItalic( null, "" ) ) {
+            return fail( "empty name must not be italic" );
+        }
+        return true;
+    }
+
+    private static boolean testNodeNameDuplicatesTaxonomy() {
+        // node name equals the shown scientific name -> duplicate
+        if ( !TreePanelUtil.nodeNameDuplicatesTaxonomy( "Filoviridae", "Filoviridae", null, true, true ) ) {
+            return fail( "a node name equal to the shown scientific name is a duplicate" );
+        }
+        if ( !TreePanelUtil.nodeNameDuplicatesTaxonomy( "human", null, "human", false, true ) ) {
+            return fail( "a node name equal to the shown common name is a duplicate" );
+        }
+        // case-insensitive
+        if ( !TreePanelUtil.nodeNameDuplicatesTaxonomy( "filoviridae", "Filoviridae", null, true, false ) ) {
+            return fail( "duplicate detection must be case-insensitive" );
+        }
+        // not a duplicate when the matching field is NOT shown, or the names differ, or fields are empty
+        if ( TreePanelUtil.nodeNameDuplicatesTaxonomy( "Filoviridae", "Filoviridae", null, false, false )
+                || TreePanelUtil.nodeNameDuplicatesTaxonomy( "Ebola", "Filoviridae", null, true, true )
+                || TreePanelUtil.nodeNameDuplicatesTaxonomy( "", "Filoviridae", null, true, true )
+                || TreePanelUtil.nodeNameDuplicatesTaxonomy( "Filoviridae", null, null, true, true ) ) {
+            return fail( "must not flag a duplicate when the field is hidden/empty or the names differ" );
+        }
+        return true;
     }
 
     private static boolean testLadderizeProvenance() {
