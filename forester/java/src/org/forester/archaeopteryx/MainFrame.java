@@ -113,6 +113,7 @@ import org.forester.phylogeny.data.NodeDataField;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.archaeopteryx.tools.TaxonomySpeciesTreeBuilder;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
@@ -241,6 +242,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _load_species_tree_item;
     JMenuItem _gsdi_item;
     JMenuItem _gsdir_item;
+    JMenuItem _gsdir_taxonomy_item;
     JMenuItem _create_tanglegram_item;
     JMenuItem _lineage_inference;
     // file menu:
@@ -426,6 +428,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             executeGSDIR();
+        } else if (o == _gsdir_taxonomy_item) {
+            if (isSubtreeDisplayed()) {
+                return;
+            }
+            executeGSDIRwithTaxonomySpeciesTree();
         } else if (o == _color_rank_jmi) {
             colorRank();
         } else if (o == _node_style_selected_jmi) {
@@ -2127,6 +2134,92 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                             + "Number of polytomies in species tree used: " + poly + "\n",
                     "GSDIR successfully completed",
                     JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    /**
+     * Approximate gene-tree/species-tree reconciliation (GSDIR) using a species tree BUILT FROM THE NCBI TAXONOMY of
+     * the gene tree's tips, instead of a curated species tree -- the zero-setup "easy mode": the user loads only the
+     * gene tree. The tips' lineages are resolved (cache first; the misses fetched online with a prompt), merged into
+     * an induced taxonomy species tree, and fed to the existing {@link #executeGSDIR()}. Approximate by construction
+     * (NCBI taxonomy is a classification, not a phylogeny) -- caveated up front.
+     */
+    void executeGSDIRwithTaxonomySpeciesTree() {
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny();
+        if ((gene_tree == null) || gene_tree.isEmpty()) {
+            return;
+        }
+        // GSDIR reroots the gene tree, so it must be binary (same guard executeGSDIR applies)
+        final int p = PhylogenyMethods.countNumberOfPolytomies(gene_tree);
+        if ((p > 0) && !((p == 1) && (gene_tree.getRoot().getNumberOfDescendants() == 3))) {
+            JOptionPane.showMessageDialog(this,
+                    "Gene tree is not completely binary",
+                    "Cannot reconcile",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        final int caveat = JOptionPane.showConfirmDialog(this,
+                "The species tree will be derived from the NCBI taxonomy of the gene tree's tips\n"
+                        + "(a classification, not a phylogeny), so the reconciliation is APPROXIMATE:\n"
+                        + "  • unresolved taxonomy appears as polytomies, which keep duplication calls conservative;\n"
+                        + "  • mis-classified or non-monophyletic taxa can cause errors.\n\n"
+                        + "For a definitive result, use a curated species tree (Load Species Tree… then GSDIR).\n\n"
+                        + "Continue with the NCBI-taxonomy species tree?",
+                "Reconcile using NCBI Taxonomy",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (caveat != JOptionPane.OK_OPTION) {
+            return;
+        }
+        final TaxonomicLineageService service = TreePanelUtil.getDefaultLineageService();
+        final SortedSet<String> unresolved = TreePanelUtil.tipsWithoutLineage(gene_tree, service);
+        if (!unresolved.isEmpty()) {
+            final int choice = JOptionPane.showConfirmDialog(this,
+                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon has" : "taxa have")
+                            + " no lineage in the tree itself.\n"
+                            + "Resolve their lineages online via the NCBI and UniProt databases to build the"
+                            + " species tree?\n"
+                            + "Decline to build only from the lineages the tree already carries."
+                            + " (Requires an internet connection.)",
+                    "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (choice == JOptionPane.YES_OPTION) {
+                new Thread(new OnlineTaxonResolver(this, "taxonomy species tree", unresolved,
+                        err -> buildTaxonomySpeciesTreeAndReconcile(service, err))).start();
+                return; // the background resolver builds + reconciles + reports when done
+            }
+        }
+        buildTaxonomySpeciesTreeAndReconcile(service, null);
+    }
+
+    /** EDT-only: build the induced taxonomy species tree from the gene tips' (now-resolved) lineages, install it and
+     *  run the existing GSDIR. {@code fetch_error} is non-null if an online resolve partially failed. */
+    private void buildTaxonomySpeciesTreeAndReconcile(final TaxonomicLineageService service, final String fetch_error) {
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny();
+        if ((gene_tree == null) || gene_tree.isEmpty()) {
+            return;
+        }
+        final Map<PhylogenyNode, TaxonLineage> tip_lineages = TreePanelUtil.tipLineages(gene_tree, service);
+        final TaxonomySpeciesTreeBuilder.Result r = TaxonomySpeciesTreeBuilder.build(tip_lineages);
+        final Phylogeny species_tree = r.getSpeciesTree();
+        if (species_tree.isEmpty() || (r.getSpeciesCount() < 2)) {
+            JOptionPane.showMessageDialog(this,
+                    "Could not build a species tree: fewer than two gene-tree tips resolved to a taxonomy."
+                            + ((fetch_error != null) ? ("\n\nSome taxa could not be resolved online:\n" + fetch_error)
+                                    : ""),
+                    "Cannot reconcile",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        species_tree.setName("species tree (from NCBI taxonomy)");
+        species_tree.setDescription("Species tree derived from NCBI taxonomy (a classification, not a phylogeny); "
+                + "reconciliation is approximate.");
+        setSpeciesTree(species_tree);
+        executeGSDIR(); // reuses the whole reconcile + open-tabs + report path (its report shows the polytomy count)
+        if (fetch_error != null) {
+            JOptionPane.showMessageDialog(this,
+                    "Some taxa could not be resolved online (they were left out of the species tree):\n" + fetch_error,
+                    "Online resolution incomplete",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 

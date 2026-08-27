@@ -132,6 +132,14 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] Auspice/Nextstrain import reference/citation is missing" );
             ok = false;
         }
+        // the NCBI-taxonomy-as-proxy reconciliation must be described (honest "approximate/classification not a phylogeny"
+        // caveat) with the NCBI Taxonomy (Schoch et al. 2020) citation
+        if ( !text.contains( "Reconciliation using the NCBI taxonomy" ) || !text.contains( "APPROXIMATE" )
+                || !text.contains( "not a phylogeny" ) || !text.contains( "Schoch CL, Ciufo S" )
+                || !text.contains( "NCBI Taxonomy: a comprehensive update" ) || !text.contains( "baaa062" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] NCBI-taxonomy reconciliation reference/citation is missing" );
+            ok = false;
+        }
         // the GTDB taxonomy import must be described, with the GTDB (Parks et al. 2022) + GTDB-Tk (Chaumeil et al. 2020) citations
         if ( !text.contains( "GTDB taxonomy import" ) || !text.contains( "genome-based" )
                 || !text.contains( "Parks DH, Chuvochina M" ) || !text.contains( "GTDB-Tk" )

@@ -177,6 +177,13 @@ public final class DemoTreesTest {
         ok &= hasRank( "infer-ancestor-taxonomies.xml", "species" );
         ok &= internalNodesHaveNoTaxonomy( "infer-ancestor-taxonomies.xml" );
 
+        // gene duplication / speciation demo: a gene-family tree whose tips carry species-rank taxonomy, with at least
+        // one species appearing on >1 tip (a paralog) -- the shape that makes "Infer Duplications & Speciations (using
+        // NCBI taxonomy)" recover a gene duplication
+        ok &= hasAtLeastTips( "gene-duplication.xml", 6 );
+        ok &= hasRank( "gene-duplication.xml", "species" );
+        ok &= hasParalogSpecies( "gene-duplication.xml" );
+
         // BEAST / BEAST X output: a NEXUS tree whose [&...] annotations parse into HPD date intervals (Node Age
         // Bars), posterior confidences (support), and a numeric beast:rate property (Color-by)
         ok &= beastAnnotationsOk( "beast-annotations.nex" );
@@ -880,6 +887,31 @@ public final class DemoTreesTest {
             return note( file_name + " property '" + ref + "' should be categorical, not numeric" );
         }
         return true;
+    }
+
+    /** True iff at least one species scientific name appears on more than one EXTERNAL tip (a paralog) -- the property
+     *  the taxonomy reconciliation needs to be able to recover a gene duplication. */
+    private static boolean hasParalogSpecies( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final HashMap<String, Integer> counts = new HashMap<>();
+        for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy() ) {
+                final String sci = n.getNodeData().getTaxonomy().getScientificName();
+                if ( ( sci != null ) && !sci.isEmpty() ) {
+                    counts.merge( sci, 1, Integer::sum );
+                }
+            }
+        }
+        for( final Integer c : counts.values() ) {
+            if ( c >= 2 ) {
+                return true;
+            }
+        }
+        return note( file_name + " must have at least one species on >1 tip (a paralog) for reconciliation" );
     }
 
     private static boolean hasRank( final String file_name, final String rank ) {

@@ -1465,9 +1465,15 @@ public final class MainFrameApplication extends MainFrame {
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu("Analysis", getConfiguration());
         _analysis_menu.setToolTipText("Reconcile gene and species trees, and infer lineages");
+        _analysis_menu
+                .add(_gsdir_taxonomy_item = new JMenuItem("Infer Duplications & Speciations (using NCBI taxonomy)..."));
+        _gsdir_taxonomy_item.setToolTipText("<html>Reconcile the gene tree against a species tree built automatically "
+                + "from the NCBI taxonomy of its tips<br>-- no curated species tree needed. Approximate (taxonomy is a "
+                + "classification, not a phylogeny); use GSDIR with a loaded species tree for a definitive result.</html>");
         _analysis_menu.add(_gsdi_item = new JMenuItem("GSDI (Generalized Speciation Duplication Inference)"));
         _analysis_menu.add(_gsdir_item = new JMenuItem("GSDIR (GSDI with re-rooting)"));
         _analysis_menu.add(_load_species_tree_item = new JMenuItem("Load Species Tree..."));
+        customizeJMenuItem(_gsdir_taxonomy_item);
         customizeJMenuItem(_gsdi_item);
         customizeJMenuItem(_gsdir_item);
         customizeJMenuItem(_load_species_tree_item);

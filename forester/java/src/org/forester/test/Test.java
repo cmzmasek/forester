@@ -731,6 +731,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Taxonomy species-tree builder: ");
+        if (org.forester.archaeopteryx.tools.TaxonomySpeciesTreeBuilderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Taxonomy reconciliation (end-to-end): ");
+        if (org.forester.archaeopteryx.TaxonomyReconciliationTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Collapse menu font: ");
         if (org.forester.archaeopteryx.CollapseMenuFontTest.test()) {
             System.out.println("OK.");

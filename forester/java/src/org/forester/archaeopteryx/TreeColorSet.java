@@ -71,9 +71,9 @@ public final class TreeColorSet {
             new Color( 0, 255, 0 ), // found_color 0
             new Color( 255, 0, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
+            new Color( 213, 94, 0 ), // duplication_box_color (Okabe-Ito vermillion #D55E00; colorblind-safe vs speciation)
+            new Color( 0, 158, 115 ), // speciation_box_color (Okabe-Ito bluish-green #009E73)
+            new Color( 230, 159, 0 ), // duplication_speciation_color (Okabe-Ito amber #E69F00)
             new Color( 230, 230, 230 ), // domain_label
             new Color( 100, 100, 100 ), // domains_base
             new Color( 65, 105, 255 ), // binary_domain_combinations_color
@@ -90,9 +90,9 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // found_color 0
             new Color( 0, 255, 0 ), // found_color 1
             new Color( 0, 0, 255 ), // found_color 1 + 2
-            new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 255, 255, 0 ), // duplication_speciation_color
+            new Color( 213, 94, 0 ), // duplication_box_color (Okabe-Ito vermillion #D55E00; colorblind-safe vs speciation)
+            new Color( 0, 158, 115 ), // speciation_box_color (Okabe-Ito bluish-green #009E73)
+            new Color( 230, 159, 0 ), // duplication_speciation_color (Okabe-Ito amber #E69F00)
             new Color( 0, 0, 0 ), // domain_label
             new Color( 100, 100, 100 ), // domains_base
             new Color( 0, 0, 0 ), // binary_domain_combinations_color

@@ -50,6 +50,16 @@ final class AlgorithmReferences {
         refs.add( new Reference( "Gene tree / species tree reconciliation (Analysis → GSDI, GSDIR)",
                 "Zmasek CM, Eddy SR (2001): \"A simple algorithm to infer gene duplication and speciation events "
                         + "on a gene tree\", Bioinformatics 17(9):821–828." ) );
+        refs.add( new Reference( "Reconciliation using the NCBI taxonomy (Analysis → Infer Duplications & Speciations using NCBI taxonomy)",
+                "Runs the same GSDIR reconciliation (Zmasek & Eddy 2001, above), but builds the species tree "
+                        + "AUTOMATICALLY from the NCBI taxonomy of the gene tree's tips instead of requiring a curated "
+                        + "species tree: each tip's taxonomic lineage is resolved and the lineages are merged into an "
+                        + "induced Linnaean taxonomy tree, which GSDIR then re-roots to minimise duplications. This is "
+                        + "APPROXIMATE — the NCBI taxonomy is a curated classification, not a phylogeny (its internal "
+                        + "nodes and polytomies need not match true species divergences), so inferred duplication/speciation "
+                        + "events are only as accurate as that classification. Taxonomy from Schoch CL, Ciufo S, Domrachev M, "
+                        + "et al. (2020): \"NCBI Taxonomy: a comprehensive update on curation, resources and tools\", "
+                        + "Database (Oxford) 2020:baaa062. (implemented in Archaeopteryx)" ) );
         refs.add( new Reference( "Representative-tip selection / sequence clustering (Tools → Select Representative Tips)",
                 "Reduces redundancy by grouping tips that are close in patristic (tree) distance and keeping one "
                         + "representative per group, either within a distance cutoff or down to a target count. The "

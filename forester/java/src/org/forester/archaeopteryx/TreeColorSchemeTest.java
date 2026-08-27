@@ -119,6 +119,22 @@ public final class TreeColorSchemeTest {
         if ( !new Color( 0x00, 0xA0, 0x00 ).equals( tcs.getFoundColor1() ) ) {
             return false;
         }
+        // ---- reconciliation event colors: Okabe-Ito (colorblind-safe), same in both themes; NOT the old pure
+        //      red/green/yellow primaries (duplication-vs-speciation was the classic red-green confusion pair) ----
+        for ( final int s : new int[] { 0, 1 } ) {
+            tcs.setColorSchema( s );
+            if ( !new Color( 0xD5, 0x5E, 0x00 ).equals( tcs.getDuplicationBoxColor() )      // vermillion
+                    || !new Color( 0x00, 0x9E, 0x73 ).equals( tcs.getSpecBoxColor() )        // bluish-green
+                    || !new Color( 0xE6, 0x9F, 0x00 ).equals( tcs.getDuplicationOrSpeciationColor() ) ) { // amber
+                return false;
+            }
+            // duplication and speciation must be distinguishable under red-green color blindness: the old pair
+            // (pure red 255,0,0 vs pure green 0,255,0) shared a blue channel of 0 and differed only in red-vs-green;
+            // vermillion vs bluish-green differ strongly in the BLUE channel too, which colorblind vision retains
+            if ( Math.abs( tcs.getDuplicationBoxColor().getBlue() - tcs.getSpecBoxColor().getBlue() ) < 60 ) {
+                return false;
+            }
+        }
         return true;
     }
 

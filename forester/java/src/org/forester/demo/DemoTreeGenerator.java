@@ -74,6 +74,7 @@ public final class DemoTreeGenerator {
         write( dir, "stacked-bar-columns.xml", stackedBarColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
+        write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
         write( dir, "lagomorph-time-tree.xml", lagomorphTimeTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
@@ -529,6 +530,33 @@ public final class DemoTreeGenerator {
         final PhylogenyNode n = leaf( scientific_name );
         taxon( n, scientific_name, "species" );
         return n;
+    }
+
+    // ----- "Gene duplications & speciations (using NCBI taxonomy)": a small gene-family tree that DOES NOT come with a
+    //       species tree. Every tip is a gene (its node NAME is the gene label) tagged with the real species it comes
+    //       from (its <taxonomy> scientific name). The family was duplicated in the common ancestor of the three
+    //       mammals into two paralogs (BCL2-like clade + BCLX-like clade), each then following the species tree
+    //       (human+chimp)+mouse. Run Analysis > Infer Duplications & Speciations (using NCBI taxonomy): a species tree
+    //       is built AUTOMATICALLY from the tips' NCBI taxonomy and GSDIR marks the ancestral gene duplication (red) and
+    //       the speciations (green). Needs an internet connection for the resolve (a tip's lineage is not stored in
+    //       phyloXML, so this cannot be demonstrated offline).
+    private static Phylogeny reconciliationGeneTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode bcl2 = clade( 0.04,
+                clade( 0.06, geneTip( "BCL2_human", "Homo sapiens" ), geneTip( "BCL2_chimp", "Pan troglodytes" ) ),
+                geneTip( "BCL2_mouse", "Mus musculus" ) );
+        final PhylogenyNode bclx = clade( 0.04,
+                clade( 0.06, geneTip( "BCLX_human", "Homo sapiens" ), geneTip( "BCLX_chimp", "Pan troglodytes" ) ),
+                geneTip( "BCLX_mouse", "Mus musculus" ) );
+        final PhylogenyNode root = clade( 0, bcl2, bclx );
+        return tree( root, "Gene duplications & speciations (demo)",
+                     "Synthetic gene-family tree with NO accompanying species tree. Each of the six tips is a gene "
+                             + "(node name = gene label, e.g. BCL2_human) tagged with the real species it comes from "
+                             + "(taxonomy scientific name: Homo sapiens, Pan troglodytes, Mus musculus). The family was "
+                             + "duplicated in the mammalian common ancestor into two paralogs (BCL2-like + BCLX-like), "
+                             + "each following the species tree (human+chimp)+mouse. Run Analysis > Infer Duplications & "
+                             + "Speciations (using NCBI taxonomy): a species tree is built AUTOMATICALLY from the tips' "
+                             + "NCBI taxonomy and GSDIR marks the ancestral gene DUPLICATION and the SPECIATIONS. "
+                             + "Requires an internet connection for the resolve." );
     }
 
     // ----- "Bat phylogeny": a larger (34-tip) species tree of the bats (order Chiroptera), spanning both suborders and
