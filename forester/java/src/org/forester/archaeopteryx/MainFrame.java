@@ -161,12 +161,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             Font.PLAIN,
             Configuration.getGuiFontSize());
     static final String TYPE_MENU_HEADER = "Type";
-    static final String RECTANGULAR_TYPE_CBMI_LABEL = "Rectangular";
+    // The four rectangular SUB-STYLES (they differ only in how a branch joint is drawn); the rectangular family
+    // itself is picked on the control panel's layout row, so calling this one "Rectangular" too would be circular.
+    static final String RECTANGULAR_TYPE_CBMI_LABEL = "Square";
     static final String EURO_TYPE_CBMI_LABEL = "Euro Type";
     static final String TRIANGULAR_TYPE_CBMI_LABEL = "Triangular";
     static final String ROUNDED_TYPE_CBMI_LABEL = "Rounded";
-    static final String UNROOTED_TYPE_CBMI_LABEL = "Unrooted (alpha)";                                                                                                                                                          //TODO
-    static final String CIRCULAR_TYPE_CBMI_LABEL = "Circular (alpha)";                                                                                                                                                          //TODO
+    static final String UNROOTED_TYPE_CBMI_LABEL = "Unrooted";
+    static final String CIRCULAR_TYPE_CBMI_LABEL = "Circular";
     static final String SEARCH_CASE_SENSITIVE_LABEL = "Match Case";
     static final String INVERSE_SEARCH_RESULT_LABEL = "Inverse";
     static final String DISPLAY_SCALE_LABEL = "Scale";
@@ -2577,6 +2579,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         refreshFileChoosersLookAndFeel();
         // make the tree canvas follow the light/dark theme
         updateTreeCanvasColors(ui);
+        // the control panel's sun/moon toggle always offers the OTHER theme -- flip its glyph/tooltip. Done here
+        // (not in the button's own listener) so EVERY path that changes the theme keeps the button truthful.
+        if ((getMainPanel() != null) && (getMainPanel().getControlPanel() != null)) {
+            getMainPanel().getControlPanel().updateThemeToggle();
+        }
     }
 
     void updateTreeCanvasColors(final Configuration.UI ui) {
@@ -2630,8 +2637,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             // 0.11.7 the CIRCULAR layout renders a real phylogram (isCircularPhylogram) and UNROOTED always has, so the
             // radios are enabled purely on branch-length presence (the old "&& new_type != CIRCULAR" force-disable was a
             // pre-0.11.7 leftover that greyed the radios out in circular even though the paint now responds to them).
-            getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(getCurrentTreePanel().isPhyHasBranchLengths());
+            // set the panel's new type FIRST: setDrawPhylogramEnabled decides whether "A" (aligned phylogram) is
+            // live by asking the panel what layout it is in, and in UNROOTED there is nothing to align labels to
             getCurrentTreePanel().setPhylogenyGraphicsType(getOptions().getPhylogenyGraphicsType());
+            getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(getCurrentTreePanel().isPhyHasBranchLengths());
             // switching TO a radial layout with domains on: auto-enable "Radial Labels" so the domains show (a
             // spoke-riding domain bar needs radial labels; horizontal labels suppress it)
             enableRadialLabelsIfDomainsInRadialLayout();
@@ -2658,6 +2667,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     getCurrentTreePanel().getControlPanel().getDynamicallyHideData().setEnabled(true);
                 }
             }
+            // Keep the control panel's five-way layout row lit on the right button, and re-seed an open Settings
+            // dialog (its Rectangular-style dropdown greys out for the radial layouts). Done HERE rather than in
+            // the buttons' own listeners so every path that changes the style -- a layout button, the Settings
+            // dropdown, a tree load, Reset to Defaults -- leaves the row truthful.
+            getCurrentTreePanel().getControlPanel().syncLayoutButtons();
+            refreshOpenSettingsDialog();
         }
     }
 
@@ -3586,6 +3601,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // pop a spurious save prompt and clear the redo stack (the undo safety net). Sibling display toggles don't either.
         final ControlPanel cp = tp.getControlPanel();
         cp.updateZoomButtonsForLayout();
+        // the preset sets the style + orientation directly (not through typeChanged), so the control panel's
+        // five-way layout row would otherwise stay lit on whatever was chosen before -- root-left, while the
+        // clustergram is drawn root-at-top
+        cp.syncLayoutButtons();
         cp.displayedPhylogenyMightHaveChanged(true); // recompute the label/column extents for the swapped layout
         cp.showWhole(); // re-fit for the vertical extent (a plain repaint would leave the old scroll extent)
         tp.repaint();

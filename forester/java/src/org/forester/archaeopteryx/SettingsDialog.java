@@ -59,8 +59,9 @@ import org.forester.ws.seqdb.NcbiTaxonomyLineageService;
 import org.forester.ws.seqdb.TaxonomyCacheStatus;
 
 /**
- * A modeless, live-apply "Settings" dialog that replaces the old Options and Type menus (and the
- * View/control-panel Light-Dark toggle). Every control is visible at once -- no cycling. Checkboxes,
+ * A modeless, live-apply "Settings" dialog that replaces the old Options and Type menus. (The light/dark
+ * theme is deliberately NOT here -- it lives on the control panel as a one-click sun/moon toggle, which is
+ * faster than a dialog trip for a setting people flip often.) Every control is visible at once -- no cycling. Checkboxes,
  * radio buttons and the tree-style dropdown simply drive the existing menu-item fields via
  * {@code doClick()}, so all of the established apply logic runs unchanged; the few former
  * cycle/chooser items become dropdowns or spinners that set the value on {@link Options} and repaint.
@@ -147,6 +148,13 @@ final class SettingsDialog extends JDialog {
         }
     }
 
+    /** Tooltip on the rectangular sub-style dropdown -- it points at where the FAMILY is chosen instead. */
+    static final String RECTANGULAR_STYLE_TIP =
+            "How a branch joint is drawn in the rectangular layouts. Can be set at any time: while a circular or "
+                    + "unrooted tree is showing it takes effect the next time you pick a rectangular layout. "
+                    + "Rectangular / circular / unrooted and the root's position are picked on the control panel, "
+                    + "top left.";
+
     /** Label for the per-tab Time-Axis combo's "follow auto-derive" entry (index 0). */
     static final String AXIS_AUTO_LABEL = "Auto (from dates)";
 
@@ -174,29 +182,21 @@ final class SettingsDialog extends JDialog {
 
     // ---- tabs ----------------------------------------------------------------------------------
 
-    /** Tab 1 of the split former "Display" tab: theme, the tree's layout/orientation, and collapsed-subtree/domain
-     *  handling -- i.e. the tree's shape, not the decorations on it. */
+    /** Tab 1 of the split former "Display" tab: the tree's layout/orientation and collapsed-subtree/domain
+     *  handling -- i.e. the tree's shape, not the decorations on it. (The light/dark theme is NOT here: it is the
+     *  control panel's one-click sun/moon toggle, so it needs no dialog trip.) */
     private JPanel layoutTab() {
         final JPanel c = column();
-        c.add( header( "Theme" ) );
-        addThemeControls( c );
         c.add( header( "Layout" ) );
-        // the tip-label angle applies only in a vertical (root-top/bottom) orientation, so grey it out otherwise
+        // The tip-label angle applies only in a vertical (root-top/bottom) orientation, so grey it out otherwise.
+        // Orientation itself is no longer set here -- it is one of the control panel's five layout buttons -- so
+        // this combo is re-seeded from the live orientation on every tab refresh instead.
         final JComboBox<Options.TIP_LABEL_DIRECTION> tipLabelCombo = enumCombo( Options.TIP_LABEL_DIRECTION.values(),
                 _mf.getOptions().getTipLabelDirection(),
                 v -> { _mf.getOptions().setTipLabelDirection( v ); reFitCurrentTree(); } );
-        final JComboBox<Options.TREE_ORIENTATION> orientationCombo = enumCombo( Options.TREE_ORIENTATION.values(),
-                _mf.getOptions().getTreeOrientation(),
-                v -> {
-                    _mf.getOptions().setTreeOrientation( v );
-                    tipLabelCombo.setEnabled( isVerticalOrientation( v ) && !isRadialStyleSelected() );
-                    reFitCurrentTree();
-                } );
-        orientationCombo.setEnabled( !isRadialStyleSelected() );
-        tipLabelCombo.setEnabled( isVerticalOrientation( _mf.getOptions().getTreeOrientation() )
-                && !isRadialStyleSelected() );
-        add( c, labeled( "Tree style:", treeStyleCombo( orientationCombo ) ) );
-        add( c, labeled( "Orientation:", orientationCombo ) );
+        tipLabelCombo.setEnabled( tipLabelAngleApplies() );
+        _tab_reseeders.add( () -> tipLabelCombo.setEnabled( tipLabelAngleApplies() ) );
+        add( c, labeled( "Rectangular style:", treeStyleCombo() ) );
         add( c, labeled( "Tip label angle:", tipLabelCombo ) );
         addRadioGroup( c, _mf._ext_node_dependent_cladogram_rbmi, _mf._non_lined_up_cladograms_rbmi );
         add( c, cb( _mf._label_direction_cbmi ) );
@@ -691,63 +691,78 @@ final class SettingsDialog extends JDialog {
         }
     }
 
-    private void addThemeControls( final JPanel col ) {
-        final boolean dark = _mf.getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
-        final ButtonGroup group = new ButtonGroup();
-        final JRadioButton light = new JRadioButton( "Light", !dark );
-        final JRadioButton dark_rb = new JRadioButton( "Dark", dark );
-        group.add( light );
-        group.add( dark_rb );
-        light.addActionListener( e -> { if ( light.isSelected() ) { _mf.setDarkMode( false ); } } );
-        dark_rb.addActionListener( e -> { if ( dark_rb.isSelected() ) { _mf.setDarkMode( true ); } } );
-        final JPanel row = new JPanel( new FlowLayout( FlowLayout.LEFT, 6, 0 ) );
-        row.add( light );
-        row.add( dark_rb );
-        add( col, row );
-    }
+    /** The four rectangular sub-styles, in dropdown order. They differ only in how a branch JOINT is drawn. */
+    private static final Options.PHYLOGENY_GRAPHICS_TYPE[] RECTANGULAR_STYLES = {
+            Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR, Options.PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE,
+            Options.PHYLOGENY_GRAPHICS_TYPE.ROUNDED, Options.PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR };
 
-    /** The tree-style dropdown (former "Type" menu); selecting an entry clicks its menu item. */
-    private JComboBox<String> treeStyleCombo( final JComboBox<?> orientation_combo ) {
-        final JCheckBoxMenuItem[] items = { _mf._rectangular_type_cbmi, _mf._euro_type_cbmi, _mf._rounded_type_cbmi,
-                _mf._triangular_type_cbmi, _mf._circular_type_cbmi, _mf._unrooted_type_cbmi };
-        final String[] labels = new String[ items.length ];
-        int selected = 0;
-        for ( int i = 0; i < items.length; ++i ) {
-            labels[ i ] = ( items[ i ] != null ) ? items[ i ].getText() : "?";
-            if ( ( items[ i ] != null ) && items[ i ].isSelected() ) {
-                selected = i;
-            }
+    /**
+     * The RECTANGULAR sub-style dropdown: Square / Euro Type / Rounded / Triangular.
+     * <p>
+     * Circular and unrooted are deliberately NOT in this list -- which of the five primary display types you are
+     * looking at is a control-panel decision now, since it is changed far too often to live behind a dialog.
+     * <p>
+     * The dropdown stays usable in EVERY layout, including the radial ones. Picking a style while a circular or
+     * unrooted tree is on screen does not switch the layout (changing a joint style must not yank you out of the
+     * view you are working in); it is remembered and applies the moment a rectangular layout is picked. Both
+     * paths go through {@link ControlPanel#setRectangularStyle}, which owns that distinction.
+     */
+    private JComboBox<String> treeStyleCombo() {
+        final String[] labels = new String[ RECTANGULAR_STYLES.length ];
+        for ( int i = 0; i < RECTANGULAR_STYLES.length; ++i ) {
+            final JCheckBoxMenuItem item = typeMenuItemFor( RECTANGULAR_STYLES[ i ] );
+            labels[ i ] = ( item != null ) ? item.getText() : RECTANGULAR_STYLES[ i ].toString();
         }
         final JComboBox<String> combo = new JComboBox<>( labels );
-        combo.setSelectedIndex( selected );
+        combo.setSelectedIndex( indexOfCurrentStyle() );
+        combo.setToolTipText( RECTANGULAR_STYLE_TIP );
         combo.addActionListener( e -> {
             if ( _refreshing ) {
                 return; // re-seed on a tab switch -- reflect the tab, don't re-apply the style
             }
             final int i = combo.getSelectedIndex();
-            if ( ( i >= 0 ) && ( items[ i ] != null ) && !items[ i ].isSelected() ) {
-                items[ i ].doClick();
-            }
-            if ( orientation_combo != null ) {
-                // orientation is a no-op for the radial circular/unrooted layouts -- grey it out there
-                orientation_combo.setEnabled( !isRadialStyleSelected() );
+            if ( ( i >= 0 ) && ( i < RECTANGULAR_STYLES.length ) ) {
+                controlPanel().setRectangularStyle( RECTANGULAR_STYLES[ i ] );
             }
         } );
-        // tree style is per-tab (TreePanel._graphics_type -> the Type-menu radios, synced to the current tab by
-        // tabChanged): re-seed from the radios on a tab switch, and re-evaluate the orientation combo's enabled state
-        _tab_reseeders.add( () -> {
-            int sel = 0;
-            for ( int i = 0; i < items.length; ++i ) {
-                if ( ( items[ i ] != null ) && items[ i ].isSelected() ) {
-                    sel = i;
-                }
-            }
-            combo.setSelectedIndex( sel );
-            if ( orientation_combo != null ) {
-                orientation_combo.setEnabled( !isRadialStyleSelected() );
-            }
-        } );
+        // The style in force is per-tab in a rectangular layout and pending in a radial one; the control panel
+        // holds both in one place, so re-seeding is just "show whatever it says". Runs on a tab switch AND after
+        // any layout change (MainFrame.typeChanged -> refreshOpenSettingsDialog).
+        _tab_reseeders.add( () -> combo.setSelectedIndex( indexOfCurrentStyle() ) );
         return combo;
+    }
+
+    /** The dropdown index of the rectangular sub-style currently in force (live or pending). */
+    private int indexOfCurrentStyle() {
+        final Options.PHYLOGENY_GRAPHICS_TYPE style = controlPanel().getRectangularStyle();
+        for ( int i = 0; i < RECTANGULAR_STYLES.length; ++i ) {
+            if ( RECTANGULAR_STYLES[ i ] == style ) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private JCheckBoxMenuItem typeMenuItemFor( final Options.PHYLOGENY_GRAPHICS_TYPE style ) {
+        switch ( style ) {
+            case EURO_STYLE:
+                return _mf._euro_type_cbmi;
+            case ROUNDED:
+                return _mf._rounded_type_cbmi;
+            case TRIANGULAR:
+                return _mf._triangular_type_cbmi;
+            default:
+                return _mf._rectangular_type_cbmi;
+        }
+    }
+
+    private ControlPanel controlPanel() {
+        return _mf.getMainPanel().getControlPanel();
+    }
+
+    /** The tip-label angle is a vertical-orientation setting, so it is live only for a rectangular root-top/bottom. */
+    private boolean tipLabelAngleApplies() {
+        return isVerticalOrientation( _mf.getOptions().getTreeOrientation() ) && !isRadialStyleSelected();
     }
 
     private boolean isRadialStyleSelected() {

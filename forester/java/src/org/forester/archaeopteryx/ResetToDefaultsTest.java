@@ -284,17 +284,20 @@ public final class ResetToDefaultsTest {
                         fail( ok, "precondition: annotation columns should be active before reset" );
                     }
                     frame.setDarkMode( true );
-                    //    (c) always-visible ControlPanel controls held STALE: the Dark theme radio + the Inverse
-                    //        search checkbox (plus its Options field), which would clobber the reset on the next click
-                    final javax.swing.AbstractButton dark_rb = findButton( cp, "Dark" );
-                    final javax.swing.AbstractButton light_rb = findButton( cp, "Light" );
+                    //    (c) always-visible ControlPanel controls held STALE: the sun/moon theme toggle + the
+                    //        Inverse search checkbox (plus its Options field), which would clobber the reset on the
+                    //        next click. In the dark theme the toggle must offer the LIGHT theme (the sun).
+                    if ( cp.getThemeToggleButton() == null ) {
+                        fail( ok, "the control panel should have a theme toggle button" );
+                    }
+                    if ( cp.themeToggleOffersDark() ) {
+                        fail( ok, "in the dark theme the toggle must offer the light theme (a sun), not the moon" );
+                    }
                     final javax.swing.AbstractButton inverse_cb = findButton( cp, MainFrame.INVERSE_SEARCH_RESULT_LABEL );
-                    if ( ( dark_rb == null ) || ( light_rb == null ) || ( inverse_cb == null ) ) {
-                        fail( ok, "could not find the control-panel theme radios / inverse search checkbox" );
+                    if ( inverse_cb == null ) {
+                        fail( ok, "could not find the control-panel inverse search checkbox" );
                     }
                     else {
-                        dark_rb.setSelected( true );
-                        light_rb.setSelected( false );
                         inverse_cb.setSelected( true );
                         o.setInverseSearchResult( true );
                     }
@@ -330,12 +333,13 @@ public final class ResetToDefaultsTest {
                     if ( !sameDefaults( probe, Options.createInstance() ) ) {
                         fail( ok, "menu controls were not fully re-seeded to defaults (see field above)" );
                     }
-                    // 3c. theme reverted to light AND the ControlPanel theme radio follows
+                    // 3c. theme reverted to light AND the ControlPanel sun/moon toggle follows (back to the moon,
+                    //     i.e. offering the dark theme again)
                     if ( frame.getConfiguration().getUi() != Configuration.UI.FLAT_LIGHT ) {
                         fail( ok, "theme should reset to FLAT_LIGHT, got " + frame.getConfiguration().getUi() );
                     }
-                    if ( ( light_rb != null ) && !light_rb.isSelected() ) {
-                        fail( ok, "the control-panel 'Light' theme radio must be selected after reset" );
+                    if ( !cp.themeToggleOffersDark() ) {
+                        fail( ok, "after reset the control-panel theme toggle must offer the dark theme (a moon)" );
                     }
                     // 3d. the always-visible Inverse search checkbox was re-seeded (else the next click re-applies it)
                     if ( ( inverse_cb != null ) && inverse_cb.isSelected() ) {

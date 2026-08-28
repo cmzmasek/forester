@@ -121,6 +121,13 @@ public final class ClustergramPresetTest {
                     if ( !tp.tipLabelsBelowColumns() ) {
                         fail( ok, "the labels-below clustergram layout should be active after the preset" );
                     }
+                    // The preset sets the style + orientation directly rather than through MainFrame.typeChanged,
+                    // so the control panel's five-way layout row has to be re-seeded by hand -- otherwise it stays
+                    // lit on root-left while the clustergram is drawn root-at-top.
+                    if ( tp.getControlPanel().selectedLayoutKind() != LayoutIcon.Kind.ROOT_TOP ) {
+                        fail( ok, "Clustergram must leave the control-panel layout row on root-top, got "
+                                + tp.getControlPanel().selectedLayoutKind() );
+                    }
                     if ( tp.isEdited() ) {
                         fail( ok, "Clustergram is display-only and must NOT mark the tree edited (would pop a save "
                                 + "prompt + clear the redo stack)" );

@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JFrame;
-import javax.swing.JRadioButton;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -153,14 +153,19 @@ public final class RadialInteractionTest {
         return ParserBasedPhylogenyFactory.getInstance().create( file, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
     }
 
-    /** The phylogram/cladogram (P/A/C) radios must WORK in CIRCULAR and UNROOTED, not just rectangular: for a
-     *  branch-length tree they must be ENABLED in every radial layout (the pre-0.11.7 "&& != CIRCULAR" force-disable
-     *  greyed them out in circular even though the paint responds). Both enable-logic sites are exercised: the Type-menu
-     *  path (MainFrame.typeChanged) AND the tab-switch path (ControlPanel.tabChanged) -- reverting either gate greys the
-     *  radios out and is caught. Driving the radios (a real doClick gesture) must then CHANGE the radial layout:
-     *  cladogram lays tips ~uniformly, phylogram lays them by root-distance -> the min/max tip-radius spread (a
-     *  scale-independent ratio) DIFFERS between the two (abs-difference, not "clado > phylo", so it is robust across
-     *  circular/unrooted and to the demo's exact branch lengths). */
+    /** The phylogram/cladogram (P/A/C) buttons must WORK in CIRCULAR and UNROOTED, not just rectangular: for a
+     *  branch-length tree P and C must be ENABLED in every radial layout (the pre-0.11.7 "&amp;&amp; != CIRCULAR"
+     *  force-disable greyed them out in circular even though the paint responds).
+     *  <p>
+     *  "A" (aligned phylogram) is the one exception, and it is deliberate: aligning tip LABELS needs somewhere to
+     *  pin them -- the outer ring in circular, which is implemented (isAlignedCircularPhylogram) -- and UNROOTED
+     *  has no such place, because its tips radiate in every direction. So A is live in circular and DEAD in
+     *  unrooted. Both enable-logic sites are exercised: the Type-menu path (MainFrame.typeChanged) AND the
+     *  tab-switch path (ControlPanel.tabChanged) -- reverting either gate is caught. Driving the buttons (a real
+     *  doClick gesture) must then CHANGE the radial layout: cladogram lays tips ~uniformly, phylogram lays them by
+     *  root-distance -> the min/max tip-radius spread (a scale-independent ratio) DIFFERS between the two
+     *  (abs-difference, not "clado &gt; phylo", so it is robust across circular/unrooted and to the demo's exact
+     *  branch lengths). */
     private static boolean displayTypeControlOk() {
         final boolean[] ok = { true };
         withFrame( "scale-axis.xml", ( frame, tp, o ) -> {
@@ -169,19 +174,21 @@ public final class RadialInteractionTest {
                     PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
                 // (1) the Type-menu path (the primary user route): drive the real MainFrame.typeChanged via the layout's
                 // checkbox item -> it must ENABLE the radios in the target radial layout.
+                // A can align to the outer ring in circular, but has nothing to align to in unrooted
+                final boolean aligned_expected = ( gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
                 frame.typeChanged( gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ? frame._circular_type_cbmi
                         : frame._unrooted_type_cbmi );
-                if ( !allPacRadiosEnabled( cp ) ) {
-                    fail( ok, "P/A/C radios must be enabled in " + gt + " via the Type menu (typeChanged): "
-                            + pacRadioState( cp ) );
+                if ( !pacEnabledAsExpected( cp, aligned_expected ) ) {
+                    fail( ok, "P/A/C buttons wrong in " + gt + " via the Type menu (typeChanged): "
+                            + pacRadioState( cp ) + " (expected A=" + aligned_expected + ")" );
                     continue;
                 }
-                // (2) the tab-switch path: ControlPanel.tabChanged must ALSO keep them enabled for this layout.
+                // (2) the tab-switch path: ControlPanel.tabChanged must reach the SAME conclusion for this layout.
                 tp.setPhylogenyGraphicsType( gt );
                 cp.tabChanged();
-                if ( !allPacRadiosEnabled( cp ) ) {
-                    fail( ok, "P/A/C radios must be enabled in " + gt + " via a tab switch (tabChanged): "
-                            + pacRadioState( cp ) );
+                if ( !pacEnabledAsExpected( cp, aligned_expected ) ) {
+                    fail( ok, "P/A/C buttons wrong in " + gt + " via a tab switch (tabChanged): "
+                            + pacRadioState( cp ) + " (expected A=" + aligned_expected + ")" );
                     continue;
                 }
                 // (3) driving them must change the radial layout (else the radios are inert in this layout)
@@ -196,9 +203,10 @@ public final class RadialInteractionTest {
         return ok[ 0 ];
     }
 
-    private static boolean allPacRadiosEnabled( final ControlPanel cp ) {
-        return cp.getDisplayAsUnalignedPhylogramRb().isEnabled() && cp.getDisplayAsAlignedPhylogramRb().isEnabled()
-                && cp.getDisplayAsCladogramRb().isEnabled();
+    /** P and C are always live for a branch-length tree; A only where its labels have somewhere to line up. */
+    private static boolean pacEnabledAsExpected( final ControlPanel cp, final boolean aligned_expected ) {
+        return cp.getDisplayAsUnalignedPhylogramRb().isEnabled() && cp.getDisplayAsCladogramRb().isEnabled()
+                && ( cp.getDisplayAsAlignedPhylogramRb().isEnabled() == aligned_expected );
     }
 
     private static String pacRadioState( final ControlPanel cp ) {
@@ -209,7 +217,7 @@ public final class RadialInteractionTest {
     /** doClick the given display-type radio (the real user gesture: setTreeDisplayType + showWhole), paint the radial
      *  canvas at its (square) preferred size so node coords are live device pixels, and return the external-tip
      *  min/max radius ratio about the root (1 = all tips on one ring, &lt;1 = spread by distance). */
-    private static double tipRadiusSpread( final TreePanel tp, final JRadioButton display_type_rb ) {
+    private static double tipRadiusSpread( final TreePanel tp, final JToggleButton display_type_rb ) {
         display_type_rb.doClick();
         final java.awt.Dimension pref = tp.getPreferredSize();
         final int w = Math.max( 50, pref.width );

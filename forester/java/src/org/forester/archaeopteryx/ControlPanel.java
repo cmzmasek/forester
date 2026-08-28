@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -52,20 +53,22 @@ import java.util.Set;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -126,6 +129,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     private static final int    ZOOM_Y_BUTTON_HEIGHT      = 18;
     // Display checkboxes are packed tightly together (no extra gap between consecutive ones).
     private static final int    CHECKBOX_GAP              = 0;
+    // The P/A/C row carries no letters any more, so the words live in the tooltip + accessible name.
+    static final String PHYLOGRAM_TIP = "phylogram: branch lengths drawn to scale, so the tips end ragged";
+    static final String ALIGNED_PHYLOGRAM_TIP =
+            "aligned phylogram: branch lengths to scale, with each tip carried on to a common tip column";
+    static final String CLADOGRAM_TIP = "cladogram: topology only -- branch lengths ignored, all tips flush";
     private static final String SEARCH_TIP_TEXT = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long serialVersionUID = -8463483932821545633L;
     private NodeClickAction _action_when_node_clicked;
@@ -156,12 +164,19 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int _cut_subtree_item;
     private JButton _decr_domain_structure_evalue_thr;
     private int _delete_node_or_subtree_item;
-    private JRadioButton _display_as_unaligned_phylogram_rb;
-    private JRadioButton _display_as_aligned_phylogram_rb;
-    private JRadioButton _display_as_cladogram_rb;
+    private JToggleButton _display_as_unaligned_phylogram_rb;
+    private JToggleButton _display_as_aligned_phylogram_rb;
+    private JToggleButton _display_as_cladogram_rb;
     private ButtonGroup _display_as_buttongroup;
-    private JRadioButton _light_mode_rb;
-    private JRadioButton _dark_mode_rb;
+    private JButton      _theme_toggle_b;
+    // The layout row: one toggle per PRIMARY DISPLAY TYPE (rectangular root-left/top/bottom, circular, unrooted)
+    // in a single exclusive group, so any layout is one click from any other.
+    private final EnumMap<LayoutIcon.Kind, JToggleButton> _layout_buttons = new EnumMap<>(LayoutIcon.Kind.class);
+    private ButtonGroup _layout_buttongroup;
+    // The rectangular sub-style (Square/Euro/Rounded/Triangular, chosen in Settings) to come BACK to when one of
+    // the three rectangular orientations is picked after a trip through circular/unrooted -- otherwise a Rounded
+    // tree would silently return as Square. Kept current by syncLayoutButtons() from the live tree.
+    private Options.PHYLOGENY_GRAPHICS_TYPE _last_rectangular_style = Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
     // Tree checkboxes
     private JCheckBox _display_internal_data;
     private JCheckBox _display_external_data;
@@ -536,15 +551,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    public JRadioButton getDisplayAsCladogramRb() {
+    public JToggleButton getDisplayAsCladogramRb() {
         return _display_as_cladogram_rb;
     }
 
-    public JRadioButton getDisplayAsAlignedPhylogramRb() {
+    public JToggleButton getDisplayAsAlignedPhylogramRb() {
         return _display_as_aligned_phylogram_rb;
     }
 
-    public JRadioButton getDisplayAsUnalignedPhylogramRb() {
+    public JToggleButton getDisplayAsUnalignedPhylogramRb() {
         return _display_as_unaligned_phylogram_rb;
     }
 
@@ -1218,12 +1233,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         jcb.addActionListener(this);
     }
 
-    private final void setupJRadioButton(final JRadioButton rb) {
-        rb.setFocusPainted(false);
-        rb.setFont(ControlPanel.jcb_font);
-        rb.addActionListener(this);
-    }
-
     void addJTextField(final JTextField tf, final JPanel p) {
         p.add(tf);
         tf.addActionListener(this);
@@ -1287,18 +1296,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (p != null) && p.isVisible();
     }
 
-    /** Re-seeds the always-visible control-panel controls that hold their OWN state (theme radios; the two search
+    /** Re-seeds the always-visible control-panel controls that hold their OWN state (the theme toggle; the two search
      *  modifier checkboxes; the per-box field/mode selectors) from the current Configuration/Options, for Reset to
      *  Defaults. Without this they stay stale after a reset -- and worse, the search checkboxes write their state
      *  back to Options on the next click, which would silently clobber the reset. Uses setSelected (fires no
      *  ActionListener) for the checkboxes; the combos are re-seeded under the _search_controls_adjusting guard so
      *  their ActionListeners don't launch a search mid-reset. */
     void resyncFromOptions() {
-        if ( ( _light_mode_rb != null ) && ( _dark_mode_rb != null ) ) {
-            final boolean dark = getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
-            _light_mode_rb.setSelected( !dark );
-            _dark_mode_rb.setSelected( dark );
-        }
+        updateThemeToggle();
+        syncLayoutButtons();
         final Options o = getOptions();
         if ( o != null ) {
             if ( _search_case_sensitive_cb != null ) {
@@ -2031,12 +2037,26 @@ final class ControlPanel extends JPanel implements ActionListener {
         setTreeDisplayType(getMainPanel().getCurrentTabIndex(), t);
     }
 
+    /**
+     * Enables/disables the P/A/C row -- {@code b} is "this tree has branch lengths", so all three are live only
+     * when there is something for a phylogram to draw.
+     * <p>
+     * "A" (aligned phylogram) carries one extra condition: it needs somewhere to PIN the tip labels -- the common
+     * right-hand column in the rectangular layouts, the outer ring in circular. UNROOTED has neither, because its
+     * tips radiate in every direction, so the setting has no meaning and no implementation there and the tree just
+     * draws as a plain phylogram. Rather than leave a button that silently does nothing, it is disabled in
+     * unrooted and shown as "P" -- which is what unrooted was already drawing anyway.
+     */
     void setDrawPhylogramEnabled(final boolean b) {
         if (getDisplayAsAlignedPhylogramRb() != null && getDisplayAsUnalignedPhylogramRb() != null
                 && getDisplayAsCladogramRb() != null) {
-            getDisplayAsAlignedPhylogramRb().setEnabled(b);
+            final boolean unrooted = isUnrootedLayout();
+            getDisplayAsAlignedPhylogramRb().setEnabled(b && !unrooted);
             getDisplayAsUnalignedPhylogramRb().setEnabled(b);
             getDisplayAsCladogramRb().setEnabled(b);
+            if (b) {
+                showAlignedAsUnalignedInUnrooted(unrooted);
+            }
         }
     }
 
@@ -2353,8 +2373,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupControls() {
-        setupThemeButtons();
-        nextRowGap(SECTION_GAP); // more space between the Light/Dark row and the P/A/C row
+        setupThemeToggle();
+        nextRowGap(SECTION_GAP); // more space between the theme toggle and the layout row
+        setupLayoutButtons();
+        nextRowGap(TIGHT_GAP); // layout and P/A/C are both "how the tree is drawn" -- keep them as one block
         setupTreeDisplayTypeOptions();
         nextRowGap(SECTION_GAP); // more space between the P/A/C row and "Color by"
         setupColorByProperty();
@@ -2897,54 +2919,344 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /**
-     * A compact Light/Dark theme switch shown at the very top of the control panel,
-     * just above the P/A/C display-type selector. The two radio buttons drive
-     * {@link MainFrame#setDarkMode(boolean)} directly.
+     * The single sun/moon theme switch shown at the very top of the control panel, just above the P/A/C
+     * display-type selector (it replaced the former pair of "Light"/"Dark" radio buttons -- one control, one
+     * click, no reading required). The button always offers the theme it will switch TO: a crescent moon while
+     * the light theme is active, a sun while the dark one is. It drives {@link MainFrame#setDarkMode(boolean)}
+     * directly, and {@code setDarkMode} calls {@link #updateThemeToggle()} back, so the glyph stays correct no
+     * matter who flipped the theme (this button, a restart, or Reset to Defaults).
      */
-    void setupThemeButtons() {
-        _light_mode_rb = new JRadioButton("Light");
-        _dark_mode_rb = new JRadioButton("Dark");
-        final boolean dark = getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
-        _light_mode_rb.setSelected(!dark);
-        _dark_mode_rb.setSelected(dark);
-        final ButtonGroup group = new ButtonGroup();
-        group.add(_light_mode_rb);
-        group.add(_dark_mode_rb);
-        _light_mode_rb.setToolTipText("light theme");
-        _dark_mode_rb.setToolTipText("dark theme");
-        for (final JRadioButton rb : new JRadioButton[] { _light_mode_rb, _dark_mode_rb }) {
-            rb.setFocusPainted(false);
-            rb.setFont(ControlPanel.jcb_font);
-        }
-        _light_mode_rb.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(false));
-        _dark_mode_rb.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(true));
-        final JPanel p = new JPanel(new GridLayout(1, 2, 0, 0));
-        p.setFont(ControlPanel.jcb_font);
-        p.add(_light_mode_rb);
-        p.add(_dark_mode_rb);
+    void setupThemeToggle() {
+        _theme_toggle_b = new JButton();
+        _theme_toggle_b.setFocusPainted(false);
+        _theme_toggle_b.setFont(ControlPanel.jcb_font);
+        // borderless, so a lone icon at the top of the panel reads as a switch rather than a stray button
+        _theme_toggle_b.putClientProperty(FlatClientProperties.BUTTON_TYPE,
+                FlatClientProperties.BUTTON_TYPE_TOOLBAR_BUTTON);
+        _theme_toggle_b.setMargin(new Insets(3, 5, 3, 5));
+        _theme_toggle_b.addActionListener(e -> getMainPanel().getMainFrame().setDarkMode(!isDarkTheme()));
+        updateThemeToggle();
+        final JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        p.add(_theme_toggle_b);
         add(p);
     }
 
+    /** True when the dark FlatLaf theme is the one currently installed. */
+    private boolean isDarkTheme() {
+        return getConfiguration().getUi() == Configuration.UI.FLAT_DARK;
+    }
+
+    /**
+     * Re-seeds the theme toggle's glyph and tooltip from the LIVE theme. Called from {@link
+     * MainFrame#setDarkMode(boolean)} (so every path that changes the theme updates the button) and from
+     * {@link #resyncFromOptions()} (Reset to Defaults).
+     */
+    void updateThemeToggle() {
+        if (_theme_toggle_b == null) {
+            return;
+        }
+        final boolean dark = isDarkTheme();
+        // the icon scales with the GUI font size, so it stays proportionate under a large-font / uiScale setup
+        final int size = Math.max(14, Math.round(Configuration.getGuiFontSize() * 1.6f));
+        _theme_toggle_b.setIcon(new ThemeToggleIcon(dark, size)); // dark theme -> offer the sun (switch to light)
+        final String what = dark ? "switch to the light theme" : "switch to the dark theme";
+        _theme_toggle_b.setToolTipText(what);
+        // the button carries no text, so spell the action out for assistive technology
+        _theme_toggle_b.getAccessibleContext().setAccessibleName(what);
+    }
+
+    /** Test hook: true if the theme toggle is currently offering the DARK theme (i.e. it shows the moon). */
+    boolean themeToggleOffersDark() {
+        final Icon icon = (_theme_toggle_b == null) ? null : _theme_toggle_b.getIcon();
+        return (icon instanceof ThemeToggleIcon) && ((ThemeToggleIcon) icon).isMoon();
+    }
+
+    /** Test hook: the theme toggle button itself (icon-only, so it cannot be found by button text). */
+    JButton getThemeToggleButton() {
+        return _theme_toggle_b;
+    }
+
+    /**
+     * The phylogram/cladogram row -- the former "P" / "A" / "C" letter radios, now three mini-tree glyphs that
+     * show what the setting does to the tips (ragged / dotted-out-to-a-column / flush). The letters were opaque
+     * to anyone who had not read the manual; the tooltips carry the words.
+     */
     void setupTreeDisplayTypeOptions() {
-        _display_as_unaligned_phylogram_rb = new JRadioButton("P");
-        _display_as_aligned_phylogram_rb = new JRadioButton("A");
-        _display_as_cladogram_rb = new JRadioButton("C");
+        final int size = displayTypeIconSize();
+        _display_as_unaligned_phylogram_rb = new JToggleButton(
+                new DisplayTypeIcon(DisplayTypeIcon.Kind.PHYLOGRAM, size));
+        _display_as_aligned_phylogram_rb = new JToggleButton(
+                new DisplayTypeIcon(DisplayTypeIcon.Kind.ALIGNED_PHYLOGRAM, size));
+        _display_as_cladogram_rb = new JToggleButton(new DisplayTypeIcon(DisplayTypeIcon.Kind.CLADOGRAM, size));
         _display_as_buttongroup = new ButtonGroup();
         _display_as_buttongroup.add(_display_as_unaligned_phylogram_rb);
         _display_as_buttongroup.add(_display_as_aligned_phylogram_rb);
         _display_as_buttongroup.add(_display_as_cladogram_rb);
-        getDisplayAsUnalignedPhylogramRb().setToolTipText("(unaligned) phylogram");
-        getDisplayAsAlignedPhylogramRb().setToolTipText("aligned phylogram");
-        getDisplayAsCladogramRb().setToolTipText("cladogram");
-        setupJRadioButton(getDisplayAsUnalignedPhylogramRb());
-        setupJRadioButton(getDisplayAsAlignedPhylogramRb());
-        setupJRadioButton(getDisplayAsCladogramRb());
+        describe(getDisplayAsUnalignedPhylogramRb(), PHYLOGRAM_TIP);
+        describe(getDisplayAsAlignedPhylogramRb(), ALIGNED_PHYLOGRAM_TIP);
+        describe(getDisplayAsCladogramRb(), CLADOGRAM_TIP);
+        setupGlyphToggle(getDisplayAsUnalignedPhylogramRb());
+        setupGlyphToggle(getDisplayAsAlignedPhylogramRb());
+        setupGlyphToggle(getDisplayAsCladogramRb());
+        getDisplayAsUnalignedPhylogramRb().addActionListener(this);
+        getDisplayAsAlignedPhylogramRb().addActionListener(this);
+        getDisplayAsCladogramRb().addActionListener(this);
         final JPanel p = new JPanel(new GridLayout(1, 3, 0, 0));
         p.setFont(ControlPanel.jcb_font);
         p.add(_display_as_unaligned_phylogram_rb);
         p.add(_display_as_aligned_phylogram_rb);
         p.add(_display_as_cladogram_rb);
         add(p);
+    }
+
+    /**
+     * The layout row: the FIVE primary display types as one exclusive group of tree glyphs -- rectangular with
+     * the root at left / top / bottom, plus circular and unrooted. Layout family and orientation are the same
+     * question ("how is this tree drawn?"), so they are one control rather than two: every layout is one click
+     * away, and there is no hidden "which orientation do I come back to?" state.
+     * <p>
+     * The buttons do NOT re-implement the apply logic. A style change is routed through the (hidden) Type-menu
+     * item, exactly as the Settings dialog does it, so {@link MainFrame#typeChanged(Object)} still runs the
+     * whole established chain -- radial re-fit, the Triangular-to-Cladogram nudge, the zoom-cluster relabel,
+     * radial-label auto-enable. An orientation-only change does the re-fit the style path would have done.
+     */
+    void setupLayoutButtons() {
+        _layout_buttongroup = new ButtonGroup();
+        final LayoutIcon.Kind[] kinds = LayoutIcon.Kind.values();
+        final JPanel p = new JPanel(new GridLayout(1, kinds.length, 0, 0));
+        final int size = glyphIconSize();
+        for (final LayoutIcon.Kind kind : kinds) {
+            final JToggleButton b = new JToggleButton(new LayoutIcon(kind, size));
+            describe(b, layoutTooltip(kind));
+            setupGlyphToggle(b);
+            b.addActionListener(e -> applyLayoutChoice(kind));
+            _layout_buttongroup.add(b);
+            _layout_buttons.put(kind, b);
+            p.add(b);
+        }
+        syncLayoutButtons();
+        add(p);
+    }
+
+    /** Icon-only toggles in a narrow panel: no focus ring, and margins trimmed so five of them fit a row. */
+    private void setupGlyphToggle(final JToggleButton b) {
+        b.setFocusPainted(false);
+        b.setFont(ControlPanel.jcb_font);
+        b.setMargin(new Insets(3, 1, 3, 1));
+    }
+
+    /** Tooltip + accessible name: these buttons carry no text, so the words have to live somewhere. */
+    private static void describe(final AbstractButton b, final String text) {
+        b.setToolTipText(text);
+        b.getAccessibleContext().setAccessibleName(text);
+    }
+
+    /** Glyph size for the layout row: scales with the GUI font so it holds up at a large font size. */
+    private static int glyphIconSize() {
+        return Math.max(13, Math.round(Configuration.getGuiFontSize() * 1.5f));
+    }
+
+    /**
+     * Glyph HEIGHT for the P/A/C row (the icon derives its width from it). Bigger than the layout row's, because
+     * those glyphs carry more -- a tree AND its tip labels -- and there are only three of them across the panel
+     * instead of five, so the buttons are wide enough to show it.
+     */
+    private static int displayTypeIconSize() {
+        return Math.max(16, Math.round(Configuration.getGuiFontSize() * 1.85f));
+    }
+
+    private static String layoutTooltip(final LayoutIcon.Kind kind) {
+        switch (kind) {
+            case ROOT_LEFT:
+                return "rectangular, root at left";
+            case ROOT_TOP:
+                return "rectangular, root at top";
+            case ROOT_BOTTOM:
+                return "rectangular, root at bottom";
+            case CIRCULAR:
+                return "circular";
+            default:
+                return "unrooted";
+        }
+    }
+
+    /** The tree orientation a layout button stands for, or null for the two radial layouts (where it is a no-op). */
+    private static Options.TREE_ORIENTATION orientationFor(final LayoutIcon.Kind kind) {
+        switch (kind) {
+            case ROOT_LEFT:
+                return Options.TREE_ORIENTATION.ROOT_LEFT;
+            case ROOT_TOP:
+                return Options.TREE_ORIENTATION.ROOT_TOP;
+            case ROOT_BOTTOM:
+                return Options.TREE_ORIENTATION.ROOT_BOTTOM;
+            default:
+                return null;
+        }
+    }
+
+    /** True for the four styles that are drawn rectangularly (they differ only in how a branch joint is drawn). */
+    static boolean isRectangularFamily(final Options.PHYLOGENY_GRAPHICS_TYPE t) {
+        return (t != Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (t != Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
+    }
+
+    /** Which of the five layout buttons a (style, orientation) pair corresponds to. */
+    static LayoutIcon.Kind layoutKindFor(final Options.PHYLOGENY_GRAPHICS_TYPE type,
+                                         final Options.TREE_ORIENTATION orientation) {
+        if (type == Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
+            return LayoutIcon.Kind.CIRCULAR;
+        }
+        if (type == Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
+            return LayoutIcon.Kind.UNROOTED;
+        }
+        if (orientation == Options.TREE_ORIENTATION.ROOT_TOP) {
+            return LayoutIcon.Kind.ROOT_TOP;
+        }
+        if (orientation == Options.TREE_ORIENTATION.ROOT_BOTTOM) {
+            return LayoutIcon.Kind.ROOT_BOTTOM;
+        }
+        return LayoutIcon.Kind.ROOT_LEFT;
+    }
+
+    private void applyLayoutChoice(final LayoutIcon.Kind kind) {
+        final MainFrame mf = (getMainPanel() == null) ? null : getMainPanel().getMainFrame();
+        if (mf == null) {
+            return;
+        }
+        final Options o = getOptions();
+        final Options.TREE_ORIENTATION orientation = orientationFor(kind);
+        final boolean orientation_changed = (o != null) && (orientation != null)
+                && (o.getTreeOrientation() != orientation);
+        if (orientation_changed) {
+            // set BEFORE the style change, so the re-fit that typeChanged does lands on the FINAL orientation
+            o.setTreeOrientation(orientation);
+        }
+        final JCheckBoxMenuItem target = typeMenuItemFor(kind, mf);
+        if ((target != null) && !target.isSelected()) {
+            target.doClick(); // MainFrame.typeChanged runs the whole established apply chain
+        }
+        else if (orientation_changed && (getMainPanel().getCurrentTreePanel() != null)) {
+            // same style, only the orientation moved: do the re-fit the style path would have done (orientation
+            // swaps the layout's width and height, so a plain repaint would leave the old scroll extent)
+            updateZoomButtonsForLayout();
+            showWhole();
+            getMainPanel().getCurrentTreePanel().repaint();
+        }
+        syncLayoutButtons();
+        mf.refreshOpenSettingsDialog(); // the Rectangular-style dropdown greys out for the radial layouts
+    }
+
+    /** The hidden Type-menu item a layout button drives; a rectangular button returns to the remembered sub-style. */
+    private JCheckBoxMenuItem typeMenuItemFor(final LayoutIcon.Kind kind, final MainFrame mf) {
+        switch (kind) {
+            case CIRCULAR:
+                return mf._circular_type_cbmi;
+            case UNROOTED:
+                return mf._unrooted_type_cbmi;
+            default:
+                return rectangularMenuItem(_last_rectangular_style, mf);
+        }
+    }
+
+    /** The hidden Type-menu item for one of the four rectangular sub-styles. */
+    private static JCheckBoxMenuItem rectangularMenuItem(final Options.PHYLOGENY_GRAPHICS_TYPE style,
+                                                         final MainFrame mf) {
+        switch (style) {
+            case EURO_STYLE:
+                return mf._euro_type_cbmi;
+            case ROUNDED:
+                return mf._rounded_type_cbmi;
+            case TRIANGULAR:
+                return mf._triangular_type_cbmi;
+            default:
+                return mf._rectangular_type_cbmi;
+        }
+    }
+
+    /** The rectangular sub-style in force -- the live one in a rectangular layout, the pending one in a radial. */
+    Options.PHYLOGENY_GRAPHICS_TYPE getRectangularStyle() {
+        return _last_rectangular_style;
+    }
+
+    /**
+     * Sets the rectangular sub-style (what the Settings "Rectangular style" dropdown drives). In a rectangular
+     * layout it applies immediately, through the hidden Type-menu item, so the established apply path runs.
+     * <p>
+     * In circular or unrooted it is REMEMBERED instead, and takes effect the moment a rectangular layout is
+     * picked. Changing how a branch JOINT is drawn must never yank the user out of the radial layout they are
+     * looking at -- but neither should the setting be unreachable there, since choosing it ahead of time is a
+     * perfectly reasonable thing to do.
+     */
+    void setRectangularStyle(final Options.PHYLOGENY_GRAPHICS_TYPE style) {
+        if ((style == null) || !isRectangularFamily(style)) {
+            return;
+        }
+        _last_rectangular_style = style;
+        final MainFrame mf = (getMainPanel() == null) ? null : getMainPanel().getMainFrame();
+        if (mf == null) {
+            return;
+        }
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
+        if ((tp != null) && !isRectangularFamily(tp.getPhylogenyGraphicsType())) {
+            return; // radial: remembered, applied on the way back to a rectangular layout
+        }
+        final JCheckBoxMenuItem item = rectangularMenuItem(style, mf);
+        if ((item != null) && !item.isSelected()) {
+            item.doClick();
+        }
+    }
+
+    /**
+     * Re-seeds the layout row from the LIVE tree (style is per-tab) and the live orientation (global), and
+     * remembers the current rectangular sub-style for the trip back from a radial layout. Called from {@link
+     * MainFrame#typeChanged(Object)} (so a Settings-dialog style change updates the row too), {@link
+     * #tabChanged()} and {@link #resyncFromOptions()} (Reset to Defaults). {@code setSelected} fires no
+     * ActionListener, so this cannot loop back into {@link #applyLayoutChoice}.
+     */
+    void syncLayoutButtons() {
+        if (_layout_buttons.isEmpty()) {
+            return;
+        }
+        final Options o = safeOptions();
+        final TreePanel tp = (getMainPanel() == null) ? null : getMainPanel().getCurrentTreePanel();
+        Options.PHYLOGENY_GRAPHICS_TYPE type = (tp != null) ? tp.getPhylogenyGraphicsType()
+                : ((o != null) ? o.getPhylogenyGraphicsType() : Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
+        if (type == null) {
+            type = Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+        }
+        if (isRectangularFamily(type)) {
+            _last_rectangular_style = type;
+        }
+        final Options.TREE_ORIENTATION orientation = (o != null) ? o.getTreeOrientation()
+                : Options.TREE_ORIENTATION.ROOT_LEFT;
+        final JToggleButton b = _layout_buttons.get(layoutKindFor(type, orientation));
+        if (b != null) {
+            b.setSelected(true);
+        }
+    }
+
+    /** {@link #getOptions()} without the NPE while the panel is still being built into a half-wired MainPanel. */
+    private Options safeOptions() {
+        try {
+            return getOptions();
+        }
+        catch ( final NullPointerException e ) {
+            return null;
+        }
+    }
+
+    /** Test hook: the layout button for a display type, so a test can click the real control. */
+    JToggleButton getLayoutButton(final LayoutIcon.Kind kind) {
+        return _layout_buttons.get(kind);
+    }
+
+    /** Test hook: which of the five layout buttons is currently lit. */
+    LayoutIcon.Kind selectedLayoutKind() {
+        for (final java.util.Map.Entry<LayoutIcon.Kind, JToggleButton> e : _layout_buttons.entrySet()) {
+            if (e.getValue().isSelected()) {
+                return e.getKey();
+            }
+        }
+        return null;
     }
 
     void setUpControlsForDomainStrucures() {
@@ -3361,6 +3673,38 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (getCurrentTreePanel() != null) && getCurrentTreePanel().isRadialLayout();
     }
 
+    /**
+     * Keeps the "A" BUTTON honest in unrooted without losing the tab's choice. While a tab is unrooted its "A"
+     * selection is shown as "P" (which is what unrooted actually draws), but the tab's STORED display type is
+     * deliberately left as ALIGNED_PHYLOGRAM -- the store is the memory, the button is only the override -- so
+     * "A" comes straight back the moment that tab leaves unrooted. Writing the fallback into the store instead
+     * would silently convert a deliberate "A" into "P" for good.
+     * <p>
+     * Safe against the paint path: {@code getTreeDisplayType()} (what TreePanel renders from) reads the BUTTONS,
+     * so an unrooted tree draws unaligned; {@code isDrawPhylogram()} reads the store, and both A and P are
+     * phylogram flavors there, so it answers the same either way.
+     */
+    private void showAlignedAsUnalignedInUnrooted(final boolean unrooted) {
+        final int tab = getMainPanel().getCurrentTabIndex();
+        if ((tab < 0) || (tab >= getTreeDisplayTypes().size())
+                || (getTreeDisplayType(tab) != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)) {
+            return;
+        }
+        // setSelected fires no ActionListener, so neither branch touches the per-tab store or the global default
+        if (unrooted) {
+            getDisplayAsUnalignedPhylogramRb().setSelected(true);
+        }
+        else {
+            getDisplayAsAlignedPhylogramRb().setSelected(true);
+        }
+    }
+
+    /** The UNROOTED layout specifically (circular is radial too, but it CAN align its labels, on the outer ring). */
+    private boolean isUnrootedLayout() {
+        return (getCurrentTreePanel() != null)
+                && (getCurrentTreePanel().getPhylogenyGraphicsType() == Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
+    }
+
     // A zoom re-centers the scroll bar of the SCREEN axis it changes. The depth (x) axis is drawn horizontally
     // normally but VERTICALLY in a vertical orientation, and the breadth (y) axis is the other way round -- so the
     // zoom methods must pick the scroll bar by orientation, else zooming re-centers the wrong axis (or not at all).
@@ -3541,15 +3885,19 @@ final class ControlPanel extends JPanel implements ActionListener {
             // real phylogram since 0.11.7 (isCircularPhylogram), UNROOTED always has -- so enable on branch-length
             // presence alone and PRESERVE the tab's chosen display type (the old "&& != CIRCULAR" branch force-disabled
             // the radios AND silently forced CLADOGRAM whenever a branch-length tree was viewed circular).
+            // Re-seed the tab's OWN stored choice FIRST, then work out what is enabled for it. The other order
+            // reads the P/A/C buttons while they still hold the PREVIOUS tab's selection, so the "A is dead in
+            // unrooted" rule below would judge (and overwrite) the incoming tab by the outgoing tab's state.
             if (getCurrentTreePanel().isPhyHasBranchLengths()) {
-                setDrawPhylogramEnabled(true);
                 setTreeDisplayType(getTreeDisplayType(getMainPanel().getCurrentTabIndex()));
+                setDrawPhylogramEnabled(true);
             } else {
-                setDrawPhylogramEnabled(false);
                 setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
+                setDrawPhylogramEnabled(false);
             }
             getMainPanel().getMainFrame()
                     .setSelectedTypeInTypeMenu(getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType());
+            syncLayoutButtons(); // the tree style is per-tab, so the layout row follows the tab
             // re-seed a left-open modeless Settings dialog's per-tab controls (tree style, palette, Time Axis) so it
             // reflects the now-current tab -- AFTER the Type-menu radios above are synced (the tree-style reseeder
             // reads them)

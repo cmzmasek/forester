@@ -1196,6 +1196,9 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getCurrentTreePanel().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         _mainpanel.getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         getMainPanel().getMainFrame().setSelectedTypeInTypeMenu(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
+        // ... and the control panel's layout row too: with a configuration whose default style is circular or
+        // unrooted, the row would otherwise stay lit on the radial button while the new tree is drawn rectangular
+        getMainPanel().getControlPanel().syncLayoutButtons();
         activateSaveAllIfNeeded();
         System.gc();
     }

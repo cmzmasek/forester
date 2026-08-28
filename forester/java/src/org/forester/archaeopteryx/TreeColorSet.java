@@ -52,7 +52,7 @@ public final class TreeColorSet {
             BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
     // Archaeopteryx has exactly two tree color schemes: index 0 = Dark, index 1 = Light. They mirror the
     // FlatLaf light/dark UI theme and are selected by MainFrame.updateTreeCanvasColors (driven by the
-    // Settings "Theme" Light/Dark control). There is no scheme chooser or cycling.
+    // control panel's sun/moon theme toggle). There is no scheme chooser or cycling.
     static final String[]      SCHEME_NAMES               = { "Dark", "Light" };
     static final int           DARK_COLOR_SCHEME          = 0;
     static final int           LIGHT_COLOR_SCHEME         = 1;

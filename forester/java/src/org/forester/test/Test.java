@@ -1059,6 +1059,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Theme toggle (sun/moon) icon: ");
+        if (org.forester.archaeopteryx.ThemeToggleIconTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree layout / display-type glyphs: ");
+        if (org.forester.archaeopteryx.TreeGlyphIconTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Control-panel layout buttons: ");
+        if (org.forester.archaeopteryx.LayoutButtonsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Process menu animation: ");
         if (org.forester.archaeopteryx.ProcessMenuAnimationTest.test()) {
             System.out.println("OK.");
