@@ -150,11 +150,11 @@ public final class AncestralPieRenderTest {
 
                     // VERTICAL PARITY: pies ride the rotation in a root-top orientation (the disc stays a disc); assert
                     // the colored pie ink is still there (comparable to horizontal, above the legend-only floor).
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     if ( countVivid( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) ) < ( on / 3 ) ) {
                         fail( ok, "pies must draw in a vertical (root-top) orientation" );
                     }
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
                     // the state legend renders (>= 2 distinct swatch colors for a multi-state trait); and in B&W it
                     // grays the swatches (0 vivid colors) so the key matches the gray wedges

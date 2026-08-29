@@ -82,7 +82,7 @@ public final class TipImageRenderTest {
             // (1) the label advance is > 0 for an imaged tip when tip images are on, and 0 when off
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 final PhylogenyNode imaged = tp.getPhylogeny().getExternalNodes().get( 0 );
                 tp.getOptions().setShowTipImages( false );
                 if ( tp.tipImageAdvanceForTest( imaged ) != 0 ) {
@@ -98,7 +98,7 @@ public final class TipImageRenderTest {
             // past the images instead of overprinting the shifted labels
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.setSize( 760, 480 );
                 tp.getOptions().setShowTipImages( false );
                 tp.calculateLongestExtNodeInfo();
@@ -125,7 +125,7 @@ public final class TipImageRenderTest {
             final int[] shown = { 0 }, hidden = { 0 };
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.setPreferredSize( new java.awt.Dimension( 760, 480 ) );
                 tp.setSize( 760, 480 );
                 mf[ 0 ].showWhole();
@@ -148,7 +148,7 @@ public final class TipImageRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 try {
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.getOptions().setShowTipImages( true );
                     tp.setPreferredSize( new java.awt.Dimension( 760, 480 ) );
                     tp.setSize( 760, 480 );
@@ -199,7 +199,7 @@ public final class TipImageRenderTest {
         final int[] off = { 0 }, on = { 0 };
         SwingUtilities.invokeAndWait( () -> {
             tp.setPhylogenyGraphicsType( type );
-            tp.getOptions().setTreeOrientation( orient );
+            tp.setTreeOrientation( orient );
             tp.setPreferredSize( new java.awt.Dimension( w, h ) );
             tp.setSize( w, h );
             mf.showWhole();

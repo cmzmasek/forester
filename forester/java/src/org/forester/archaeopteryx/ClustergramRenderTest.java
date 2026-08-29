@@ -79,7 +79,7 @@ public final class ClustergramRenderTest {
                     specs.add( new AnnotationColumns.ColumnSpec( "data:host", AnnotationColumns.Type.COLOR_STRIP ) );
                     specs.add( new AnnotationColumns.ColumnSpec( "data:viral_load", AnnotationColumns.Type.HEATMAP ) );
                     tp.setAnnotationColumns( specs );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     final int w = 720, h = 720;
 
                     o.setTipLabelsBelowColumns( false );
@@ -107,7 +107,7 @@ public final class ClustergramRenderTest {
                         }
                     }
                     // the option must be inert in the HORIZONTAL orientation (no columns axis to sit below)
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     if ( tp.tipLabelsBelowColumns() ) {
                         fail( ok, "Tip Labels Below Columns must be a no-op in the horizontal orientation" );
                     }

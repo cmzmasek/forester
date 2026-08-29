@@ -198,7 +198,7 @@ public final class AnnotationColumnsToolTest {
                 // vertical orientation and verify (a) the columns paint (more ink than the bare vertical tree),
                 // (b) the header hit-test works, and (c) the focused-column legend still draws.
                 tp.setFocusedAnnotationColumn( -1 );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                 tp.getControlPanel().updateZoomButtonsForLayout();
                 // count SATURATED (colored) pixels: the tree/labels/bars/text are grayscale, so only the strip +
                 // heat-map CELLS produce colored pixels -- a check that is not confounded by the layout reservation
@@ -253,7 +253,7 @@ public final class AnnotationColumnsToolTest {
                     System.out.println( "  [AnnotationColumnsToolTest] vertical annotation cells absent from the export" );
                     ok[ 0 ] = false;
                 }
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // restore for the rest
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // restore for the rest
                 mf[ 0 ].showWhole();
 
                 // STACKED_BAR: three numeric fields MERGE into ONE segmented bar (each a distinctly-coloured series).

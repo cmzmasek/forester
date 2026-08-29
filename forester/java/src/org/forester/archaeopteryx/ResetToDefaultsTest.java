@@ -105,7 +105,7 @@ public final class ResetToDefaultsTest {
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
         o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
         o.setAbbreviateScientificTaxonNames( true );
-        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT
+        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT (the DEFAULT new tabs get)
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
         o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET

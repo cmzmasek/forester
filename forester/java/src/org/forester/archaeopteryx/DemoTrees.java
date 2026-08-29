@@ -145,8 +145,7 @@ final class DemoTrees {
         demos.add( new Demo( "Animal Tree of Life (Nested Clade Levels)",
                              "25 animals from sponges and comb jellies to the mammals, with THREE taxonomic ranks "
                                      + "annotated at once -- order inside class inside phylum -- as nested bars whose "
-                                     + "colours are shades of the phylum they sit in. All offline. (Turns the "
-                                     + "\"Show Internal Data\" checkbox off, since the bars already name every clade.)",
+                                     + "colours are shades of the phylum they sit in. All offline.",
                              mf -> {
                                  openTree( mf, "animal-tree-of-life.xml" );
                                  // Three ranks at once, drawn finest-nearest-the-tips. All three read HORIZONTALLY,
@@ -305,12 +304,10 @@ final class DemoTrees {
     private static void annotateCladeLevels( final MainFrameApplication mf, final CladeLevel.Spec... specs ) {
         final TreePanel tp = mf.getMainPanel().getCurrentTreePanel();
         if ( tp != null ) {
-            // The internal-node labels are switched OFF for this one: the three bar columns already name every
+            // The internal-node labels are switched OFF for THIS TAB: the three bar columns already name every
             // clade, and a deep backbone annotated at phylum/class/order runs those ranks down single-child chains,
-            // so the node labels print on top of one another (verified -- it is unreadable with them on).
-            // NB this checkbox is per WINDOW, not per tab, so it also affects any tree already open in another tab.
-            // That is why the gallery blurb says so: the toggle is right there in the control panel ("Show Internal
-            // Data") and the user can put it back, but they should not have to wonder what changed it.
+            // so the node labels print on top of one another (verified -- it is unreadable with them on). Now that
+            // the setting is per-tab, this no longer reaches any tree the user already had open.
             mf.getMainPanel().getControlPanel().setShowInternalData( false );
             // skip_singletons=false ON PURPOSE: at this depth many classes and orders are represented by a single
             // species, and skipping them would leave the two inner columns full of holes -- the opposite of what

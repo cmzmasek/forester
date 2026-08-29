@@ -118,14 +118,14 @@ public final class ZebraStripeRenderTest {
                     // VERTICAL PARITY: the row bands ride R into vertical column bands over alternate tips in a
                     // root-top/bottom orientation (the cross-tree extent becomes the depth/height axis). Render in
                     // ROOT_TOP and confirm the faint bands still draw.
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     final int vertical_on = countFaintGray( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
                             false ) );
                     if ( vertical_on <= ( off + 3000 ) ) {
                         fail( ok, "Zebra Stripes should draw in a vertical orientation (on=" + vertical_on + " off="
                                 + off + ")" );
                     }
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     // a transparent-PNG export must NOT bake in the full-width bands (they'd defeat the clean
                     // cut-out) -- turning zebra on must add no semi-transparent stripe pixels vs. zebra off
                     o.setTransparentExportBackground( true );

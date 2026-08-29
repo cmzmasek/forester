@@ -73,7 +73,7 @@ public final class RankLegendTest {
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // the angle applies here
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // the angle applies here
                 tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, false, TreePanel.CLADE_LABEL_ANGLE.VERTICAL );
                 final int r_vert = tp.cladeBandRightReserveForTest();
                 tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS, false, TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL );
@@ -245,7 +245,7 @@ public final class RankLegendTest {
                 // labels re-anchored upright). Render BOXES in ROOT_TOP and count TINTED pixels: the translucent box
                 // wash (~46 saturation) is distinct from the OPAQUE legend chips (~255) and the grayscale tree (~0), so
                 // this isolates the boxes from the legend -- a disabled vertical clade paint drops it to ~0.
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                 tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES );
                 if ( cladeBoxTintedPixels( tp ) < 200 ) {
                     ok[ 0 ] = false;
@@ -260,7 +260,7 @@ public final class RankLegendTest {
                     ok[ 0 ] = false;
                     System.out.println( "  vertical clade BARS drew (almost) no upright taxon-label ink below the bars" );
                 }
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES ); // restore for the checks below
                 // BRACKETS mode is monochrome -> it must NOT create a color legend
                 tp.setCladeBands( "order", TreePanel.CLADE_VIS.BRACKETS );

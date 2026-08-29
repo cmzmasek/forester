@@ -77,7 +77,7 @@ public final class MsaTrackRenderTest {
             // (2) showing the alignment reserves horizontal width (so the JScrollPane can scroll to it)
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.setSize( 760, 460 );
                 tp.getOptions().setShowMsa( false );
                 tp.resetPreferredSize();
@@ -109,7 +109,7 @@ public final class MsaTrackRenderTest {
             // (2b) an alignment wider than its window is SCROLLABLE, and panning the column offset changes what renders
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.getOptions().setShowMsa( true );
                 tp.getOptions().setMsaColumnWidth( 40 ); // wide cells -> the 34-col alignment exceeds its window
                 tp.setPreferredSize( new java.awt.Dimension( 560, 460 ) );
@@ -137,7 +137,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 try {
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.getOptions().setShowMsa( true );
                     tp.setPreferredSize( new java.awt.Dimension( 900, 460 ) );
                     tp.setSize( 900, 460 );
@@ -165,7 +165,7 @@ public final class MsaTrackRenderTest {
             final int[] gap_off = { 0 }, gap_on = { 0 };
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.getOptions().setMsaColumnWidth( 12 );
                 tp.setPreferredSize( new java.awt.Dimension( 760, 460 ) );
                 tp.setSize( 760, 460 );
@@ -186,7 +186,7 @@ public final class MsaTrackRenderTest {
             // from a scroll cutoff (fits -> both; offset 0 -> start only; a middle offset -> neither; the end -> end only)
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.getOptions().setShowMsa( true );
                 final int total = ALIGN[ 0 ].length();
                 // (a) the whole alignment FITS -> both boundaries bracket it
@@ -242,7 +242,7 @@ public final class MsaTrackRenderTest {
         final int[] off = { 0 }, on = { 0 };
         SwingUtilities.invokeAndWait( () -> {
             tp.setPhylogenyGraphicsType( type );
-            tp.getOptions().setTreeOrientation( orient );
+            tp.setTreeOrientation( orient );
             tp.setPreferredSize( new java.awt.Dimension( w, h ) );
             tp.setSize( w, h );
             mf.showWhole();

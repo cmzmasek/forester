@@ -470,6 +470,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                         && !_dynamically_hide_data.isSelected()) {
                     setDynamicHidingIsOn(false);
                     displayedPhylogenyMightHaveChanged(true);
+                } else if ((e.getSource() == _display_internal_data) || (e.getSource() == _display_external_data)) {
+                    // These two are PER TAB: the paint reads the tab's own copy, so a click has to be written
+                    // through or the checkbox is inert -- it would toggle, repaint, change nothing, and then be
+                    // silently un-ticked again by the next tab switch re-seeding it from the tab.
+                    pushDisplayDataToCurrentTab();
+                    displayedPhylogenyMightHaveChanged(true);
                 } else {
                     displayedPhylogenyMightHaveChanged(true);
                 }
@@ -1305,6 +1311,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     void resyncFromOptions() {
         updateThemeToggle();
         syncLayoutButtons();
+        // the two Display-Data checkboxes are per-tab state shown in a shared widget: after a reset the tabs are
+        // back on, so the widget has to say so too. Leaving it stale would not just look wrong -- the next
+        // push (which writes BOTH values from the widget) would put the stale "off" straight back on the tab.
+        reseedDisplayDataFromCurrentTab();
         final Options o = getOptions();
         if ( o != null ) {
             if ( _search_case_sensitive_cb != null ) {
@@ -1491,9 +1501,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setShowExternalDataForTest(final boolean selected) {
-        if (_display_external_data != null) {
-            _display_external_data.setSelected(selected);
-        }
+        setShowExternalData(selected);
     }
 
     /**
@@ -1560,14 +1568,51 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_gene_names != null) && _show_gene_names.isSelected());
     }
 
-    /** Turns the internal-node labels on/off (used by a demo whose clade names are carried by clade bars instead,
-     *  where the two would otherwise print on top of each other). No-op before the checkbox exists. */
+    /**
+     * Turns the CURRENT TAB's internal-node labels on/off. The checkbox is one shared widget per window, so the
+     * value it carries lives on the TreePanel: writing it here sets this tab only, and {@link #tabChanged()}
+     * re-seeds the widget from whichever tab becomes current. Without that, opening a demo that wants internal
+     * labels off silently turned them off for every tree already open.
+     */
     void setShowInternalData(final boolean show) {
         if (_display_internal_data != null) {
             _display_internal_data.setSelected(show);
         }
+        pushDisplayDataToCurrentTab();
     }
 
+    void setShowExternalData(final boolean show) {
+        if (_display_external_data != null) {
+            _display_external_data.setSelected(show);
+        }
+        pushDisplayDataToCurrentTab();
+    }
+
+    /** The reverse of {@link #pushDisplayDataToCurrentTab}: shows the incoming tab's own values in the shared
+     *  checkboxes on a tab switch. */
+    void reseedDisplayDataFromCurrentTab() {
+        final TreePanel tp = (getMainPanel() == null) ? null : getMainPanel().getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        if (_display_internal_data != null) {
+            _display_internal_data.setSelected(tp.isShowInternalDataForThisTab());
+        }
+        if (_display_external_data != null) {
+            _display_external_data.setSelected(tp.isShowExternalDataForThisTab());
+        }
+    }
+
+    /** Copies the two Display-Data checkboxes onto the current tab, which is where the paint reads them from. */
+    void pushDisplayDataToCurrentTab() {
+        final TreePanel tp = (getMainPanel() == null) ? null : getMainPanel().getCurrentTreePanel();
+        if (tp != null) {
+            tp.setShowInternalDataForThisTab(isShowInternalData());
+            tp.setShowExternalDataForThisTab(isShowExternalData());
+        }
+    }
+
+    /** The checkbox state (what the CURRENT tab shows); the paint reads the tab's own copy. */
     boolean isShowInternalData() {
         return ((_display_internal_data == null) || _display_internal_data.isSelected());
     }
@@ -1864,11 +1909,13 @@ final class ControlPanel extends JPanel implements ActionListener {
                 if (_display_internal_data != null) {
                     _display_internal_data.setSelected(state);
                 }
+                pushDisplayDataToCurrentTab(); // these two are per-tab; the widget only shows the current one
                 break;
             case DISPLAY_EXTERNAL_DATA:
                 if (_display_external_data != null) {
                     _display_external_data.setSelected(state);
                 }
+                pushDisplayDataToCurrentTab();
                 break;
             case SHOW_NODE_NAMES:
                 if (_show_node_names != null) {
@@ -3131,18 +3178,27 @@ final class ControlPanel extends JPanel implements ActionListener {
             return;
         }
         final Options o = getOptions();
+        final TreePanel tp = getMainPanel().getCurrentTreePanel();
         final Options.TREE_ORIENTATION orientation = orientationFor(kind);
-        final boolean orientation_changed = (o != null) && (orientation != null)
-                && (o.getTreeOrientation() != orientation);
-        if (orientation_changed) {
-            // set BEFORE the style change, so the re-fit that typeChanged does lands on the FINAL orientation
-            o.setTreeOrientation(orientation);
+        final boolean orientation_changed = (orientation != null) && (tp != null)
+                && (tp.getTreeOrientation() != orientation);
+        if (orientation != null) {
+            // this TAB's orientation ...
+            if (tp != null) {
+                // set BEFORE the style change, so the re-fit that typeChanged does lands on the FINAL orientation
+                tp.setTreeOrientation(orientation);
+            }
+            // ... and, because this is a deliberate user click, the default a NEW tab will be opened with (which
+            // is also what persists across restarts) -- the same bargain the P/A/C buttons and the tree style make
+            if (o != null) {
+                o.setTreeOrientation(orientation);
+            }
         }
         final JCheckBoxMenuItem target = typeMenuItemFor(kind, mf);
         if ((target != null) && !target.isSelected()) {
             target.doClick(); // MainFrame.typeChanged runs the whole established apply chain
         }
-        else if (orientation_changed && (getMainPanel().getCurrentTreePanel() != null)) {
+        else if (orientation_changed) {
             // same style, only the orientation moved: do the re-fit the style path would have done (orientation
             // swaps the layout's width and height, so a plain repaint would leave the old scroll extent)
             updateZoomButtonsForLayout();
@@ -3234,8 +3290,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (isRectangularFamily(type)) {
             _last_rectangular_style = type;
         }
-        final Options.TREE_ORIENTATION orientation = (o != null) ? o.getTreeOrientation()
-                : Options.TREE_ORIENTATION.ROOT_LEFT;
+        // the tab's own orientation, falling back to the shared default before any tab exists
+        final Options.TREE_ORIENTATION orientation = (tp != null) ? tp.getTreeOrientation()
+                : ((o != null) ? o.getTreeOrientation() : Options.TREE_ORIENTATION.ROOT_LEFT);
         final JToggleButton b = _layout_buttons.get(layoutKindFor(type, orientation));
         if (b != null) {
             b.setSelected(true);
@@ -3905,7 +3962,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             getMainPanel().getMainFrame()
                     .setSelectedTypeInTypeMenu(getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType());
-            syncLayoutButtons(); // the tree style is per-tab, so the layout row follows the tab
+            // per-tab view state: re-seed the SHARED widgets from whichever tab is now current, so a control
+            // never shows (or applies) another tab's value
+            reseedDisplayDataFromCurrentTab();
+            syncLayoutButtons(); // style AND orientation are per-tab, so the layout row follows the tab
             // re-seed a left-open modeless Settings dialog's per-tab controls (tree style, palette, Time Axis) so it
             // reflects the now-current tab -- AFTER the Type-menu radios above are synced (the tree-style reseeder
             // reads them)

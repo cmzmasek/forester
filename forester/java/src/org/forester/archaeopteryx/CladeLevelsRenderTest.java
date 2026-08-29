@@ -98,7 +98,7 @@ public final class CladeLevelsRenderTest {
         frame.setSize( 1200, 900 );
         ( ( JFrame ) frame ).validate();
         final TreePanel tp = frame.getCurrentTreePanel();
-        frame.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+        frame.getCurrentTreePanel().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
 
         // ---- one level: the baseline the nested versions must not disturb -------------------------------
@@ -232,7 +232,7 @@ public final class CladeLevelsRenderTest {
         final TreePanel tp = frame.getCurrentTreePanel();
         for ( final Options.TREE_ORIENTATION o : new Options.TREE_ORIENTATION[] {
                 Options.TREE_ORIENTATION.ROOT_BOTTOM, Options.TREE_ORIENTATION.ROOT_TOP } ) {
-            frame.getOptions().setTreeOrientation( o );
+            frame.getCurrentTreePanel().setTreeOrientation( o );
             tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
             tp.setCladeLevels( specs( "phylum", "class" ), CLADE_VIS.BARS, false );
             try {
@@ -244,7 +244,7 @@ public final class CladeLevelsRenderTest {
                 fail( ok, "nested clade bars in " + o + " threw " + e );
             }
         }
-        frame.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // leave it as we found it
+        frame.getCurrentTreePanel().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT ); // leave it as we found it
     }
 
     private static List<CladeLevel.Spec> specs( final String... ranks ) {

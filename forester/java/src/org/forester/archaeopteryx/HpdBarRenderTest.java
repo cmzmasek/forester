@@ -77,7 +77,7 @@ public final class HpdBarRenderTest {
                     o.setGraphicsExportWhiteBackground( true );
                     o.setShowHpdBars( true );
                     o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR ); // measure the flat bar's extent, not a spindle
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     tp.setTimeAxisType( Options.TIME_AXIS_TYPE.CALENDAR );
@@ -199,13 +199,13 @@ public final class HpdBarRenderTest {
                     }
                     // VERTICAL PARITY: HPD bars are plain rects, so they ride the rotation R into vertical bars at the
                     // internal nodes in a root-top/bottom orientation. Render in ROOT_TOP and confirm the blue draws.
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     final int vertical_on = countBluish( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
                     if ( vertical_on <= ( off + 300 ) ) {
                         fail( ok, "Node Age Bars should draw in a vertical orientation (on=" + vertical_on + " off="
                                 + off + ")" );
                     }
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
                     // NODE AGE SHAPE = SPINDLE: the tapered lens is TALLER at the node's point-estimate x (its peak)
                     // than a flat HPD_BAR_HEIGHT (7px) bar, so its vertical blue extent there exceeds 7 -- proving the

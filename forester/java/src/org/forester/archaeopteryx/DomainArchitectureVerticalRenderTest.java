@@ -77,7 +77,7 @@ public final class DomainArchitectureVerticalRenderTest {
                     }
                     final int w = 760, h = 620;
                     // horizontal baseline: the domain boxes are drawn as colored (non-gray) pixels
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     frame.showWhole();
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
@@ -86,7 +86,7 @@ public final class DomainArchitectureVerticalRenderTest {
                         fail( ok, "the domain architectures should paint many colored pixels horizontally, got " + horiz );
                     }
                     // vertical: the boxes ride R into per-tip vertical tracks -- a comparable amount of colored ink
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     frame.showWhole();
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
@@ -106,7 +106,7 @@ public final class DomainArchitectureVerticalRenderTest {
                                 + " (top-of-domain spread=" + spread + "px)" );
                     }
                     // and root-at-bottom too
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_BOTTOM );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_BOTTOM );
                     frame.showWhole();
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );

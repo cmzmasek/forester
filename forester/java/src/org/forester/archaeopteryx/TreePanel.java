@@ -352,6 +352,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             false,
             false);
     private PHYLOGENY_GRAPHICS_TYPE _graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+    // PER-TAB view state, held here rather than on the (per-WINDOW) Options/ControlPanel so two tabs can be
+    // looked at differently -- one tree root-left with its internal labels on, another a root-top clustergram
+    // with them off. The shared controls are re-seeded from whichever tab is current (ControlPanel.tabChanged),
+    // exactly as the P/A/C buttons and the tree style already are.
+    // A new tab is SEEDED from the current shared state: the orientation from Options (which is also what
+    // persists across restarts), the two Display-Data toggles from the checkboxes as they stand (they have no
+    // Options field and so do not persist -- they are a per-figure decluttering choice, not a preference).
+    private Options.TREE_ORIENTATION _tree_orientation = Options.TREE_ORIENTATION.ROOT_LEFT;
+    private boolean                  _show_internal_data = true;
+    private boolean                  _show_external_data = true;
     private boolean _in_ov = false;
     private boolean _in_ov_rect = false;
     private float _last_drag_point_x = 0;
@@ -525,6 +535,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             throw new IllegalArgumentException("attempt to draw phylogeny which is null or empty");
         }
         _graphics_type = tjp.getOptions().getPhylogenyGraphicsType();
+        _tree_orientation = tjp.getOptions().getTreeOrientation(); // the default a new tab inherits
+        // ... and likewise the two Display-Data toggles, so a second tree opens looking like the one you are on.
+        // They are read from the shared checkboxes rather than from Options because they have no Options field
+        // (and so, unlike the orientation, they do NOT persist across restarts -- deliberately: they are a
+        // per-figure decluttering choice, not a standing preference).
+        if (tjp.getControlPanel() != null) {
+            _show_internal_data = tjp.getControlPanel().isShowInternalData();
+            _show_external_data = tjp.getControlPanel().isShowExternalData();
+        }
         // seed the "Color by" palette from the shared default so a new tab inherits the last-chosen palette
         if (!ForesterUtil.isEmpty(tjp.getOptions().getColorPaletteName())) {
             _color_palette_name = tjp.getOptions().getColorPaletteName();
@@ -3093,7 +3112,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  elsewhere); a long label extends leftward toward the neighbouring subtree, as accepted. */
     private void paintInternalLabelLeftVertical(final Graphics2D g, final PhylogenyNode node, final boolean to_pdf,
                                                 final boolean to_graphics_file) {
-        if (node.isRoot() || !getControlPanel().isShowInternalData()) {
+        if (node.isRoot() || !isShowInternalDataForThisTab()) {
             return;
         }
         final boolean using_visual_font = setFont(g, node);
@@ -3443,10 +3462,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!isVerticalOrientation() && shouldWriteBranchLength(node)) {
             paintBranchLength(g, node, to_pdf, to_graphics_file);
         }
-        if (!getControlPanel().isShowInternalData() && !node.isExternal() && !node.isCollapse()) {
+        if (!isShowInternalDataForThisTab() && !node.isExternal() && !node.isCollapse()) {
             return 0;
         }
-        if (!getControlPanel().isShowExternalData() && (node.isExternal() || node.isCollapse())) {
+        if (!isShowExternalDataForThisTab() && (node.isExternal() || node.isCollapse())) {
             return 0;
         }
         _sb.setLength(0);
@@ -3869,10 +3888,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // show-internal / show-external gates (mirror the rectangular paintNodeData) -- previously moot because this
         // was called for external nodes only; now internal-node labels ride the branch radially too
-        if (!getControlPanel().isShowInternalData() && !node.isExternal()) {
+        if (!isShowInternalDataForThisTab() && !node.isExternal()) {
             return; // (collapsed nodes already returned above)
         }
-        if (!getControlPanel().isShowExternalData() && node.isExternal()) {
+        if (!isShowExternalDataForThisTab() && node.isExternal()) {
             return;
         }
         // A tip image (if any) is drawn UPRIGHT just outside the tip along its spoke -- in DEVICE space, before the
@@ -4180,7 +4199,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  are shown, external data is shown, and the tip carries a renderable architecture. */
     private void paintDomainsVertical(final Graphics2D g, final PhylogenyNode node,
                                       final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getControlPanel().isShowDomainArchitectures() || !getControlPanel().isShowExternalData()) {
+        if (!getControlPanel().isShowDomainArchitectures() || !isShowExternalDataForThisTab()) {
             return;
         }
         if (isNodeDataInvisible(node) && !(to_graphics_file || to_pdf)) {
@@ -4235,7 +4254,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // phylogram); its breadth is the tip's breadth, so the same point centres the label AND sets the depth
         final Point2D.Double anchor = screenPoint(labelTextStartX(node), node.getYcoord());
         final FontMetrics fm = getFontMetricsForLargeDefaultFont();
-        final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
+        final boolean root_bottom = getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
         final double gap = TIP_LABEL_DEPTH_GAP;
         final double anchor_x = anchor.x - (lw / 2.0); // centre the label on the tip's breadth
         // baseline just past the tip along the depth: below it (root-top) or above it (root-bottom)
@@ -4271,10 +4290,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (isNodeDataInvisible(node) && !(to_graphics_file || to_pdf)) {
             return;
         }
-        if ((!getControlPanel().isShowInternalData() && !node.isExternal())) {
+        if ((!isShowInternalDataForThisTab() && !node.isExternal())) {
             return;
         }
-        if ((!getControlPanel().isShowExternalData() && node.isExternal())) {
+        if ((!isShowExternalDataForThisTab() && node.isExternal())) {
             return;
         }
         if (getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
@@ -6927,7 +6946,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // single source of the label-reach reservation (depthLabelReserve/breadthLabelReserve, the radial label reach,
         // annotation-column x), so zeroing it here fixes the wasted space in EVERY display type. Node shapes at the
         // tips are covered by the MOVE margin the fit always keeps.
-        if ((getControlPanel() != null) && !getControlPanel().isShowExternalData()) {
+        if ((getControlPanel() != null) && !isShowExternalDataForThisTab()) {
             _longest_ext_node_info = 0;
             _length_of_longest_text = 0;
             _length_of_longest_text_only = 0;
@@ -9876,7 +9895,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Font text_font = getTreeFontSet().getSmallFont();
         final FontMetrics text_fm = getFontMetrics(text_font);
         // TEXT cells always read VERTICALLY (90deg); the sign follows the orientation so the text is never upside-down
-        final double text_angle = (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM)
+        final double text_angle = (getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM)
                 ? (-Math.PI / 2.0) : (Math.PI / 2.0);
         float min_tip_y = Float.MAX_VALUE;
         for (final PhylogenyNode t : tips) {
@@ -10174,7 +10193,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private void paintTipImages(final Graphics2D g) {
         if (!getOptions().isShowTipImages()
-                || ((getControlPanel() != null) && !getControlPanel().isShowExternalData())) {
+                || ((getControlPanel() != null) && !isShowExternalDataForThisTab())) {
             return; // tip images are external data -> suppressed with "Show External Data" off, as in the radial layout
         }
         final int target_h = getOptions().getTipImageSize();
@@ -10249,7 +10268,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private void paintTipImagesVertical(final Graphics2D g) {
         if (!getOptions().isShowTipImages()
-                || ((getControlPanel() != null) && !getControlPanel().isShowExternalData())) {
+                || ((getControlPanel() != null) && !isShowExternalDataForThisTab())) {
             return; // tip images are external data -> suppressed with "Show External Data" off, as in the radial layout
         }
         final int size = getOptions().getTipImageSize();
@@ -10935,7 +10954,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  Color-by covers external + collapsed nodes, Size-by covers external nodes; both require "Show External Data";
      *  and a pie node is skipped (the pie IS the marker there). Dispatched after the radial recursion has set coords. */
     private void paintRadialPropertyDots(final Graphics2D g) {
-        if ((!isColorByProperty() && !isSizeByProperty()) || !getControlPanel().isShowExternalData()) {
+        if ((!isColorByProperty() && !isSizeByProperty()) || !isShowExternalDataForThisTab()) {
             return;
         }
         for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext();) {
@@ -11380,7 +11399,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // in a vertical orientation the tip labels are TILTED and extend along the DEPTH axis only by their depth
         // component (full width for 90deg, L/sqrt(2) for 45deg), so the columns clear the labels using that reach --
         // not the full horizontal label width, which would leave a large empty gap below the tips
-        final float label_w = getControlPanel().isShowExternalData()
+        final float label_w = isShowExternalDataForThisTab()
                 ? (isVerticalOrientation() ? depthLabelReserve() : getLongestExtNodeInfo()) : 0;
         return tipsDepthEdge() + label_w;
     }
@@ -12016,7 +12035,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // (paintTipLabelHorizontal). Centring the text vertically on that anchor instead made every label
             // straddle the very bar it names, so half of "Ctenophora" sat inside the coloured band.
             final Point2D.Double lp = screenPoint(label_x, mid_y);
-            final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
+            final boolean root_bottom = getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
             g.setTransform(_orientation_base_transform);
             g.drawString(taxon, (float) (lp.x - (tw / 2.0)),
                     (float) uprightCladeLabelBaseline(lp.y, fm.getAscent(), fm.getDescent(), root_bottom));
@@ -13823,7 +13842,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** True when the tree is drawn in a vertical (root-top / root-bottom) orientation. Always false for the
      *  radial CIRCULAR/UNROOTED layouts (orientation is a rectangular-family concept). */
     final boolean isVerticalOrientation() {
-        final Options.TREE_ORIENTATION o = getOptions().getTreeOrientation();
+        final Options.TREE_ORIENTATION o = getTreeOrientation();
         return ((o == Options.TREE_ORIENTATION.ROOT_TOP) || (o == Options.TREE_ORIENTATION.ROOT_BOTTOM))
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 && (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
@@ -13833,7 +13852,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  logical extents. Pure rotations (determinant +1, no mirror); the translate keeps the tree in the positive
      *  quadrant. ROOT_TOP turns the page 90deg clockwise: (x,y)->(H-y, x); ROOT_BOTTOM 90deg CCW: (x,y)->(y, W-x). */
     final void rebuildOrientationTransform() {
-        final Options.TREE_ORIENTATION current = getOptions().getTreeOrientation();
+        final Options.TREE_ORIENTATION current = getTreeOrientation();
         if (!_orientation_transform_dirty && (_orientation_R != null) && (_orientation_R_built_for == current)) {
             return; // cached R is still valid -- no layout/structure change since it was last built
         }
@@ -13876,7 +13895,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  anchor math exactly, so it measures the ACTUAL drawn label position, not a re-derivation of the reserve. */
     double minUprightLabelDepthMarginForTest() {
         final FontMetrics fm = getFontMetricsForLargeDefaultFont();
-        final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
+        final boolean root_bottom = getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
         double min = Double.MAX_VALUE;
         for (final PhylogenyNode t : _phylogeny.getExternalNodes()) {
             final Point2D.Double a = screenPoint(labelTextStartX(t), t.getYcoord());
@@ -13916,7 +13935,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return 0.0; // upright labels, centred under/over each tip (see paintTipLabelHorizontal)
         }
         final double base = (dir == Options.TIP_LABEL_DIRECTION.VERTICAL) ? (Math.PI / 2.0) : (Math.PI / 4.0);
-        return (getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM) ? -base : base;
+        return (getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM) ? -base : base;
     }
 
     /** The concrete tip-label direction, resolving AUTO (fit) from the current tip spacing and longest tip label:
@@ -14168,6 +14187,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setOvOn(final boolean ov_on) {
         _ov_on = ov_on;
+    }
+
+    /** THIS tab's orientation. Options.getTreeOrientation() is only the default new tabs are seeded with. */
+    final Options.TREE_ORIENTATION getTreeOrientation() {
+        return _tree_orientation;
+    }
+
+    /** Sets THIS tab's orientation. The caller re-fits: orientation swaps the layout's width and height, so a
+     *  plain repaint would leave the old scroll extent. */
+    final void setTreeOrientation(final Options.TREE_ORIENTATION orientation) {
+        if (orientation != null) {
+            _tree_orientation = orientation;
+        }
+    }
+
+    /** Whether THIS tab shows internal-node labels (the shared "Show Internal Data" checkbox reflects the
+     *  current tab). */
+    final boolean isShowInternalDataForThisTab() {
+        return _show_internal_data;
+    }
+
+    final void setShowInternalDataForThisTab(final boolean show) {
+        _show_internal_data = show;
+    }
+
+    final boolean isShowExternalDataForThisTab() {
+        return _show_external_data;
+    }
+
+    final void setShowExternalDataForThisTab(final boolean show) {
+        _show_external_data = show;
     }
 
     final void setPhylogenyGraphicsType(final PHYLOGENY_GRAPHICS_TYPE graphics_type) {

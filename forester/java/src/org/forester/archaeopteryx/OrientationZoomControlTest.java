@@ -75,12 +75,12 @@ public final class OrientationZoomControlTest {
                     final int w = 620, h = 520;
 
                     // fit button label tracks the orientation: W horizontal, H vertical
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
                     cp.updateZoomButtonsForLayout();
                     if ( !"W".equals( cp.getFitButtonText() ) ) {
                         fail( ok, "ROOT_LEFT fit button should read W, got " + cp.getFitButtonText() );
                     }
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     cp.updateZoomButtonsForLayout();
                     if ( !"H".equals( cp.getFitButtonText() ) ) {
                         fail( ok, "ROOT_TOP fit button should read H, got " + cp.getFitButtonText() );
@@ -89,7 +89,7 @@ public final class OrientationZoomControlTest {
                     // screen-oriented zoom flips depth<->breadth in a vertical orientation: the "X" (horizontal-screen)
                     // action must grow the tip-spread (y-distance), and "Y" (vertical-screen) must grow the depth
                     // (x-correction factor) -- the OPPOSITE of the horizontal layout
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     layout( frame, tp, w, h );
                     final float yd0 = tp.getYdistance();
                     cp.zoomInScreenX( AptxConstants.BUTTON_ZOOM_IN_FACTOR,
@@ -107,7 +107,7 @@ public final class OrientationZoomControlTest {
                     }
 
                     // in the horizontal layout it is the other way round: zoomInScreenX grows the depth
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
                     layout( frame, tp, w, h );
                     final float xcL = tp.getXcorrectionFactor();
                     cp.zoomInScreenX( AptxConstants.BUTTON_ZOOM_IN_FACTOR,
@@ -124,7 +124,7 @@ public final class OrientationZoomControlTest {
                     // fitHeight ("H") must be IDEMPOTENT: repeated presses fit the depth to the window height and keep
                     // the breadth (tip-spread) zoom -- they must not drift the y-distance (they did when the padded
                     // preferred width was fed back as the breadth budget).
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     frame.showWhole();
                     cp.fitHeight();
                     frame.getMainPanel().getCurrentScrollPane().validate();
@@ -141,7 +141,7 @@ public final class OrientationZoomControlTest {
                     // scroll bar (keep the tree centered) -- in BOTH vertical orientations, not just ROOT_TOP.
                     for ( final TREE_ORIENTATION orient : new TREE_ORIENTATION[] { TREE_ORIENTATION.ROOT_TOP,
                             TREE_ORIENTATION.ROOT_BOTTOM } ) {
-                        o.setTreeOrientation( orient );
+                        tp.setTreeOrientation( orient );
                         frame.showWhole();
                         for ( int i = 0; i < 7; ++i ) {
                             cp.zoomInScreenX( AptxConstants.BUTTON_ZOOM_IN_FACTOR,
@@ -164,7 +164,7 @@ public final class OrientationZoomControlTest {
                     // centerOnNode must use the node's ON-SCREEN (rotated) position in a vertical orientation, so
                     // centering actually brings the node INTO the viewport near its middle -- not to a wrong spot
                     // derived from the raw logical coords.
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     frame.showWhole();
                     for ( int i = 0; i < 8; ++i ) {
                         cp.zoomInScreenX( AptxConstants.BUTTON_ZOOM_IN_FACTOR,
@@ -199,7 +199,7 @@ public final class OrientationZoomControlTest {
 
                     // the orientation transform R is cached across plain repaints and rebuilt only when the layout or
                     // orientation changes -- so a hover/pulse/scroll repaint does not re-walk the tree just to build R.
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     tp.calcParametersForPainting( w, h );
                     tp.rebuildOrientationTransform();
                     final java.awt.geom.AffineTransform r1 = tp.getOrientationRForTest();
@@ -213,7 +213,7 @@ public final class OrientationZoomControlTest {
                         fail( ok, "orientation transform R was not rebuilt after a layout change (stale R)" );
                     }
                     final java.awt.geom.AffineTransform r2 = tp.getOrientationRForTest();
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_BOTTOM ); // an orientation change must also rebuild R
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_BOTTOM ); // an orientation change must also rebuild R
                     tp.rebuildOrientationTransform();
                     if ( tp.getOrientationRForTest() == r2 ) {
                         fail( ok, "orientation transform R was not rebuilt after an orientation change" );
@@ -222,7 +222,7 @@ public final class OrientationZoomControlTest {
                     // screen-culling in a vertical orientation (via the viewport mapped back into logical space): with
                     // the tree zoomed well past the REALIZED viewport, a node centered in view must NOT be culled and a
                     // node far outside MUST be -- i.e. the optimization is both correct and actually engaging.
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     frame.showWhole();
                     for ( int i = 0; i < 12; ++i ) {
                         cp.zoomInScreenX( AptxConstants.BUTTON_ZOOM_IN_FACTOR,
@@ -280,7 +280,7 @@ public final class OrientationZoomControlTest {
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     for ( final TREE_ORIENTATION orient : new TREE_ORIENTATION[] { TREE_ORIENTATION.ROOT_TOP,
                             TREE_ORIENTATION.ROOT_BOTTOM } ) {
-                        o.setTreeOrientation( orient );
+                        tp.setTreeOrientation( orient );
                         frame.showWhole();
                         frame.getMainPanel().getCurrentScrollPane().validate();
                         final java.awt.Dimension vpz = frame.getMainPanel().getCurrentScrollPane().getViewport()

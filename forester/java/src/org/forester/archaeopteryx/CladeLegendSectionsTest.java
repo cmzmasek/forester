@@ -92,7 +92,7 @@ public final class CladeLegendSectionsTest {
         frame.setSize( 1200, 900 );
         ( ( JFrame ) frame ).validate();
         final TreePanel tp = frame.getCurrentTreePanel();
-        frame.getOptions().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+        frame.getCurrentTreePanel().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
 
         // ---- one level: the flat legend, unchanged -----------------------------------------------------

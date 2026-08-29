@@ -116,7 +116,7 @@ public final class ScaleAxisRenderTest {
                     // root-top/bottom orientation. The grid is a FAINT magenta (the magenta branch-length color blended
                     // over the white bg), distinct from the pure-magenta axis; count it on vs off (axis off).
                     o.setShowScaleAxis( false );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     tp.calcParametersForPainting( w, h ); // re-fit for the vertical orientation (swapped depth/breadth)
                     o.setShowScaleGrid( false );
                     final int grid_off = countFaintMagenta( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
@@ -135,7 +135,7 @@ public final class ScaleAxisRenderTest {
                     // mimicking the interactive fitWidth) or the cached transform lacks the reserve and the ruler clips.
                     for( final Options.TREE_ORIENTATION ori : new Options.TREE_ORIENTATION[] {
                             Options.TREE_ORIENTATION.ROOT_TOP, Options.TREE_ORIENTATION.ROOT_BOTTOM } ) {
-                        o.setTreeOrientation( ori );
+                        tp.setTreeOrientation( ori );
                         o.setShowScaleAxis( false );
                         tp.calcParametersForPainting( w, h );
                         final int vaxis_off = tallestColumnRun( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
@@ -158,7 +158,7 @@ public final class ScaleAxisRenderTest {
                     // interactive toggle: fit axis-OFF, paint (caches R at the axis-off box), then turn the axis on.
                     // Without a re-fit the ruler must clip; a re-fit (the checkbox handler does this via showWhole, i.e.
                     // a fresh calcParametersForPainting) must re-apply the reserve and bring it back on-canvas.
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     o.setShowScaleAxis( false );
                     tp.calcParametersForPainting( w, h );
                     AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ); // clears the transform-dirty flag
@@ -177,7 +177,7 @@ public final class ScaleAxisRenderTest {
                                 + "required), got " + stale + "px" );
                     }
                     o.setShowScaleAxis( false );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.calcParametersForPainting( w, h );
 
                     // CIRCULAR / UNROOTED: the horizontal axis is never drawn in the radial layouts, so the reserve must
@@ -203,7 +203,7 @@ public final class ScaleAxisRenderTest {
                     o.setShowScaleAxis( false );
                     o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
                     // NO DEPTH DRIFT: the horizontal toggle re-fits via showWhole (fit-to-viewport, no preferred-size
                     // feedback), so repeatedly toggling the axis through the REAL checkbox handler leaves the depth

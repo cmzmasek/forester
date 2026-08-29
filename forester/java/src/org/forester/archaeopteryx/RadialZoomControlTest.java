@@ -100,7 +100,7 @@ public final class RadialZoomControlTest {
             // revert to rectangular (pin ROOT_LEFT so W reverts to "W" deterministically -- a persisted vertical
             // orientation would legitimately show "H", which the OrientationZoomControlTest already covers): every
             // radial re-label must be undone
-            o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+            tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
             frame.typeChanged( frame._rectangular_type_cbmi );
             expect( ok, "revert Y+ -> 'Y+'", "Y+", cp.getZoomInYButtonForTest().getText() );
             expect( ok, "revert Y- -> 'Y-'", "Y-", cp.getZoomOutYButtonForTest().getText() );

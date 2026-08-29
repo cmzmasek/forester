@@ -153,7 +153,7 @@ public final class SymbolColumnRenderTest {
                     // base down), NOT ride the 90-deg R rotation into a sideways triangle. In root-top all tips'
                     // marks sit in ONE horizontal band, so the band's bottom-half ink vs top-half ink discriminates
                     // upright (base-heavy, ~3:1) from sideways (top/bottom symmetric, ~1:1).
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     tp.setAnnotationColumns( Arrays.asList( new AnnotationColumns.ColumnSpec( "data:host",
                             AnnotationColumns.Type.SYMBOL, AnnotationColumns.SymbolShape.TRIANGLE ) ) );
                     frame.showWhole();

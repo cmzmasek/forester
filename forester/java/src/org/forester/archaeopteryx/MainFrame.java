@@ -3028,6 +3028,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             for (final TreePanel tp : getMainPanel().getTreePanels()) {
                 tp.resetColorStateToDefaults(); // also turns ancestral-state pies OFF (per-tab)
                 tp.setPhylogenyGraphicsType(type);
+                tp.setTreeOrientation(getOptions().getTreeOrientation()); // per-tab: back to the default layout
+                tp.setShowInternalDataForThisTab(true); // per-tab: both Display-Data toggles back on
+                tp.setShowExternalDataForThisTab(true);
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
                 tp.resetNextstrainBranchModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
                 tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Columns selection (fresh install has none)
@@ -3693,7 +3696,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // a rectangular, root-at-top, tip-aligned tree with the sample labels below the columns = the clustergram
         getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         tp.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
-        getOptions().setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP);
+        tp.setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP); // this tab only; other tabs keep theirs
+        getOptions().setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP); // ... and the default for new tabs
         getOptions().setTipLabelsBelowColumns(true);
         getOptions().setTipLabelDirection(Options.TIP_LABEL_DIRECTION.AUTO); // upright short names, tilt as density rises
         applyOptionsToMenuStates(getOptions()); // reflect the labels-below toggle in the menu / Settings dialog

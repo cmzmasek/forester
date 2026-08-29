@@ -76,7 +76,7 @@ public final class DomainRenderTest {
                     final Options o = frame.getOptions();
                     o.setGraphicsExportWhiteBackground( true );
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     if ( !tp.getControlPanel().isShowDomainArchitectures() ) {
                         fail( ok, "the demo tree should auto-enable Domain Architectures" );
                     }

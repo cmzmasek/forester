@@ -762,7 +762,12 @@ final class SettingsDialog extends JDialog {
 
     /** The tip-label angle is a vertical-orientation setting, so it is live only for a rectangular root-top/bottom. */
     private boolean tipLabelAngleApplies() {
-        return isVerticalOrientation( _mf.getOptions().getTreeOrientation() ) && !isRadialStyleSelected();
+        // the CURRENT TAB's orientation: the tip-label angle applies to the tree being looked at, not to the
+        // default a future tab would open with
+        final TreePanel tp = _mf.getCurrentTreePanel();
+        final Options.TREE_ORIENTATION o = ( tp != null ) ? tp.getTreeOrientation()
+                : _mf.getOptions().getTreeOrientation();
+        return isVerticalOrientation( o ) && !isRadialStyleSelected();
     }
 
     private boolean isRadialStyleSelected() {

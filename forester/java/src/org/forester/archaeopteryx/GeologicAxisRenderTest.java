@@ -78,7 +78,7 @@ public final class GeologicAxisRenderTest {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     final Options o = frame.getOptions();
                     o.setGraphicsExportWhiteBackground( false );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
@@ -165,7 +165,7 @@ public final class GeologicAxisRenderTest {
                     tp.getTreeColorSet().setColorSchema( 0 );
                     // pin root-left rectangular: the developer's persisted orientation/graphics-type may be vertical or
                     // circular, and the first checks below verify the horizontal (root-left) axis specifically
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     final int w = 900, h = 560;
@@ -287,7 +287,7 @@ public final class GeologicAxisRenderTest {
                     // rides the canvas rotation R into a side band down the breadth edge)
                     for ( final Options.TREE_ORIENTATION ori : new Options.TREE_ORIENTATION[] {
                             Options.TREE_ORIENTATION.ROOT_TOP, Options.TREE_ORIENTATION.ROOT_BOTTOM } ) {
-                        o.setTreeOrientation( ori );
+                        tp.setTreeOrientation( ori );
                         tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                         tp.calcParametersForPainting( w, h );
                         final int voff = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
@@ -304,7 +304,7 @@ public final class GeologicAxisRenderTest {
                                     + " off=" + voff + ")" );
                         }
                     }
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
                     tp.calcParametersForPainting( w, h );
 
@@ -360,7 +360,7 @@ public final class GeologicAxisRenderTest {
                         final Phylogeny deep = ParserBasedPhylogenyFactory.getInstance()
                                 .create( deep_file, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
                         tp.setTree( deep );
-                        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                        tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                         frame.showWhole(); // re-fit the replacement tree (setTree alone leaves a stale preferred size)
                         tp.setSize( w, h );
                         if ( tp.timeAxisRootAgeMa() < 2500.0 ) {
@@ -390,7 +390,7 @@ public final class GeologicAxisRenderTest {
                         final Phylogeny cal = ParserBasedPhylogenyFactory.getInstance()
                                 .create( cal_file, PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
                         tp.setTree( cal );
-                        o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                        tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                         o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                         frame.showWhole();

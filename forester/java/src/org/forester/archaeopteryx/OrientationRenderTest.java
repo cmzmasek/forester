@@ -86,7 +86,7 @@ public final class OrientationRenderTest {
                     // the "Tip label angle" setting drives the tip-label tilt (independent of the display type -- it was
                     // auto before): VERTICAL -> +/-90deg, ANGLED -> +/-45deg, with the sign following the orientation so
                     // the labels always extend AWAY from the tree.
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.VERTICAL );
                     if ( Math.abs( tp.tipLabelAngleForTest() - ( Math.PI / 2.0 ) ) > 1e-6 ) {
                         fail( ok, "VERTICAL tip labels must be 90deg in ROOT_TOP, got " + tp.tipLabelAngleForTest() );
@@ -95,7 +95,7 @@ public final class OrientationRenderTest {
                     if ( Math.abs( tp.tipLabelAngleForTest() - ( Math.PI / 4.0 ) ) > 1e-6 ) {
                         fail( ok, "ANGLED tip labels must be 45deg in ROOT_TOP, got " + tp.tipLabelAngleForTest() );
                     }
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_BOTTOM );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_BOTTOM );
                     if ( Math.abs( tp.tipLabelAngleForTest() - ( -Math.PI / 4.0 ) ) > 1e-6 ) {
                         fail( ok, "ANGLED tip labels must be -45deg in ROOT_BOTTOM, got " + tp.tipLabelAngleForTest() );
                     }
@@ -107,7 +107,7 @@ public final class OrientationRenderTest {
                     if ( Math.abs( tp.tipLabelAngleForTest() ) > 1e-6 ) {
                         fail( ok, "HORIZONTAL tip labels must be 0deg, got " + tp.tipLabelAngleForTest() );
                     }
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     if ( Math.abs( tp.tipLabelAngleForTest() ) > 1e-6 ) {
                         fail( ok, "HORIZONTAL tip labels must be 0deg in ROOT_TOP too, got " + tp.tipLabelAngleForTest() );
                     }
@@ -331,7 +331,7 @@ public final class OrientationRenderTest {
                     final java.util.HashSet<Long> fset = new java.util.HashSet<>();
                     fset.add( found.getId() );
                     tp.setFoundNodes0( fset );
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     frame.showWhole();
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
@@ -405,7 +405,7 @@ public final class OrientationRenderTest {
                     // orientation logical-y is the HORIZONTAL axis, so that cull drops on-screen branches (they vanish
                     // on X+ zoom-in). Compare the SCREEN paint to the never-culling EXPORT at the same size after
                     // zooming the tip-spread well past the viewport.
-                    o.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     frame.showWhole();
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
@@ -465,7 +465,7 @@ public final class OrientationRenderTest {
      *  are assigned and the orientation transform R is (re)built during the paint. */
     private static void layout( final MainFrame frame, final TreePanel tp, final Options o,
                                 final TREE_ORIENTATION orient, final int w, final int h ) {
-        o.setTreeOrientation( orient );
+        tp.setTreeOrientation( orient );
         frame.showWhole();
         tp.setSize( w, h );
         tp.calcParametersForPainting( w, h );
@@ -475,7 +475,7 @@ public final class OrientationRenderTest {
     /** Like {@link #layout} but returns the rendered image (scale 1). */
     private static BufferedImage render( final MainFrame frame, final TreePanel tp, final Options o,
                                          final TREE_ORIENTATION orient, final int w, final int h ) {
-        o.setTreeOrientation( orient );
+        tp.setTreeOrientation( orient );
         frame.showWhole();
         tp.setSize( w, h );
         tp.calcParametersForPainting( w, h );

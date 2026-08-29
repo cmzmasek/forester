@@ -78,7 +78,7 @@ public final class OrientationOverviewTest {
                     final ControlPanel cp = frame.getMainPanel().getControlPanel();
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     o.setShowOverview( true );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     ( (JFrame) frame ).setSize( 520, 420 );
                     ( (JFrame) frame ).setVisible( true );
                     frame.showWhole();

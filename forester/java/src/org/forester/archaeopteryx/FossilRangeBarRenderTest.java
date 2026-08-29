@@ -120,13 +120,13 @@ public final class FossilRangeBarRenderTest {
                     }
                     // VERTICAL PARITY: fossil bars are plain rects, so they ride the rotation R into vertical bars in a
                     // root-top orientation. Render in ROOT_TOP and confirm the sepia draws.
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     final int vertical_on = countSepia( AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false ) );
                     if ( vertical_on <= ( off + 300 ) ) {
                         fail( ok, "Fossil Range Bars should draw in a vertical orientation (on=" + vertical_on + " off="
                                 + off + ")" );
                     }
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
                     // CIRCULAR PARITY: on a circular phylogram the fossil ranges draw as radial sepia segments on the
                     // tips (paintFossilRangeBarsCircular). Confirm on >> off in the circular layout.

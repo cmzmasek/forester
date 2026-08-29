@@ -81,7 +81,7 @@ public final class HeatmapMatrixRenderTest {
                         specs.add( new AnnotationColumns.ColumnSpec( "data:s" + i, AnnotationColumns.Type.MATRIX ) );
                     }
                     tp.setAnnotationColumns( specs );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     final int w = 640, h = 680;
                     frame.showWhole();
                     tp.setSize( w, h );

@@ -93,7 +93,7 @@ public final class DomainSubtreeFitTest {
                     // pin the display state (a standalone run must not inherit the developer's persisted ~/.archaeopteryx
                     // graphics type / orientation -- the documented headful-test gotcha)
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     o.setBreakLongBranches( break_long_branches );
                     if ( !tp.getControlPanel().isShowDomainArchitectures() ) {
@@ -182,7 +182,7 @@ public final class DomainSubtreeFitTest {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     final Options o = frame.getOptions();
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     tp.recalculateMaxDistanceToRoot();
                     final int w = 820, h = 600;

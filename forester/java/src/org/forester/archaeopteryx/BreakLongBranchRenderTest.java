@@ -140,7 +140,7 @@ public final class BreakLongBranchRenderTest {
                     }
                     // the VERTICAL scale-axis reserve is suppressed while capping too (mirrors the horizontal
                     // scaleAxisBottomReserve): with the axis not drawn, no phantom side band should be reserved.
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
                     o.setShowScaleAxis( true );
                     o.setBreakLongBranches( false );
                     final int vreserve_off = tp.verticalScaleAxisReserve();
@@ -152,7 +152,7 @@ public final class BreakLongBranchRenderTest {
                     }
                     o.setShowScaleAxis( false );
                     o.setBreakLongBranches( false );
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
 
                     // (4) an ALIGNED "A" phylogram is capped too: the depth scale decompresses AND the aligned label
                     // column lands ON-canvas (anchored to the CAPPED extent, not off-canvas at the uncapped outlier).
@@ -194,7 +194,7 @@ public final class BreakLongBranchRenderTest {
                     // height -- not corr * the UNCAPPED height. The latter balloons the extent (a capped branch makes
                     // corr large while the uncapped height stays huge -> a hugely oversized scroll extent -> clipped
                     // labels / wrong overview). So break-on must not blow the preferred width far past break-off.
-                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     o.setBreakLongBranches( false );
                     tp.setSize( w, h );
                     tp.calcParametersForPainting( w, h );
