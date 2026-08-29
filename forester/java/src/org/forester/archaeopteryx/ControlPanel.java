@@ -1560,6 +1560,14 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_gene_names != null) && _show_gene_names.isSelected());
     }
 
+    /** Turns the internal-node labels on/off (used by a demo whose clade names are carried by clade bars instead,
+     *  where the two would otherwise print on top of each other). No-op before the checkbox exists. */
+    void setShowInternalData(final boolean show) {
+        if (_display_internal_data != null) {
+            _display_internal_data.setSelected(show);
+        }
+    }
+
     boolean isShowInternalData() {
         return ((_display_internal_data == null) || _display_internal_data.isSelected());
     }

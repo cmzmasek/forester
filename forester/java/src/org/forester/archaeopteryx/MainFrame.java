@@ -382,6 +382,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
+    /** The "no extra level" entry in the optional level-2 / level-3 rank choosers. */
+    static final String CLADE_LEVEL_NONE = "(none)";
     // the rank last chosen in "Annotate Clades by Rank", pre-selected next time (per session); null = first use
     private String _last_clade_rank;
     final ProcessPool _process_pool;
@@ -1059,7 +1061,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add(_help_item = new JMenuItem("Documentation"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_website_item = new JMenuItem("Archaeopteryx Home"));
-        _help_jmenu.add(_aptxjs_website_item = new JMenuItem("Archaeopteryx online version: Archaeopteryx.js"));
+        _help_jmenu.add(_aptxjs_website_item = new JMenuItem("Archaeopteryx.js (online version)"));
         _help_jmenu.add(_references_item = new JMenuItem("References"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_keyboard_shortcuts_item = new JMenuItem("Keyboard Shortcuts"));
@@ -1507,6 +1509,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 AptxUtil.getRankCoverageCounts(phy), phy.getNumberOfExternalNodes());
         final JComboBox<String> rank_box = new JComboBox<>(ranks);
         preselectLastCladeRank(rank_box, ranks);
+        // Levels 2 and 3: optional extra ranks, drawn as nested bar/bracket columns outside the first. Each entry
+        // has its own label angle -- an outer rank has few, long names worth reading straight, inner ones must stay
+        // narrow. Which rank ends up where is NOT taken from this order: CladeLevel.order sorts them finest-first.
+        final String[] optional = new String[ranks.length + 1];
+        optional[0] = CLADE_LEVEL_NONE;
+        System.arraycopy(ranks, 0, optional, 1, ranks.length);
+        final JComboBox<String> rank_box_2 = new JComboBox<>(optional);
+        final JComboBox<String> rank_box_3 = new JComboBox<>(optional);
         final JRadioButton boxes_rb = new JRadioButton("Shaded boxes (behind the clades)", true);
         final JRadioButton bars_rb = new JRadioButton("Bars + labels (at the right edge)");
         final JRadioButton brackets_rb = new JRadioButton("Brackets ] + labels (black & white, no legend)");
@@ -1521,34 +1531,33 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 "Don't draw a bar/bracket for a taxon represented by a single tip (applies to Bars and Brackets).");
         // label angle for Bars/Brackets (root-left layout): Horizontal / Diagonal avoid the overlap the compact
         // Vertical labels cause when small clades sit close together
-        final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box = new JComboBox<>(TreePanel.CLADE_LABEL_ANGLE.values());
-        angle_box.setToolTipText("Angle of the bar/bracket taxon labels (root-left layout). Try Horizontal or Diagonal"
-                + " when the labels of small clades close together overlap.");
-        angle_box.setRenderer(new DefaultListCellRenderer() {
-
-            @Override
-            public java.awt.Component getListCellRendererComponent(final JList<?> list, final Object value,
-                    final int index, final boolean sel, final boolean focus) {
-                super.getListCellRendererComponent(list, value, index, sel, focus);
-                if (value == TreePanel.CLADE_LABEL_ANGLE.VERTICAL) {
-                    setText("Labels: Vertical (90°)");
-                }
-                else if (value == TreePanel.CLADE_LABEL_ANGLE.DIAGONAL) {
-                    setText("Labels: Diagonal (45°)");
-                }
-                else if (value == TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL) {
-                    setText("Labels: Horizontal");
-                }
-                return this;
-            }
-        });
+        final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box = cladeLabelAngleBox();
+        final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box_2 = cladeLabelAngleBox();
+        final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box_3 = cladeLabelAngleBox();
         skip_singletons_cb.setEnabled(false); // Boxes is the default selection
-        angle_box.setEnabled(false);
+        // Boxes stay SINGLE-level: the wash is alpha-composited, so nesting one inside another paints the product
+        // of two washes -- darker than either, and no longer the colour its legend row claims.
         final java.awt.event.ActionListener syncBarBracket = e -> {
             final boolean on = bars_rb.isSelected() || brackets_rb.isSelected();
             skip_singletons_cb.setEnabled(on);
             angle_box.setEnabled(on);
+            rank_box_2.setEnabled(on);
+            rank_box_3.setEnabled(on);
+            final boolean two = on && !CLADE_LEVEL_NONE.equals(rank_box_2.getSelectedItem());
+            final boolean three = on && !CLADE_LEVEL_NONE.equals(rank_box_3.getSelectedItem());
+            angle_box_2.setEnabled(two);
+            angle_box_3.setEnabled(three);
+            if (!on) { // leaving bars/brackets: drop the extra levels so Boxes cannot carry them in
+                rank_box_2.setSelectedItem(CLADE_LEVEL_NONE);
+                rank_box_3.setSelectedItem(CLADE_LEVEL_NONE);
+            }
         };
+        rank_box_2.addActionListener(syncBarBracket);
+        rank_box_3.addActionListener(syncBarBracket);
+        for (final JComboBox<?> b : new JComboBox<?>[] { rank_box_2, rank_box_3, angle_box, angle_box_2,
+                angle_box_3 }) {
+            b.setEnabled(false);
+        }
         boxes_rb.addActionListener(syncBarBracket);
         bars_rb.addActionListener(syncBarBracket);
         brackets_rb.addActionListener(syncBarBracket);
@@ -1558,13 +1567,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
         panel.add(new JLabel("Annotate clades by rank:"));
         panel.add(rank_box);
+        panel.add(angle_box);
         panel.add(new JLabel(" "));
         panel.add(new JLabel("Show as:"));
         panel.add(boxes_rb);
         panel.add(bars_rb);
         panel.add(brackets_rb);
         panel.add(skip_singletons_cb);
-        panel.add(angle_box);
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Additional nested levels (Bars / Brackets only):"));
+        panel.add(rank_box_2);
+        panel.add(angle_box_2);
+        panel.add(rank_box_3);
+        panel.add(angle_box_3);
         panel.add(new JLabel(" "));
         panel.add(write_cb);
         panel.add(overwrite_cb);
@@ -1575,36 +1590,99 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final boolean write = write_cb.isSelected();
         final boolean overwrite = write && overwrite_cb.isSelected();
         final boolean skip_singletons = skip_singletons_cb.isSelected();
-        final TreePanel.CLADE_LABEL_ANGLE label_angle = (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem();
-        String rank = (String) rank_box.getSelectedItem();
-        if (ForesterUtil.isEmpty(rank)) {
+        final String r = bareRank((String) rank_box.getSelectedItem());
+        if (ForesterUtil.isEmpty(r)) {
             return;
         }
-        if (rank.indexOf('(') > 0) {
-            rank = rank.substring(0, rank.indexOf('(')).trim();
-        }
-        final String r = rank;
         _last_clade_rank = r; // remember for the next invocation's pre-selection
         final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS
                 : brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BOXES;
-        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r,
-                TreePanelUtil.getDefaultLineageService());
+        final List<CladeLevel.Spec> specs = new ArrayList<>();
+        specs.add(new CladeLevel.Spec(r, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
+        if (mode != TreePanel.CLADE_VIS.BOXES) { // boxes are single-level by design
+            addCladeLevelSpec(specs, rank_box_2, angle_box_2);
+            addCladeLevelSpec(specs, rank_box_3, angle_box_3);
+        }
+        // Every annotated rank has to be checked, not just the primary one. A tree carrying in-tree clade
+        // annotations at (say) family only resolves 'family' offline, so a prompt gated on the primary rank alone
+        // never appears -- and the extra levels then silently draw nothing, because nothing put their lineages in
+        // the cache. Union the unresolved tips over all the ranks that were asked for.
+        final SortedSet<String> unresolved = new java.util.TreeSet<>();
+        for (final CladeLevel.Spec spec : specs) {
+            unresolved.addAll(TreePanelUtil.unresolvedTipTaxa(phy, spec.getRank(),
+                    TreePanelUtil.getDefaultLineageService()));
+        }
         if (!unresolved.isEmpty()) {
             final int choice = JOptionPane.showConfirmDialog(this,
                     unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon lacks" : "taxa lack")
-                            + " a \"" + r + "\"-rank identity in the tree itself.\n"
+                            + " an identity at " + ((specs.size() == 1) ? ("the \"" + r + "\" rank")
+                                    : ("one or more of the ranks " + ranksOf(specs)))
+                            + " in the tree itself.\n"
                             + "Resolve online via the NCBI and UniProt databases so each tip's own identity marks its clade"
                             + " (overriding any internal-node annotation)?\n"
                             + "Decline to annotate from the tree's existing annotations. (Requires an internet connection.)",
                     "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
-                        err -> reportCladeBands(tp, r, mode, write, overwrite, skip_singletons, label_angle, err)))
+                        err -> reportCladeBands(tp, r, specs, mode, write, overwrite, skip_singletons, err)))
                                 .start();
                 return;
             }
         }
-        reportCladeBands(tp, r, mode, write, overwrite, skip_singletons, label_angle, null);
+        reportCladeBands(tp, r, specs, mode, write, overwrite, skip_singletons, null);
+    }
+
+    /** The chosen ranks, quoted, for a message: {@code "order", "class", "phylum"}. */
+    private static String ranksOf(final List<CladeLevel.Spec> specs) {
+        final StringBuilder sb = new StringBuilder();
+        for (final CladeLevel.Spec spec : specs) {
+            sb.append((sb.length() == 0) ? "" : ", ").append('"').append(spec.getRank()).append('"');
+        }
+        return sb.toString();
+    }
+
+    /** The bare rank from a chooser entry, which may carry a "(count) (coverage)" suffix. */
+    private static String bareRank(final String choice) {
+        if (ForesterUtil.isEmpty(choice) || CLADE_LEVEL_NONE.equals(choice)) {
+            return null;
+        }
+        final int paren = choice.indexOf('(');
+        return (paren > 0) ? choice.substring(0, paren).trim() : choice.trim();
+    }
+
+    /** Appends one optional nested level, if its rank chooser is set to something other than "(none)". */
+    private static void addCladeLevelSpec(final List<CladeLevel.Spec> specs, final JComboBox<String> rank_box,
+                                          final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box) {
+        final String rank = bareRank((String) rank_box.getSelectedItem());
+        if (!ForesterUtil.isEmpty(rank)) {
+            specs.add(new CladeLevel.Spec(rank, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
+        }
+    }
+
+    /** A taxon-label angle chooser for one clade level (they all read the same, so they are built the same way). */
+    private static JComboBox<TreePanel.CLADE_LABEL_ANGLE> cladeLabelAngleBox() {
+        final JComboBox<TreePanel.CLADE_LABEL_ANGLE> box = new JComboBox<>(TreePanel.CLADE_LABEL_ANGLE.values());
+        box.setToolTipText("Angle of this level's bar/bracket taxon labels (root-left layout). Vertical is the most"
+                + " compact; Horizontal reads best but is the widest -- use it for an outer rank with few names.");
+        box.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public java.awt.Component getListCellRendererComponent(final JList<?> list, final Object value,
+                    final int index, final boolean sel, final boolean focus) {
+                super.getListCellRendererComponent(list, value, index, sel, focus);
+                if (value == TreePanel.CLADE_LABEL_ANGLE.VERTICAL) {
+                    setText("    Labels: Vertical (90°)");
+                }
+                else if (value == TreePanel.CLADE_LABEL_ANGLE.DIAGONAL) {
+                    setText("    Labels: Diagonal (45°)");
+                }
+                else if (value == TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL) {
+                    setText("    Labels: Horizontal");
+                }
+                return this;
+            }
+        });
+        return box;
     }
 
     /**
@@ -1619,15 +1697,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    private void reportCladeBands(final TreePanel tp, final String rank, final TreePanel.CLADE_VIS mode,
-                                  final boolean write, final boolean overwrite, final boolean skip_singletons,
-                                  final TreePanel.CLADE_LABEL_ANGLE label_angle, final String error) {
+    /**
+     * @param rank the PRIMARY rank -- the one the "write into the tree" option and the dialog titles use; the
+     *            nested extra levels in {@code specs} are display-only
+     */
+    private void reportCladeBands(final TreePanel tp, final String rank, final List<CladeLevel.Spec> specs,
+                                  final TreePanel.CLADE_VIS mode, final boolean write, final boolean overwrite,
+                                  final boolean skip_singletons, final String error) {
         int wrote = 0;
         if (write) {
             tp.pushUndoCheckpoint("Annotate Clade Taxa"); // a tree-data mutation -> checkpoint before writing
             wrote = tp.writeCladeTaxonomiesByRank(rank, overwrite);
         }
-        final int n = tp.setCladeBands(rank, mode, skip_singletons, label_angle);
+        final int n = tp.setCladeLevels(specs, mode, skip_singletons);
         if (n > 0) {
             tp.setEdited(true);
             // bars/brackets extend to the right of the labels; fit the width so they are immediately
@@ -1638,8 +1720,27 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)"
                 : (mode == TreePanel.CLADE_VIS.BRACKETS) ? "bracket(s)" : "box(es)";
+        // the ranks as DRAWN -- finest first (nearest the tips), which is not necessarily the order they were picked
+        final List<String> drawn_ranks = tp.cladeLevelRanks();
         final StringBuilder msg = new StringBuilder("Drew ").append(n).append(" clade ").append(kind)
-                .append(" at rank \"").append(rank).append("\".");
+                .append((drawn_ranks.size() > 1) ? " across " + drawn_ranks.size() + " levels, rank " : " at rank ")
+                .append("\"").append(String.join("\" inside \"", drawn_ranks)).append("\".");
+        if (drawn_ranks.size() > 1) {
+            msg.append("\nThe finest rank is drawn nearest the tips, the broadest outermost.");
+        }
+        // a rank that placed nothing is not drawn and not counted above -- say so rather than let the user wonder
+        // why they asked for three columns and got two
+        if (drawn_ranks.size() < specs.size()) {
+            final List<String> missing = new ArrayList<>();
+            for (final CladeLevel.Spec spec : specs) {
+                if (!drawn_ranks.contains(spec.getRank())) {
+                    missing.add(spec.getRank());
+                }
+            }
+            msg.append("\nNo clade could be placed at ").append(missing.size() == 1 ? "rank " : "ranks ")
+                    .append(String.join(", ", missing)).append(", so ")
+                    .append(missing.size() == 1 ? "that level was" : "those levels were").append(" not drawn.");
+        }
         if (write) {
             msg.append("\nWrote a taxonomy onto ").append(wrote).append(" internal clade node")
                     .append(wrote == 1 ? "" : "s").append(" (rank + NCBI id; saved with the tree).");

@@ -7171,6 +7171,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Per-taxon (visible) tip counts for the rank/clade legend, so its rows show "(N)" and can sort by count
     // like the property legend. Parallel to _rank_legend; may be empty when counts were not computed.
     private Map<String, Integer> _rank_legend_counts = null;
+    // When SEVERAL ranks are annotated at once the legend is split into a titled block per rank -- otherwise the
+    // reader gets one alphabetical heap and cannot tell a family row from a genus row. taxon -> its rank, plus the
+    // rank order to print the blocks in (broadest first, the way taxonomy is written). Null for a single level,
+    // which keeps the plain flat legend exactly as it was.
+    private Map<String, String>  _rank_legend_sections = null;
+    private java.util.List<String> _rank_legend_section_order = null;
     // Per-rank user color overrides for the rank-colorize / clade-band legend (mirrors
     // _property_color_overrides): rank -> (taxon -> chosen color). Persist across navigation & re-apply.
     private final Map<String, Map<String, Color>> _rank_color_overrides = new HashMap<>();
@@ -7182,9 +7188,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     enum CLADE_VIS {
         BOXES, BARS, BRACKETS
     }
-    private java.util.List<CladeBand> _clade_bands = null;
+    // Up to CladeLevel.MAX_LEVELS ranks can be annotated at once (genus inside family inside order), drawn as
+    // nested bar/bracket columns. Split like the annotation columns: the SPECS are the user's choice and survive
+    // navigation, the LEVELS are rebuilt from them for whatever tree is displayed now. Both are held in DRAWING
+    // order (finest rank first = nearest the tips), decided once by CladeLevel.order.
+    private java.util.List<CladeLevel.Spec> _clade_level_specs = null;
+    private java.util.List<CladeLevel>      _clade_levels = null;
     private CLADE_VIS                 _clade_bands_mode = CLADE_VIS.BOXES;
-    private String                    _clade_bands_rank = null;
     private boolean                   _clade_bands_skip_singletons = true; // BARS/BRACKETS: skip a single-tip clade
 
     /** On-screen angle of a clade bar/bracket taxon label in the root-left layout (root-top/bottom labels are always
@@ -7194,7 +7204,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     enum CLADE_LABEL_ANGLE {
         VERTICAL, DIAGONAL, HORIZONTAL
     }
-    private CLADE_LABEL_ANGLE          _clade_bands_label_angle = CLADE_LABEL_ANGLE.VERTICAL;
     private final static int          CLADE_BOX_ALPHA = 46;
     private final static int          CLADE_BAR_WIDTH = 9;
     private final static int          CLADE_BAR_GAP   = 16;
@@ -7530,7 +7539,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Rank-colorize / clade-band legend row: same chooser; the override is stored per rank and re-applied
     // to the branches and/or clade bands (see reapplyRankColorization).
     private void chooseRankColorForValue(final String taxon) {
-        final String rank = currentRankLegendRank();
+        final String rank = rankLegendRankFor(taxon);
         if ((rank == null) || (_rank_legend == null)) {
             return;
         }
@@ -7545,9 +7554,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** The rank the current rank/clade legend is for (clade bands take precedence), or null. */
+    /** The rank the current rank/clade legend is for (clade bands take precedence), or null. With several levels
+     *  annotated the finest one owns the legend rows, which is where most of the taxa are. */
     private String currentRankLegendRank() {
-        return hasCladeBands() ? _clade_bands_rank : _branch_rank_colorize_rank;
+        if (hasCladeBands()) {
+            final java.util.List<String> ranks = cladeLevelRanks();
+            return ranks.isEmpty() ? null : ranks.get(0);
+        }
+        return _branch_rank_colorize_rank;
+    }
+
+    /** The rank a legend ROW belongs to. With several levels each row has its own rank, so a colour chosen on a
+     *  family row must be stored against "family" -- not against whichever rank happens to own the legend. */
+    private String rankLegendRankFor(final String taxon) {
+        if ((_rank_legend_sections != null) && _rank_legend_sections.containsKey(taxon)) {
+            return _rank_legend_sections.get(taxon);
+        }
+        return currentRankLegendRank();
     }
 
     private Map<String, Color> rankOverridesFor(final String rank) {
@@ -7610,7 +7633,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Top-left corner at which to draw the legend box; honors a dragged position on screen AND in
     // exports (PDF/PNG/...), mapping it onto the export target by its viewport fraction.
     private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
+        if ((_legend_offset == null) && defaultLegendGoesLeft()) {
+            // The never-dragged default is the top-RIGHT corner, which is exactly where the clade bar/bracket
+            // columns are -- an annotated figure would open with its legend sitting on top of the marks it
+            // describes (and, with several nested columns, hiding whole ranks of them). Start on the left
+            // instead, above the root, where a root-left tree has room. Dragging still overrides this.
+            return new Point(bounds.x + 10, bounds.y + 10);
+        }
         return legendTopLeftFor(bounds, getVisibleRect(), _legend_offset, box_w, box_h);
+    }
+
+    /** Whether the default legend corner must move off the right edge: only when clade bar/bracket columns are
+     *  actually drawn there, i.e. in the rectangular root-left layout (the vertical orientations put their marks
+     *  along the top/bottom, and the radial layouts ring the tree, so neither collides with the corner). */
+    private boolean defaultLegendGoesLeft() {
+        return hasCladeBands() && (_clade_bands_mode != CLADE_VIS.BOXES) && !isRadialLayout()
+                && !isVerticalOrientation() && (drawnCladeBandCount() > 0);
     }
 
     /**
@@ -7654,6 +7692,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _rank_legend = null;
         _rank_legend_counts = null;
         _rank_legend_title = null;
+        _rank_legend_sections = null;
+        _rank_legend_section_order = null;
         _branch_rank_colorize_rank = null; // branches are no longer rank-colorized
         repaint();
     }
@@ -8028,19 +8068,189 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         noteLegendSubject("rank:" + _rank_legend_title);
+        if (_rank_legend_sections != null) { // several ranks at once -> one titled block per rank
+            drawSectionedRankLegend(g, bounds, draggable);
+            return;
+        }
         final Map<String, Color> values = orderedLegend(_rank_legend, _rank_legend_counts);
         drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, _rank_legend_counts,
                 _rank_legend.size() - values.size());
     }
 
     /**
+     * The clade legend when SEVERAL ranks are annotated at once: one titled block per rank, broadest first (the
+     * order taxonomy is written in), each block listing that rank's taxa. Without the blocks the three ranks
+     * arrive as a single alphabetical heap in which a family row is indistinguishable from a genus row -- which
+     * defeats the point of drawing the ranks together.
+     * <p>
+     * The per-rank cap keeps every block visible: with one shared cap a big rank would crowd the others out
+     * entirely, so each gets its own share and the footer reports everything hidden across all of them. Header
+     * rows are recorded as {@code null} labels in the row list, so the shared click-to-recolour hit test maps a
+     * click on a header to "no row" instead of to the wrong taxon.
+     */
+    private void drawSectionedRankLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
+        final int swatch = 10, gap = 5, pad = 7, max_text_px = 200;
+        g.setFont(legendFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final int row_h = fm.getHeight() + 2;
+        final int sections = Math.max(1, _rank_legend_section_order.size());
+        final int per_section = (_legend_max_entries >= LEGEND_SHOW_ALL) ? LEGEND_SHOW_ALL
+                : Math.max(3, _legend_max_entries / sections);
+        // rows in draw order: a header (null label) then that rank's taxa, ordered by the shared sort toggle
+        final java.util.List<String> labels = new ArrayList<>();
+        final java.util.List<String> headers = new ArrayList<>();
+        int hidden = 0;
+        for (final String rank : _rank_legend_section_order) {
+            final Map<String, Color> in_rank = new java.util.TreeMap<>();
+            for (final Map.Entry<String, Color> e : _rank_legend.entrySet()) {
+                if (rank.equals(_rank_legend_sections.get(e.getKey()))) {
+                    in_rank.put(e.getKey(), e.getValue());
+                }
+            }
+            if (in_rank.isEmpty()) {
+                continue;
+            }
+            final Map<String, Color> shown = orderLegendEntries(in_rank, _rank_legend_counts, per_section,
+                    _legend_sort_by_count);
+            hidden += in_rank.size() - shown.size();
+            headers.add(rank);
+            labels.add(null); // the header row itself is not a clickable taxon
+            labels.addAll(shown.keySet());
+        }
+        final boolean more_footer = hidden > 0;
+        final String more_text = "… +" + hidden + " more";
+        // Same rule as the flat legend: the expand/collapse control goes in the TITLE row. It matters even more
+        // here -- a three-rank legend expanded to "show all" is long, and this renderer previously drew NO control
+        // once everything was shown, so there was no way back to the short list at all.
+        final int shown_rows = labels.size() - headings( labels );
+        final String expand_chip = draggable ? legendExpandChip( shown_rows, hidden ) : null;
+        // the sort order still drives the rows inside every block, so the control that changes it has to be here
+        // too -- without it, annotating a second rank silently froze the legend on whatever order it was left in
+        final boolean show_sort = draggable && (shown_rows >= 2);
+        final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
+        int text_w = fm.stringWidth(_rank_legend_title)
+                + ((expand_chip != null) ? (gap + fm.stringWidth(expand_chip)) : 0)
+                + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0);
+        for (final String h : headers) {
+            text_w = Math.max(text_w, fm.stringWidth(h.toUpperCase()));
+        }
+        for (final String v : labels) {
+            if (v != null) {
+                text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, _rank_legend_counts, fm,
+                        max_text_px)));
+            }
+        }
+        if (more_footer) {
+            text_w = Math.max(text_w, fm.stringWidth(more_text));
+        }
+        final int box_w = text_w + (2 * pad) + 4;
+        final int box_h = ((1 + labels.size() + (more_footer ? 1 : 0)) * row_h) + (2 * pad);
+        final Point tl = legendTopLeft(bounds, box_w, box_h);
+        final int x = tl.x;
+        final int y = clampLegendTop(bounds, tl.y, row_h, pad);
+        if (draggable) {
+            _legend_row_labels = labels; // nulls at the header rows -> a click there resolves to no taxon
+            _legend_rows_top = y + pad + row_h;
+            _legend_row_height = row_h;
+            _legend_sort_toggle_bounds = null; // set below only when actually drawn
+            _legend_more_bounds = null;
+        }
+        final Color fg = getTreeColorSet().getSequenceColor();
+        int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, _rank_legend_title, fm, draggable, false);
+        g.setColor(fg);
+        int chip_right = (x + box_w) - pad; // title-row chips are laid out right-to-left from the box edge
+        if (expand_chip != null) { // in the title row, so it stays reachable however long the legend gets
+            final int chip_w = fm.stringWidth(expand_chip);
+            final int chip_x = chip_right - chip_w;
+            g.drawString(expand_chip, chip_x, baseline);
+            _legend_more_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            chip_right = chip_x - gap;
+        }
+        if (show_sort) {
+            final int chip_w = fm.stringWidth(sort_chip);
+            final int chip_x = chip_right - chip_w;
+            g.drawString(sort_chip, chip_x, baseline);
+            _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+        }
+        int header_i = 0;
+        for (final String label : labels) {
+            baseline += row_h;
+            if (label == null) { // a rank heading, set apart from its rows by being bold and un-swatched
+                g.setColor(fg);
+                final Font plain = g.getFont();
+                g.setFont(plain.deriveFont(Font.BOLD));
+                g.drawString(headers.get(header_i++).toUpperCase(), x + pad, baseline);
+                g.setFont(plain);
+                continue;
+            }
+            g.setColor(_rank_legend.get(label));
+            g.fillRect(x + pad + gap, baseline - fm.getAscent() + ((fm.getAscent() - swatch) / 2) + 1, swatch,
+                    swatch);
+            g.setColor(fg);
+            g.drawString(legendRowText(label, _rank_legend_counts, fm, max_text_px), x + pad + gap + swatch + gap,
+                    baseline);
+        }
+        if (more_footer) { // informative only; its control is in the title row
+            baseline += row_h;
+            g.setColor(fg);
+            g.drawString(more_text, x + pad, baseline);
+        }
+    }
+
+    /** How many of a sectioned legend's rows are rank HEADINGS rather than taxa (headings are null labels). */
+    private static int headings(final java.util.List<String> labels) {
+        int n = 0;
+        for (final String label : labels) {
+            if (label == null) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+    /** Test hook: whether the default (never-dragged) legend corner is moved off the right edge to clear the
+     *  clade bar/bracket columns. */
+    final boolean legendDefaultGoesLeftForTest() {
+        return defaultLegendGoesLeft();
+    }
+
+    /** Test hook: the legend rows as drawn -- {@code null} where a rank heading sits. */
+    final java.util.List<String> legendRowLabelsForTest() {
+        return _legend_row_labels;
+    }
+
+    /**
+     * The label of the legend's expand/collapse control, or null when neither applies: "[show all]" while entries
+     * are hidden, "[show fewer]" once everything is shown and the list is longer than the default.
+     */
+    private String legendExpandChip(final int shown, final int hidden) {
+        if (hidden > 0) {
+            return "[show all]";
+        }
+        return ((_legend_max_entries >= LEGEND_SHOW_ALL) && (shown > DEFAULT_LEGEND_MAX_ENTRIES)) ? "[show fewer]"
+                : null;
+    }
+
+    /**
+     * Keeps the legend's TITLE row inside the drawing area however tall the box has grown. The expand/collapse
+     * control lives in that row, and an expanded legend is routinely taller than the window -- with the control at
+     * the BOTTOM (where it used to be) "show all" was a one-way trip on any long legend, because the way back was
+     * scrolled off the screen.
+     */
+    private int clampLegendTop(final Rectangle bounds, final int y, final int row_h, final int pad) {
+        final int lowest = (bounds.y + bounds.height) - row_h - (2 * pad);
+        return Math.max(bounds.y, Math.min(y, Math.max(bounds.y, lowest)));
+    }
+
+    /**
      * Draws a boxed title plus swatch/label rows for an ordered value-to-color map. On screen
-     * ({@code draggable}) it adds two interactive controls -- a sort toggle ("[by count]"/"[A-Z]") in the
-     * title row and a clickable footer that expands ("[show all]") or collapses ("[show fewer]") -- and
-     * records their bounds so the shared drag/hit-test machinery can map a click back to a row or control.
-     * A static export (not draggable) omits that clickable chrome but keeps the informative "+N more" line so
-     * the figure still shows that categories were truncated. Shared by the property-color, taxonomic-rank, and
-     * annotation-column legends. {@code counts} may be null (then rows show no count).
+     * ({@code draggable}) the TITLE row carries both interactive controls -- a sort toggle
+     * ("[by count]"/"[A-Z]") and the expand/collapse chip ("[show all]"/"[show fewer]") -- and their bounds are
+     * recorded so the shared drag/hit-test machinery can map a click back to a row or control. Both sit in the
+     * title row rather than the footer so they stay reachable when an expanded legend grows taller than the
+     * window. A static export (not draggable) omits that clickable chrome but keeps the informative "+N more"
+     * line so the figure still shows that categories were truncated. Shared by the property-color,
+     * taxonomic-rank, and annotation-column legends. {@code counts} may be null (then rows show no count).
      */
     private void drawCategoricalLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
                                        final String title, final Map<String, Color> values,
@@ -8056,32 +8266,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // The sort toggle and the [show all]/[show fewer] chips are interactive UI, so they are drawn only
         // on screen (draggable); a static export (PDF/SVG/EPS/TIFF/PNG/JPG) keeps the informative "+N more"
         // text but drops the clickable chrome.
-        final boolean expanded = _legend_max_entries >= LEGEND_SHOW_ALL;
         final boolean more_footer = more > 0;                            // "+N more" info: on screen AND in exports
         final boolean show_sort = draggable && (shown >= 2);            // sort toggle: on-screen only
-        final boolean show_all_chip = draggable && more_footer;         // "[show all]" chip: on-screen only
-        final boolean show_fewer = draggable && expanded && !more_footer && (shown > DEFAULT_LEGEND_MAX_ENTRIES);
+        // The expand/collapse control sits in the TITLE row, not the footer: an expanded legend is often taller
+        // than the window, and a control at the bottom of it cannot be reached (see clampLegendTop).
+        final String expand_chip = draggable ? legendExpandChip(shown, more) : null;
         final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
         final String more_text = "… +" + more + " more";
-        final String show_all_chip_str = "[show all]";
-        final String show_fewer_chip = "[show fewer]";
-        int text_w = fm.stringWidth(title) + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0);
+        int text_w = fm.stringWidth(title) + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0)
+                + ((expand_chip != null) ? (gap + fm.stringWidth(expand_chip)) : 0);
         for (final String v : values.keySet()) {
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, counts, fm, max_text_px)));
         }
         if (more_footer) {
-            text_w = Math.max(text_w, fm.stringWidth(more_text)
-                    + (show_all_chip ? (gap + fm.stringWidth(show_all_chip_str)) : 0));
-        } else if (show_fewer) {
-            text_w = Math.max(text_w, fm.stringWidth(show_fewer_chip));
+            text_w = Math.max(text_w, fm.stringWidth(more_text));
         }
         // a few extra px on the right so the longest value clears the border even
         // when PDF font metrics run slightly wider than AWT's stringWidth().
         final int box_w = text_w + (2 * pad) + 4;
-        final int box_h = ((1 + shown + ((more_footer || show_fewer) ? 1 : 0)) * row_h) + (2 * pad);
+        final int box_h = ((1 + shown + (more_footer ? 1 : 0)) * row_h) + (2 * pad);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
-        final int y = tl.y;
+        final int y = clampLegendTop(bounds, tl.y, row_h, pad);
         if (draggable) {
             _legend_row_labels = new java.util.ArrayList<>(values.keySet());
             _legend_rows_top = y + pad + row_h; // first value row starts just below the title row
@@ -8095,9 +8301,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Color fg = getTreeColorSet().getSequenceColor();
         int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable, false);
         g.setColor(fg);
+        int chip_right = (x + box_w) - pad; // title-row chips are laid out right-to-left from the box edge
+        if (expand_chip != null) { // expand/collapse, always reachable because the title row is always on screen
+            final int chip_w = fm.stringWidth(expand_chip);
+            final int chip_x = chip_right - chip_w;
+            g.drawString(expand_chip, chip_x, baseline);
+            _legend_more_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            chip_right = chip_x - gap;
+        }
         if (show_sort) { // sort toggle, right-aligned in the title row (on-screen only -> draggable)
             final int chip_w = fm.stringWidth(sort_chip);
-            final int chip_x = (x + box_w) - pad - chip_w;
+            final int chip_x = chip_right - chip_w;
             g.drawString(sort_chip, chip_x, baseline);
             _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
         }
@@ -8108,20 +8322,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(fg);
             g.drawString(legendRowText(e.getKey(), counts, fm, max_text_px), x + pad + swatch + gap, baseline);
         }
-        if (more_footer) { // "+N more" info (also in exports); the "[show all]" chip is on-screen only
+        if (more_footer) { // "+N more": informative only now (also in exports); its control is in the title row
             baseline += row_h;
             g.drawString(more_text, x + pad, baseline);
-            if (show_all_chip) {
-                final int chip_w = fm.stringWidth(show_all_chip_str);
-                final int chip_x = (x + box_w) - pad - chip_w;
-                g.drawString(show_all_chip_str, chip_x, baseline);
-                _legend_more_bounds = new Rectangle(chip_x - 2, baseline - fm.getAscent(), chip_w + 4, row_h);
-            }
-        } else if (show_fewer) {
-            baseline += row_h;
-            g.drawString(show_fewer_chip, x + pad, baseline);
-            _legend_more_bounds = new Rectangle(x + pad - 2, baseline - fm.getAscent(),
-                    fm.stringWidth(show_fewer_chip) + 4, row_h);
         }
         g.setStroke(saved_stroke);
     }
@@ -8591,6 +8794,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _rank_legend = null;
         _rank_legend_counts = null;
         _rank_legend_title = null;
+        _rank_legend_sections = null;
+        _rank_legend_section_order = null;
         _branch_rank_colorize_rank = null;
         final int colorizations = recolorBranchesByRank(rank); // honors any stored overrides for this rank
         if (colorizations > 0) {
@@ -8624,6 +8829,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
             _rank_legend_counts = counts;
             _rank_legend_title = "Taxonomy: " + rank;
+            _rank_legend_sections = null; // one rank -> the plain flat legend
+            _rank_legend_section_order = null;
             _branch_rank_colorize_rank = rank;
         }
         return colorizations;
@@ -8655,27 +8862,77 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     // ---- clade-annotation bands (boxes / right-edge bars by taxonomic rank) --------------------
 
-    /** Annotates the tree's clades with boxes or bars at {@code rank}; returns the number of bands. */
+    /** Annotates the tree's clades with boxes or bars at one {@code rank}; returns the number of bands. */
     final int setCladeBands(final String rank, final CLADE_VIS mode) {
-        return setCladeBands(rank, mode, _clade_bands_skip_singletons, _clade_bands_label_angle);
+        return setCladeBands(rank, mode, _clade_bands_skip_singletons, CLADE_LABEL_ANGLE.VERTICAL);
     }
 
     final int setCladeBands(final String rank, final CLADE_VIS mode, final boolean skip_singletons) {
-        return setCladeBands(rank, mode, skip_singletons, _clade_bands_label_angle);
+        return setCladeBands(rank, mode, skip_singletons, CLADE_LABEL_ANGLE.VERTICAL);
     }
 
-    /** Sets the clade bands, whether a single-member clade's bar/bracket is skipped (a degenerate one-row mark), and
-     *  the root-left taxon-label angle. Returns the number of marks that will actually be DRAWN (see
-     *  {@link #drawnCladeBandCount}). */
+    /** One level, at the given label angle -- the single-rank form of {@link #setCladeLevels}. */
     final int setCladeBands(final String rank, final CLADE_VIS mode, final boolean skip_singletons,
                             final CLADE_LABEL_ANGLE label_angle) {
-        _clade_bands_rank = rank;
+        return setCladeLevels(java.util.Collections.singletonList(new CladeLevel.Spec(rank, label_angle)), mode,
+                              skip_singletons);
+    }
+
+    /**
+     * Annotates the tree's clades at ONE TO {@link CladeLevel#MAX_LEVELS} ranks at once -- nested columns of bars
+     * or brackets (genus inside family inside order). The specs are re-ordered finest-rank-first by
+     * {@link CladeLevel#order}, so the caller never has to get the placement right; blanks and duplicate ranks
+     * are dropped there too. Returns the number of marks that will actually be DRAWN across all levels (see
+     * {@link #drawnCladeBandCount}).
+     */
+    final int setCladeLevels(final java.util.List<CladeLevel.Spec> specs, final CLADE_VIS mode,
+                             final boolean skip_singletons) {
+        _clade_level_specs = CladeLevel.order(specs);
         _clade_bands_mode = mode;
         _clade_bands_skip_singletons = skip_singletons;
-        _clade_bands_label_angle = label_angle;
         rebuildCladeBands();
         repaint();
         return drawnCladeBandCount();
+    }
+
+    /** The levels currently drawn, finest rank first (nearest the tips); never null. */
+    private java.util.List<CladeLevel> cladeLevels() {
+        return (_clade_levels == null) ? java.util.Collections.<CladeLevel> emptyList() : _clade_levels;
+    }
+
+    /** How many ranks are annotated at once. */
+    final int cladeLevelCount() {
+        return cladeLevels().size();
+    }
+
+    /** The ranks actually DRAWN, finest first -- for the report and the legend titles. A rank that placed no
+     *  clade is not listed, so the report cannot claim a level the reader cannot see. */
+    final java.util.List<String> cladeLevelRanks() {
+        final java.util.List<String> out = new ArrayList<>();
+        for (final CladeLevel level : drawableCladeLevels()) {
+            out.add(level.getRank());
+        }
+        return out;
+    }
+
+    /**
+     * BOXES stay SINGLE-level by design: the wash is alpha-composited, so a clade inside another clade would
+     * paint as the product of two washes -- darker than either, and no longer the colour its legend row claims.
+     * Bars and brackets are opaque marks in their own columns, so they nest cleanly. When boxes are somehow asked
+     * for several levels, only the finest is drawn.
+     */
+    private java.util.List<CladeLevel> drawableCladeLevels() {
+        // A level whose rank placed nothing must be dropped, not merely drawn empty: it would still claim a full
+        // column of right margin (gap + mark + a label line, ~45 px) that nothing occupies, and would still be
+        // counted in the "drew N marks across M levels" report. That happens for real -- ask for a rank the tree
+        // cannot resolve alongside one it can, and only the resolvable level has bands.
+        final java.util.List<CladeLevel> levels = new ArrayList<>();
+        for (final CladeLevel level : cladeLevels()) {
+            if (!level.getBands().isEmpty()) {
+                levels.add(level);
+            }
+        }
+        return ((_clade_bands_mode == CLADE_VIS.BOXES) && (levels.size() > 1)) ? levels.subList(0, 1) : levels;
     }
 
     /** A clade represented by a single tip -- a degenerate one-row bar/bracket. Counts the STRUCTURAL external
@@ -8698,13 +8955,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  Uses the SAME {@link #skipCladeBand} predicate the render loops do, so the count can't drift from what draws.
      *  The legend still lists every taxon. */
     private int drawnCladeBandCount() {
-        if (!hasCladeBands()) {
-            return 0;
-        }
         int n = 0;
-        for (final CladeBand band : _clade_bands) {
-            if (!skipCladeBand(band)) {
-                ++n;
+        for (final CladeLevel level : drawableCladeLevels()) {
+            for (final CladeBand band : level.getBands()) {
+                if (!skipCladeBand(band)) {
+                    ++n;
+                }
             }
         }
         return n;
@@ -8715,7 +8971,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  to tell "no tip could be placed" (0 total) apart from "all placed clades are single-member and were skipped"
      *  (total &gt; 0 but drawn 0). */
     final int cladeBandCount() {
-        return hasCladeBands() ? _clade_bands.size() : 0;
+        int n = 0;
+        for (final CladeLevel level : cladeLevels()) {
+            n += level.getBands().size();
+        }
+        return n;
     }
 
     /**
@@ -8737,8 +8997,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void clearCladeBands() {
-        _clade_bands = null;
-        _clade_bands_rank = null;
+        _clade_levels = null;
+        _clade_level_specs = null;
         // drop the color key with the bands -- unless a branch rank-colorization still owns the legend
         if (_branch_rank_colorize_rank == null) {
             clearRankLegend();
@@ -8746,7 +9006,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final boolean hasCladeBands() {
-        return (_clade_bands != null) && !_clade_bands.isEmpty();
+        for (final CladeLevel level : cladeLevels()) {
+            if (!level.getBands().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     CLADE_VIS getCladeBandsMode() {
@@ -8755,14 +9020,54 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Recomputes the bands from the current tree (cache-only); call after navigation swaps the tree. */
     final void rebuildCladeBands() {
-        if (ForesterUtil.isEmpty(_clade_bands_rank) || (_phylogeny == null) || _phylogeny.isEmpty()) {
-            _clade_bands = null;
+        if ((_clade_level_specs == null) || _clade_level_specs.isEmpty() || (_phylogeny == null)
+                || _phylogeny.isEmpty()) {
+            _clade_levels = null;
             return; // leave any existing (property/rank-colorize) legend untouched
         }
+        // Counts are gathered PER LEVEL and merged first-wins (the specs run finest-first), not accumulated into
+        // one shared map: a taxon name that is assigned at two annotated ranks would otherwise have its two tip
+        // counts SUMMED, inflating its "(N)" in the legend and skewing the by-count sort.
         final Map<String, Integer> counts = new HashMap<>();
-        _clade_bands = TreePanelUtil.cladeBands(_phylogeny, _clade_bands_rank,
-                TreePanelUtil.getDefaultLineageService(), rankOverridesFor(_clade_bands_rank), counts);
+        final java.util.List<java.util.List<CladeBand>> per_level = new ArrayList<>();
+        for (final CladeLevel.Spec spec : _clade_level_specs) {
+            final Map<String, Integer> level_counts = new HashMap<>();
+            // each level runs its OWN maximal-monophyletic assignment at its rank; nesting is therefore whatever
+            // the taxonomy actually says, not something imposed -- a clade whose broader rank is unresolved simply
+            // has no mark outside it, which is honest about the gap rather than inventing a parent
+            per_level.add(TreePanelUtil.cladeBands(_phylogeny, spec.getRank(),
+                    TreePanelUtil.getDefaultLineageService(), rankOverridesFor(spec.getRank()), level_counts));
+            for (final Map.Entry<String, Integer> e : level_counts.entrySet()) {
+                counts.putIfAbsent(e.getKey(), e.getValue()); // finest level first -> the finer count wins
+            }
+        }
+        // Several levels: re-colour them so each finer clade's colour sits inside its containing clade's hue slice
+        // (a single level has no hierarchy to express and keeps the plain distinct-colour palette). Runs BEFORE the
+        // per-taxon overrides are re-applied below, so a colour the user chose by hand still wins.
+        final java.util.List<java.util.List<CladeBand>> colored = CladeHuePalette.hueBand(per_level);
+        final java.util.List<CladeLevel> levels = new ArrayList<>();
+        for (int i = 0; i < _clade_level_specs.size(); ++i) {
+            final CladeLevel.Spec spec = _clade_level_specs.get(i);
+            levels.add(new CladeLevel(spec, applyCladeColorOverrides(colored.get(i), spec.getRank())));
+        }
+        _clade_levels = levels;
         updateCladeBandLegend(counts);
+    }
+
+    /** Re-applies this rank's per-taxon user colour overrides after hue-banding, so a colour picked by hand on a
+     *  legend row is never silently replaced by a computed one. */
+    private java.util.List<CladeBand> applyCladeColorOverrides(final java.util.List<CladeBand> bands,
+                                                               final String rank) {
+        final Map<String, Color> overrides = rankOverridesFor(rank);
+        if (overrides.isEmpty()) {
+            return bands;
+        }
+        final java.util.List<CladeBand> out = new ArrayList<>();
+        for (final CladeBand band : bands) {
+            final Color chosen = overrides.get(band.getTaxon());
+            out.add((chosen == null) ? band : new CladeBand(band.getTaxon(), chosen, band.getRoot()));
+        }
+        return out;
     }
 
     /**
@@ -8783,13 +9088,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final Map<String, Color> legend = new java.util.TreeMap<>(); // sorted by taxon name; dedups repeated taxa
-        for (final CladeBand band : _clade_bands) {
-            legend.put(band.getTaxon(), band.getColor());
+        final java.util.List<CladeLevel> levels = drawableCladeLevels();
+        final Map<String, String> sections = new HashMap<>();
+        final java.util.List<String> section_order = new ArrayList<>();
+        for (final CladeLevel level : levels) {
+            for (final CladeBand band : level.getBands()) {
+                legend.putIfAbsent(band.getTaxon(), band.getColor());
+                // levels run FINEST first, so first-wins really does file a taxon under the finer of two ranks
+                // (a plain put would have let the broader, later level overwrite it -- and then a colour chosen
+                // on that legend row would have been stored against the wrong rank)
+                sections.putIfAbsent(band.getTaxon(), level.getRank());
+            }
+            section_order.add(0, level.getRank()); // levels are finest-first; print the blocks broadest-first
+        }
+        if (levels.size() > 1) {
+            _rank_legend_sections = sections;
+            _rank_legend_section_order = section_order;
+        }
+        else {
+            _rank_legend_sections = null;
+            _rank_legend_section_order = null;
         }
         if (!legend.isEmpty()) {
             _rank_legend = legend;
             _rank_legend_counts = counts;
-            _rank_legend_title = "Taxonomy: " + _clade_bands_rank;
+            _rank_legend_title = "Taxonomy: " + String.join(" / ", cladeLevelRanks());
         }
     }
 
@@ -10667,7 +10990,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (_clade_bands_mode == CLADE_VIS.BOXES)) {
             return 0;
         }
-        return CLADE_BAR_GAP + CLADE_BAR_WIDTH + 4;
+        // Every level's ring must be inside the reserve, and so must every label EXCEPT the outermost one's --
+        // that last one riding past the edge is the pre-existing, documented limitation above, and reserving it
+        // now would shrink every single-level circular tree for no reason.
+        final java.util.List<CladeLevel> levels = drawableCladeLevels();
+        double r = 0;
+        for (int i = 0; i < levels.size(); ++i) {
+            r += circularCladeLevelRadialExtent(levels.get(i));
+            if (i == (levels.size() - 1)) {
+                r -= maxCladeLabelWidth(levels.get(i)); // the outermost label may still overflow, as before
+            }
+        }
+        return (int) Math.ceil(r);
     }
 
     /** The angular extent {@code {a0, a1}} (radians, a0<=a1 in tree order = increasing angle) of a clade's DISPLAYED
@@ -10707,30 +11041,41 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         // just past the tips + labels AND any annotation rings (so the clade marks sit outside the ring stack)
-        final double r_outer = radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve() + CLADE_BAND_RIGHT_PAD;
+        final double base = radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve() + CLADE_BAND_RIGHT_PAD;
         final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
         final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
-        for (final CladeBand band : _clade_bands) {
-            if (skipCladeBand(band)) { // single-member clades: no bar/bracket (boxes still draw)
-                continue;
+        double r_outer = base; // the radius cursor: each level's ring sits outside the one before it
+        for (final CladeLevel level : drawableCladeLevels()) {
+            for (final CladeBand band : level.getBands()) {
+                if (skipCladeBand(band)) { // single-member clades: no bar/bracket (boxes still draw)
+                    continue;
+                }
+                final double[] ar = circularCladeAngleRange(band.getRoot());
+                if (ar == null) {
+                    continue;
+                }
+                final double a0 = ar[0] - half_step, a1 = ar[1] + half_step; // cover the outer tips fully
+                switch (_clade_bands_mode) {
+                    case BARS:
+                        drawCircularCladeArc(g, cx, cy, r_outer, a0, a1, band);
+                        break;
+                    case BRACKETS:
+                        drawCircularCladeBracket(g, cx, cy, r_outer, a0, a1, band);
+                        break;
+                    default:
+                        drawCircularCladeSector(g, cx, cy, band, a0, a1, r_outer);
+                        break;
+                }
             }
-            final double[] ar = circularCladeAngleRange(band.getRoot());
-            if (ar == null) {
-                continue;
-            }
-            final double a0 = ar[0] - half_step, a1 = ar[1] + half_step; // cover the outer tips fully
-            switch (_clade_bands_mode) {
-                case BARS:
-                    drawCircularCladeArc(g, cx, cy, r_outer, a0, a1, band);
-                    break;
-                case BRACKETS:
-                    drawCircularCladeBracket(g, cx, cy, r_outer, a0, a1, band);
-                    break;
-                default:
-                    drawCircularCladeSector(g, cx, cy, band, a0, a1, r_outer);
-                    break;
-            }
+            r_outer += circularCladeLevelRadialExtent(level);
         }
+    }
+
+    /** The radial thickness one circular bar/bracket level occupies: the gap, the mark, and the taxon label riding
+     *  the spoke outward from it (so the NEXT level's ring clears this level's names). */
+    private double circularCladeLevelRadialExtent(final CladeLevel level) {
+        final int mark = (_clade_bands_mode == CLADE_VIS.BARS) ? (CLADE_BAR_WIDTH + 3) : (CLADE_BRACKET_TICK + 4);
+        return CLADE_BAR_GAP + mark + maxCladeLabelWidth(level) + 4;
     }
 
     /** A translucent annular SECTOR (the circular "clade box"): from the clade root's radius out to r_outer over the
@@ -11438,8 +11783,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 extra += CLADE_BAND_RIGHT_PAD;
             } else if (drawnCladeBandCount() > 0) { // no bar/bracket reserve if every band is a skipped single-member clade
                 final int label_h = getFontMetricsForLargeDefaultFont().getHeight();
-                final int mark = (_clade_bands_mode == CLADE_VIS.BARS) ? (CLADE_BAR_WIDTH + 3) : 4;
-                extra += CLADE_BAND_RIGHT_PAD + CLADE_BAR_GAP + mark + cladeLabelDepthExtent(label_h) + 4;
+                extra += CLADE_BAND_RIGHT_PAD;
+                for (final CladeLevel level : drawableCladeLevels()) { // every nested column needs its own room
+                    extra += cladeLevelDepthExtent(level, label_h);
+                }
             }
         }
         return extra;
@@ -11448,18 +11795,52 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** The depth-axis (horizontal, in the root-left layout) footprint of a clade bar/bracket taxon label, given its
      *  angle: HORIZONTAL reserves the full label width, DIAGONAL ~width/sqrt2, VERTICAL just one line height.
      *  Root-top/bottom labels are always upright, so their depth footprint is one line height. */
-    private int cladeLabelDepthExtent(final int label_h) {
+    private int cladeLabelDepthExtent(final CladeLevel level, final int label_h) {
         if (isVerticalOrientation()) {
             return label_h;
         }
-        switch (_clade_bands_label_angle) {
+        switch (level.getLabelAngle()) {
             case HORIZONTAL:
-                return Math.max(label_h, maxCladeLabelWidth());
+                return Math.max(label_h, maxCladeLabelWidth(level));
             case DIAGONAL:
-                return Math.max(label_h, Math.round((maxCladeLabelWidth() + label_h) / 1.41f));
+                return Math.max(label_h, Math.round((maxCladeLabelWidth(level) + label_h) / 1.41f));
             default: // VERTICAL
                 return label_h;
         }
+    }
+
+    /**
+     * Where each bar/bracket level's mark COLUMN starts, finest first (nearest the tips) -- the single cursor the
+     * nested-column geometry is defined by. Both draw loops walk it and {@link #cladeLevelStartsForTest} reports
+     * it, so what is drawn and what is asserted cannot drift apart.
+     */
+    private float[] cladeLevelStarts() {
+        final java.util.List<CladeLevel> levels = drawableCladeLevels();
+        final int label_h = getFontMetricsForLargeDefaultFont().getHeight();
+        final float[] xs = new float[levels.size()];
+        float x = cladeBandRightEdge();
+        for (int i = 0; i < levels.size(); ++i) {
+            xs[i] = x + CLADE_BAR_GAP;
+            x += cladeLevelDepthExtent(levels.get(i), label_h);
+        }
+        return xs;
+    }
+
+    /** Test hook: the depth (x) each nested clade column starts at, finest first. */
+    final float[] cladeLevelStartsForTest() {
+        return cladeLevelStarts();
+    }
+
+    /**
+     * The FULL depth (horizontal, in the root-left layout) that one bar/bracket level occupies: the gap in front
+     * of it, the mark itself, its label, and a little air before the next level. The draw loops advance their
+     * cursor by exactly this and {@link #rightMarginExtraWidth} reserves exactly the sum of it, so a level can
+     * never be drawn into space the layout did not set aside (which would clip the outermost column on a
+     * fit-to-window).
+     */
+    private int cladeLevelDepthExtent(final CladeLevel level, final int label_h) {
+        final int mark = (_clade_bands_mode == CLADE_VIS.BARS) ? (CLADE_BAR_WIDTH + 3) : 4;
+        return CLADE_BAR_GAP + mark + cladeLabelDepthExtent(level, label_h) + 4;
     }
 
     /** Test hook: the horizontal reserve past the labels (annotation columns + any clade marks and their labels). */
@@ -11467,15 +11848,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return rightMarginExtraWidth();
     }
 
-    /** The widest DRAWN clade taxon label (in the large font), for reserving horizontal/diagonal label space; 0 if
-     *  none. Skipped single-member clades don't draw, so they don't reserve. */
-    private int maxCladeLabelWidth() {
-        if (!hasCladeBands()) {
-            return 0;
-        }
+    /** The widest DRAWN clade taxon label at ONE level (in the large font), for reserving that level's
+     *  horizontal/diagonal label space; 0 if none. Skipped single-member clades don't draw, so they don't reserve. */
+    private int maxCladeLabelWidth(final CladeLevel level) {
         final FontMetrics fm = getFontMetricsForLargeDefaultFont();
         int max = 0;
-        for (final CladeBand band : _clade_bands) {
+        for (final CladeBand band : level.getBands()) {
             if (!skipCladeBand(band)) {
                 max = Math.max(max, fm.stringWidth(band.getTaxon()));
             }
@@ -11504,9 +11882,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private void drawCladeBoxes(final Graphics2D g) {
+        final java.util.List<CladeLevel> levels = drawableCladeLevels(); // boxes: at most one (see drawableCladeLevels)
+        if (levels.isEmpty()) {
+            return;
+        }
         final float right = cladeBandRightEdge();
         final float pad = getYdistance();
-        for (final CladeBand band : _clade_bands) {
+        for (final CladeBand band : levels.get(0).getBands()) {
             final float[] yr = cladeBandYRange(band.getRoot());
             if (yr == null) {
                 continue;
@@ -11523,38 +11905,51 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /**
+     * The nested bar columns: one column per annotated rank, finest nearest the tips, each a solid colour bar per
+     * clade plus its taxon label. The x cursor walks outward level by level, so the broader ranks sit outside the
+     * finer ones they contain -- the nested-bracket look of a published figure. Every level's width contribution
+     * is {@link #cladeLevelDepthExtent}, the same function the layout reserve uses, so what is drawn and what is
+     * reserved can never disagree.
+     */
     private void drawCladeBars(final Graphics2D g) {
-        final float bar_x = cladeBandRightEdge() + CLADE_BAR_GAP;
         final float pad = getYdistance();
         final Font font = getTreeFontSet().getLargeFont();
-        for (final CladeBand band : _clade_bands) {
-            final float[] yr = cladeBandYRange(band.getRoot());
-            if (yr == null) {
-                continue;
+        final java.util.List<CladeLevel> levels = drawableCladeLevels();
+        final float[] starts = cladeLevelStarts();
+        for (int li = 0; li < levels.size(); ++li) {
+            final CladeLevel level = levels.get(li);
+            final float bar_x = starts[li];
+            for (final CladeBand band : level.getBands()) {
+                final float[] yr = cladeBandYRange(band.getRoot());
+                if (yr == null) {
+                    continue;
+                }
+                if (skipCladeBand(band)) { // "Skip single-member clades": a single-tip clade's bar is a degenerate stub
+                    continue;
+                }
+                final int y = Math.round(yr[0] - pad);
+                final int h = Math.max(1, Math.round((yr[1] - yr[0]) + (2 * pad)));
+                g.setColor(band.getColor());
+                g.fillRect(Math.round(bar_x), y, CLADE_BAR_WIDTH, h); // rides R -> horizontal bar in a vertical orientation
+                // taxon label: at this level's own angle in a horizontal layout (an outer rank has few, long names
+                // worth reading straight; inner ones stay narrow), UPRIGHT in a vertical orientation
+                g.setFont(font);
+                g.setColor(getTreeColorSet().getSequenceColor());
+                final FontMetrics fm = g.getFontMetrics();
+                final float label_x = bar_x + CLADE_BAR_WIDTH + 3;
+                final float mid_y = (yr[0] + yr[1]) / 2.0f;
+                drawCladeBandLabel(g, band.getTaxon(), label_x, mid_y, fm, level.getLabelAngle());
             }
-            if (skipCladeBand(band)) { // "Skip single-member clades": a single-tip clade's bar is a degenerate stub
-                continue;
-            }
-            final int y = Math.round(yr[0] - pad);
-            final int h = Math.max(1, Math.round((yr[1] - yr[0]) + (2 * pad)));
-            g.setColor(band.getColor());
-            g.fillRect(Math.round(bar_x), y, CLADE_BAR_WIDTH, h); // rides R -> a horizontal bar in a vertical orientation
-            // taxon label: rotated 90deg (reading bottom-to-top) beside the vertical bar in a horizontal layout;
-            // UPRIGHT (re-anchored to the base frame) beside the horizontal bar in a vertical orientation
-            g.setFont(font);
-            g.setColor(getTreeColorSet().getSequenceColor());
-            final FontMetrics fm = g.getFontMetrics();
-            final float label_x = bar_x + CLADE_BAR_WIDTH + 3;
-            final float mid_y = (yr[0] + yr[1]) / 2.0f;
-            drawCladeBandLabel(g, band.getTaxon(), label_x, mid_y, fm);
         }
     }
 
     // Monochrome "named clade" annotation: a thin "]" bracket (vertical spine + short end-ticks pointing
     // toward the tips) per clade with the rotated taxon label, all in the foreground color -- no per-clade
     // colors and no legend, for use when color already encodes something else.
+    /** The nested bracket columns -- the monochrome twin of {@link #drawCladeBars}: one "]" column per annotated
+     *  rank, finest nearest the tips, the x cursor walking outward by the same {@link #cladeLevelDepthExtent}. */
     private void drawCladeBrackets(final Graphics2D g) {
-        final float spine_x = cladeBandRightEdge() + CLADE_BAR_GAP;
         // less outward pad than the filled bars/boxes, so adjacent brackets keep a clear vertical gap
         // (one "]" per clade) instead of merging into a single continuous line
         final float pad = getYdistance() * 0.3f;
@@ -11562,28 +11957,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Stroke saved_stroke = g.getStroke();
         g.setStroke(new BasicStroke(CLADE_BRACKET_STROKE));
         g.setColor(getTreeColorSet().getSequenceColor());
-        for (final CladeBand band : _clade_bands) {
-            final float[] yr = cladeBandYRange(band.getRoot());
-            if (yr == null) {
-                continue;
+        final java.util.List<CladeLevel> levels = drawableCladeLevels();
+        final float[] starts = cladeLevelStarts();
+        for (int li = 0; li < levels.size(); ++li) {
+            final CladeLevel level = levels.get(li);
+            final float spine_x = starts[li];
+            for (final CladeBand band : level.getBands()) {
+                final float[] yr = cladeBandYRange(band.getRoot());
+                if (yr == null) {
+                    continue;
+                }
+                if (skipCladeBand(band)) { // "Skip single-member clades": a single-tip clade's bracket is a stub
+                    continue;
+                }
+                final int x = Math.round(spine_x);
+                final int y0 = Math.round(yr[0] - pad);
+                final int y1 = Math.round(yr[1] + pad);
+                // "]" : vertical spine plus short end-ticks pointing left, toward the tips
+                g.drawLine(x, y0, x, y1);
+                g.drawLine(x, y0, x - CLADE_BRACKET_TICK, y0);
+                g.drawLine(x, y1, x - CLADE_BRACKET_TICK, y1);
+                // taxon label: at this level's own angle (horizontal layout), UPRIGHT in a vertical orientation
+                g.setFont(font);
+                final FontMetrics fm = g.getFontMetrics();
+                final float label_x = spine_x + 4;
+                final float mid_y = (yr[0] + yr[1]) / 2.0f;
+                drawCladeBandLabel(g, band.getTaxon(), label_x, mid_y, fm, level.getLabelAngle());
             }
-            if (skipCladeBand(band)) { // "Skip single-member clades": a single-tip clade's bracket is a degenerate stub
-                continue;
-            }
-            final int x = Math.round(spine_x);
-            final int y0 = Math.round(yr[0] - pad);
-            final int y1 = Math.round(yr[1] + pad);
-            // "]" : vertical spine plus short end-ticks pointing left, toward the tips
-            g.drawLine(x, y0, x, y1);
-            g.drawLine(x, y0, x - CLADE_BRACKET_TICK, y0);
-            g.drawLine(x, y1, x - CLADE_BRACKET_TICK, y1);
-            // taxon label: rotated beside the vertical bracket (horizontal layout), UPRIGHT beside the horizontal
-            // bracket (vertical orientation) -- see drawCladeBandLabel
-            g.setFont(font);
-            final FontMetrics fm = g.getFontMetrics();
-            final float label_x = spine_x + 4;
-            final float mid_y = (yr[0] + yr[1]) / 2.0f;
-            drawCladeBandLabel(g, band.getTaxon(), label_x, mid_y, fm);
         }
         g.setStroke(saved_stroke);
     }
@@ -11591,18 +11991,38 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Draws a clade bar/bracket taxon label: rotated 90deg (reading bottom-to-top) beside the vertical mark in the
      *  horizontal layout, or UPRIGHT (re-anchored to the base frame, centered on the clade's breadth) beside the
      *  horizontal mark in a vertical orientation. Restores g's transform (R when vertical) before returning. */
+    /**
+     * The baseline for an UPRIGHT clade-band label in a vertical orientation, anchored at screen y
+     * {@code anchor_y} -- the point just past the mark along the depth. The glyph box
+     * {@code [baseline - ascent, baseline + descent]} must fall wholly on the far side of that anchor: BELOW it
+     * with the root at the top, ABOVE it with the root at the bottom. Centring the text on the anchor instead
+     * (what this replaced) left half of every name printed inside the coloured bar it labels.
+     * <p>
+     * Pure, so the rule can be checked without rendering.
+     */
+    static double uprightCladeLabelBaseline(final double anchor_y, final int ascent, final int descent,
+                                            final boolean root_bottom) {
+        return root_bottom ? (anchor_y - descent) : (anchor_y + ascent);
+    }
+
     private void drawCladeBandLabel(final Graphics2D g, final String taxon, final float label_x, final float mid_y,
-                                    final FontMetrics fm) {
+                                    final FontMetrics fm, final CLADE_LABEL_ANGLE angle) {
         final int tw = fm.stringWidth(taxon);
         final AffineTransform saved = g.getTransform();
         if (isVerticalOrientation()) {
-            // root-top/bottom: always upright (the "horizontal" reading), re-anchored to the base frame
+            // root-top/bottom: always upright (the "horizontal" reading), re-anchored to the base frame.
+            // label_x is the point just PAST the mark along the depth, so the text must be drawn BEYOND it --
+            // below it in root-top, above it in root-bottom -- exactly like an upright tip label
+            // (paintTipLabelHorizontal). Centring the text vertically on that anchor instead made every label
+            // straddle the very bar it names, so half of "Ctenophora" sat inside the coloured band.
             final Point2D.Double lp = screenPoint(label_x, mid_y);
+            final boolean root_bottom = getOptions().getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM;
             g.setTransform(_orientation_base_transform);
-            g.drawString(taxon, (float) (lp.x - (tw / 2.0)), (float) (lp.y + (fm.getAscent() / 2.0f)));
+            g.drawString(taxon, (float) (lp.x - (tw / 2.0)),
+                    (float) uprightCladeLabelBaseline(lp.y, fm.getAscent(), fm.getDescent(), root_bottom));
         }
         else {
-            switch (_clade_bands_label_angle) {
+            switch (angle) {
                 case HORIZONTAL: // reads left-to-right, beside the mark -- least vertical overlap, most horizontal space
                     g.drawString(taxon, label_x, mid_y + ((fm.getAscent() - fm.getDescent()) / 2.0f));
                     break;

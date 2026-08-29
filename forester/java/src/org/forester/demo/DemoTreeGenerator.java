@@ -76,6 +76,7 @@ public final class DemoTreeGenerator {
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
+        write( dir, "animal-tree-of-life.xml", animalTreeOfLife() );
         write( dir, "lagomorph-time-tree.xml", lagomorphTimeTree() );
         write( dir, "scale-axis.xml", scaleAxisTree() );
         write( dir, "long-branch-break.xml", longBranchBreakTree() );
@@ -1461,6 +1462,147 @@ public final class DemoTreeGenerator {
         t.setScientificName( scientific_name );
         t.setRank( rank );
         n.getNodeData().setTaxonomy( t );
+    }
+
+
+    // ----- "Animal tree of life (sponges to mammals)": a 25-tip backbone of the Metazoa, built specifically for
+    //       NESTED clade annotation. Every internal clade is annotated at PHYLUM, CLASS or ORDER, which is exactly the
+    //       three-rank ladder "Annotate Clades by Rank" can draw at once (genus/family/order is the equivalent inside a
+    //       single order -- see the bat demo). All offline: no database lookup is needed at any of the three ranks.
+    //
+    //       TOPOLOGY: the backbone follows the standard Bilateria split (Protostomia = Ecdysozoa + Spiralia,
+    //       Deuterostomia = Echinodermata + Chordata). The one genuinely CONTESTED node is the animal root: this tree
+    //       places Ctenophora as sister to all other animals, following the chromosome-scale synteny evidence of
+    //       Schultz et al. (2023, Nature 618:110-117), but the competing Porifera-sister hypothesis is very much alive
+    //       -- later modelling work continues to favour it -- so that node should be read as unresolved, and the tree's
+    //       description says so. Branch lengths are illustrative, not estimated.
+    private static Phylogeny animalTreeOfLife() throws PhyloXmlDataFormatException {
+        // --- Ctenophora: comb jellies (placed sister to the rest here; see the note above) ---
+        final PhylogenyNode ctenophora = namedClade( 0.10, "Ctenophora", "phylum",
+                namedClade( 0.06, "Tentaculata", "class",
+                        namedClade( 0.05, "Cydippida", "order",
+                                animalTip( "Sea gooseberry", "Pleurobrachia bachei" ) ),
+                        namedClade( 0.05, "Lobata", "order",
+                                animalTip( "Warty comb jelly", "Mnemiopsis leidyi" ) ) ) );
+
+        // --- Porifera: sponges ---
+        final PhylogenyNode porifera = namedClade( 0.09, "Porifera", "phylum",
+                namedClade( 0.06, "Demospongiae", "class",
+                        namedClade( 0.05, "Haplosclerida", "order",
+                                animalTip( "Great Barrier Reef sponge", "Amphimedon queenslandica" ) ) ),
+                namedClade( 0.06, "Calcarea", "class",
+                        namedClade( 0.05, "Leucosolenida", "order",
+                                animalTip( "Calcareous sponge", "Sycon ciliatum" ) ) ) );
+
+        // --- Cnidaria: corals, hydras, jellyfish ---
+        final PhylogenyNode cnidaria = namedClade( 0.07, "Cnidaria", "phylum",
+                namedClade( 0.05, "Anthozoa", "class",
+                        namedClade( 0.04, "Scleractinia", "order",
+                                animalTip( "Staghorn coral", "Acropora digitifera" ) ) ),
+                namedClade( 0.05, "Hydrozoa", "class",
+                        namedClade( 0.04, "Anthoathecata", "order",
+                                animalTip( "Freshwater hydra", "Hydra vulgaris" ) ) ) );
+
+        // --- Ecdysozoa: the moulting animals ---
+        final PhylogenyNode arthropoda = namedClade( 0.06, "Arthropoda", "phylum",
+                namedClade( 0.04, "Insecta", "class",
+                        namedClade( 0.04, "Diptera", "order",
+                                animalTip( "Fruit fly", "Drosophila melanogaster" ) ),
+                        namedClade( 0.04, "Hymenoptera", "order",
+                                animalTip( "Western honey bee", "Apis mellifera" ) ) ),
+                namedClade( 0.05, "Arachnida", "class",
+                        namedClade( 0.04, "Araneae", "order",
+                                animalTip( "Common house spider", "Parasteatoda tepidariorum" ) ) ) );
+        final PhylogenyNode nematoda = namedClade( 0.09, "Nematoda", "phylum",
+                namedClade( 0.05, "Chromadorea", "class",
+                        namedClade( 0.05, "Rhabditida", "order",
+                                animalTip( "Roundworm", "Caenorhabditis elegans" ),
+                                animalTip( "Nematode", "Pristionchus pacificus" ) ) ) );
+        final PhylogenyNode ecdysozoa = clade( 0.04, arthropoda, nematoda );
+
+        // --- Spiralia (Lophotrochozoa): molluscs and annelids ---
+        final PhylogenyNode mollusca = namedClade( 0.06, "Mollusca", "phylum",
+                namedClade( 0.05, "Gastropoda", "class",
+                        namedClade( 0.04, "Patellogastropoda", "order",
+                                animalTip( "Owl limpet", "Lottia gigantea" ) ) ),
+                namedClade( 0.05, "Bivalvia", "class",
+                        namedClade( 0.04, "Ostreida", "order",
+                                animalTip( "Pacific oyster", "Magallana gigas" ) ) ) );
+        final PhylogenyNode annelida = namedClade( 0.06, "Annelida", "phylum",
+                namedClade( 0.05, "Polychaeta", "class",
+                        namedClade( 0.04, "Capitellida", "order",
+                                animalTip( "Bristle worm", "Capitella teleta" ) ) ),
+                namedClade( 0.05, "Clitellata", "class",
+                        namedClade( 0.04, "Rhynchobdellida", "order",
+                                animalTip( "Freshwater leech", "Helobdella robusta" ) ) ) );
+        final PhylogenyNode spiralia = clade( 0.04, mollusca, annelida );
+        final PhylogenyNode protostomia = clade( 0.04, ecdysozoa, spiralia );
+
+        // --- Deuterostomia: echinoderms and chordates ---
+        final PhylogenyNode echinodermata = namedClade( 0.07, "Echinodermata", "phylum",
+                namedClade( 0.05, "Echinoidea", "class",
+                        namedClade( 0.04, "Camarodonta", "order",
+                                animalTip( "Purple sea urchin", "Strongylocentrotus purpuratus" ) ) ),
+                namedClade( 0.05, "Asteroidea", "class",
+                        namedClade( 0.04, "Forcipulatida", "order",
+                                animalTip( "Common starfish", "Asterias rubens" ) ) ) );
+        final PhylogenyNode mammalia = namedClade( 0.03, "Mammalia", "class",
+                namedClade( 0.03, "Monotremata", "order",
+                        animalTip( "Platypus", "Ornithorhynchus anatinus" ) ),
+                clade( 0.01,
+                        namedClade( 0.03, "Rodentia", "order",
+                                animalTip( "House mouse", "Mus musculus" ) ),
+                        clade( 0.01,
+                                namedClade( 0.03, "Primates", "order",
+                                        animalTip( "Human", "Homo sapiens" ) ),
+                                namedClade( 0.03, "Carnivora", "order",
+                                        animalTip( "Dog", "Canis lupus familiaris" ) ) ) ) );
+        final PhylogenyNode amniota = clade( 0.02, mammalia,
+                namedClade( 0.04, "Aves", "class",
+                        namedClade( 0.03, "Galliformes", "order",
+                                animalTip( "Red junglefowl", "Gallus gallus" ) ) ) );
+        final PhylogenyNode tetrapoda = clade( 0.02, amniota,
+                namedClade( 0.05, "Amphibia", "class",
+                        namedClade( 0.04, "Anura", "order",
+                                animalTip( "Western clawed frog", "Xenopus tropicalis" ) ) ) );
+        final PhylogenyNode vertebrata = clade( 0.02, tetrapoda,
+                namedClade( 0.05, "Actinopterygii", "class",
+                        namedClade( 0.04, "Cypriniformes", "order",
+                                animalTip( "Zebrafish", "Danio rerio" ) ) ) );
+        final PhylogenyNode chordata = namedClade( 0.04, "Chordata", "phylum", vertebrata,
+                namedClade( 0.07, "Ascidiacea", "class",
+                        namedClade( 0.05, "Phlebobranchia", "order",
+                                animalTip( "Sea squirt", "Ciona intestinalis" ) ) ) );
+        final PhylogenyNode deuterostomia = clade( 0.04, echinodermata, chordata );
+
+        final PhylogenyNode bilateria = clade( 0.04, protostomia, deuterostomia );
+        final PhylogenyNode parahoxozoa = clade( 0.03, cnidaria, bilateria );
+        final PhylogenyNode rest_of_animals = clade( 0.03, porifera, parahoxozoa );
+        final PhylogenyNode root = namedClade( 0, "Metazoa", "kingdom", ctenophora, rest_of_animals );
+        return tree( root, "Animal tree of life (sponges to mammals, demo)",
+                     "A 25-species backbone of the animals (Metazoa), from sponges and comb jellies out to the mammals. "
+                             + "Built for NESTED clade annotation: every internal clade is annotated at PHYLUM, CLASS or "
+                             + "ORDER, so Tools > Annotate Clades by Rank can draw all three at once as nested bars or "
+                             + "brackets -- pick 'order' plus 'class' plus 'phylum' and each phylum's classes take shades "
+                             + "of that phylum's colour. Also works for a single rank, and for Colorize Subtrees via "
+                             + "Taxonomic Rank. Everything resolves OFFLINE; no database lookup is needed. "
+                             + "CAVEAT on the deepest node: this tree places Ctenophora (comb jellies) as sister to all "
+                             + "other animals, following the chromosome-synteny evidence of Schultz et al. 2023 (Nature "
+                             + "618:110-117), but the competing Porifera-sister (sponges-first) hypothesis remains well "
+                             + "supported and the animal root is not settled -- read that split as unresolved. Branch "
+                             + "lengths are illustrative, not estimated." );
+    }
+
+    /** A tip of the animal tree: common name shown, scientific name + species rank for the taxonomy machinery. */
+    private static PhylogenyNode animalTip( final String common_name, final String scientific_name )
+            throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( common_name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        t.setCommonName( common_name );
+        t.setRank( "species" );
+        n.getNodeData().setTaxonomy( t );
+        return n;
     }
 
     private static Phylogeny tree( final PhylogenyNode root, final String name, final String description ) {

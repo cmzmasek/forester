@@ -45,6 +45,7 @@ public final class DemoTreesGalleryTest {
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
             "symbol-columns.xml", "stacked-bar-columns.xml", "domain-architectures.xml", "alignment.xml",
             "bat-phylogeny.xml",
+            "animal-tree-of-life.xml",
             "ancestral-pie-charts.xml",
             "node-hpd-bars.xml",
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
@@ -70,8 +71,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 20 ) {
-                return fail( "the demo catalog should have 20 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 21 ) {
+                return fail( "the demo catalog should have 21 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -197,6 +198,21 @@ public final class DemoTreesGalleryTest {
             if ( ( tp.getPropertyColorScheme() == null )
                     || !"data:host".equals( tp.getPropertyColorScheme().getRef() ) ) {
                 fail( ok, "the color-by demo must colour by data:host" );
+            }
+        }
+        else if ( label.startsWith( "Animal Tree of Life" ) ) {
+            // the whole point of this demo is THREE nested rank columns; a regression that dropped the
+            // setCladeLevels call, or collapsed it to one level, would otherwise leave the gallery green while
+            // the demo opened as a plain tree
+            if ( !tp.hasCladeBands() ) {
+                fail( ok, "the animal-tree demo must open with clade bands drawn" );
+            }
+            else if ( !tp.cladeLevelRanks().equals( java.util.Arrays.asList( "order", "class", "phylum" ) ) ) {
+                fail( ok, "the animal-tree demo must draw order/class/phylum (finest first), got "
+                        + tp.cladeLevelRanks() );
+            }
+            else if ( tp.getCladeBandsMode() != TreePanel.CLADE_VIS.BARS ) {
+                fail( ok, "the animal-tree demo must draw BARS, got " + tp.getCladeBandsMode() );
             }
         }
         else if ( label.startsWith( "Filoviridae" ) ) {

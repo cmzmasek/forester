@@ -142,6 +142,26 @@ final class DemoTrees {
                                  openTree( mf, "bat-phylogeny.xml" );
                                  colorizeRank( mf, "family" ); // 8 families light up from the in-tree clade annotations
                              } ) );
+        demos.add( new Demo( "Animal Tree of Life (Nested Clade Levels)",
+                             "25 animals from sponges and comb jellies to the mammals, with THREE taxonomic ranks "
+                                     + "annotated at once -- order inside class inside phylum -- as nested bars whose "
+                                     + "colours are shades of the phylum they sit in. All offline. (Turns the "
+                                     + "\"Show Internal Data\" checkbox off, since the bars already name every clade.)",
+                             mf -> {
+                                 openTree( mf, "animal-tree-of-life.xml" );
+                                 // Three ranks at once, drawn finest-nearest-the-tips. All three read HORIZONTALLY,
+                                 // which at this depth is the only angle that works: most classes and orders here are
+                                 // a single species, so their bars are one row tall, and a vertical label needs far
+                                 // more height than one row -- 24 of them would overprint into a smear. A horizontal
+                                 // label needs only a line height, so they stack cleanly, at the cost of width.
+                                 annotateCladeLevels( mf,
+                                                      new CladeLevel.Spec( "order",
+                                                                           TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL ),
+                                                      new CladeLevel.Spec( "class",
+                                                                           TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL ),
+                                                      new CladeLevel.Spec( "phylum",
+                                                                           TreePanel.CLADE_LABEL_ANGLE.HORIZONTAL ) );
+                             } ) );
         demos.add( new Demo( "GTDB Taxonomy (Genome-based)",
                              "14 Bacteria + Archaea genomes named only by accession, with the GTDB (genome-based "
                                      + "microbial standard) classification imported from a GTDB-Tk table and coloured by "
@@ -277,6 +297,26 @@ final class DemoTrees {
         final ControlPanel cp = mf.getMainPanel().getControlPanel();
         if ( cp != null ) {
             cp.demoSelectColorByProperty( ref );
+        }
+    }
+
+    /** Draws several taxonomic ranks at once as nested clade bars, then re-fits so the outermost column is on
+     *  screen without the user having to press "W". */
+    private static void annotateCladeLevels( final MainFrameApplication mf, final CladeLevel.Spec... specs ) {
+        final TreePanel tp = mf.getMainPanel().getCurrentTreePanel();
+        if ( tp != null ) {
+            // The internal-node labels are switched OFF for this one: the three bar columns already name every
+            // clade, and a deep backbone annotated at phylum/class/order runs those ranks down single-child chains,
+            // so the node labels print on top of one another (verified -- it is unreadable with them on).
+            // NB this checkbox is per WINDOW, not per tab, so it also affects any tree already open in another tab.
+            // That is why the gallery blurb says so: the toggle is right there in the control panel ("Show Internal
+            // Data") and the user can put it back, but they should not have to wonder what changed it.
+            mf.getMainPanel().getControlPanel().setShowInternalData( false );
+            // skip_singletons=false ON PURPOSE: at this depth many classes and orders are represented by a single
+            // species, and skipping them would leave the two inner columns full of holes -- the opposite of what
+            // the demo is for. (The default stays ON in the dialog, where a one-tip bar is usually just noise.)
+            tp.setCladeLevels( java.util.Arrays.asList( specs ), TreePanel.CLADE_VIS.BARS, false );
+            refit( mf );
         }
     }
 

@@ -114,7 +114,8 @@ public final class AboutDialogTest {
     }
 
     /** The Help-menu links point where the change specifies: "Documentation" and "Archaeopteryx Home" at the
-     *  website, "Archaeopteryx.js" at its repo, and the About "Source (GitHub)" link at the forester repo. */
+     *  website, "Archaeopteryx.js (online version)" at the site where that viewer actually RUNS (not at its source
+     *  repository), and the About "Source (GitHub)" link at the forester repo. */
     private static boolean helpUrls() {
         if ( !AptxConstants.APTX_WEB_SITE.contains( "cmzmasek.github.io/archaeopteryx" ) ) {
             return fail( "'Archaeopteryx Home' should point at the website, got " + AptxConstants.APTX_WEB_SITE );
@@ -122,8 +123,14 @@ public final class AboutDialogTest {
         if ( !AptxConstants.APTX_DOC_SITE.contains( "cmzmasek.github.io/archaeopteryx" ) ) {
             return fail( "'Documentation' should point at the website, got " + AptxConstants.APTX_DOC_SITE );
         }
-        if ( !AptxConstants.APTX_JS_WEB_SITE.contains( "github.com/cmzmasek/archaeopteryx-js" ) ) {
-            return fail( "'Archaeopteryx.js' should point at its repository, got " + AptxConstants.APTX_JS_WEB_SITE );
+        // the SITE where the browser viewer runs, not its source repository: someone picking "online version" from
+        // the Help menu wants to use it, not to read its code
+        if ( !AptxConstants.APTX_JS_WEB_SITE.contains( "cmzmasek.github.io/archaeopteryx-js" ) ) {
+            return fail( "'Archaeopteryx.js' should point at its live site, got " + AptxConstants.APTX_JS_WEB_SITE );
+        }
+        // the two github.io URLs differ only by the "-js": guard against the JS link quietly becoming the home link
+        if ( AptxConstants.APTX_JS_WEB_SITE.equals( AptxConstants.APTX_WEB_SITE ) ) {
+            return fail( "the Archaeopteryx.js link and the Archaeopteryx home link must not be the same URL" );
         }
         if ( !AptxConstants.APTX_GITHUB.contains( "github.com/cmzmasek/forester" ) ) {
             return fail( "the About GitHub link should point at the forester repo, got " + AptxConstants.APTX_GITHUB );

@@ -137,6 +137,9 @@ public final class DemoTreesTest {
         // bat phylogeny: a large taxonomy tree (common + scientific names + synonyms at the tips, ranks on the clades)
         ok &= batTreeOk( "bat-phylogeny.xml" );
 
+        // animal tree of life: the NESTED clade-levels demo -- three ranks annotated at once (phylum/class/order)
+        ok &= animalTreeOk( "animal-tree-of-life.xml" );
+
         // lagomorph time tree: a dated species tree with clade + rank annotations, for the geologic axis + rank colorize
         ok &= lagomorphTreeOk( "lagomorph-time-tree.xml" );
         ok &= hasBranchLengths( "lagomorph-time-tree.xml" );
@@ -627,6 +630,50 @@ public final class DemoTreesTest {
             return note( file_name + " must carry domain architectures on >= " + min_tips + " tips, found " + n );
         }
         return true;
+    }
+
+    /**
+     * The animal backbone exists to demo THREE ranks annotated at once, so the thing to guard is that all three are
+     * really there and really nest: every tip taxonomised, and phylum / class / order all present on the internal
+     * clades (offline, no lookup). Without any one of them the demo silently degrades to fewer columns than the
+     * gallery entry promises.
+     */
+    private static boolean animalTreeOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() < 20 ) {
+            return note( file_name + " must span at least 20 animals, has " + phy.getNumberOfExternalNodes() );
+        }
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( !ext.getNodeData().isHasTaxonomy()
+                    || ForesterUtil.isEmpty( ext.getNodeData().getTaxonomy().getScientificName() ) ) {
+                return note( file_name + ": every tip needs a scientific name (missing on " + ext.getName() + ")" );
+            }
+        }
+        for( final String rank : new String[] { "phylum", "class", "order" } ) {
+            if ( !hasRank( file_name, rank ) ) {
+                return false; // hasRank reports which rank is missing
+            }
+        }
+        // sponges AND mammals: the span the demo is named for
+        return hasClade( file_name, "Porifera" ) && hasClade( file_name, "Mammalia" ) && hasClade( file_name,
+                                                                                                  "Chordata" );
+    }
+
+    /** Whether some node carries {@code clade} as its scientific name (an internal clade annotation). */
+    private static boolean hasClade( final String file_name, final String clade ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final PhylogenyNode n : phy.getNodesViaScientificName( clade ) ) {
+            if ( n != null ) {
+                return true;
+            }
+        }
+        return note( file_name + " must contain the clade '" + clade + "'" );
     }
 
     /** The bat phylogeny: &ge;30 species; every TIP carries a taxonomy with a scientific name, a common name AND a

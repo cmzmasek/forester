@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.105";
-    final static String PRG_DATE = "2026-08-28";
+    final static String VERSION = "0.11.106";
+    final static String PRG_DATE = "2026-08-29";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -57,9 +57,11 @@ public final class AptxConstants {
     static final int MAX_TREES_TO_LOAD = 100;
     final static float PDF_LINE_WIDTH_DEFAULT = 0.5f;
     // The Archaeopteryx website. "Archaeopteryx Home" and "Documentation" both point here (there is no separate
-    // documentation site yet); APTX_GITHUB is the source repository, and the JS version points at its own repository.
+    // documentation site yet); APTX_GITHUB is the source repository. The JS version points at its own SITE, where
+    // the viewer actually runs in the browser -- not at its source repository, which is what a reader following a
+    // "run it online" menu item is least likely to want.
     final static String APTX_WEB_SITE = "https://cmzmasek.github.io/archaeopteryx/";
-    final static String APTX_JS_WEB_SITE = "https://github.com/cmzmasek/archaeopteryx-js";
+    final static String APTX_JS_WEB_SITE = "https://cmzmasek.github.io/archaeopteryx-js/";
     final static String APTX_DOC_SITE = "https://cmzmasek.github.io/archaeopteryx/";
     final static String APTX_GITHUB = "https://github.com/cmzmasek/forester";
     final static String PHYLOXML_REFERENCE_URL = "https://www.biomedcentral.com/1471-2105/10/356/";

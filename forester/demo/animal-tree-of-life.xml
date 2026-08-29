@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Animal tree of life (sponges to mammals, demo)</name>
+  <description>A 25-species backbone of the animals (Metazoa), from sponges and comb jellies out to the mammals. Built for NESTED clade annotation: every internal clade is annotated at PHYLUM, CLASS or ORDER, so Tools &gt; Annotate Clades by Rank can draw all three at once as nested bars or brackets -- pick &apos;order&apos; plus &apos;class&apos; plus &apos;phylum&apos; and each phylum&apos;s classes take shades of that phylum&apos;s colour. Also works for a single rank, and for Colorize Subtrees via Taxonomic Rank. Everything resolves OFFLINE; no database lookup is needed. CAVEAT on the deepest node: this tree places Ctenophora (comb jellies) as sister to all other animals, following the chromosome-synteny evidence of Schultz et al. 2023 (Nature 618:110-117), but the competing Porifera-sister (sponges-first) hypothesis remains well supported and the animal root is not settled -- read that split as unresolved. Branch lengths are illustrative, not estimated.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <taxonomy>
+      <scientific_name>Metazoa</scientific_name>
+      <rank>kingdom</rank>
+    </taxonomy>
+    <clade>
+      <branch_length>0.1</branch_length>
+      <taxonomy>
+        <scientific_name>Ctenophora</scientific_name>
+        <rank>phylum</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.06</branch_length>
+        <taxonomy>
+          <scientific_name>Tentaculata</scientific_name>
+          <rank>class</rank>
+        </taxonomy>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <taxonomy>
+            <scientific_name>Cydippida</scientific_name>
+            <rank>order</rank>
+          </taxonomy>
+          <clade>
+            <name>Sea gooseberry</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Pleurobrachia bachei</scientific_name>
+              <common_name>Sea gooseberry</common_name>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <taxonomy>
+            <scientific_name>Lobata</scientific_name>
+            <rank>order</rank>
+          </taxonomy>
+          <clade>
+            <name>Warty comb jelly</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <scientific_name>Mnemiopsis leidyi</scientific_name>
+              <common_name>Warty comb jelly</common_name>
+              <rank>species</rank>
+            </taxonomy>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.03</branch_length>
+      <clade>
+        <branch_length>0.09</branch_length>
+        <taxonomy>
+          <scientific_name>Porifera</scientific_name>
+          <rank>phylum</rank>
+        </taxonomy>
+        <clade>
+          <branch_length>0.06</branch_length>
+          <taxonomy>
+            <scientific_name>Demospongiae</scientific_name>
+            <rank>class</rank>
+          </taxonomy>
+          <clade>
+            <branch_length>0.05</branch_length>
+            <taxonomy>
+              <scientific_name>Haplosclerida</scientific_name>
+              <rank>order</rank>
+            </taxonomy>
+            <clade>
+              <name>Great Barrier Reef sponge</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Amphimedon queenslandica</scientific_name>
+                <common_name>Great Barrier Reef sponge</common_name>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.06</branch_length>
+          <taxonomy>
+            <scientific_name>Calcarea</scientific_name>
+            <rank>class</rank>
+          </taxonomy>
+          <clade>
+            <branch_length>0.05</branch_length>
+            <taxonomy>
+              <scientific_name>Leucosolenida</scientific_name>
+              <rank>order</rank>
+            </taxonomy>
+            <clade>
+              <name>Calcareous sponge</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <scientific_name>Sycon ciliatum</scientific_name>
+                <common_name>Calcareous sponge</common_name>
+                <rank>species</rank>
+              </taxonomy>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <branch_length>0.07</branch_length>
+          <taxonomy>
+            <scientific_name>Cnidaria</scientific_name>
+            <rank>phylum</rank>
+          </taxonomy>
+          <clade>
+            <branch_length>0.05</branch_length>
+            <taxonomy>
+              <scientific_name>Anthozoa</scientific_name>
+              <rank>class</rank>
+            </taxonomy>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <taxonomy>
+                <scientific_name>Scleractinia</scientific_name>
+                <rank>order</rank>
+              </taxonomy>
+              <clade>
+                <name>Staghorn coral</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Acropora digitifera</scientific_name>
+                  <common_name>Staghorn coral</common_name>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.05</branch_length>
+            <taxonomy>
+              <scientific_name>Hydrozoa</scientific_name>
+              <rank>class</rank>
+            </taxonomy>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <taxonomy>
+                <scientific_name>Anthoathecata</scientific_name>
+                <rank>order</rank>
+              </taxonomy>
+              <clade>
+                <name>Freshwater hydra</name>
+                <branch_length>0.02</branch_length>
+                <taxonomy>
+                  <scientific_name>Hydra vulgaris</scientific_name>
+                  <common_name>Freshwater hydra</common_name>
+                  <rank>species</rank>
+                </taxonomy>
+              </clade>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.04</branch_length>
+          <clade>
+            <branch_length>0.04</branch_length>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <clade>
+                <branch_length>0.06</branch_length>
+                <taxonomy>
+                  <scientific_name>Arthropoda</scientific_name>
+                  <rank>phylum</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.04</branch_length>
+                  <taxonomy>
+                    <scientific_name>Insecta</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Diptera</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Fruit fly</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Drosophila melanogaster</scientific_name>
+                        <common_name>Fruit fly</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Hymenoptera</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Western honey bee</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Apis mellifera</scientific_name>
+                        <common_name>Western honey bee</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Arachnida</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Araneae</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Common house spider</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Parasteatoda tepidariorum</scientific_name>
+                        <common_name>Common house spider</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.09</branch_length>
+                <taxonomy>
+                  <scientific_name>Nematoda</scientific_name>
+                  <rank>phylum</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Chromadorea</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.05</branch_length>
+                    <taxonomy>
+                      <scientific_name>Rhabditida</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Roundworm</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Caenorhabditis elegans</scientific_name>
+                        <common_name>Roundworm</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                    <clade>
+                      <name>Nematode</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Pristionchus pacificus</scientific_name>
+                        <common_name>Nematode</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <clade>
+                <branch_length>0.06</branch_length>
+                <taxonomy>
+                  <scientific_name>Mollusca</scientific_name>
+                  <rank>phylum</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Gastropoda</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Patellogastropoda</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Owl limpet</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Lottia gigantea</scientific_name>
+                        <common_name>Owl limpet</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Bivalvia</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Ostreida</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Pacific oyster</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Magallana gigas</scientific_name>
+                        <common_name>Pacific oyster</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.06</branch_length>
+                <taxonomy>
+                  <scientific_name>Annelida</scientific_name>
+                  <rank>phylum</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Polychaeta</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Capitellida</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Bristle worm</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Capitella teleta</scientific_name>
+                        <common_name>Bristle worm</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Clitellata</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Rhynchobdellida</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Freshwater leech</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Helobdella robusta</scientific_name>
+                        <common_name>Freshwater leech</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.04</branch_length>
+            <clade>
+              <branch_length>0.07</branch_length>
+              <taxonomy>
+                <scientific_name>Echinodermata</scientific_name>
+                <rank>phylum</rank>
+              </taxonomy>
+              <clade>
+                <branch_length>0.05</branch_length>
+                <taxonomy>
+                  <scientific_name>Echinoidea</scientific_name>
+                  <rank>class</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.04</branch_length>
+                  <taxonomy>
+                    <scientific_name>Camarodonta</scientific_name>
+                    <rank>order</rank>
+                  </taxonomy>
+                  <clade>
+                    <name>Purple sea urchin</name>
+                    <branch_length>0.02</branch_length>
+                    <taxonomy>
+                      <scientific_name>Strongylocentrotus purpuratus</scientific_name>
+                      <common_name>Purple sea urchin</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                  </clade>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.05</branch_length>
+                <taxonomy>
+                  <scientific_name>Asteroidea</scientific_name>
+                  <rank>class</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.04</branch_length>
+                  <taxonomy>
+                    <scientific_name>Forcipulatida</scientific_name>
+                    <rank>order</rank>
+                  </taxonomy>
+                  <clade>
+                    <name>Common starfish</name>
+                    <branch_length>0.02</branch_length>
+                    <taxonomy>
+                      <scientific_name>Asterias rubens</scientific_name>
+                      <common_name>Common starfish</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                  </clade>
+                </clade>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <taxonomy>
+                <scientific_name>Chordata</scientific_name>
+                <rank>phylum</rank>
+              </taxonomy>
+              <clade>
+                <branch_length>0.02</branch_length>
+                <clade>
+                  <branch_length>0.02</branch_length>
+                  <clade>
+                    <branch_length>0.02</branch_length>
+                    <clade>
+                      <branch_length>0.03</branch_length>
+                      <taxonomy>
+                        <scientific_name>Mammalia</scientific_name>
+                        <rank>class</rank>
+                      </taxonomy>
+                      <clade>
+                        <branch_length>0.03</branch_length>
+                        <taxonomy>
+                          <scientific_name>Monotremata</scientific_name>
+                          <rank>order</rank>
+                        </taxonomy>
+                        <clade>
+                          <name>Platypus</name>
+                          <branch_length>0.02</branch_length>
+                          <taxonomy>
+                            <scientific_name>Ornithorhynchus anatinus</scientific_name>
+                            <common_name>Platypus</common_name>
+                            <rank>species</rank>
+                          </taxonomy>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.01</branch_length>
+                        <clade>
+                          <branch_length>0.03</branch_length>
+                          <taxonomy>
+                            <scientific_name>Rodentia</scientific_name>
+                            <rank>order</rank>
+                          </taxonomy>
+                          <clade>
+                            <name>House mouse</name>
+                            <branch_length>0.02</branch_length>
+                            <taxonomy>
+                              <scientific_name>Mus musculus</scientific_name>
+                              <common_name>House mouse</common_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.01</branch_length>
+                          <clade>
+                            <branch_length>0.03</branch_length>
+                            <taxonomy>
+                              <scientific_name>Primates</scientific_name>
+                              <rank>order</rank>
+                            </taxonomy>
+                            <clade>
+                              <name>Human</name>
+                              <branch_length>0.02</branch_length>
+                              <taxonomy>
+                                <scientific_name>Homo sapiens</scientific_name>
+                                <common_name>Human</common_name>
+                                <rank>species</rank>
+                              </taxonomy>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.03</branch_length>
+                            <taxonomy>
+                              <scientific_name>Carnivora</scientific_name>
+                              <rank>order</rank>
+                            </taxonomy>
+                            <clade>
+                              <name>Dog</name>
+                              <branch_length>0.02</branch_length>
+                              <taxonomy>
+                                <scientific_name>Canis lupus familiaris</scientific_name>
+                                <common_name>Dog</common_name>
+                                <rank>species</rank>
+                              </taxonomy>
+                            </clade>
+                          </clade>
+                        </clade>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.04</branch_length>
+                      <taxonomy>
+                        <scientific_name>Aves</scientific_name>
+                        <rank>class</rank>
+                      </taxonomy>
+                      <clade>
+                        <branch_length>0.03</branch_length>
+                        <taxonomy>
+                          <scientific_name>Galliformes</scientific_name>
+                          <rank>order</rank>
+                        </taxonomy>
+                        <clade>
+                          <name>Red junglefowl</name>
+                          <branch_length>0.02</branch_length>
+                          <taxonomy>
+                            <scientific_name>Gallus gallus</scientific_name>
+                            <common_name>Red junglefowl</common_name>
+                            <rank>species</rank>
+                          </taxonomy>
+                        </clade>
+                      </clade>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.05</branch_length>
+                    <taxonomy>
+                      <scientific_name>Amphibia</scientific_name>
+                      <rank>class</rank>
+                    </taxonomy>
+                    <clade>
+                      <branch_length>0.04</branch_length>
+                      <taxonomy>
+                        <scientific_name>Anura</scientific_name>
+                        <rank>order</rank>
+                      </taxonomy>
+                      <clade>
+                        <name>Western clawed frog</name>
+                        <branch_length>0.02</branch_length>
+                        <taxonomy>
+                          <scientific_name>Xenopus tropicalis</scientific_name>
+                          <common_name>Western clawed frog</common_name>
+                          <rank>species</rank>
+                        </taxonomy>
+                      </clade>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Actinopterygii</scientific_name>
+                    <rank>class</rank>
+                  </taxonomy>
+                  <clade>
+                    <branch_length>0.04</branch_length>
+                    <taxonomy>
+                      <scientific_name>Cypriniformes</scientific_name>
+                      <rank>order</rank>
+                    </taxonomy>
+                    <clade>
+                      <name>Zebrafish</name>
+                      <branch_length>0.02</branch_length>
+                      <taxonomy>
+                        <scientific_name>Danio rerio</scientific_name>
+                        <common_name>Zebrafish</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.07</branch_length>
+                <taxonomy>
+                  <scientific_name>Ascidiacea</scientific_name>
+                  <rank>class</rank>
+                </taxonomy>
+                <clade>
+                  <branch_length>0.05</branch_length>
+                  <taxonomy>
+                    <scientific_name>Phlebobranchia</scientific_name>
+                    <rank>order</rank>
+                  </taxonomy>
+                  <clade>
+                    <name>Sea squirt</name>
+                    <branch_length>0.02</branch_length>
+                    <taxonomy>
+                      <scientific_name>Ciona intestinalis</scientific_name>
+                      <common_name>Sea squirt</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                  </clade>
+                </clade>
+              </clade>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
