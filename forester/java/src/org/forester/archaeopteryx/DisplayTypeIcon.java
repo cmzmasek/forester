@@ -115,8 +115,17 @@ final class DisplayTypeIcon implements Icon {
         final Graphics2D g2 = (Graphics2D) g.create();
         try {
             g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-            g2.setColor( ( c != null ) ? c.getForeground() : Color.BLACK );
-            g2.setStroke( new BasicStroke( Math.max( 1.0f, ( float ) ( _height * 0.085 ) ), BasicStroke.CAP_BUTT,
+            // This glyph is nothing but axis-aligned lines, so a FRACTIONAL stroke width is what made it look
+            // blurry next to its neighbours: at this row's icon height the old width came to ~1.9 px, and a
+            // 1.9 px horizontal line straddles two pixel rows at half strength each. An integer width plus
+            // normalized stroke placement keeps every line a solid run of pixels.
+            g2.setRenderingHint( RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE );
+            g2.setColor( ControlButtonIcon.inkFor( c ) ); // fades when the button is disabled -- see inkFor
+            // 0.06, not the 0.085 the fractional-width version used: the width is ROUNDED now, and this icon is
+            // drawn taller than its neighbours (displayTypeIconSize vs glyphIconSize), so 0.085 rounded UP to a
+            // 2 px line -- crisp, but visibly twice the weight of the rows above it. 0.06 rounds to 1 px at the
+            // default GUI size and still reaches 2 px on a large-font setup.
+            g2.setStroke( new BasicStroke( Math.max( 1f, Math.round( _height * 0.06 ) ), BasicStroke.CAP_BUTT,
                                            BasicStroke.JOIN_MITER ) );
             final boolean flush = ( _kind == Kind.CLADOGRAM );
             final double[] ends = { flush ? FLUSH : RAGGED[ 0 ], flush ? FLUSH : RAGGED[ 1 ],

@@ -1906,7 +1906,7 @@ public final class AptxUtil {
         sb.append("Font size:  ").append(font_size).append(" pt");
         if (labels_hidden) {
             // plain "Warning:" (not a ⚠ glyph) so it can't render as tofu in the JOptionPane's L&F font
-            sb.append('\n').append("Warning: some labels were hidden by \"Dyna Hide\" to avoid overlap at this size.");
+            sb.append('\n').append("Warning: some labels were hidden by \"Auto-hide Labels\" to avoid overlap at this size.");
         }
         return sb.toString();
     }

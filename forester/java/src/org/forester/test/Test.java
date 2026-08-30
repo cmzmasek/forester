@@ -1107,6 +1107,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Control-button glyphs (rotate / navigate / uncollapse): ");
+        if (org.forester.archaeopteryx.ControlButtonIconTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Per-tab view state (orientation + display data): ");
         if (org.forester.archaeopteryx.PerTabViewStateTest.test()) {
             System.out.println("OK.");

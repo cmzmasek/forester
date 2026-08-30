@@ -111,18 +111,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             .getDefaultFontFamilyName(), Font.PLAIN, Configuration.getGuiFontSize());
     // Two sub-tree navigation buttons: "R" jumps all the way back to the complete tree,
     // "R1" moves up by a single level to the immediate super-tree.
-    private static final String RETURN_TO_WHOLE_TREE_TEXT  = "R";
-    private static final String RETURN_UP_ONE_LEVEL_TEXT   = "R1";
-    // Radial (circular/unrooted) re-labels of the X-/X+ zoom buttons (rotate) and the "W" fit button (label flip).
-    // Unicode circular arrows; swap here for a plain-text fallback if a platform's button font lacks the glyphs.
-    static final String ROTATE_CCW_LABEL                   = "↺"; // anticlockwise open circle arrow
-    static final String ROTATE_CW_LABEL                    = "↻"; // clockwise open circle arrow
-    // Plain-text fallback used when the actual button font cannot display the circular-arrow glyph (never on
-    // macOS/Windows/mainstream Linux fonts, but keeps a minimal-font platform from showing a missing-glyph box).
-    static final String ROTATE_CCW_FALLBACK                = "CCW";
-    static final String ROTATE_CW_FALLBACK                 = "CW";
-    static final String LABEL_DIRECTION_BUTTON_LABEL       = "L";
-    // The zoom cross (Y+, X-, F, E, X+, Y-) holds commonly-used functions, so give those buttons a
+    // R / R1 / U and the two radial rotate buttons are drawn glyphs (ControlButtonIcon), not letters: the
+    // letters taught nothing ("R1" least of all), and the rotate pair used to be a Unicode circular arrow with a
+    // "CW"/"CCW" text fallback for fonts that could not render it -- a drawn icon has nothing to fall back from.
+    // The zoom cross (Y+, X- E F W X+, Y-) holds commonly-used functions, so give those buttons a
     // taller click target than the other small control-panel buttons.
     private static final int    ZOOM_BUTTON_HEIGHT        = 24;
     // The full-width Y+/Y- buttons can be a little shorter than the cross-row buttons.
@@ -433,6 +425,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                     // "W" is fit-width in a horizontal rectangular tree, fit-height ("H") in a vertical one, and the
                     // node-label-direction flip ("L") in a radial layout (where fit-width duplicates "F").
                     if (isRadialLayout()) {
+                        // toggleNodeLabelDirection() refreshes the row itself, so the state glyph already
+                        // ends up showing the direction the button will switch TO next
                         toggleNodeLabelDirection();
                     } else if (isVerticalOrientation()) {
                         fitHeight();
@@ -926,7 +920,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void activateButtonsToReturnToSuperTree() {
-        // FlatLaf renders the enabled (active) vs disabled (greyed) state itself -- no manual accent needed
+        // FlatLaf greys the button chrome itself and the glyphs fade themselves (ControlButtonIcon.inkFor),
+        // so enabling is all that is needed -- no manual accent color
         _return_to_whole_tree.setEnabled(true);
         _return_to_super_tree.setEnabled(true);
     }
@@ -953,12 +948,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_out_x = new TypomaticJButton("X-");
         _zoom_in_y = new TypomaticJButton("Y+");
         _zoom_out_y = new TypomaticJButton("Y-");
-        _show_whole = new JButton("F");
-        _show_whole.setToolTipText("fit and center tree display [Alt+C, Home, or Esc]");
-        _expand_y = new JButton("E");
-        _expand_y.setToolTipText("expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]");
-        _fit_width = new JButton("W");
-        _fit_width.setToolTipText("fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
+        _show_whole = new JButton(controlIcon(ControlButtonIcon.Kind.FIT_ALL));
+        describe(_show_whole, "fit and center tree display [Alt+C, Home, or Esc]");
+        _expand_y = new JButton(controlIcon(ControlButtonIcon.Kind.EXPAND_VERTICAL));
+        describe(_expand_y,
+                "expand the tree in vertical direction so labels do not overlap at the current font size [Alt+E]");
+        _fit_width = new JButton(controlIcon(ControlButtonIcon.Kind.FIT_WIDTH));
+        describe(_fit_width, "fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
         _zoom_in_x.setToolTipText("zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
         _zoom_in_y.setToolTipText("zoom in vertically [Alt+Up or Shift+mousewheel]");
         _zoom_out_x.setToolTipText("zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
@@ -970,7 +966,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _show_whole.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         _expand_y.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
         _fit_width.setPreferredSize(new Dimension(10, ZOOM_BUTTON_HEIGHT));
-        // The middle zoom row now holds five buttons (X- F E W X+); trim the default button
+        // The middle zoom row now holds five buttons (X- E F W X+); trim the default button
         // padding so the two-character X-/X+ labels still fit instead of being clipped to "...".
         final Insets tight = new Insets(2, 1, 2, 1);
         _zoom_out_x.setMargin(tight);
@@ -978,26 +974,31 @@ final class ControlPanel extends JPanel implements ActionListener {
         _expand_y.setMargin(tight);
         _fit_width.setMargin(tight);
         _zoom_in_x.setMargin(tight);
-        _return_to_whole_tree = new JButton(RETURN_TO_WHOLE_TREE_TEXT);
-        _return_to_whole_tree.setToolTipText("return all the way to the complete tree (if in a sub-tree) [Alt+Shift+R]");
+        _return_to_whole_tree = new JButton(controlIcon(ControlButtonIcon.Kind.WHOLE_TREE));
+        describe(_return_to_whole_tree,
+                "return all the way to the complete tree (if in a sub-tree) [Alt+Shift+R]");
         _return_to_whole_tree.setEnabled(false);
-        _return_to_super_tree = new JButton(RETURN_UP_ONE_LEVEL_TEXT);
-        _return_to_super_tree.setToolTipText("move up by one level towards the complete tree (if in a sub-tree) [Alt+R]");
+        _return_to_super_tree = new JButton(controlIcon(ControlButtonIcon.Kind.UP_ONE_LEVEL));
+        describe(_return_to_super_tree,
+                "move up by one level towards the complete tree (if in a sub-tree) [Alt+R]");
         _return_to_super_tree.setEnabled(false);
         _order = new JButton(LADDERIZE_ICON_DESCENDING);
         _order.setToolTipText("Ladderize the whole tree; click again to flip the direction [Alt+O]");
-        _uncollapse_all = new JButton("U");
-        _uncollapse_all.setToolTipText("uncollapse all [Alt+U]");
-        // Four buttons share the bottom row (O R R1 U); trim the default padding so the
-        // two-character "R1" label is not clipped to "..." under FlatLaf.
+        _uncollapse_all = new JButton(controlIcon(ControlButtonIcon.Kind.UNCOLLAPSE_ALL));
+        describe(_uncollapse_all, "uncollapse all [Alt+U]");
+        // Four buttons share the bottom row (ladderize, whole-tree, up-one-level, uncollapse-all); trim the
+        // default padding so they are not clipped
+        // to "..." under FlatLaf's minimum button width.
         _order.setMargin(tight);
         _return_to_whole_tree.setMargin(tight);
         _return_to_super_tree.setMargin(tight);
         _uncollapse_all.setMargin(tight);
         addJButton(_zoom_in_y, x_panel);
+        // X- E F W X+ : fit-everything sits in the MIDDLE of the cross row, flanked by the two directional
+        // actions (expand-to-fit-labels, fit-one-axis), with the zooms at the ends
         addJButton(_zoom_out_x, y_panel);
-        addJButton(_show_whole, y_panel);
         addJButton(_expand_y, y_panel);
+        addJButton(_show_whole, y_panel);
         addJButton(_fit_width, y_panel);
         addJButton(_zoom_in_x, y_panel);
         addJButton(_zoom_out_y, z_panel);
@@ -3100,14 +3101,32 @@ final class ControlPanel extends JPanel implements ActionListener {
         b.setMargin(new Insets(3, 1, 3, 1));
     }
 
+    /** A control-panel action glyph, sized like the other icons on the panel. */
+    private static Icon controlIcon(final ControlButtonIcon.Kind kind) {
+        return new ControlButtonIcon(kind, glyphIconSize());
+    }
+
+    /** Shows EITHER a glyph or a text label on {@code b}, never both, clearing whichever is not in use. */
+    private static void setIconOrText(final AbstractButton b, final Icon icon, final String text) {
+        if (icon != null) {
+            b.setText(null);
+            b.setIcon(icon);
+        }
+        else {
+            b.setIcon(null);
+            b.setText(text);
+        }
+    }
+
     /** Tooltip + accessible name: these buttons carry no text, so the words have to live somewhere. */
     private static void describe(final AbstractButton b, final String text) {
         b.setToolTipText(text);
         b.getAccessibleContext().setAccessibleName(text);
     }
 
-    /** Glyph size for the layout row: scales with the GUI font so it holds up at a large font size. */
-    private static int glyphIconSize() {
+    /** Glyph size for the layout row: scales with the GUI font so it holds up at a large font size.
+     *  Package-visible so ControlButtonIconTest can exercise the glyphs at the size that actually ships. */
+    static int glyphIconSize() {
         return Math.max(13, Math.round(Configuration.getGuiFontSize() * 1.5f));
     }
 
@@ -3206,6 +3225,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             getMainPanel().getCurrentTreePanel().repaint();
         }
         syncLayoutButtons();
+        if (getMainPanel().getCurrentTreePanel() == null) {
+            // no tree open: MainFrame.typeChanged guards its whole apply chain -- including the zoom-row
+            // relabel -- behind a current-tree check, so do the relabel here or the buttons visibly do not
+            // switch when a layout is chosen in an empty window
+            updateZoomButtonsForLayout();
+        }
         mf.refreshOpenSettingsDialog(); // the Rectangular-style dropdown greys out for the radial layouts
     }
 
@@ -3731,11 +3756,28 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     private boolean isVerticalOrientation() {
-        return (getCurrentTreePanel() != null) && getCurrentTreePanel().isVerticalOrientation();
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp != null) {
+            return tp.isVerticalOrientation();
+        }
+        // no tree open: derive from the shared defaults, as isRadialLayout does
+        final Options o = getOptions();
+        return (o != null) && isRectangularFamily(o.getPhylogenyGraphicsType())
+                && ((o.getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_TOP)
+                        || (o.getTreeOrientation() == Options.TREE_ORIENTATION.ROOT_BOTTOM));
     }
 
+    /** Whether the view is radial. With no tree open there is no TreePanel to ask, so the shared default
+     *  (what a tree would open AS) answers -- otherwise the zoom row simply would not switch when the user
+     *  clicks a layout button in an empty window. */
     private boolean isRadialLayout() {
-        return (getCurrentTreePanel() != null) && getCurrentTreePanel().isRadialLayout();
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp != null) {
+            return tp.isRadialLayout();
+        }
+        final Options.PHYLOGENY_GRAPHICS_TYPE t = (getOptions() == null) ? null
+                : getOptions().getPhylogenyGraphicsType();
+        return (t == Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (t == Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
     }
 
     /**
@@ -3766,8 +3808,12 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     /** The UNROOTED layout specifically (circular is radial too, but it CAN align its labels, on the outer ring). */
     private boolean isUnrootedLayout() {
-        return (getCurrentTreePanel() != null)
-                && (getCurrentTreePanel().getPhylogenyGraphicsType() == Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp != null) {
+            return tp.getPhylogenyGraphicsType() == Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED;
+        }
+        return (getOptions() != null)
+                && (getOptions().getPhylogenyGraphicsType() == Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
     }
 
     // A zoom re-centers the scroll bar of the SCREEN axis it changes. The depth (x) axis is drawn horizontally
@@ -3819,9 +3865,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    /** The current label of the fit-width/height button ("W" horizontal, "H" vertical). For tests. */
-    String getFitButtonText() {
-        return (_fit_width == null) ? null : _fit_width.getText();
+    /** Test hook: the fit-family glyph the fit button currently carries, or null when it shows text ("L" radial). */
+    ControlButtonIcon.Kind getFitButtonIconKind() {
+        final JButton b = _fit_width;
+        return ((b != null) && (b.getIcon() instanceof ControlButtonIcon))
+                ? ((ControlButtonIcon) b.getIcon()).getKind() : null;
     }
 
     // Test hooks for the layout-aware zoom-cluster relabeling (see updateZoomButtonsForLayout): expose the buttons
@@ -3860,19 +3908,26 @@ final class ControlPanel extends JPanel implements ActionListener {
             _zoom_out_y.setToolTipText(radial ? "zoom out [mouse wheel, -, or Alt+Down]"
                     : "zoom out vertically [Alt+Down or Shift+mousewheel]");
         }
+        // In a radial layout these two become ROTATE, and rotation is a picture rather than a word: the button
+        // shows a glyph there and its X+/X- text everywhere else (a button can carry only one of the two, so the
+        // unused one is cleared -- leaving stale text beside an icon is the classic bug here).
         if (_zoom_in_x != null) {
-            _zoom_in_x.setText(radial ? rotateLabel(_zoom_in_x, ROTATE_CW_LABEL, ROTATE_CW_FALLBACK) : "X+");
-            _zoom_in_x.setToolTipText(radial ? "rotate clockwise [S or Shift+mousewheel]"
+            setIconOrText(_zoom_in_x, radial ? controlIcon(ControlButtonIcon.Kind.ROTATE_CW) : null, "X+");
+            describe(_zoom_in_x, radial ? "rotate clockwise [S or Shift+mousewheel]"
                     : "zoom in horizontally [Alt+Right or Shift+Alt+mousewheel]");
         }
         if (_zoom_out_x != null) {
-            _zoom_out_x.setText(radial ? rotateLabel(_zoom_out_x, ROTATE_CCW_LABEL, ROTATE_CCW_FALLBACK) : "X-");
-            _zoom_out_x.setToolTipText(radial ? "rotate counter-clockwise [A or Shift+mousewheel]"
+            setIconOrText(_zoom_out_x, radial ? controlIcon(ControlButtonIcon.Kind.ROTATE_CCW) : null, "X-");
+            describe(_zoom_out_x, radial ? "rotate counter-clockwise [A or Shift+mousewheel]"
                     : "zoom out horizontally [Alt+Left or Shift+Alt+mousewheel]");
         }
         if (_expand_y != null) {
             _expand_y.setEnabled(!radial);
-            _expand_y.setToolTipText(radial
+            // like the fit button, the expand glyph turns with the orientation: the label ROWS it spreads apart
+            // run vertically in root-left, horizontally in root-top/bottom (in radial it is disabled and fades)
+            _expand_y.setIcon(controlIcon(vertical ? ControlButtonIcon.Kind.EXPAND_HORIZONTAL
+                    : ControlButtonIcon.Kind.EXPAND_VERTICAL));
+            describe(_expand_y, radial
                     ? "expand to fit labels -- not available in radial (circular/unrooted) display"
                     : (vertical
                             ? "expand the tree horizontally so labels do not overlap at the current font size [Alt+E]"
@@ -3880,29 +3935,35 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         if (_fit_width != null) {
             if (radial) {
-                _fit_width.setText(LABEL_DIRECTION_BUTTON_LABEL);
-                _fit_width.setToolTipText(labelDirectionButtonTooltip());
+                // In radial this button is the node-label-direction flip -- a different verb entirely, so it
+                // does NOT wear the fit family's window-frame. Like the theme toggle, it shows the state it
+                // will switch TO: labels riding the spoke while they are horizontal, and vice versa.
+                setIconOrText(_fit_width, controlIcon(radialLabelsSelected() ? ControlButtonIcon.Kind.LABELS_HORIZONTAL
+                        : ControlButtonIcon.Kind.LABELS_RADIAL), null);
+                describe(_fit_width, labelDirectionButtonTooltip());
             }
             else {
-                _fit_width.setText(vertical ? "H" : "W");
-                _fit_width.setToolTipText(vertical
+                // the frame's shape carries the axis: landscape + horizontal arrows for fit-WIDTH, portrait +
+                // vertical arrows for fit-HEIGHT (the vertical orientations)
+                setIconOrText(_fit_width, controlIcon(vertical ? ControlButtonIcon.Kind.FIT_HEIGHT
+                        : ControlButtonIcon.Kind.FIT_WIDTH), null);
+                describe(_fit_width, vertical
                         ? "fit the tree to the window height, keeping the current horizontal zoom [Alt+W]"
                         : "fit the tree to the window width, keeping the current vertical zoom [Alt+W]");
             }
         }
     }
 
-    /** The circular-arrow glyph if the button's font can render it, else a plain-text fallback (so a minimal-font
-     *  platform never shows a missing-glyph box for the radial rotate buttons). */
-    private static String rotateLabel(final JButton button, final String glyph, final String fallback) {
-        return ((button.getFont() != null) && button.getFont().canDisplay(glyph.charAt(0))) ? glyph : fallback;
+    /** The state-reflecting tooltip for the radial "L" (label-direction flip) button. Null-guarded like the
+     *  glyph selection it accompanies -- the two must agree even before the options are wired up. */
+    private String labelDirectionButtonTooltip() {
+        return "node labels: " + (radialLabelsSelected() ? "radial" : "horizontal") + " -- click to flip [Alt+W]";
     }
 
-    /** The state-reflecting tooltip for the radial "L" (label-direction flip) button. */
-    private String labelDirectionButtonTooltip() {
-        final boolean radial_labels = getOptions()
-                .getNodeLabelDirection() == Options.NODE_LABEL_DIRECTION.RADIAL;
-        return "node labels: " + (radial_labels ? "radial" : "horizontal") + " -- click to flip [Alt+W]";
+    /** Whether the node labels currently ride the spoke (RADIAL) rather than staying upright. */
+    private boolean radialLabelsSelected() {
+        return (getOptions() != null)
+                && (getOptions().getNodeLabelDirection() == Options.NODE_LABEL_DIRECTION.RADIAL);
     }
 
     /** Flips the node-label direction (horizontal &lt;-&gt; radial) from the radial "L" button, reusing the same
@@ -4240,8 +4301,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     /**
      * A small custom icon for the "order all" (ladderize) button: a vertical "root" spine with horizontal
      * branches whose lengths cascade, depicting a ladderized-tree silhouette in one of the two directions
-     * (ascending vs descending). Painted in the button's foreground color, so it is theme-aware (light/dark)
-     * and greys automatically with a disabled button.
+     * (ascending vs descending). Painted in the ink {@link ControlButtonIcon#inkFor(Component)} picks, so it is
+     * theme-aware (light/dark) and fades itself when the button is disabled -- FlatLaf only synthesizes a
+     * disabled image for an ImageIcon, so a custom Icon that ignored the enabled state would keep painting at
+     * full strength on a greyed-out button.
      */
     private static final class LadderizeIcon implements Icon {
 
@@ -4268,7 +4331,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             final Graphics2D g2 = (Graphics2D) g.create();
             try {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(c.getForeground());
+                g2.setColor(ControlButtonIcon.inkFor(c));
                 g2.setStroke(new BasicStroke(1.2f));
                 final int spine_x = x + 2;
                 g2.drawLine(spine_x, y + 1, spine_x, y + _size - 2); // the vertical "root" spine

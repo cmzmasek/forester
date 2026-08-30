@@ -74,17 +74,34 @@ public final class OrientationZoomControlTest {
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     final int w = 620, h = 520;
 
-                    // fit button label tracks the orientation: W horizontal, H vertical
+                    // the fit button's GLYPH tracks the orientation: a landscape frame with horizontal arrows
+                    // (fit-width) in root-left, a portrait frame with vertical arrows (fit-height) in root-top
                     tp.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
                     cp.updateZoomButtonsForLayout();
-                    if ( !"W".equals( cp.getFitButtonText() ) ) {
-                        fail( ok, "ROOT_LEFT fit button should read W, got " + cp.getFitButtonText() );
+                    if ( cp.getFitButtonIconKind() != ControlButtonIcon.Kind.FIT_WIDTH ) {
+                        fail( ok, "ROOT_LEFT fit button should carry FIT_WIDTH, got " + cp.getFitButtonIconKind() );
                     }
                     tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
                     cp.updateZoomButtonsForLayout();
-                    if ( !"H".equals( cp.getFitButtonText() ) ) {
-                        fail( ok, "ROOT_TOP fit button should read H, got " + cp.getFitButtonText() );
+                    if ( cp.getFitButtonIconKind() != ControlButtonIcon.Kind.FIT_HEIGHT ) {
+                        fail( ok, "ROOT_TOP fit button should carry FIT_HEIGHT, got " + cp.getFitButtonIconKind() );
                     }
+                    // ... and the EXPAND glyph turns with it: the label rows it spreads run horizontally in
+                    // root-left (spread vertically) and vertically in root-top (spread horizontally)
+                    if ( !( cp.getExpandButtonForTest().getIcon() instanceof ControlButtonIcon )
+                            || ( ( ( ControlButtonIcon ) cp.getExpandButtonForTest().getIcon() )
+                                    .getKind() != ControlButtonIcon.Kind.EXPAND_HORIZONTAL ) ) {
+                        fail( ok, "ROOT_TOP expand button should carry EXPAND_HORIZONTAL" );
+                    }
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_LEFT );
+                    cp.updateZoomButtonsForLayout();
+                    if ( !( cp.getExpandButtonForTest().getIcon() instanceof ControlButtonIcon )
+                            || ( ( ( ControlButtonIcon ) cp.getExpandButtonForTest().getIcon() )
+                                    .getKind() != ControlButtonIcon.Kind.EXPAND_VERTICAL ) ) {
+                        fail( ok, "ROOT_LEFT expand button should carry EXPAND_VERTICAL" );
+                    }
+                    tp.setTreeOrientation( TREE_ORIENTATION.ROOT_TOP );
+                    cp.updateZoomButtonsForLayout();
 
                     // screen-oriented zoom flips depth<->breadth in a vertical orientation: the "X" (horizontal-screen)
                     // action must grow the tip-spread (y-distance), and "Y" (vertical-screen) must grow the depth

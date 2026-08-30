@@ -63,7 +63,8 @@ public final class LayoutButtonsTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true; // GUI integration test; needs a display toolkit
         }
-        return run( new Phylogeny[] { tree() }, LayoutButtonsTest::exercise )
+        return run( new Phylogeny[] {}, LayoutButtonsTest::noTreeStillSwitches )
+                && run( new Phylogeny[] { tree() }, LayoutButtonsTest::exercise )
                 && run( new Phylogeny[] { tree(), tree() }, LayoutButtonsTest::perTabDisplayTypeSurvivesTabSwitch )
                 && run( new Phylogeny[] { tree() }, LayoutButtonsTest::newTreeResyncsLayoutRow );
     }
@@ -100,6 +101,39 @@ public final class LayoutButtonsTest {
      * draw as an aligned phylogram in the one layout that cannot align. Also checks the plain per-tab property:
      * two tabs with different choices keep them across switches, and the stored "A" is still there to come back.
      */
+    /**
+     * The layout buttons must visibly work in an EMPTY window too. MainFrame.typeChanged guards its whole apply
+     * chain -- including the zoom-row relabel -- behind a current-tree check, so without an explicit fallback a
+     * user clicking "circular" before opening a tree saw the layout row light up and nothing else change:
+     * X+/X- kept their zoom labels instead of becoming the rotate pair.
+     */
+    private static void noTreeStillSwitches( final MainFrame frame, final boolean[] ok ) {
+        frame.setSize( 900, 600 );
+        ( ( JFrame ) frame ).validate();
+        final ControlPanel cp = frame.getMainPanel().getControlPanel();
+        cp.getLayoutButton( LayoutIcon.Kind.CIRCULAR ).doClick();
+        if ( cp.selectedLayoutKind() != LayoutIcon.Kind.CIRCULAR ) {
+            fail( ok, "no tree: the layout row must still track the click, got " + cp.selectedLayoutKind() );
+        }
+        javax.swing.Icon icon = cp.getZoomInXButtonForTest().getIcon();
+        if ( !( icon instanceof ControlButtonIcon )
+                || ( ( ( ControlButtonIcon ) icon ).getKind() != ControlButtonIcon.Kind.ROTATE_CW ) ) {
+            fail( ok, "no tree: choosing circular must still turn X+ into the rotate button" );
+        }
+        if ( cp.getFitButtonIconKind() == ControlButtonIcon.Kind.FIT_WIDTH ) {
+            fail( ok, "no tree: choosing circular must switch the fit button to the label-direction flip" );
+        }
+        cp.getLayoutButton( LayoutIcon.Kind.ROOT_LEFT ).doClick();
+        icon = cp.getZoomInXButtonForTest().getIcon();
+        if ( icon != null ) {
+            fail( ok, "no tree: returning to rectangular must restore the X+ text button" );
+        }
+        if ( cp.getFitButtonIconKind() != ControlButtonIcon.Kind.FIT_WIDTH ) {
+            fail( ok, "no tree: returning to rectangular must restore the fit-width glyph, got "
+                    + cp.getFitButtonIconKind() );
+        }
+    }
+
     private static void perTabDisplayTypeSurvivesTabSwitch( final MainFrame frame, final boolean[] ok ) {
         frame.setSize( 1000, 700 );
         ( ( JFrame ) frame ).validate();

@@ -52,7 +52,48 @@ public final class TreeGlyphIconTest {
     }
 
     public static boolean test() {
-        return layoutIcons() && displayTypeIcons();
+        return layoutIcons() && displayTypeIcons() && disabledFades();
+    }
+
+    /** A DISABLED layout / P-A-C button must fade its glyph (Swing/FlatLaf will not do it for a custom Icon);
+     *  these buttons really are disabled in practice -- all of P/A/C for a tree without branch lengths, "A" in
+     *  unrooted -- and a full-strength glyph on a dead button looks clickable. */
+    private static boolean disabledFades() {
+        final JLabel disabled = new JLabel();
+        disabled.setForeground( java.awt.Color.BLACK );
+        disabled.setBackground( java.awt.Color.WHITE );
+        disabled.setEnabled( false );
+        final Icon[] icons = { new DisplayTypeIcon( DisplayTypeIcon.Kind.ALIGNED_PHYLOGRAM, SIZE ),
+                new LayoutIcon( LayoutIcon.Kind.CIRCULAR, SIZE ) };
+        for ( final Icon icon : icons ) {
+            final BufferedImage down = new BufferedImage( icon.getIconWidth(), icon.getIconHeight(),
+                                                          BufferedImage.TYPE_INT_ARGB );
+            icon.paintIcon( disabled, down.getGraphics(), 0, 0 );
+            if ( darkestLuma( down ) < 110 ) {
+                return fail( icon.getClass().getSimpleName()
+                        + " must fade to grey on a disabled black-on-white button, darkest luma "
+                        + darkestLuma( down ) );
+            }
+            if ( ink( down ) < 12 ) {
+                return fail( icon.getClass().getSimpleName() + " should still be visible when disabled" );
+            }
+        }
+        return true;
+    }
+
+    /** The darkest opaque pixel's luminance -- near 0 for full-strength black ink, well above for faded grey. */
+    private static int darkestLuma( final BufferedImage img ) {
+        int darkest = 255;
+        for ( int y = 0; y < img.getHeight(); y++ ) {
+            for ( int x = 0; x < img.getWidth(); x++ ) {
+                if ( opaque( img, x, y ) ) {
+                    final int rgb = img.getRGB( x, y );
+                    final int luma = ( ( ( rgb >> 16 ) & 0xff ) + ( ( rgb >> 8 ) & 0xff ) + ( rgb & 0xff ) ) / 3;
+                    darkest = Math.min( darkest, luma );
+                }
+            }
+        }
+        return darkest;
     }
 
     // ---- LayoutIcon ------------------------------------------------------------------------------------
@@ -186,7 +227,7 @@ public final class TreeGlyphIconTest {
             branch[ i ] = new int[ rows.length ];
             label[ i ] = new int[ rows.length ];
             for ( int r = 0; r < rows.length; r++ ) {
-                final int[][] runs = runsInRow( imgs[ i ], rows[ r ] );
+                final int[][] runs = runsNearRow( imgs[ i ], rows[ r ] );
                 if ( runs.length < 2 ) {
                     return fail( "the " + kinds[ i ] + " glyph's tip row " + r
                             + " must show a branch AND its label tick, found " + runs.length + " ink run(s)" );
@@ -249,6 +290,21 @@ public final class TreeGlyphIconTest {
 
     private static String str( final int[] v ) {
         return java.util.Arrays.toString( v );
+    }
+
+    /** The runs at {@code y}, tolerating the one-pixel snap STROKE_NORMALIZE applies to thin axis-aligned
+     *  lines: of the rows y-1..y+1, the one carrying the most runs answers (the exact row wins a tie). */
+    private static int[][] runsNearRow( final BufferedImage img, final int y ) {
+        int[][] best = runsInRow( img, y );
+        for ( final int dy : new int[] { -1, 1 } ) {
+            if ( ( ( y + dy ) >= 0 ) && ( ( y + dy ) < img.getHeight() ) ) {
+                final int[][] cand = runsInRow( img, y + dy );
+                if ( cand.length > best.length ) {
+                    best = cand;
+                }
+            }
+        }
+        return best;
     }
 
     /** The contiguous ink runs in one pixel row, each as {startX, endX}. */

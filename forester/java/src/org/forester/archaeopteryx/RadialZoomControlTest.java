@@ -64,7 +64,7 @@ public final class RadialZoomControlTest {
     /** For CIRCULAR and UNROOTED (reached through the real Type-menu path, MainFrame.typeChanged): Y+/Y- -> +/-,
      *  X+/X- -> the CW/CCW rotate glyphs (which must be renderable by the button font -- a tofu guard), E disabled,
      *  W -> "L". Then switching back to RECTANGULAR must restore Y+/Y-, X+/X- (native "+"/"-" or "X+"/"X-"), an
-     *  enabled E, and "W". */
+     *  enabled E, and the fit-width glyph. */
     private static boolean relabelAndRevertOk() {
         final boolean[] ok = { true };
         withFrame( "scale-axis.xml", ( frame, tp, o ) -> {
@@ -75,26 +75,31 @@ public final class RadialZoomControlTest {
                         : frame._unrooted_type_cbmi );
                 expect( ok, gt + " Y+ -> '+'", "+", cp.getZoomInYButtonForTest().getText() );
                 expect( ok, gt + " Y- -> '-'", "-", cp.getZoomOutYButtonForTest().getText() );
-                // the rotate buttons show the circular-arrow glyph when the button font can render it, else the
-                // plain-text fallback -- mirror that runtime decision so the assertion holds on any platform
+                // the rotate buttons are DRAWN glyphs now (no font dependency, so no text fallback to mirror):
+                // in a radial layout each must carry its own rotation icon and no leftover text
                 final JButton x_in = cp.getZoomInXButtonForTest();
                 final JButton x_out = cp.getZoomOutXButtonForTest();
-                final String cw_expected = x_in.getFont().canDisplay( ControlPanel.ROTATE_CW_LABEL.charAt( 0 ) )
-                        ? ControlPanel.ROTATE_CW_LABEL : ControlPanel.ROTATE_CW_FALLBACK;
-                final String ccw_expected = x_out.getFont().canDisplay( ControlPanel.ROTATE_CCW_LABEL.charAt( 0 ) )
-                        ? ControlPanel.ROTATE_CCW_LABEL : ControlPanel.ROTATE_CCW_FALLBACK;
-                expect( ok, gt + " X+ -> rotate CW", cw_expected, x_in.getText() );
-                expect( ok, gt + " X- -> rotate CCW", ccw_expected, x_out.getText() );
-                expect( ok, gt + " W -> 'L'", ControlPanel.LABEL_DIRECTION_BUTTON_LABEL,
-                        cp.getFitWidthButtonForTest().getText() );
+                expectRotateIcon( ok, gt + " X+", x_in, ControlButtonIcon.Kind.ROTATE_CW );
+                expectRotateIcon( ok, gt + " X-", x_out, ControlButtonIcon.Kind.ROTATE_CCW );
+                // in radial the fit button becomes the label-direction flip and, like the theme toggle, shows
+                // the state it will switch TO: labels are horizontal by default, so it offers LABELS_RADIAL
+                if ( cp.getFitButtonIconKind() != ControlButtonIcon.Kind.LABELS_RADIAL ) {
+                    fail( ok, gt + ": the label-flip button should offer LABELS_RADIAL, got "
+                            + cp.getFitButtonIconKind() );
+                }
+                if ( ( cp.getFitWidthButtonForTest().getText() != null )
+                        && !cp.getFitWidthButtonForTest().getText().isEmpty() ) {
+                    fail( ok, gt + ": the label-flip button must not keep text beside its glyph" );
+                }
                 if ( cp.getExpandButtonForTest().isEnabled() ) {
                     fail( ok, "E must be greyed out (disabled) in " + gt + " (it does nothing radially)" );
                 }
-                // tofu guard: whatever label is shown must actually render (never a missing-glyph box)
-                if ( !x_in.getFont().canDisplay( x_in.getText().charAt( 0 ) )
-                        || !x_out.getFont().canDisplay( x_out.getText().charAt( 0 ) ) ) {
-                    fail( ok, "the radial rotate labels must render in the button font " + x_in.getFont().getFontName()
-                            + " (got '" + x_in.getText() + "' / '" + x_out.getText() + "')" );
+                // clockwise and counter-clockwise are mirror images -- exactly the pair a reader can most easily
+                // be shown the wrong way round, so the two buttons must not carry the SAME glyph
+                if ( ( x_in.getIcon() instanceof ControlButtonIcon ) && ( x_out.getIcon() instanceof ControlButtonIcon )
+                        && ( ( ( ControlButtonIcon ) x_in.getIcon() ).getKind() == ( ( ControlButtonIcon ) x_out
+                                .getIcon() ).getKind() ) ) {
+                    fail( ok, "the two rotate buttons must not carry the same glyph" );
                 }
             }
             // revert to rectangular (pin ROOT_LEFT so W reverts to "W" deterministically -- a persisted vertical
@@ -106,7 +111,16 @@ public final class RadialZoomControlTest {
             expect( ok, "revert Y- -> 'Y-'", "Y-", cp.getZoomOutYButtonForTest().getText() );
             expect( ok, "revert X+", "X+", cp.getZoomInXButtonForTest().getText() );
             expect( ok, "revert X-", "X-", cp.getZoomOutXButtonForTest().getText() );
-            expect( ok, "revert W -> 'W'", "W", cp.getFitWidthButtonForTest().getText() );
+            // finding from review: the ICONS must be asserted cleared/restored too, not just the text -- a
+            // regression dropping setIcon(null) would leave a stale rotate glyph beside the restored X+/X- text
+            // and a text-only assertion would never notice
+            if ( cp.getFitButtonIconKind() != ControlButtonIcon.Kind.FIT_WIDTH ) {
+                fail( ok, "revert: the fit button must carry FIT_WIDTH again, got " + cp.getFitButtonIconKind() );
+            }
+            if ( ( cp.getZoomInXButtonForTest().getIcon() != null )
+                    || ( cp.getZoomOutXButtonForTest().getIcon() != null ) ) {
+                fail( ok, "revert: the rotate glyphs must be cleared when X+/X- get their text back" );
+            }
             if ( !cp.getExpandButtonForTest().isEnabled() ) {
                 fail( ok, "E must be re-enabled when reverting to a rectangular layout" );
             }
@@ -179,6 +193,14 @@ public final class RadialZoomControlTest {
                 fail( ok, "the 'Radial Labels' checkbox must track the flipped direction (" + dir1 + " vs cbmi="
                         + frame._label_direction_cbmi.isSelected() + ")" );
             }
+            // ... and the state GLYPH must follow the flip: it shows the direction it will switch TO, so after
+            // flipping to radial labels it must offer LABELS_HORIZONTAL (and vice versa)
+            final ControlButtonIcon.Kind offered = cp.getFitButtonIconKind();
+            final ControlButtonIcon.Kind expected = ( dir1 == NODE_LABEL_DIRECTION.RADIAL )
+                    ? ControlButtonIcon.Kind.LABELS_HORIZONTAL : ControlButtonIcon.Kind.LABELS_RADIAL;
+            if ( offered != expected ) {
+                fail( ok, "after the flip the label button must offer " + expected + ", got " + offered );
+            }
             cp.getFitWidthButtonForTest().doClick();
             if ( o.getNodeLabelDirection() != dir0 ) {
                 fail( ok, "a second 'L' click must flip the node-label direction back to " + dir0 + " (got "
@@ -201,6 +223,19 @@ public final class RadialZoomControlTest {
                 InputEvent.ALT_DOWN_MASK, KeyEvent.VK_W, 'W' );
         for ( final KeyListener kl : tp.getKeyListeners() ) {
             kl.keyPressed( e );
+        }
+    }
+
+    /** The button must carry that rotation glyph, and NO text: a stale label beside an icon is the classic bug. */
+    private static void expectRotateIcon( final boolean[] ok, final String what, final JButton b,
+                                          final ControlButtonIcon.Kind kind ) {
+        if ( !( b.getIcon() instanceof ControlButtonIcon )
+                || ( ( ( ControlButtonIcon ) b.getIcon() ).getKind() != kind ) ) {
+            fail( ok, what + " must show the " + kind + " glyph, got "
+                    + ( ( b.getIcon() == null ) ? "no icon" : b.getIcon().getClass().getSimpleName() ) );
+        }
+        if ( ( b.getText() != null ) && !b.getText().isEmpty() ) {
+            fail( ok, what + " must not keep its text label beside the glyph, got \"" + b.getText() + "\"" );
         }
     }
 

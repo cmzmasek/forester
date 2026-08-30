@@ -170,7 +170,7 @@ public final class FixedExportSizeTest {
                             final String whmsg = AptxUtil.writePhylogenyToGraphicsFileAtSize( whpng.getAbsolutePath(),
                                     tp, GraphicsExportType.PNG, o,
                                     new ExportSizeSpec( ExportSizeSpec.Unit.PIXELS, 300, 24, 72 ) );
-                            if ( ( whmsg == null ) || !whmsg.contains( "Warning:" ) || !whmsg.contains( "Dyna Hide" ) ) {
+                            if ( ( whmsg == null ) || !whmsg.contains( "Warning:" ) || !whmsg.contains( "Auto-hide Labels" ) ) {
                                 fail( ok, "a cramped fixed export with Dyna Hide on must warn in the report; got "
                                         + whmsg );
                             }

@@ -93,7 +93,7 @@ final class ThemeToggleIcon implements Icon {
         final Graphics2D g2 = (Graphics2D) g.create();
         try {
             g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-            g2.setColor( ( c != null ) ? c.getForeground() : java.awt.Color.BLACK );
+            g2.setColor( ControlButtonIcon.inkFor( c ) );
             final double cx = x + ( _size / 2.0 );
             final double cy = y + ( _size / 2.0 );
             if ( _sun ) {

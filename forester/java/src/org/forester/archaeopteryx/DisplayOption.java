@@ -41,7 +41,9 @@ public enum DisplayOption {
     SHOW_SEQ_NAMES( "Seq Name", DefaultState.OFF ),
     SHOW_SEQUENCE_ACC( "Seq Accession", DefaultState.OFF ),
     DISPLAY_INTERNAL_DATA( "Show Internal Data", DefaultState.ON ),
-    DYNAMICALLY_HIDE_DATA( "Dyna Hide", DefaultState.ON ),
+    // "Auto-hide Labels": renamed from the historical "Dyna Hide", which named the mechanism (dynamic hiding)
+    // rather than what the user sees (labels disappearing on their own when the tree is too dense)
+    DYNAMICALLY_HIDE_DATA( "Auto-hide Labels", DefaultState.ON ),
     SHOW_TAXONOMY_SCIENTIFIC_NAMES( "Taxonomy Scientific", DefaultState.ON ),
     SHOW_TAXONOMY_COMMON_NAMES( "Taxonomy Common", DefaultState.OFF ),
     SHOW_SEQ_SYMBOLS( "Seq Symbol", DefaultState.OFF ),
