@@ -1312,6 +1312,45 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /**
+     * Everything the panel must recompute after the tree's STRUCTURE changed (a node or subtree deleted, tips
+     * pruned): the traversal caches, and every display model that either summarizes the tips or HOLDS NODE
+     * REFERENCES of its own.
+     * <p>
+     * Centralised because it was duplicated across the delete paths and drifted apart: the subtree /
+     * return-to-whole-tree paths rebuilt the clade bands, the Tools prune rebuilt the property displays and the
+     * annotation columns but not the bands, and the click-to delete rebuilt nothing at all. A band keeps the node
+     * its mark spans, so a deleted band root was still painted -- and walking a detached node's external
+     * descendants threw, over and over, inside the EDT paint loop.
+     */
+    void afterTreeStructureChanged() {
+        setNodeInPreorderToNull();
+        if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
+            _phylogeny.externalNodesHaveChanged();
+            _phylogeny.clearHashIdToNodeMap();
+            _phylogeny.recalculateNumberOfExternalDescendants(true);
+        }
+        resetNodeIdToDistToLeafMap();
+        rebuildPropertyDisplays();
+        rebuildAnnotationColumns();
+        rebuildCladeBands(); // band roots hold NODE REFERENCES: a deleted one must not survive into the next paint
+        setHover(null, false); // the pointer's node may be the one just deleted; the focus glow walks its tips
+    }
+
+    /** The delete itself, past the confirmation dialog -- package-visible so the behaviour can be tested without
+     *  driving a modal dialog. */
+    void deleteNodeOrSubtreeConfirmed(final PhylogenyNode node, final boolean node_only) {
+        pushUndoCheckpoint(node_only ? "Delete Node" : "Delete Subtree");
+        if (node_only) {
+            PhylogenyMethods.removeNode(node, _phylogeny);
+        } else {
+            _phylogeny.deleteSubtree(node, true);
+        }
+        afterTreeStructureChanged();
+        setEdited(true);
+        repaint();
+    }
+
     final private void deleteNodeOrSubtree(final PhylogenyNode node) {
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             errorMessageNoCutCopyPasteInUnrootedDisplay();
@@ -1341,18 +1380,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } else if (r != 0) {
             return;
         }
-        pushUndoCheckpoint(node_only ? "Delete Node" : "Delete Subtree");
-        if (node_only) {
-            PhylogenyMethods.removeNode(node, _phylogeny);
-        } else {
-            _phylogeny.deleteSubtree(node, true);
-        }
-        _phylogeny.externalNodesHaveChanged();
-        _phylogeny.clearHashIdToNodeMap();
-        _phylogeny.recalculateNumberOfExternalDescendants(true);
-        resetNodeIdToDistToLeafMap();
-        setEdited(true);
-        repaint();
+        deleteNodeOrSubtreeConfirmed(node, node_only);
     }
 
     final private void displayNodePopupMenu(final PhylogenyNode node, final int x, final int y) {
@@ -9018,7 +9046,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  node, which would wrongly skip a real multi-tip clade's bar the moment the user collapses it (and would drift
      *  from the drawn-count computed at annotate time). getAllExternalDescendants() is a pure tree walk, so a collapsed
      *  clade still counts its real tips. */
-    private static boolean isSingleMemberClade(final CladeBand band) {
+    private boolean isSingleMemberClade(final CladeBand band) {
+        // A band root that is no longer in the tree is skipped rather than walked: walking a detached node THROWS,
+        // and this is reached from the paint (see the note on cladeBandYRange). The rebuild on every structural
+        // change means it should never be stale -- this only makes the failure a missing bar, not a dead window.
+        if (!isInCurrentTree(band.getRoot())) {
+            return true;
+        }
         return band.getRoot().getAllExternalDescendants().size() <= 1;
     }
 
@@ -12134,8 +12168,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return max;
     }
 
-    /** {@code {yTop, yBottom}} of a clade's tips in current paint coordinates, or null if none. */
+    /** Whether {@code node} still hangs off the displayed tree's root. A node deleted from the tree keeps its own
+     *  children, so it looks perfectly normal in isolation -- only walking UP reveals that it is detached. */
+    private boolean isInCurrentTree(final PhylogenyNode node) {
+        if ((_phylogeny == null) || _phylogeny.isEmpty() || (node == null)) {
+            return false;
+        }
+        final PhylogenyNode root = _phylogeny.getRoot();
+        PhylogenyNode n = node;
+        while (n != null) {
+            if (n == root) {
+                return true;
+            }
+            n = n.isRoot() ? null : n.getParent();
+        }
+        return false;
+    }
+
+    /** {@code {yTop, yBottom}} of a clade's tips in current paint coordinates, or null if none.
+     *  <p>
+     *  Returns null for a band root that is no longer part of the tree. That should not happen -- every structural
+     *  change goes through {@link #afterTreeStructureChanged()}, which rebuilds the bands -- but walking a detached
+     *  node's external descendants THROWS, and this runs inside the paint loop, where a throw repeats forever and
+     *  the tree stops drawing entirely. A missing band is a far better failure than a dead window. */
     private float[] cladeBandYRange(final PhylogenyNode root) {
+        if (!isInCurrentTree(root)) {
+            return null;
+        }
         float min = Float.MAX_VALUE;
         float max = -Float.MAX_VALUE;
         if (root.isExternal()) {

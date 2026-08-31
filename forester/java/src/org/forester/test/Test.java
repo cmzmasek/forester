@@ -251,6 +251,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Clade bands after node deletion: ");
+        if (org.forester.archaeopteryx.CladeBandStaleNodeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("MSA hit test: ");
         if (org.forester.archaeopteryx.MsaHitTestTest.test()) {
             System.out.println("OK.");

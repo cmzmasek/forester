@@ -905,15 +905,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 }
             }
             resetSearch();
-            getCurrentTreePanel().setNodeInPreorderToNull();
-            phy.externalNodesHaveChanged();
-            phy.clearHashIdToNodeMap();
-            phy.recalculateNumberOfExternalDescendants(true);
-            getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-            // pruning changes the visible tips, so recompute the display schemes that summarize them
-            // (this path does not go through displayedPhylogenyMightHaveChanged)
-            getCurrentTreePanel().rebuildPropertyDisplays();
-            getCurrentTreePanel().rebuildAnnotationColumns();
+            // pruning changes the tree's STRUCTURE, so every derived model has to be recomputed -- including the
+            // ones holding node references (the clade bands). One call, so this cannot drift again.
+            getCurrentTreePanel().afterTreeStructureChanged();
             getCurrentTreePanel().setEdited(true);
             repaint();
         }
