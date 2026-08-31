@@ -265,6 +265,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _export_seqs_fasta_item;
     JMenuItem _export_node_data_item;
     JMenuItem _import_annotations_item;
+    JMenuItem _error_log_item;
+    /** Appears in the menu bar the first time something is logged, so a user knows there is something to send. */
+    private JMenu _error_indicator_menu;
     JMenuItem _import_annotations_url_item;
     JMenuItem _load_alignment_item;
     JMenuItem _import_gtdb_item;
@@ -1060,6 +1063,88 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * Opens the error log in whatever the desktop uses for a text file, falling back to showing the path when
+     * there is no desktop integration -- a user who cannot open it can still find it.
+     */
+    void showErrorLog() {
+        // the installed log knows the path it captured at install time; recomputing it from the system property
+        // would point somewhere else if that property has changed since
+        final java.nio.file.Path f = (ErrorLog.instance() != null) ? ErrorLog.instance().getFile()
+                : ErrorLog.defaultFile();
+        if (!java.nio.file.Files.exists(f)) {
+            JOptionPane.showMessageDialog(this,
+                    "No errors have been logged.\n\nIf something does go wrong, Archaeopteryx writes it to:\n" + f,
+                    "Error Log", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        if (ErrorLog.instance() != null) {
+            ErrorLog.instance().flushRepeats(); // write the pending "repeated N times" tail before it is read
+        }
+        try {
+            if (java.awt.Desktop.isDesktopSupported()
+                    && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.OPEN)) {
+                java.awt.Desktop.getDesktop().open(f.toFile());
+                return;
+            }
+        }
+        catch (final Exception ignored) {
+            // fall through to just telling the user where it is
+        }
+        JOptionPane.showMessageDialog(this, "The error log is at:\n" + f, "Error Log",
+                                      JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Puts a quiet marker in the menu bar the first time an error is logged. Deliberately NOT a dialog: the failure
+     * that motivated this recurred on every repaint, so a dialog per error would have made the app unusable.
+     */
+    /**
+     * Raises the marker if anything has already been logged. Called at the end of frame construction, because the
+     * log is installed BEFORE any frame exists: an error during start-up fires the one-shot callback while there is
+     * no frame (or no menu bar) to put a marker on, and without this that error would never be surfaced at all.
+     */
+    void showErrorIndicatorIfAnyLogged() {
+        if ((ErrorLog.instance() != null) && ErrorLog.instance().hasErrors()) {
+            showErrorIndicator();
+        }
+    }
+
+    /** Raises the marker on every open frame. This is the callback {@link ErrorLog} runs on the first error --
+     *  a named method rather than a lambda at the call site, so the same code is what gets tested. */
+    static void showErrorIndicatorOnAllFrames() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            for (final java.awt.Window w : java.awt.Window.getWindows()) {
+                if (w instanceof MainFrame) {
+                    ((MainFrame) w).showErrorIndicator();
+                }
+            }
+        });
+    }
+
+    void showErrorIndicator() {
+        if ((_jmenubar == null) || (_error_indicator_menu != null)) {
+            return;
+        }
+        _error_indicator_menu = createMenu("⚠ error logged", getConfiguration());
+        _error_indicator_menu.setToolTipText("Something went wrong and was written to the error log.");
+        _error_indicator_menu.setForeground(Color.RED);
+        final JMenuItem open = customizeJMenuItem(new JMenuItem("Show Error Log"));
+        open.addActionListener(e -> showErrorLog());
+        _error_indicator_menu.add(open);
+        final JMenuItem dismiss = customizeJMenuItem(new JMenuItem("Dismiss"));
+        dismiss.addActionListener(e -> {
+            _jmenubar.remove(_error_indicator_menu);
+            _error_indicator_menu = null; // else the guard above would keep the marker away for the whole session
+            _jmenubar.revalidate();
+            _jmenubar.repaint();
+        });
+        _error_indicator_menu.add(dismiss);
+        _jmenubar.add(_error_indicator_menu);
+        _jmenubar.revalidate();
+        _jmenubar.repaint();
+    }
+
     void buildHelpMenu() {
         _help_jmenu = createMenu("Help", getConfiguration());
         _help_jmenu.setToolTipText("Documentation, web links, and program information");
@@ -1070,6 +1155,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add(_references_item = new JMenuItem("References"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_keyboard_shortcuts_item = new JMenuItem("Keyboard Shortcuts"));
+        _help_jmenu.addSeparator();
+        _help_jmenu.add(_error_log_item = new JMenuItem("Show Error Log"));
+        customizeJMenuItem(_error_log_item);
+        _error_log_item.setToolTipText("Open the file Archaeopteryx writes unexpected errors to. An installed "
+                + "Archaeopteryx has no console, so this is where a stack trace goes -- attach it to a bug report.");
+        _error_log_item.addActionListener(e -> showErrorLog());
         _help_jmenu.addSeparator();
         _help_jmenu.add(_about_item = new JMenuItem("About"));
         customizeJMenuItem(_help_item);

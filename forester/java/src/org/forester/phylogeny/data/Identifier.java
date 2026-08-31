@@ -76,6 +76,37 @@ public final class Identifier implements PhylogenyData {
         return _value_provider;
     }
 
+    /**
+     * Provider labels that all denote the SAME identifier namespace: the NCBI taxonomy. The UniProt taxonomy IS the
+     * NCBI taxonomy -- a UniProt taxon id is an NCBI taxid -- and an id with no provider at all is, in practice,
+     * one too. They arrive under different labels only because of where they were read from: "ncbi" from the NCBI
+     * services and from an induced taxonomy tree, "uniprot" from UniProt records and from ids parsed out of
+     * sequence labels.
+     */
+    private static final java.util.Set<String> NCBI_TAXONOMY_PROVIDERS = new java.util.HashSet<String>(
+            java.util.Arrays.asList( "ncbi", "uniprot", "ncbitaxon", "ncbi_taxonomy", "uniprot.taxonomy" ) );
+
+    /** The provider label reduced to the NAMESPACE it names, so equivalent labels compare equal (see
+     *  {@link #NCBI_TAXONOMY_PROVIDERS}). Anything else is kept, lower-cased, so a genuinely different namespace
+     *  (a GTDB id, say) still cannot be confused with an NCBI taxid. */
+    public static String normalizedProvider( final String provider ) {
+        if ( ( provider == null ) || provider.trim().isEmpty() ) {
+            return "ncbi";
+        }
+        final String p = provider.trim().toLowerCase( java.util.Locale.ROOT );
+        return NCBI_TAXONOMY_PROVIDERS.contains( p ) ? "ncbi" : p;
+    }
+
+    /**
+     * The identifier as a comparison KEY: its value plus its {@link #normalizedProvider(String) normalized}
+     * provider. Use this, not {@link #getValuePlusProvider()}, whenever two trees' identifiers are matched --
+     * otherwise a gene tree annotated from UniProt can never map onto a species tree built from NCBI taxonomy,
+     * even though every id is identical.
+     */
+    public String getValuePlusNormalizedProvider() {
+        return _value + normalizedProvider( _provider );
+    }
+
     @Override
     public PhylogenyData copy() {
         return new Identifier( getValue(), getProvider() );

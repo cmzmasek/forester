@@ -251,6 +251,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Taxonomy id provider (UniProt/NCBI) reconciliation: ");
+        if (org.forester.archaeopteryx.TaxonomyIdProviderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Error log: ");
+        if (org.forester.archaeopteryx.ErrorLogTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Clade bands after node deletion: ");
         if (org.forester.archaeopteryx.CladeBandStaleNodeTest.test()) {
             System.out.println("OK.");

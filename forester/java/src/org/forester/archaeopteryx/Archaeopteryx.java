@@ -57,6 +57,11 @@ public final class Archaeopteryx {
             // macOS screen menu bar cannot be themed and would not match the rest of the UI.
             System.setProperty( "apple.laf.useScreenMenuBar", "false" );
         }
+        // An INSTALLED Archaeopteryx has no console -- the Windows launcher is windowed, a macOS .app hands its
+        // stdio to launchd, a Linux desktop entry to the journal -- so an uncaught exception (and every
+        // printStackTrace in the code) would simply vanish and a user could only report "it stopped drawing".
+        // Installed FIRST, so anything thrown during start-up is caught too.
+        ErrorLog.install( MainFrame::showErrorIndicatorOnAllFrames );
         // Register the bundled default figure font BEFORE the default font family is chosen (in
         // Configuration); must come after the macOS AWT properties above (this initializes AWT).
         FontResources.registerBundledFonts();

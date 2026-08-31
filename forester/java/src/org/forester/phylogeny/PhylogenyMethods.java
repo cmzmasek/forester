@@ -1727,7 +1727,7 @@ public class PhylogenyMethods {
             }
             if ((n.getNodeData().getTaxonomy().getIdentifier() != null)
                     && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getIdentifier().getValue())) {
-                ref_ext_taxo.add(n.getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider());
+                ref_ext_taxo.add(n.getNodeData().getTaxonomy().getIdentifier().getValuePlusNormalizedProvider());
             }
         }
         final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<>();
@@ -1738,7 +1738,7 @@ public class PhylogenyMethods {
             } else if (!(ref_ext_taxo.contains(n.getNodeData().getTaxonomy().getScientificName()))
                     && !(ref_ext_taxo.contains(n.getNodeData().getTaxonomy().getTaxonomyCode()))
                     && !((n.getNodeData().getTaxonomy().getIdentifier() != null) && ref_ext_taxo
-                    .contains(n.getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider()))) {
+                    .contains(n.getNodeData().getTaxonomy().getIdentifier().getValuePlusNormalizedProvider()))) {
                 nodes_to_delete.add(n);
             }
         }

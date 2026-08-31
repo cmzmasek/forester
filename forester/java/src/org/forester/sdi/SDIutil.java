@@ -146,7 +146,9 @@ public class SDIutil {
                 if ( id == null ) {
                     return null;
                 }
-                return id.getValuePlusProvider();
+                // NORMALIZED: a gene tree whose taxonomy ids came from UniProt must still map onto a species tree
+                // whose ids came from NCBI -- they are the same identifiers under different provider labels.
+                return id.getValuePlusNormalizedProvider();
             case CODE:
                 return n.getNodeData().getTaxonomy().getTaxonomyCode();
             case SCIENTIFIC_NAME:

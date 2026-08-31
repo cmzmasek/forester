@@ -315,6 +315,9 @@ public final class MainFrameApplication extends MainFrame {
         // warm the Swing color chooser off the EDT too: building its default panels + loading the classes is a
         // one-time cost, so the first "Node Style" / subtree-colorize colour pick isn't slow to appear
         warmColorChooserAsync();
+        // The error log is installed BEFORE any frame exists, so a failure during start-up fires its one-shot
+        // callback while there is no menu bar to mark. Pick that up here, now that there is one.
+        showErrorIndicatorIfAnyLogged();
     }
 
     /** Best-effort background warmup of {@link javax.swing.JColorChooser}: constructing one builds all of its default
