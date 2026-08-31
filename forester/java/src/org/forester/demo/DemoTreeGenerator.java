@@ -1438,6 +1438,11 @@ public final class DemoTreeGenerator {
         final String base = "MKTAYIAKQR-QISFVKSHFSRQLEERLGLIEVQ"; // 34 columns, one aligned gap (protein)
         final Phylogeny phy = new Phylogeny();
         phy.setName( "Sequence Alignment" );
+        phy.setDescription( "Synthetic 34-column protein alignment (one aligned gap) beside a six-tip tree. Turn it on "
+                + "with Settings > Overlays > Sequence Alignment. HOVER A RESIDUE for its alignment column, its number "
+                + "within that sequence's own ungapped residues, its full name and physico-chemical class, and its "
+                + "Kyte-Doolittle hydropathy -- the column number is a property of the alignment, the residue number "
+                + "is the coordinate that maps back onto the real protein." );
         phy.setRoot( clade( 0.0,
                 clade( 0.05,
                         alignedLeaf( "Human", 0.03, base ),

@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Zebra stripes (demo)</name>
-  <description>Synthetic 16-tip tree with a categorical &apos;host&apos; and numeric &apos;reads&apos; per tip. Turn on Settings &gt; Display &gt; Zebra Stripes -- faint alternating row bands make it easy to track a tip label across to its Annotation Columns (Tools &gt; Annotation Fields).</description>
+  <description>Synthetic 16-tip tree with a categorical &apos;host&apos; and numeric &apos;reads&apos; per tip. Turn on Settings &gt; Display &gt; Zebra Stripes -- faint alternating row bands make it easy to track a tip label across to its annotation columns (Tools &gt; Annotation Fields).</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>

@@ -64,12 +64,65 @@ final class MsaColors {
     }
 
     /** The fill color for {@code residue}, or {@code null} for a gap / blank (which is drawn as background). */
+    /**
+     * The characters an alignment uses for a gap: '-' (the usual), '.' (BLAST / PIR), '~' (a terminal gap in
+     * PIR/NBRF and MView output) and ' '. THE one definition -- the paint, the class name and the hover readout all
+     * ask this, so a character cannot be a filled residue cell on screen and a "gap" in the readout.
+     */
+    static boolean isGap( final char residue ) {
+        return ( residue == GAP ) || ( residue == '.' ) || ( residue == ' ' ) || ( residue == '~' );
+    }
+
     static Color colorFor( final char residue, final boolean nucleotide ) {
         final char r = Character.toUpperCase( residue );
-        if ( ( r == GAP ) || ( r == '.' ) || ( r == ' ' ) ) {
+        if ( isGap( r ) ) {
             return null; // a gap has no fill
         }
         return nucleotide ? nucleotideColor( r ) : aminoAcidColor( r );
+    }
+
+    /**
+     * The name of a residue's chemical class. For an AMINO ACID this is exactly the grouping {@link #colorFor}
+     * colours by, so a readout that names the class can never contradict the colour on screen.
+     * <p>
+     * For a NUCLEOTIDE it deliberately is not: the paint gives A, C, G and T/U four distinct colours (one per base),
+     * while purine/pyrimidine is a coarser, genuinely useful fact that no colour encodes. The readout names the base
+     * itself on the line above, so the two together describe the cell without either claiming to be the colour key.
+     * Null for a gap.
+     */
+    static String className( final char residue, final boolean nucleotide ) {
+        final char r = Character.toUpperCase( residue );
+        if ( isGap( r ) ) {
+            return null;
+        }
+        if ( nucleotide ) {
+            switch ( r ) {
+                case 'A': case 'G':
+                    return "purine";
+                case 'C': case 'T': case 'U':
+                    return "pyrimidine";
+                default:
+                    return "ambiguity code";
+            }
+        }
+        switch ( r ) {
+            case 'I': case 'L': case 'V': case 'A': case 'M':
+                return "aliphatic (hydrophobic)";
+            case 'F': case 'W': case 'Y':
+                return "aromatic";
+            case 'K': case 'R': case 'H':
+                return "positively charged";
+            case 'D': case 'E':
+                return "negatively charged";
+            case 'S': case 'T': case 'N': case 'Q':
+                return "polar (hydrophilic)";
+            case 'P': case 'G':
+                return "conformationally special";
+            case 'C':
+                return "cysteine (disulphide-forming)";
+            default:
+                return "non-standard / ambiguity code";
+        }
     }
 
     private static Color aminoAcidColor( final char r ) {

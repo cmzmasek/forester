@@ -562,6 +562,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         addMouseListener(mouse_listener);
         addMouseMotionListener(mouse_listener);
         addMouseWheelListener(this);
+        // Register for tooltips so getToolTipText(MouseEvent) is consulted -- that is the alignment residue
+        // readout. It returns null everywhere except over the alignment, so the canvas shows no other tooltip.
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
         calculateScaleDistance();
         FORMATTER_CONFIDENCE.setMaximumFractionDigits(configuration.getNumberOfDigitsAfterCommaForConfidenceValues());
         FORMATTER_BRANCH_LENGTH
@@ -11597,6 +11600,127 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return max;
+    }
+
+    /** Whether the point is inside the OVERVIEW box, which floats over the viewport and -- in both RIGHT
+     *  placements -- sits exactly where the alignment window is drawn. Something painted on top of the alignment
+     *  hides it, so a readout for the residue underneath would describe a cell the user cannot even see. */
+    private boolean isOverFloatingOverlay(final int x, final int y) {
+        if (!isOvOn() || (getOvMaxWidth() <= 0) || (getOvMaxHeight() <= 0)) {
+            return false;
+        }
+        final Rectangle vis = getVisibleRect();
+        // the overview is positioned in VIEWPORT coordinates, so compare against the scrolled viewport origin
+        final int ox = vis.x + getOvXPosition();
+        final int oy = vis.y + getOvYPosition();
+        return (x >= ox) && (x < (ox + getOvMaxWidth())) && (y >= oy) && (y < (oy + getOvMaxHeight()));
+    }
+
+    /** For tests: {x, y, w, h} of the overview box in panel coordinates, or null when it is not drawn. */
+    int[] floatingOverlayRectForTest() {
+        if (!isOvOn() || (getOvMaxWidth() <= 0) || (getOvMaxHeight() <= 0)) {
+            return null;
+        }
+        final Rectangle vis = getVisibleRect();
+        return new int[] { vis.x + getOvXPosition(), vis.y + getOvYPosition(), Math.round(getOvMaxWidth()),
+                           Math.round(getOvMaxHeight()) };
+    }
+
+    /** One cell of the alignment display: which tip's row, and which alignment column (0-based). */
+    static final class MsaCell {
+
+        final PhylogenyNode _tip;
+        final int           _column;
+
+        MsaCell(final PhylogenyNode tip, final int column) {
+            _tip = tip;
+            _column = column;
+        }
+    }
+
+    /**
+     * The alignment cell under a device point, or null when the point is not over a drawn residue.
+     * <p>
+     * Deliberately mirrors {@code paintMsaTrack}'s geometry term for term -- same origin
+     * ({@code annotationColumnsEndX() + MSA_TRACK_GAP}), same column width, same window offset, same per-tip row
+     * band -- because a hit-test that drifts from what is painted is a readout that lies. {@code MsaHitTestTest}
+     * pins the two together by hit-testing the centre of a painted cell.
+     * <p>
+     * Cheap by construction: the column is arithmetic, and the row is the same order of scan the panel already runs
+     * on every mouse move in {@link #findNode}.
+     */
+    MsaCell msaCellAt(final int x, final int y) {
+        if (!msaShown() || isOverFloatingOverlay(x, y)) {
+            return null;
+        }
+        final float cw = getOptions().getMsaColumnWidth();
+        if (cw <= 0) {
+            return null;
+        }
+        final float origin_x = annotationColumnsEndX() + MSA_TRACK_GAP;
+        final int visible = msaVisibleColumns();
+        // The paint places cell i at Math.round(origin_x + i*cw); origin_x is fractional, so a plain division does
+        // NOT invert it -- rounding shifts a boundary by up to a pixel, and that pixel column would resolve to the
+        // neighbouring cell (naming the wrong residue). Start from the division, then settle on the cell whose
+        // ROUNDED span actually contains x.
+        int i = -1;
+        final int guess = (int) Math.floor((x - origin_x) / cw);
+        for (int cand = guess - 1; cand <= (guess + 1); ++cand) {
+            if ((cand < 0) || (cand >= visible)) {
+                continue;
+            }
+            final int left = Math.round(origin_x + (cand * cw));
+            final int right = Math.round(origin_x + ((cand + 1) * cw));
+            if ((x >= left) && (x < right)) {
+                i = cand;
+                break;
+            }
+        }
+        if (i < 0) {
+            return null;
+        }
+        final int column = msaColumnOffset() + i;
+        if ((column < 0) || (column >= alignmentLength())) {
+            return null;
+        }
+        final float pad = getYdistance();
+        for (final PhylogenyNode tip : visibleExternalTips()) {
+            if (!tip.getNodeData().isHasSequence()
+                    || !tip.getNodeData().getSequence().isMolecularSequenceAligned()) {
+                continue;
+            }
+            final int cy = Math.round(tip.getYcoord() - pad);
+            final int cell_h = Math.max(1, Math.round(tip.getYcoord() + pad) - cy);
+            if ((y >= cy) && (y < (cy + cell_h))) {
+                final String mol = tip.getNodeData().getSequence().getMolecularSequence();
+                return ForesterUtil.isEmpty(mol) || (column >= mol.length()) ? null : new MsaCell(tip, column);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The alignment display's residue readout: hovering a cell names the alignment column, the residue's own
+     * ungapped number within that sequence, and what the residue IS (letter, full name, colour class, and for an
+     * amino acid its Kyte-Doolittle hydropathy).
+     * <p>
+     * A Swing tooltip rather than a painted overlay ON PURPOSE. Swing asks for this text only when it is about to
+     * show or update a tooltip, and draws it in its own popup -- so the canvas is never repainted. A hover repaint
+     * costs 2-3.6 ms (measured for the focus glow); assembling this text costs microseconds.
+     */
+    @Override
+    public String getToolTipText(final java.awt.event.MouseEvent event) {
+        if (event == null) {
+            return null;
+        }
+        final MsaCell cell = msaCellAt(event.getX(), event.getY());
+        if (cell == null) {
+            return null; // not over the alignment -> no tooltip at all (the canvas has no other tooltip)
+        }
+        return ResidueInfo.describeCell(cell._tip.getName(),
+                                        cell._tip.getNodeData().getSequence().getMolecularSequence(),
+                                        cell._column,
+                                        msaIsNucleotide());
     }
 
     /** The MSA window's total pixel width RESERVED to the right of the annotation columns (0 when not shown). The

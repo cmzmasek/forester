@@ -251,6 +251,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("MSA hit test: ");
+        if (org.forester.archaeopteryx.MsaHitTestTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Residue info (MSA readout): ");
+        if (org.forester.archaeopteryx.ResidueInfoTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("MSA colors: ");
         if (org.forester.archaeopteryx.MsaColorsTest.test()) {
             System.out.println("OK.");

@@ -114,6 +114,16 @@ final class AlgorithmReferences {
                         + "standard A/C/G/T(U) convention; gaps are left blank. The residue-colouring conventions follow "
                         + "Jalview: Waterhouse AM, Procter JB, Martin DMA, Clamp M, Barton GJ (2009): \"Jalview Version 2 "
                         + "-- a multiple sequence alignment editor and analysis workbench\", Bioinformatics 25(9):1189–1191." ) );
+        refs.add( new Reference( "Residue hydropathy in the alignment readout (hover a residue in the alignment display)",
+                "Hovering a residue of the alignment display reports its alignment column, its number within that "
+                        + "sequence's own ungapped residues, its full name and physico-chemical class, and -- for an "
+                        + "amino acid -- its HYDROPATHY INDEX on the Kyte-Doolittle scale. That scale assigns each of "
+                        + "the 20 standard amino acids a value from +4.5 (isoleucine, most hydrophobic) to -4.5 "
+                        + "(arginine, most hydrophilic), derived from water-vapour transfer free energies and interior/"
+                        + "exterior residue distributions in known protein structures. No value is reported for a gap, "
+                        + "an ambiguity code (B, X, Z) or a non-standard residue, because the scale defines none. "
+                        + "Kyte J, Doolittle RF (1982): \"A simple method for displaying the hydropathic character of a "
+                        + "protein\", Journal of Molecular Biology 157(1):105-132, doi:10.1016/0022-2836(82)90515-0." ) );
         refs.add( new Reference( "Node age bars / spindles (HPD) (Settings → Overlays → Data Overlays)",
                 "On a dated (time-calibrated) phylogram, draws each internal node's divergence-time uncertainty from its "
                         + "phyloXML date -- the point estimate (median/mean height) and the 95% Highest Posterior Density "
