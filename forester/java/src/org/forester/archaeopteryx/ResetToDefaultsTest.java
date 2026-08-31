@@ -283,6 +283,15 @@ public final class ResetToDefaultsTest {
                     if ( !tp.hasAnnotationColumns() ) {
                         fail( ok, "precondition: annotation columns should be active before reset" );
                     }
+                    // clade annotations are per-tab display state exactly like the columns, so a reset owes them too
+                    tp.setCladeBands( "genus", TreePanel.CLADE_VIS.BARS, false,
+                                      TreePanel.CLADE_LABEL_ANGLE.VERTICAL );
+                    // assert on the SPECS, not on placed bands: this fixture's taxonomy does not resolve offline,
+                    // so hasCladeBands() would be false and the check below would prove nothing
+                    if ( tp.cladeLevelSpecCountForTest() != 1 ) {
+                        fail( ok, "precondition: one clade level should be configured before reset, got "
+                                + tp.cladeLevelSpecCountForTest() );
+                    }
                     // the same chooser assigns which properties go in the tip LABEL, so a reset owes them too
                     tp.setLabelPropertyRefs( java.util.Arrays.asList( "data:sz" ) );
                     if ( tp.getLabelPropertyRefs() == null ) {
@@ -393,6 +402,12 @@ public final class ResetToDefaultsTest {
                     if ( tp.getLabelPropertyRefs() != null ) {
                         fail( ok, "the label-field selection must be cleared by reset, got "
                                 + tp.getLabelPropertyRefs() );
+                    }
+                    // 3f-quater. per-tab clade annotations cleared. Only assertable when the fixture tree could
+                    // actually place bands at that rank -- otherwise there was nothing to clear and nothing to prove.
+                    if ( ( tp.cladeLevelSpecCountForTest() != 0 ) || tp.hasCladeBands() ) {
+                        fail( ok, "clade annotations must be cleared by reset, still "
+                                + tp.cladeLevelSpecCountForTest() + " level(s), ranks " + tp.cladeLevelRanks() );
                     }
                     // 3g. persisted settings file deleted (so the reset survives a restart)
                     if ( Files.exists( settings ) ) {

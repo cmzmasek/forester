@@ -42,7 +42,66 @@ public final class CladeLevelTest {
     }
 
     public static boolean test() {
-        return rankDepth() && ordering();
+        return rankDepth() && ordering() && clearAffordance();
+    }
+
+    /**
+     * The level-1 rank chooser's "remove the clade annotations" entry. Levels 2 and 3 always had a "(none)";
+     * level 1 did not, so once clades were annotated there was no way to take them off -- {@code clearCladeBands()}
+     * had no caller outside the tests. The entry is offered ONLY when there is something to remove, and it must not
+     * disturb the pre-selection of the last-used rank, whose index it shifts by one.
+     */
+    private static boolean clearAffordance() {
+        final String[] ranks = { "genus (12) (98%)", "family (5) (100%)", "order (2) (100%)" };
+        if ( MainFrame.cladeRankChoices( ranks, false ) != ranks ) {
+            return fail( "with nothing drawn, the chooser should offer the ranks unchanged" );
+        }
+        final String[] with = MainFrame.cladeRankChoices( ranks, true );
+        if ( ( with.length != ranks.length + 1 ) || !MainFrame.CLADE_LEVEL_CLEAR.equals( with[ 0 ] ) ) {
+            return fail( "with bands drawn, the \"remove\" entry should come FIRST, got "
+                    + java.util.Arrays.toString( with ) );
+        }
+        for ( int i = 0; i < ranks.length; i++ ) {
+            if ( !ranks[ i ].equals( with[ i + 1 ] ) ) {
+                return fail( "the ranks must keep their order after the \"remove\" entry, got "
+                        + java.util.Arrays.toString( with ) );
+            }
+        }
+        // the pre-selection looks the rank up IN THE MODEL SHOWN, so it has to survive the extra leading entry
+        if ( AptxUtil.indexOfRank( ranks, "family" ) != 1 ) {
+            return fail( "precondition: 'family' should be at index 1 without the remove entry" );
+        }
+        if ( AptxUtil.indexOfRank( with, "family" ) != 2 ) {
+            return fail( "'family' should shift to index 2 once the remove entry is prepended, got "
+                    + AptxUtil.indexOfRank( with, "family" ) );
+        }
+        // ...and the remove entry itself must never read as a rank (it starts with '(' so it has no bare prefix)
+        if ( AptxUtil.indexOfRank( with, "none" ) >= 0 ) {
+            return fail( "the \"remove\" entry must not be matchable as a rank" );
+        }
+        // A DESTRUCTIVE entry must never be what the dialog opens on. With the remove entry at index 0, a chooser
+        // that simply fell back to "index 0" would greet the user with "remove the clade annotations" pre-selected
+        // -- press OK expecting to confirm a rank and the annotations are gone.
+        if ( MainFrame.cladeRankPreselectIndex( with, null, null ) != 1 ) {
+            return fail( "with nothing remembered, the chooser must open on the first real RANK, not the remove "
+                    + "entry, got index " + MainFrame.cladeRankPreselectIndex( with, null, null ) );
+        }
+        if ( MainFrame.cladeRankPreselectIndex( with, "family", null ) != 2 ) {
+            return fail( "the remembered rank should win, got index "
+                    + MainFrame.cladeRankPreselectIndex( with, "family", null ) );
+        }
+        if ( MainFrame.cladeRankPreselectIndex( with, null, "order" ) != 3 ) {
+            return fail( "with nothing remembered, the rank currently DRAWN should be pre-selected, got index "
+                    + MainFrame.cladeRankPreselectIndex( with, null, "order" ) );
+        }
+        if ( MainFrame.cladeRankPreselectIndex( ranks, null, null ) != 0 ) {
+            return fail( "without the remove entry, index 0 is a perfectly good default" );
+        }
+        // degenerate: the remove entry with no ranks behind it must not index past the end
+        if ( MainFrame.cladeRankPreselectIndex( new String[] { MainFrame.CLADE_LEVEL_CLEAR }, null, null ) != 0 ) {
+            return fail( "a one-entry model must not index out of bounds" );
+        }
+        return true;
     }
 
     private static boolean rankDepth() {

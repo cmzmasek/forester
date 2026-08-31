@@ -7741,6 +7741,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Whether a taxonomic-rank legend is currently available to show. */
+    /** For tests: the rank legend's title ("Taxonomy: &lt;rank&gt;"), or null when there is no rank legend. Which
+     *  rank the on-screen key actually describes is otherwise invisible from outside. */
+    String rankLegendTitleForTest() {
+        return _rank_legend_title;
+    }
+
     final boolean hasRankLegend() {
         return (_rank_legend != null) && !_rank_legend.isEmpty();
     }
@@ -9038,12 +9044,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return n;
     }
 
+    /** For tests: how many clade LEVELS are configured, regardless of whether any band could actually be placed.
+     *  The specs are stored even when the tree resolves nothing at that rank, so this is the honest way to assert
+     *  that a reset dropped the configuration on a fixture whose taxonomy is not resolvable offline. */
+    int cladeLevelSpecCountForTest() {
+        return (_clade_level_specs == null) ? 0 : _clade_level_specs.size();
+    }
+
     final void clearCladeBands() {
         _clade_levels = null;
         _clade_level_specs = null;
-        // drop the color key with the bands -- unless a branch rank-colorization still owns the legend
         if (_branch_rank_colorize_rank == null) {
-            clearRankLegend();
+            clearRankLegend(); // nothing else owns the color key -> it goes with the bands
+        }
+        else {
+            // A branch rank-colorization still owns the legend, but the CLADE bands overwrote its contents
+            // (updateCladeBandLegend replaces the rows and the title). Leaving those rows behind would show a key
+            // for marks that are gone, at a rank the branches are not colored by -- and a color picked on one of
+            // them would be stored against the BRANCH rank, because currentRankLegendRank() falls back to it once
+            // the bands are gone. Re-derive the branch legend instead.
+            recolorBranchesByRank(_branch_rank_colorize_rank);
         }
     }
 

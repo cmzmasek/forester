@@ -59,7 +59,8 @@ public final class RankLegendTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return testRankColorizeLegend() && testCladeBandLegend() && testSingleMemberSkip() && testLabelAngle();
+        return testRankColorizeLegend() && testCladeBandLegend() && testLegendHandBack() && testSingleMemberSkip()
+                && testLabelAngle();
     }
 
     /** Clade-bar/bracket label ANGLE (root-left): HORIZONTAL / DIAGONAL labels extend rightward and reserve more
@@ -274,6 +275,10 @@ public final class RankLegendTest {
                     ok[ 0 ] = false;
                     System.out.println( "  clade-band legend was not cleared with the bands" );
                 }
+                // ...but when a BRANCH rank-colorization still owns the legend, clearing the bands must hand it
+                // back rather than leave the clade rows on screen. The bands overwrite the legend contents, so
+                // keeping them would show a key at a rank the branches are NOT colored by -- and a colour picked
+                // on one of those rows would be stored against the branch rank instead.
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];
@@ -493,6 +498,108 @@ public final class RankLegendTest {
     }
 
     /** Three internal "order" nodes, each over two leaves, so colorizing by rank "order" yields 3 colors. */
+    /**
+     * Removing the clade marks while a BRANCH rank-colorization is active must hand the colour key back to that
+     * colorization, not leave the clade rows on screen.
+     * <p>
+     * The bands do not merely add a legend, they OVERWRITE it ({@code updateCladeBandLegend} replaces the rows and
+     * the title). So a naive "keep the legend if something else owns it" leaves a key describing marks that are
+     * gone, at a rank the branches are not coloured by -- and because {@code currentRankLegendRank()} falls back to
+     * the branch rank once the bands are gone, a colour picked on one of those stale rows is stored against the
+     * WRONG rank. Unreachable until the "stop drawing the clade marks" entry gave {@code clearCladeBands()} its
+     * first GUI caller.
+     */
+    private static boolean testLegendHandBack() {
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { twoRankTree() }, conf, "handback" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                if ( tp.colorByRank( "class" ) < 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  precondition: the fixture must colorize branches at rank 'class'" );
+                    return;
+                }
+                if ( !"Taxonomy: class".equals( tp.rankLegendTitleForTest() ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  precondition: branch colorization should own a 'class' legend, got "
+                            + tp.rankLegendTitleForTest() );
+                    return;
+                }
+                if ( tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS ) < 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  precondition: the fixture must place clade bands at rank 'order'" );
+                    return;
+                }
+                if ( !"Taxonomy: order".equals( tp.rankLegendTitleForTest() ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  precondition: the clade bands should have taken the legend over, got "
+                            + tp.rankLegendTitleForTest() );
+                    return;
+                }
+                tp.clearCladeBands();
+                if ( !tp.hasRankLegend() ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  the branch colorization still needs its legend after the marks go" );
+                }
+                else if ( !"Taxonomy: class".equals( tp.rankLegendTitleForTest() ) ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  removing the clade marks must hand the legend back to the BRANCH rank, "
+                            + "got " + tp.rankLegendTitleForTest() );
+                }
+            } );
+            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Two resolvable ranks: orders nested inside classes, so one rank can colour the branches while the other
+     *  draws the clade marks -- which is what makes the legend hand-back observable at all. */
+    private static Phylogeny twoRankTree() {
+        final PhylogenyNode root = new PhylogenyNode();
+        int id = 0;
+        final String[][] classes = { { "Mammalia", "Chiroptera", "Rodentia" },
+                                     { "Aves", "Passeriformes", "Falconiformes" } };
+        for( final String[] grp : classes ) {
+            final PhylogenyNode class_node = new PhylogenyNode();
+            class_node.getNodeData().setTaxonomy( rankedTaxon( grp[ 0 ], "class" ) );
+            for( int o = 1; o < grp.length; ++o ) {
+                final PhylogenyNode order_node = new PhylogenyNode();
+                order_node.getNodeData().setTaxonomy( rankedTaxon( grp[ o ], "order" ) );
+                for( int c = 0; c < 2; ++c ) {
+                    final PhylogenyNode leaf = new PhylogenyNode();
+                    leaf.setName( "n" + ( id++ ) );
+                    order_node.addAsChild( leaf );
+                }
+                class_node.addAsChild( order_node );
+            }
+            root.addAsChild( class_node );
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    private static Taxonomy rankedTaxon( final String name, final String rank ) {
+        final Taxonomy tax = new Taxonomy();
+        tax.setScientificName( name );
+        try {
+            tax.setRank( rank ); // validated against the controlled rank vocabulary
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        return tax;
+    }
+
     private static Phylogeny orderTree() {
         final PhylogenyNode root = new PhylogenyNode();
         int id = 0;

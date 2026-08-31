@@ -385,6 +385,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     private Phylogeny _species_tree;
     /** The "no extra level" entry in the optional level-2 / level-3 rank choosers. */
     static final String CLADE_LEVEL_NONE = "(none)";
+    /** The level-1 rank chooser's "turn it off" entry. Levels 2 and 3 have always had a "(none)", but level 1 did
+     *  not, so once clades were annotated there was no way to remove them: {@link TreePanel#clearCladeBands()}
+     *  existed with no caller outside the tests. Offered ONLY when there are bands to remove, so the entry never
+     *  sits in the list as a no-op. Deliberately does not start with a bare rank word, so
+     *  {@link AptxUtil#indexOfRank} cannot mistake it for one.
+     *  <p>
+     *  The wording is deliberately about DRAWING: it removes the boxes/bars/brackets, and does NOT undo the
+     *  internal-node taxonomies that "Also write the clade taxa into the tree" may have written (those are tree
+     *  data, with their own provenance sentence, and are undone with Undo). */
+    static final String CLADE_LEVEL_CLEAR = "(none) — stop drawing the clade marks";
     // the rank last chosen in "Annotate Clades by Rank", pre-selected next time (per session); null = first use
     private String _last_clade_rank;
     final ProcessPool _process_pool;
@@ -1644,8 +1654,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final String[] ranks = AptxUtil.getRankChoices(AptxUtil.getRankCounts(phy),
                 AptxUtil.getRankCoverageCounts(phy), phy.getNumberOfExternalNodes());
-        final JComboBox<String> rank_box = new JComboBox<>(ranks);
-        preselectLastCladeRank(rank_box, ranks);
+        final String[] choices = cladeRankChoices(ranks, tp.hasCladeBands());
+        final JComboBox<String> rank_box = new JComboBox<>(choices);
+        // Preselect against the model actually shown -- the "remove" entry shifts every rank's index by one --
+        // and fall back to the rank currently DRAWN (finest first) when this session has no remembered rank.
+        final List<String> drawn = tp.cladeLevelRanks();
+        rank_box.setSelectedIndex(cladeRankPreselectIndex(choices, _last_clade_rank,
+                                                          drawn.isEmpty() ? null : drawn.get(0)));
         // Levels 2 and 3: optional extra ranks, drawn as nested bar/bracket columns outside the first. Each entry
         // has its own label angle -- an outer rank has few, long names worth reading straight, inner ones must stay
         // narrow. Which rank ends up where is NOT taken from this order: CladeLevel.order sorts them finest-first.
@@ -1701,6 +1716,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JCheckBox write_cb = new JCheckBox("Also write the clade taxa into the tree (rank + NCBI id; undoable)",
                 false);
         final JCheckBox overwrite_cb = new JCheckBox("    ...overwriting existing internal-node taxonomies", false);
+        // "stop drawing" has no rank to write, so the write options are meaningless with it selected -- grey them
+        // out rather than accept the contradiction and drop it silently
+        final java.awt.event.ActionListener syncWrite = e -> {
+            final boolean removing = CLADE_LEVEL_CLEAR.equals(rank_box.getSelectedItem());
+            write_cb.setEnabled(!removing);
+            overwrite_cb.setEnabled(!removing);
+        };
+        rank_box.addActionListener(syncWrite);
+        syncWrite.actionPerformed(null);
         final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
         panel.add(new JLabel("Annotate clades by rank:"));
         panel.add(rank_box);
@@ -1722,6 +1746,26 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         panel.add(overwrite_cb);
         if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+        if (CLADE_LEVEL_CLEAR.equals(rank_box.getSelectedItem())) {
+            // "remove" wins over every other control in the dialog -- there is no rank to draw or report. The write
+            // checkboxes are disabled while this entry is selected, so nothing is silently dropped here.
+            final TreePanel.CLADE_VIS was = tp.getCladeBandsMode();
+            tp.clearCladeBands();
+            // Only BARS/BRACKETS reserved an extent to reclaim, and only in a horizontal rectangular layout -- the
+            // same gate reportCladeBands uses. Re-fitting otherwise would throw away the user's zoom for nothing,
+            // or (root-top/bottom) re-fit the axis that never carried the marks.
+            if ((was == TreePanel.CLADE_VIS.BARS) || (was == TreePanel.CLADE_VIS.BRACKETS)) {
+                if (tp.isVerticalOrientation()) {
+                    getControlPanel().fitHeight();
+                }
+                else if (!tp.isRadialLayout()) {
+                    getControlPanel().fitWidth();
+                }
+            }
+            tp.repaint();
+            repaint();
             return;
         }
         final boolean write = write_cb.isSelected();
@@ -1778,10 +1822,25 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return sb.toString();
     }
 
+    /**
+     * The level-1 rank chooser's entries: the tree's ranks, preceded by {@link #CLADE_LEVEL_CLEAR} when there is
+     * something to remove. Returns {@code ranks} itself when there is not, so a first invocation shows only ranks.
+     */
+    static String[] cladeRankChoices(final String[] ranks, final boolean has_clade_bands) {
+        if (!has_clade_bands || (ranks == null)) {
+            return ranks;
+        }
+        final String[] out = new String[ranks.length + 1];
+        out[0] = CLADE_LEVEL_CLEAR;
+        System.arraycopy(ranks, 0, out, 1, ranks.length);
+        return out;
+    }
+
     /** The bare rank from a chooser entry, which may carry a "(count) (coverage)" suffix. */
     private static String bareRank(final String choice) {
-        if (ForesterUtil.isEmpty(choice) || CLADE_LEVEL_NONE.equals(choice)) {
-            return null;
+        if (ForesterUtil.isEmpty(choice) || CLADE_LEVEL_NONE.equals(choice)
+                || CLADE_LEVEL_CLEAR.equals(choice)) {
+            return null; // neither "none" entry is a rank (the caller handles CLEAR before it gets here)
         }
         final int paren = choice.indexOf('(');
         return (paren > 0) ? choice.substring(0, paren).trim() : choice.trim();
@@ -1823,15 +1882,25 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Pre-selects in {@code rank_box} the rank last used in "Annotate Clades by Rank" (this session), so a
-     * repeat invocation defaults to the same rank. A no-op on first use, or when the remembered rank is
-     * absent from the current tree's choices.
+     * The entry the level-1 rank chooser should open on: the rank last used this session, else the rank currently
+     * DRAWN, else the first real rank.
+     * <p>
+     * The last clause is the point. {@link #CLADE_LEVEL_CLEAR} sits at index 0 whenever there are annotations to
+     * remove, so falling back to "index 0" would open the dialog with a DESTRUCTIVE action pre-selected -- press
+     * OK expecting to confirm a rank and the annotations are gone. A default must never be the destructive choice.
      */
-    private void preselectLastCladeRank(final JComboBox<String> rank_box, final String[] ranks) {
-        final int idx = AptxUtil.indexOfRank(ranks, _last_clade_rank);
-        if (idx >= 0) {
-            rank_box.setSelectedIndex(idx);
+    static int cladeRankPreselectIndex(final String[] choices, final String last_rank, final String drawn_rank) {
+        if ((choices == null) || (choices.length == 0)) {
+            return 0;
         }
+        int idx = AptxUtil.indexOfRank(choices, last_rank);
+        if (idx < 0) {
+            idx = AptxUtil.indexOfRank(choices, drawn_rank);
+        }
+        if (idx < 0) {
+            idx = CLADE_LEVEL_CLEAR.equals(choices[0]) ? Math.min(1, choices.length - 1) : 0;
+        }
+        return idx;
     }
 
     /**
@@ -3241,6 +3310,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
                 tp.resetNextstrainBranchModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
                 tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Fields selection (fresh install has none)
+                tp.clearCladeBands(); // per-tab: likewise the Tools>Annotate Clades by Rank marks + their legend
             }
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
