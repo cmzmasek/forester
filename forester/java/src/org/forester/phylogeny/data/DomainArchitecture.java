@@ -40,6 +40,7 @@ public class DomainArchitecture implements PhylogenyData {
     private static final BigDecimal              INCREASE_KEY  = new BigDecimal( "0.00001" );
     private SortedMap<BigDecimal, ProteinDomain> _domains;
     private int                                  _total_length;
+    private int                                  _ignored_domains;
 
     public DomainArchitecture() {
         init();
@@ -145,6 +146,26 @@ public class DomainArchitecture implements PhylogenyData {
     private void init() {
         _domains = new TreeMap<BigDecimal, ProteinDomain>();
         _total_length = 0;
+        _ignored_domains = 0;
+    }
+
+    /**
+     * How many {@code <domain>} elements were DROPPED while reading this architecture because they could not be
+     * turned into a {@link ProteinDomain} -- a zero-or-negative length ({@code from >= to}), a missing or
+     * unparseable coordinate. A single malformed domain used to abort the entire file load, which cost the user
+     * the whole tree over one cosmetic annotation; it is now skipped and counted here so the load can finish and
+     * the count can still be reported.
+     * <p>
+     * This is a PARSE-TIME artifact, not part of the data: it is never written back to phyloXML, and {@code copy()}
+     * does not carry it (a copy is a new architecture, not a re-read of a file).
+     */
+    public int getIgnoredDomainCount() {
+        return _ignored_domains;
+    }
+
+    /** @see #getIgnoredDomainCount() */
+    public void incrementIgnoredDomainCount() {
+        ++_ignored_domains;
     }
 
     /**

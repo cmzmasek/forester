@@ -162,6 +162,7 @@ public final class MainFrameApplication extends MainFrame {
             // the frame is realized (deferred), so the dialog never appears mid-construction
             final Phylogeny[] loaded = phys;
             javax.swing.SwingUtilities.invokeLater(() -> {
+                reportIgnoredDomains(loaded);
                 offerLabelExtraction(loaded);
                 offerTipDateExtraction();
             });
@@ -1361,6 +1362,9 @@ public final class MainFrameApplication extends MainFrame {
                                             "Warning: Possible Error in New Hampshire Formatted Data",
                                             JOptionPane.WARNING_MESSAGE);
                         }
+                        // report BEFORE the offers: a dropped domain is about the file that was just read,
+                        // so it belongs next to the read, not after two unrelated questions
+                        reportIgnoredDomains(phys);
                         offerLabelExtraction(phys);
                         offerTipDateExtraction(); // before the ultrametric offer: extracting dates preempts it
                         offerTreatAsTimeTree(); // format-agnostic: offer for an ultrametric (undated) tree

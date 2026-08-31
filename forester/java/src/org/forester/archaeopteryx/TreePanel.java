@@ -85,6 +85,7 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
@@ -12179,6 +12180,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // "de-selected" and is not confused with the coloured selection whatever the found colour is set to).
     private static final int   BRANCH_HOVER_ALPHA  = 95;
     private static final Color BRANCH_HOVER_REMOVE = new Color(90, 90, 90, 135); // click would DESELECT this clade
+    // The FOCUS GLOW: concentric translucent discs, largest/faintest first, so the overlap accumulates toward the
+    // centre and reads as a halo rather than as flat rings. Static on purpose -- hover is transient, so an animation
+    // ramp would lag the pointer and barely play, and a pulsing hover would compete with the breathing halo that
+    // already marks SEARCH HITS (paintFoundNodeHalos).
+    private static final float[] HOVER_GLOW_RADII   = { 1.65f, 1.15f, 0.75f };
+    private static final int[]   HOVER_GLOW_ALPHAS  = { 34, 44, 58 };
+    private static final int     HOVER_GLOW_MIN_DIA = 18;                        // readable on a tiny default node
+    private static final Color   HOVER_GLOW_ACCENT_FALLBACK = new Color(0x26, 0x75, 0xbf);
 
     /** Sets the hover-preview target -- a single node ({@code subtree}=false, drawn as one marker on the node)
      *  or a branch ({@code subtree}=true, drawn on the subtree's tips) -- repainting only on an actual change
@@ -12192,10 +12201,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** Applies a hover target, honoring the just-clicked suppression: the target just clicked stays un-previewed
+    /** Test/probe hook: drive the focus glow directly, without synthesizing mouse motion. */
+    void setHoverForTest(final PhylogenyNode node, final boolean subtree) {
+        setHover(node, subtree);
+    }
+
+    /** Applies a hover target, honoring the just-clicked suppression: the target just clicked stays un-glowed
      *  until the pointer moves off it (so it doesn't instantly flip to the "will be removed" grey). */
     private void applyHover(final PhylogenyNode node, final boolean subtree) {
-        if (node == _click_suppressed) {
+        // The suppression exists ONLY to stop a just-selected node flipping to the grey "will be removed" under a
+        // stationary pointer -- a selection-semantics problem. Outside Select-Node(s) mode the glow is a neutral
+        // focus mark with nothing to flip, so honouring the suppression there would just blank the focus ring for
+        // no reason (shift-click arms it in EVERY mode, not only Select).
+        if ((node == _click_suppressed)
+                && (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES)) {
             setHover(null, false);
         } else {
             _click_suppressed = null;
@@ -12219,55 +12238,96 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * On-screen preview of what a click would select/deselect: draws a translucent marker on the affected
-     * node(s) so the pending click's effect is visible before committing. For a hovered branch the marks land
-     * on the subtree's tips; for a hovered single node (leaf or internal) it's one mark on that node. Direction
-     * aware -- targets that would be ADDED get the found-selection colour; when a click would DESELECT (the
-     * node, or a fully-selected clade) they get a distinct, larger "remove" grey. No-op off screen (exports),
-     * when not hovering, when not in Select-Node(s) mode, or for a node left over from a swapped-out tree.
+     * The FOCUS GLOW: a soft halo around the node under the pointer, drawn in EVERY click-to mode.
+     * <p>
+     * The hand cursor says "something here is clickable"; it never says WHICH node, which on a dense tree is the
+     * thing you actually need -- most of all in the modes that reroot or delete. Before this, on-canvas hover
+     * feedback existed in Select-Node(s) mode alone.
+     * <p>
+     * There is exactly ONE circle on the hovered node in every mode. In Select-Node(s) the glow CARRIES the
+     * meaning the old flat preview disc used to (found colour = a click adds, grey = a click removes) instead of
+     * drawing a second disc inside it; elsewhere it is a neutral accent, so a focus ring can never be mistaken for
+     * a selection state. Hovering a BRANCH additionally keeps the flat per-tip marks, because one glow cannot say
+     * "these forty tips".
+     * <p>
+     * Screen only -- hover is transient state and must never reach an export.
      */
     private void paintHoverPreview(final Graphics2D g, final boolean to_screen) {
         // _hover_node is always in the currently-displayed tree: it is only set on hover, and any tree swap
         // clears it via setNodeInPreorderToNull (the shared structural-change chokepoint).
-        if (!to_screen || (_hover_node == null) || _hover_node.isCollapse()
-                || (getControlPanel().getActionWhenNodeClicked() != NodeClickAction.SELECT_NODES)) {
-            return; // no hover circle on a collapsed triangle (its own fill/outline already shows selection)
+        if (!to_screen || (_hover_node == null)) {
+            return;
         }
+        final boolean select_mode = getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES;
         final Set<Long> found = getFoundNodes0();
-        final boolean deselect;                  // whether a click here would DESELECT rather than add
-        final java.util.List<PhylogenyNode> marks;
-        if (_hover_subtree) {
-            final java.util.List<PhylogenyNode> all = _hover_node.getAllExternalDescendants();
-            if (all.isEmpty()) {
-                return;
+        boolean deselect = false;                // whether a click here would DESELECT rather than add
+        java.util.List<PhylogenyNode> marks = null;
+        if (select_mode) {
+            if (_hover_subtree) {
+                final java.util.List<PhylogenyNode> all = _hover_node.getAllExternalDescendants();
+                if (all.isEmpty()) {
+                    return;
+                }
+                deselect = allTipsSelected(all); // direction over ALL tips (matches what a click toggles)
+                marks = new java.util.ArrayList<PhylogenyNode>();
+                collectVisibleTips(_hover_node, marks); // only laid-out tips (skip collapsed sub-clades' stale coords)
             }
-            deselect = allTipsSelected(all); // direction over ALL tips (matches what a click toggles)
-            marks = new java.util.ArrayList<PhylogenyNode>();
-            collectVisibleTips(_hover_node, marks); // only laid-out tips (skip collapsed sub-clades' stale coords)
-        } else {
-            deselect = (found != null) && found.contains(_hover_node.getId()); // a click toggles just this node
-            marks = java.util.Collections.singletonList(_hover_node);
+            else if (_hover_node.isCollapse()) {
+                // A collapsed clade is one unit: mouseClicked routes a selection click on the triangle to
+                // selectSubtreeTips, which toggles its HIDDEN TIPS -- the clade root's own id is never in the
+                // found set. Reading the root here would show "a click adds" over a fully-selected clade that
+                // the click is about to clear.
+                deselect = allTipsSelected(_hover_node.getAllExternalDescendants());
+            }
+            else {
+                deselect = (found != null) && found.contains(_hover_node.getId()); // a click toggles just this node
+            }
         }
-        final Color mark;
-        if (deselect) {
-            mark = BRANCH_HOVER_REMOVE; // muted grey (its own alpha) -- "will be de-selected"
-        } else {
-            final Color f = getTreeColorSet().getFoundColor0(); // "will be added" -> preview in the found colour
-            mark = new Color(f.getRed(), f.getGreen(), f.getBlue(), BRANCH_HOVER_ALPHA);
-        }
-        // the remove mark lands on an already-selected node (with its solid found marker) so it is drawn larger
-        // to cover it; the add mark sits on a bare node and reads fine smaller
-        final int shape = getOptions().getDefaultNodeShapeSize();
-        final int d = deselect ? Math.max(10, shape + 4) : Math.max(6, shape);
         final Color saved = g.getColor();
-        g.setColor(mark);
-        for (final PhylogenyNode t : marks) {
-            // a select marks only the not-yet-selected targets; a deselect (or the single hovered node) marks all
-            if (!_hover_subtree || deselect || (found == null) || !found.contains(t.getId())) {
-                g.fillOval(Math.round(t.getXcoord()) - (d / 2), Math.round(t.getYcoord()) - (d / 2), d, d);
+        paintFocusGlow(g, _hover_node, hoverGlowColor(select_mode, deselect));
+        if (marks != null) {
+            // the clade's tips: the glow marks the clade ROOT, these say which tips the click will take
+            final Color f = getTreeColorSet().getFoundColor0();
+            g.setColor(deselect ? BRANCH_HOVER_REMOVE
+                    : new Color(f.getRed(), f.getGreen(), f.getBlue(), BRANCH_HOVER_ALPHA));
+            final int shape = getOptions().getDefaultNodeShapeSize();
+            // the remove mark lands on an already-selected node (with its solid found marker) so it is drawn larger
+            // to cover it; the add mark sits on a bare node and reads fine smaller
+            final int d = deselect ? Math.max(10, shape + 4) : Math.max(6, shape);
+            for (final PhylogenyNode t : marks) {
+                // a select marks only the not-yet-selected targets; a deselect marks all
+                if (deselect || (found == null) || !found.contains(t.getId())) {
+                    g.fillOval(Math.round(t.getXcoord()) - (d / 2), Math.round(t.getYcoord()) - (d / 2), d, d);
+                }
             }
         }
         g.setColor(saved);
+    }
+
+    /** The colour the focus glow takes -- see {@link #paintHoverPreview}. */
+    private Color hoverGlowColor(final boolean select_mode, final boolean deselect) {
+        if (select_mode) {
+            if (deselect) {
+                return BRANCH_HOVER_REMOVE; // "a click here will de-select"
+            }
+            return getTreeColorSet().getFoundColor0(); // "a click here will select"
+        }
+        final Color accent = UIManager.getColor("Component.accentColor");
+        return (accent != null) ? accent : HOVER_GLOW_ACCENT_FALLBACK;
+    }
+
+    /**
+     * Draws the halo itself: concentric translucent discs, largest and faintest first, so their overlap builds up
+     * toward the centre. The node keeps showing through -- this marks a node, it must not hide it.
+     */
+    private void paintFocusGlow(final Graphics2D g, final PhylogenyNode node, final Color base) {
+        final int dia = Math.max(HOVER_GLOW_MIN_DIA, getOptions().getDefaultNodeShapeSize() * 3);
+        final int x = Math.round(node.getXcoord()), y = Math.round(node.getYcoord());
+        for (int i = 0; i < HOVER_GLOW_RADII.length; i++) {
+            g.setColor(new Color(base.getRed(), base.getGreen(), base.getBlue(), HOVER_GLOW_ALPHAS[i]));
+            final int d = Math.round(dia * HOVER_GLOW_RADII[i]);
+            g.fillOval(x - (d / 2), y - (d / 2), d, d);
+        }
     }
 
     /** Collects the marks to preview for {@code node}'s subtree: its currently-visible external tips only. A
@@ -12316,7 +12376,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_hover_node == null) {
             return false;
         }
-        if (_hover_subtree) {
+        if (_hover_subtree || _hover_node.isCollapse()) { // a collapsed clade toggles its tips -- see paintHoverPreview
             return allTipsSelected(_hover_node.getAllExternalDescendants());
         }
         final Set<Long> found = getFoundNodes0();
@@ -12812,10 +12872,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         showNodeDataPopup(e, node);
                     }
                 }
-                // in Select-Node(s) mode, preview the single node a click would toggle; otherwise no preview.
-                // A collapsed clade is excluded: a hover circle over its triangle is ugly and redundant -- the
-                // hand cursor shows it is clickable and the triangle's own fill/outline shows its selection state.
-                applyHover((select_mode && !node.isCollapse()) ? node : null, false);
+                // The focus glow marks the node under the pointer in EVERY mode -- the cursor says "clickable",
+                // the glow says WHICH. Collapsed clades included: they are clickable everywhere too, and a soft
+                // halo behind the triangle reads cleanly where the old flat disc over it did not.
+                applyHover(node, false);
             } else {
                 // not over a node: over a branch (Select-Node(s) mode) -> hand cursor + preview the subtree
                 final PhylogenyNode branch = select_mode ? findBranch(e.getX(), e.getY()) : null;

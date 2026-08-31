@@ -59,7 +59,20 @@ public class DomainArchitectureParser implements PhylogenyDataPhyloXmlParser {
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {
             final XmlElement child_element = element.getChildElement( i );
             if ( child_element.getQualifiedName().equals( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_DOMAIN ) ) {
-                architecure.addDomain( ( ProteinDomain ) ProteinDomainParser.getInstance().parse( child_element ) );
+                // A malformed domain is SKIPPED, not fatal. It used to abort the whole file load: ProteinDomain's
+                // constructor rejects from >= to with an unchecked IllegalArgumentException, which sails straight
+                // past this parser's checked-exception handling and out of the factory -- so one degenerate domain
+                // cost the user the entire tree, every other node, and every other domain beside it. The phyloXML
+                // schema constrains from/to only to nonNegativeInteger, so such a file is SCHEMA-VALID and the
+                // XSD-validating parser reaches exactly the same fate. A domain is a display annotation; the tree
+                // is the data, so the annotation is what gets dropped. The count is kept for the load-time report.
+                try {
+                    architecure
+                            .addDomain( ( ProteinDomain ) ProteinDomainParser.getInstance().parse( child_element ) );
+                }
+                catch ( final PhyloXmlDataFormatException | IllegalArgumentException e ) {
+                    architecure.incrementIgnoredDomainCount();
+                }
             }
         }
         return architecure;

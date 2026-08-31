@@ -106,6 +106,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.ws.seqdb.TaxonLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
@@ -1768,6 +1769,49 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     + "Try a different rank, or check that the tips carry resolvable taxonomic names.",
                     "Annotate Clades by Rank (" + rank + ")", JOptionPane.WARNING_MESSAGE);
         }
+    }
+
+    /**
+     * Counts the {@code <domain>} elements that were DROPPED while reading {@code phys} because they could not be
+     * turned into a protein domain (a zero-or-negative length, a missing or unparseable coordinate). Pure, so the
+     * accounting can be tested without a GUI. See {@link DomainArchitecture#getIgnoredDomainCount()}.
+     */
+    static int countIgnoredDomains(final Phylogeny[] phys) {
+        int n = 0;
+        if (phys == null) {
+            return 0;
+        }
+        for (final Phylogeny p : phys) {
+            if ((p == null) || p.isEmpty()) {
+                continue; // iteratorPreorder() THROWS on an empty tree, and a file can legitimately contain one
+            }
+            for (final PhylogenyNodeIterator it = p.iteratorPreorder(); it.hasNext();) {
+                final PhylogenyNode node = it.next();
+                if (node.getNodeData().isHasSequence()
+                        && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
+                    n += node.getNodeData().getSequence().getDomainArchitecture().getIgnoredDomainCount();
+                }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Load-time REPORT: a malformed protein domain no longer aborts the load (it is skipped -- see
+     * {@link org.forester.io.parsers.phyloxml.data.DomainArchitectureParser}), but silently losing an annotation
+     * would leave the user unable to tell whether the file or the program was at fault, so say it once, after the
+     * trees are on screen. Informational only -- there is nothing to decide.
+     */
+    void reportIgnoredDomains(final Phylogeny[] phys) {
+        final int n = countIgnoredDomains(phys);
+        if (n < 1) {
+            return;
+        }
+        JOptionPane.showMessageDialog(this,
+                n + " protein domain" + ((n == 1) ? " was" : "s were") + " ignored while reading this file.\n"
+                        + "A domain needs a positive length (its \"to\" must be greater than its \"from\")\n"
+                        + "and both coordinates present; the rest of the tree was read normally.",
+                "Malformed Protein Domains Ignored", JOptionPane.WARNING_MESSAGE);
     }
 
     /**

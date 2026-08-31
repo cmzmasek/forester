@@ -338,14 +338,17 @@ public final class NodeSelectionToolTest {
             fail( ok, "the preview should mark only the visible tips, got " + marks.size() );
         }
         render( tp ); // exercise the draw path -- must not throw
-        // ...and hovering the collapsed triangle ITSELF sets no preview (just the hand cursor)
+        // ...and hovering the collapsed triangle ITSELF now DOES take the focus glow. This reverses the original
+        // decision (a flat preview disc over the triangle was ugly and redundant): the glow is a soft halo BEHIND
+        // the triangle, which reads cleanly, and a collapsed clade is clickable in every mode so it deserves the
+        // same "which node is under the pointer" feedback as any other. See TreePanel.paintHoverPreview.
         final Point a_tri = new Point( Math.round( a.getXcoord() ), Math.round( a.getYcoord() ) );
         if ( tp.findNode( a_tri.x, a_tri.y ) != a ) {
             fail( ok, "test setup: the collapsed clade-root should be findable at its own coords" );
         }
         tp.mouseMoved( move( tp, a_tri ) );
-        if ( tp.hoverNodeForTest() != null ) {
-            fail( ok, "hovering a collapsed triangle must not set a hover preview (no circle over it)" );
+        if ( tp.hoverNodeForTest() != a ) {
+            fail( ok, "hovering a collapsed triangle must set the focus glow on it" );
         }
         if ( tp.getCursor().getType() != Cursor.HAND_CURSOR ) {
             fail( ok, "hovering a collapsed triangle should still show the hand cursor (it is clickable)" );
