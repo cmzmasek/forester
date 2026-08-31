@@ -4059,6 +4059,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     final void uncollapseAll(final TreePanel tp) {
         final Phylogeny t = tp.getPhylogeny();
         if ((t != null) && !t.isEmpty()) {
+            // Guard only the CHECKPOINT: the button must still re-fit the view (showWhole below) on an already
+            // expanded tree, as it always has -- it is only the undo entry that would be a no-op.
+            if (TreePanel.hasCollapsedNodeIn(t.getRoot())) {
+                tp.pushUndoCheckpoint("Uncollapse All"); // display state, but it lives on the tree -> snapshot restores it
+            }
             for (final PhylogenyNodeIterator iter = t.iteratorPreorder(); iter.hasNext(); ) {
                 final PhylogenyNode node = iter.next();
                 node.setCollapse(false);

@@ -6784,13 +6784,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void showNodeEditFrame(final PhylogenyNode n) {
+    final void showNodeEditFrame(final PhylogenyNode n) { // package-visible so a test can open one the way the UI does
         if (_node_frame_index < TreePanel.MAX_NODE_FRAMES) {
-            // NOTE: node-data edits are NOT yet undoable. NodeEditPanel.writeBack commits fields incrementally
-            // (and unconditionally, with no change detection) on every selection change, so a correct checkpoint
-            // would have to be a change-gated one inside that legacy commit path; a checkpoint here on mere open
-            // would clear the redo stack even when the user only inspects a node. Deferred until writeBack grows
-            // change detection. Edits are still safe: writeBack's setEdited(true) clears stale redo (safety net).
+            // Node-data edits ARE undoable ("Edit Node Data"), but the checkpoint is NOT taken here: writeBack
+            // commits fields on every selection change and on close, so a checkpoint on mere open would push a
+            // no-op undo -- and clear the redo stack -- for someone who only inspects a node. NodeEditPanel
+            // instead snapshots on the first write that FOLLOWS a committed cell edit, so one editor visit is
+            // exactly one undo step, and a visit that changes nothing leaves the history untouched.
             // pop up edit box for single node
             _node_frames[_node_frame_index] = new NodeFrame(n, _phylogeny, this, _node_frame_index, "");
             _node_frame_index++;
@@ -8787,6 +8787,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (!node.isExternal() && !node.isRoot()) {
             final boolean collapse = !node.isCollapse();
+            // Collapsing is display state, but it LIVES ON THE TREE (PhylogenyNode._collapse, which
+            // copyNodeData() carries), so the snapshot history restores it like any other mutation -- and
+            // restoreSnapshot already refreshes the collapse-derived caches.
+            pushUndoCheckpoint(collapse ? "Collapse Clade" : "Uncollapse Clade");
             TreePanelUtil.collapseSubtree(node, collapse);
             updateSetOfCollapsedExternalNodes();
             _phylogeny.recalculateNumberOfExternalDescendants(true);
@@ -8801,6 +8805,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /** Whether {@code node} or anything under it is collapsed -- i.e. whether an "uncollapse" would change
+     *  anything at all. Guards the undo checkpoint, so an uncollapse-all over an already-expanded tree does not
+     *  push a snapshot that restores an identical tree (and does not clear the redo stack). */
+    static boolean hasCollapsedNodeIn(final PhylogenyNode node) {
+        if (node == null) {
+            return false;
+        }
+        if (node.isCollapse()) {
+            return true;
+        }
+        for (final PhylogenyNodeIterator it = new PreorderTreeIterator(node); it.hasNext();) {
+            if (it.next().isCollapse()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     final void uncollapseAll(final PhylogenyNode node) {
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             JOptionPane.showMessageDialog(this,
@@ -8810,6 +8832,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if (!node.isExternal()) {
+            // Guard only the CHECKPOINT -- the refresh below (re-fit, scrollpane, repaint) must still run, as it
+            // always has; it is only the undo entry that would restore an identical tree.
+            if (hasCollapsedNodeIn(node)) {
+                pushUndoCheckpoint("Uncollapse All");
+            }
             TreePanelUtil.uncollapseSubtree(node);
             updateSetOfCollapsedExternalNodes();
             _phylogeny.recalculateNumberOfExternalDescendants(true);
@@ -9351,6 +9378,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void restoreSnapshot(final TreeHistory.Snapshot s) {
         _restoring_snapshot = true;
         try {
+            // Any open node window points at a node of the tree we are ABOUT to replace. Left open it would edit a
+            // detached node: the user's changes would vanish with no feedback while still marking the file dirty.
+            closeAllNodeFrames();
             final Phylogeny phy = s.getPhylogeny();
             setTree(phy); // also nulls the preorder cache
             setFoundNodes0(null); // the restored copy's search/selection hits from the mutated tree no longer apply
@@ -13795,6 +13825,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /**
      * Remove a node-edit frame.
      */
+    /** Closes every open node window. Called before an undo/redo installs a different tree, since a node frame
+     *  holds a direct reference to a node of the tree being replaced. */
+    /** For tests: how many node windows this panel currently has open. */
+    int openNodeFrameCountForTest() {
+        return _node_frame_index;
+    }
+
+    private void closeAllNodeFrames() {
+        // Disposed and cleared DIRECTLY rather than through NodeFrame.close(), which calls back into
+        // removeEditNodeFrame and compacts the array underneath the loop (its stored _index is not updated by the
+        // compaction, so a callback-driven loop can close a frame twice).
+        for (int i = 0; i < _node_frames.length; ++i) {
+            if (_node_frames[i] != null) {
+                _node_frames[i].dispose();
+                _node_frames[i] = null;
+            }
+        }
+        _node_frame_index = 0;
+    }
+
     final void removeEditNodeFrame(final int i) {
         _node_frame_index--;
         _node_frames[i] = null;

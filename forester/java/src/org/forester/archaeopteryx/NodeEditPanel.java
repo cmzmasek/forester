@@ -41,6 +41,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.Position;
@@ -163,10 +165,23 @@ class NodeEditPanel extends JPanel {
             // dialog's structure, not data. (Without this every node is editable because the tree is setEditable(true).)
             @Override
             public boolean isPathEditable( final TreePath path ) {
-                return isEditable() && isEditableValueNode( path );
+                final boolean editable = isEditable() && isEditableValueNode( path );
+                if ( editable && ( path != null ) ) {
+                    // The UI asks this immediately BEFORE it starts editing, so the row still shows the pre-edit
+                    // value here -- editingStopped compares against it to tell a real change from a bare click.
+                    _value_before_edit = String.valueOf( path.getLastPathComponent() );
+                }
+                return editable;
             }
         };
         getJTree().setEditable( true );
+        // Note the moment a value is really CHANGED (see _user_edited_a_cell). The flag is only read later, in
+        // writeBack, so listener ORDER against JTree's internal handling does not matter.
+        attachCellEditorListener();
+        // ...and re-attach if the editor is REPLACED: updateComponentTreeUI (which a light/dark theme switch runs
+        // over every open window, this editor included) reinstalls the tree UI and swaps in a NEW cell editor, so
+        // a listener bound only at construction would quietly stop firing.
+        getJTree().addPropertyChangeListener( "cellEditor", evt -> attachCellEditorListener() );
         getJTree().setFocusable( true );
         getJTree().setToggleClickCount( 1 );
         getJTree().setInvokesStopCellEditing( true );
@@ -828,6 +843,15 @@ class NodeEditPanel extends JPanel {
         if ( tag_number == null ) {
             return;
         }
+        // ONLY the checkpoint is gated on the edit flag -- never the write itself. If the flag were ever wrong
+        // (a look-and-feel change replaces the JTree's cell editor, so a listener bound to the old one stops
+        // firing) a gated write would silently drop the user's edit; a missed checkpoint merely costs an undo.
+        // Snapshot BEFORE the first field of this editing session is written -- the switch below mutates the live
+        // node in place, so this is the last moment the pre-edit tree still exists.
+        if ( _user_edited_a_cell && !_checkpointed ) {
+            _checkpointed = true;
+            getTreePanel().pushUndoCheckpoint( "Edit Node Data" );
+        }
         String value = mtn.toString();
         if ( value == null ) {
             value = "";
@@ -1225,6 +1249,48 @@ class NodeEditPanel extends JPanel {
         getJTree().repaint();
         getTreePanel().setEdited( true );
         getTreePanel().repaint();
+    }
+
+    /**
+     * Whether the user has actually committed a cell edit in this editor. {@code writeBack} is NOT the signal --
+     * it also fires on a plain selection change and on close, so checkpointing there would push a no-op undo (and
+     * clear the redo stack) for someone who only opened a node to look at it. A cell editor's
+     * {@code editingStopped} fires only when an edit is really committed.
+     */
+    private boolean _user_edited_a_cell = false;
+    /** The value the in-progress cell edit started from, so a commit that changed nothing is not counted. */
+    private String  _value_before_edit   = null;
+    /** The cell editor the change-watcher is currently bound to (the JTree can swap it out; see updateUI). */
+    private javax.swing.CellEditor _watched_editor = null;
+    /** One checkpoint per editing session: the first write after a real edit snapshots the pre-edit tree, and
+     *  every later field in the same session rides that same undo step -- so one editor visit undoes as one. */
+    private boolean _checkpointed       = false;
+
+    /** Binds the change-watcher to the JTree's CURRENT cell editor (idempotent per editor instance). */
+    private void attachCellEditorListener() {
+        final javax.swing.CellEditor editor = getJTree().getCellEditor();
+        if ( ( editor == null ) || ( editor == _watched_editor ) ) {
+            return;
+        }
+        _watched_editor = editor;
+        editor.addCellEditorListener( new CellEditorListener() {
+
+            @Override
+            public void editingStopped( final ChangeEvent e ) {
+                // editingStopped fires even when NOTHING was typed -- and this panel opens the inline editor by
+                // itself for any empty field on a single click -- so compare the committed value with the one the
+                // edit started from. Without that, clicking an empty row and clicking away would count as an edit.
+                final Object now = ( (javax.swing.CellEditor) e.getSource() ).getCellEditorValue();
+                if ( ( now != null ) && !String.valueOf( now ).equals( _value_before_edit ) ) {
+                    _user_edited_a_cell = true;
+                }
+            }
+
+            @Override
+            public void editingCanceled( final ChangeEvent e ) {
+                // nothing was committed
+            }
+        } );
     }
 
     PhylogenyNode getMyNode() {

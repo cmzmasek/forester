@@ -30,16 +30,20 @@ import java.util.TreeSet;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JTree;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainer;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.ProteinDomain;
@@ -64,7 +68,8 @@ public final class UndoRedoToolTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return basicUndoRedo() && undoWithDomainArchitectures() && searchBoxTextUndo() && asyncToolCheckpoints();
+        return basicUndoRedo() && undoWithDomainArchitectures() && searchBoxTextUndo() && asyncToolCheckpoints()
+                && collapseUndo() && nodeEditUndo();
     }
 
     /**
@@ -369,6 +374,337 @@ public final class UndoRedoToolTest {
             seq.setDomainArchitecture( new DomainArchitecture( domains, 100 ) );
             leaf.getNodeData().addSequence( seq );
             root.addAsChild( leaf );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    /**
+     * Collapsing a clade is undoable. Collapse is DISPLAY state, but it lives on the tree
+     * ({@code PhylogenyNode._collapse}, which {@code copyNodeData()} carries), so the snapshot history restores
+     * it like any other mutation -- and {@code restoreSnapshot} already refreshes the collapse-derived caches.
+     * An uncollapse that would change nothing must NOT push an entry, or merely pressing the button on an
+     * expanded tree would bury the user's real edits in a 25-deep history and clear the redo stack.
+     */
+    private static boolean collapseUndo() {
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { nestedTree() }, conf, "collapse" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                // Pin the layout: collapse()/uncollapseAll() pop a MODAL dialog in UNROOTED, and a modal opened
+                // from inside invokeAndWait never returns -- it would hang the whole suite. A standalone run
+                // inherits the developer's persisted display type, so this cannot be left to chance.
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                // pure guard first: it is what keeps a no-op uncollapse out of the history
+                if ( TreePanel.hasCollapsedNodeIn( tp.getPhylogeny().getRoot() )
+                        || TreePanel.hasCollapsedNodeIn( null ) ) {
+                    fail( ok, "a freshly loaded tree has nothing collapsed" );
+                }
+                // an uncollapse with nothing collapsed must leave the history alone
+                mf[ 0 ].getMainPanel().getControlPanel().uncollapseAll( tp );
+                if ( tp.canUndo() ) {
+                    fail( ok, "uncollapse-all on an expanded tree must not push an undo entry, got '"
+                            + tp.undoLabel() + "'" );
+                }
+                // collapse -> undoable, and the label says what happened
+                tp.collapse( named( tp, "cladeA" ) );
+                if ( !named( tp, "cladeA" ).isCollapse() ) {
+                    fail( ok, "precondition: the clade should be collapsed" );
+                }
+                if ( !tp.canUndo() || !"Collapse Clade".equals( tp.undoLabel() ) ) {
+                    fail( ok, "collapsing should checkpoint 'Collapse Clade', got '" + tp.undoLabel() + "'" );
+                }
+                if ( !TreePanel.hasCollapsedNodeIn( tp.getPhylogeny().getRoot() ) ) {
+                    fail( ok, "hasCollapsedNodeIn should see the collapsed clade" );
+                }
+                // undo restores the EXPANDED state (the snapshot must carry _collapse through Phylogeny.copy())
+                tp.undo();
+                if ( named( tp, "cladeA" ).isCollapse() ) {
+                    fail( ok, "undo must un-collapse the clade" );
+                }
+                // ...and redo re-collapses it
+                tp.redo();
+                if ( !named( tp, "cladeA" ).isCollapse() ) {
+                    fail( ok, "redo must re-collapse the clade" );
+                }
+                // uncollapse-all now HAS something to do -> its own entry, and undo brings the collapse back
+                mf[ 0 ].getMainPanel().getControlPanel().uncollapseAll( tp );
+                if ( !"Uncollapse All".equals( tp.undoLabel() ) ) {
+                    fail( ok, "uncollapse-all should checkpoint 'Uncollapse All', got '" + tp.undoLabel() + "'" );
+                }
+                if ( named( tp, "cladeA" ).isCollapse() ) {
+                    fail( ok, "precondition: uncollapse-all should have expanded the clade" );
+                }
+                tp.undo();
+                if ( !named( tp, "cladeA" ).isCollapse() ) {
+                    fail( ok, "undoing an uncollapse-all must bring the collapsed clade back" );
+                }
+            } );
+            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * A node-data edit is undoable as ONE step, and merely OPENING the editor is not an edit.
+     * <p>
+     * That second half is why this was deferred for so long: {@code NodeEditPanel.writeBack} commits fields on
+     * every selection change and again on close, with no change detection, so a checkpoint taken when the editor
+     * opens would push a no-op undo -- and wipe the redo stack -- for someone who only opened a node to read it.
+     * The checkpoint is instead taken on the first write that FOLLOWS a committed cell edit.
+     */
+    private static boolean nodeEditUndo() {
+        try {
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { nestedTree() }, conf, "nodeedit" ) );
+            final boolean[] ok = { true };
+            final NodeFrame[] nf = new NodeFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                // Pin the layout: collapse()/uncollapseAll() pop a MODAL dialog in UNROOTED, and a modal opened
+                // from inside invokeAndWait never returns -- it would hang the whole suite. A standalone run
+                // inherits the developer's persisted display type, so this cannot be left to chance.
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                // Two collapses then one undo leaves BOTH stacks non-empty, so opening the editor can be shown
+                // to disturb neither.
+                tp.collapse( named( tp, "cladeA" ) );
+                tp.collapse( named( tp, "cladeB" ) );
+                tp.undo();
+                if ( !tp.canUndo() || !tp.canRedo() ) {
+                    fail( ok, "precondition: both stacks should be non-empty before opening the editor" );
+                }
+                // AFTER the undo: it installs the snapshot as the new live tree, so a node taken before it would
+                // be detached from the tree the editor is supposed to edit
+                final PhylogenyNode n = tp.getPhylogeny().getFirstExternalNode();
+                tp.showNodeEditFrame( n ); // the production path: the panel TRACKS the frame it opens
+                nf[ 0 ] = openNodeFrame();
+                if ( ( nf[ 0 ] == null ) || ( tp.openNodeFrameCountForTest() != 1 ) ) {
+                    fail( ok, "the editor should be open and tracked by the panel" );
+                    return;
+                }
+                // opening alone must leave the history completely untouched
+                if ( !"Collapse Clade".equals( tp.undoLabel() ) ) {
+                    fail( ok, "merely opening the node editor must not push an undo entry, got '"
+                            + tp.undoLabel() + "'" );
+                }
+                if ( !tp.canRedo() ) {
+                    fail( ok, "merely opening the node editor must not touch the history at all" );
+                }
+            } );
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final JTree jt = findJTree( nf[ 0 ] );
+                if ( jt == null ) {
+                    fail( ok, "the node editor should contain a JTree" );
+                    return;
+                }
+                for( int i = 0; i < jt.getRowCount(); ++i ) {
+                    jt.expandRow( i ); // the editable value rows sit under collapsed category rows
+                }
+                // INSPECTING: clicking through rows fires writeBack on every selection change. Those write-backs
+                // must not be mistaken for edits and must not cost the user an undo step. (They do still call
+                // setEdited(true), which clears REDO -- pre-existing, and deliberately left alone: gating the
+                // write on the edit flag would risk dropping a real edit if the flag were ever wrong.)
+                jt.setSelectionRow( 2 );
+                jt.setSelectionRow( 3 );
+                if ( "Edit Node Data".equals( tp.undoLabel() ) ) {
+                    fail( ok, "clicking through the node editor without editing must not push an undo entry" );
+                }
+                final String before = tp.getPhylogeny().getFirstExternalNode().getName();
+                TreePath name_row = null;
+                for( int i = 0; i < jt.getRowCount(); ++i ) {
+                    if ( before.equals( jt.getPathForRow( i ).getLastPathComponent().toString() ) ) {
+                        name_row = jt.getPathForRow( i );
+                        break;
+                    }
+                }
+                if ( name_row == null ) {
+                    fail( ok, "could not find the editor row holding the node name" );
+                    return;
+                }
+                // A BARE CLICK is not an edit. editingStopped fires even when nothing was typed -- and this panel
+                // opens the inline editor by itself for any empty field -- so opening and closing the editor
+                // without changing the text must not count, or reading a node would cost an undo step.
+                jt.setSelectionPath( name_row );
+                jt.startEditingAtPath( name_row );
+                jt.stopEditing();
+                jt.setSelectionRow( 0 );
+                if ( "Edit Node Data".equals( tp.undoLabel() ) ) {
+                    fail( ok, "opening and closing a cell editor WITHOUT changing the text is not an edit" );
+                }
+                jt.setSelectionPath( name_row );
+                jt.startEditingAtPath( name_row );
+                // Type into the editor the way a user does: the inline editor is a JTextField inside the tree
+                // while editing. Setting the text and stopping the edit is what makes the COMMITTED value differ
+                // from the one the edit started at -- which is exactly what the panel watches for.
+                final javax.swing.JTextField field = findTextField( jt );
+                if ( field == null ) {
+                    fail( ok, "the node editor should use an inline text field" );
+                    return;
+                }
+                field.setText( "RENAMED" );
+                jt.stopEditing();
+                if ( "Edit Node Data".equals( tp.undoLabel() ) ) {
+                    fail( ok, "the checkpoint belongs on the WRITE, not on the cell edit itself" );
+                }
+                jt.setSelectionRow( 0 ); // moving off the row is what commits the field to the phylogeny
+                if ( !"RENAMED".equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
+                    fail( ok, "precondition: the edit should have reached the tree, got "
+                            + tp.getPhylogeny().getFirstExternalNode().getName() );
+                }
+                if ( !tp.canUndo() || !"Edit Node Data".equals( tp.undoLabel() ) ) {
+                    fail( ok, "a node-data edit should checkpoint 'Edit Node Data', got '" + tp.undoLabel() + "'" );
+                }
+                tp.undo();
+                if ( !before.equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
+                    fail( ok, "undo should restore the old node name, got "
+                            + tp.getPhylogeny().getFirstExternalNode().getName() );
+                }
+                // An undo installs a DIFFERENT tree, so an editor left open would be editing a node detached from
+                // the one on screen -- the edits would vanish silently while still marking the file dirty.
+                if ( ( tp.openNodeFrameCountForTest() != 0 ) || nf[ 0 ].isDisplayable() ) {
+                    fail( ok, "undo must close the open node editor -- its node belongs to the replaced tree" );
+                }
+            } );
+            // A THEME SWITCH must not turn the editor read-only. setDarkMode runs updateComponentTreeUI over every
+            // open window, which reinstalls the tree UI and SWAPS IN A NEW CELL EDITOR; a change-watcher bound only
+            // at construction would stop firing from then on.
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final PhylogenyNode n2 = tp.getPhylogeny().getFirstExternalNode();
+                tp.showNodeEditFrame( n2 );
+                nf[ 0 ] = openNodeFrame();
+                if ( nf[ 0 ] == null ) {
+                    fail( ok, "the editor should have reopened" );
+                    return;
+                }
+                SwingUtilities.updateComponentTreeUI( nf[ 0 ] ); // what a light/dark switch does to this window
+                final JTree jt = findJTree( nf[ 0 ] );
+                if ( jt == null ) {
+                    fail( ok, "the node editor should still contain a JTree after a UI refresh" );
+                    return;
+                }
+                for( int i = 0; i < jt.getRowCount(); ++i ) {
+                    jt.expandRow( i );
+                }
+                final String before2 = n2.getName();
+                TreePath row = null;
+                for( int i = 0; i < jt.getRowCount(); ++i ) {
+                    if ( before2.equals( jt.getPathForRow( i ).getLastPathComponent().toString() ) ) {
+                        row = jt.getPathForRow( i );
+                        break;
+                    }
+                }
+                if ( row == null ) {
+                    fail( ok, "could not find the name row after the UI refresh" );
+                    return;
+                }
+                jt.setSelectionPath( row );
+                jt.startEditingAtPath( row );
+                final javax.swing.JTextField field2 = findTextField( jt );
+                if ( field2 == null ) {
+                    fail( ok, "no inline text field after the UI refresh" );
+                    return;
+                }
+                field2.setText( "AFTER_THEME_SWITCH" );
+                jt.stopEditing();
+                jt.setSelectionRow( 0 );
+                if ( !"AFTER_THEME_SWITCH".equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
+                    fail( ok, "a theme switch must not stop the node editor writing edits through, name is "
+                            + tp.getPhylogeny().getFirstExternalNode().getName() );
+                }
+                if ( !"Edit Node Data".equals( tp.undoLabel() ) ) {
+                    fail( ok, "an edit after a theme switch should still be undoable, got '" + tp.undoLabel() + "'" );
+                }
+            } );
+            SwingUtilities.invokeAndWait( () -> {
+                nf[ 0 ].dispose();
+                ( (JFrame) mf[ 0 ] ).dispose();
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** The NodeFrame currently on screen (the panel tracks it internally but does not hand it out). */
+    private static NodeFrame openNodeFrame() {
+        for( final java.awt.Window w : java.awt.Window.getWindows() ) {
+            if ( ( w instanceof NodeFrame ) && w.isDisplayable() ) {
+                return (NodeFrame) w;
+            }
+        }
+        return null;
+    }
+
+    private static javax.swing.JTextField findTextField( final java.awt.Container c ) {
+        for( final java.awt.Component k : c.getComponents() ) {
+            if ( k instanceof javax.swing.JTextField ) {
+                return (javax.swing.JTextField) k;
+            }
+            if ( k instanceof java.awt.Container ) {
+                final javax.swing.JTextField f = findTextField( (java.awt.Container) k );
+                if ( f != null ) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static JTree findJTree( final java.awt.Container c ) {
+        for( final java.awt.Component k : c.getComponents() ) {
+            if ( k instanceof JTree ) {
+                return (JTree) k;
+            }
+            if ( k instanceof java.awt.Container ) {
+                final JTree t = findJTree( (java.awt.Container) k );
+                if ( t != null ) {
+                    return t;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The node named {@code name} in the panel's CURRENT tree -- undo/redo replace the tree object, so a node
+     *  reference taken before a restore is stale and must be looked up again. */
+    private static PhylogenyNode named( final TreePanel tp, final String name ) {
+        for( final PhylogenyNodeIterator it = tp.getPhylogeny().iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( name.equals( n.getName() ) ) {
+                return n;
+            }
+        }
+        throw new IllegalStateException( "no node named " + name );
+    }
+
+    /** A tree with a non-root INTERNAL node, which is what collapse() requires (it refuses tips and the root). */
+    private static Phylogeny nestedTree() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( final String clade_name : new String[] { "cladeA", "cladeB" } ) {
+            final PhylogenyNode clade = new PhylogenyNode();
+            clade.setName( clade_name );
+            for( int i = 0; i < 2; ++i ) {
+                final PhylogenyNode leaf = new PhylogenyNode();
+                leaf.setName( clade_name + "_t" + i );
+                clade.addAsChild( leaf );
+            }
+            root.addAsChild( clade );
         }
         phy.setRoot( root );
         phy.externalNodesHaveChanged();
