@@ -1853,10 +1853,10 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add(_clade_bands_jmi = new JMenuItem("Annotate Clades by Rank…"));
         customizeJMenuItem(_clade_bands_jmi);
         _clade_bands_jmi.setToolTipText("mark clades at a chosen rank with shaded boxes or right-edge bars + labels");
-        _tools_menu.add(_annotation_columns_jmi = new JMenuItem("Annotation Columns…"));
+        _tools_menu.add(_annotation_columns_jmi = new JMenuItem("Annotation Fields…"));
         customizeJMenuItem(_annotation_columns_jmi);
         _annotation_columns_jmi.setToolTipText(
-                "show node annotation fields as tip-aligned columns (color strip, heat map, bar, or text) to the right of the tree");
+                "choose how each node annotation field is shown -- as a tip-aligned column (color strip, symbol, heat map, bar, or text) or in the node label -- and in which order");
         _tools_menu.addSeparator();
         // Clearing styles & colors
         _tools_menu.add(_remove_visual_styles_item = new JMenuItem("Delete All Visual Styles From Nodes"));

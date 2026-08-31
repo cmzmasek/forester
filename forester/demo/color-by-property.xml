@@ -10,20 +10,20 @@
       <clade>
         <name>A/California/2009</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2009</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2009</property>
       </clade>
       <clade>
         <name>A/swine/Iowa/2010</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2010</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
+        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2010</property>
       </clade>
       <clade>
         <name>A/equine/Mongolia/2011</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2011</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Equine</property>
+        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2011</property>
       </clade>
     </clade>
     <clade>
@@ -33,20 +33,20 @@
         <clade>
           <name>A/duck/Guangdong/2013</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2013</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2013</property>
         </clade>
         <clade>
           <name>A/Shanghai/2013</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2013</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2013</property>
         </clade>
         <clade>
           <name>A/chicken/Jiangsu/2017</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2017</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2017</property>
         </clade>
       </clade>
       <clade>
@@ -54,26 +54,26 @@
         <clade>
           <name>A/canine/Florida/2015</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2015</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Canine</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2015</property>
         </clade>
         <clade>
           <name>A/swine/Shandong/2018</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2018</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2018</property>
         </clade>
         <clade>
           <name>A/Cambodia/2021</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2021</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2021</property>
         </clade>
         <clade>
           <name>A/duck/Vietnam/2024</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2024</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2024</property>
         </clade>
       </clade>
     </clade>

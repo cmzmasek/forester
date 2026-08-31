@@ -36,7 +36,7 @@ import org.forester.phylogeny.data.Taxonomy;
  * <pre>d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Enterobacterales;f__Enterobacteriaceae;g__Escherichia;s__Escherichia coli</pre>
  * and writes it onto a tree tip so the genome-based bacterial/archaeal taxonomy can drive Archaeopteryx's existing
  * visualizations OFFLINE (no network lookup): each rank becomes a categorical {@code gtdb:<rank>} node PROPERTY (so
- * "Color by" / "Annotation Columns" / search work at any rank), and the most specific rank present becomes a
+ * "Color by" / "Annotation Fields" / search work at any rank), and the most specific rank present becomes a
  * {@code <taxonomy>} (so Display Data: Taxonomy shows the GTDB name).
  *
  * <p>GTDB uses the standardized seven ranks; the prefixes map as d__=domain, p__=phylum, c__=class, o__=order,

@@ -43,7 +43,7 @@ public final class DemoTreesGalleryTest {
 
     // the resources the catalog opens (a fossil-only ammonite tree, a tanglegram pair + its association file, etc.)
     private static final String[] TREE_RESOURCES = { "color-by-property.xml", "annotation-columns.xml",
-            "symbol-columns.xml", "stacked-bar-columns.xml", "domain-architectures.xml", "alignment.xml",
+            "symbol-columns.xml", "label-properties.xml", "stacked-bar-columns.xml", "domain-architectures.xml", "alignment.xml",
             "bat-phylogeny.xml",
             "animal-tree-of-life.xml",
             "ancestral-pie-charts.xml",
@@ -71,8 +71,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 21 ) {
-                return fail( "the demo catalog should have 21 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 22 ) {
+                return fail( "the demo catalog should have 22 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -229,6 +229,22 @@ public final class DemoTreesGalleryTest {
         else if ( label.startsWith( "Alignment" ) ) {
             if ( !tp.getOptions().isShowMsa() || !AptxUtil.hasAlignedSequences( tp.getPhylogeny() ) ) {
                 fail( ok, "the alignment demo must auto-enable the alignment display over aligned tip sequences" );
+            }
+        }
+        else if ( label.startsWith( "Properties in Labels" ) ) {
+            // the demo's whole point is the SPLIT: two fields in the label, the rest as columns. A regression that
+            // dropped either half would leave the gallery green while the demo showed nothing worth showing.
+            final java.util.List<String> label_refs = tp.getLabelPropertyRefs();
+            if ( ( label_refs == null ) || !label_refs.equals( java.util.Arrays.asList( "data:accession",
+                                                                                        "data:passage" ) ) ) {
+                fail( ok, "the properties-in-labels demo must keep accession + passage in the label, got "
+                        + label_refs );
+            }
+            else if ( !frame.getControlPanel().isShowProperties() ) {
+                fail( ok, "the properties-in-labels demo must turn the Properties display option on" );
+            }
+            else if ( !tp.hasAnnotationColumns() || ( tp.getAnnotationColumnSpecs().size() != 4 ) ) {
+                fail( ok, "the properties-in-labels demo must render the other four fields as columns" );
             }
         }
         else if ( label.startsWith( "Symbol Columns" ) ) {

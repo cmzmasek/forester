@@ -406,7 +406,8 @@ public final class AnnotationColumnsTest {
                 || !"Bar".equals( AnnotationColumns.label( Type.BAR ) )
                 || !"Stacked bar".equals( AnnotationColumns.label( Type.STACKED_BAR ) )
                 || !"Pie".equals( AnnotationColumns.label( Type.PIE ) )
-                || !"Text".equals( AnnotationColumns.label( Type.TEXT ) ) ) {
+                || !"Text".equals( AnnotationColumns.label( Type.TEXT ) )
+                || !"In tip label".equals( AnnotationColumns.label( Type.LABEL ) ) ) {
             return fail( "render-type labels are wrong" );
         }
         return true;
@@ -422,19 +423,24 @@ public final class AnnotationColumnsTest {
             return fail( "a numeric field should default to HEATMAP" );
         }
         final List<Type> host_types = AnnotationColumns.allowedTypes( phy, "repseq:host" );
-        if ( ( host_types.size() != 3 ) || !host_types.contains( Type.COLOR_STRIP )
+        if ( ( host_types.size() != 4 ) || !host_types.contains( Type.COLOR_STRIP )
                 || !host_types.contains( Type.SYMBOL ) || !host_types.contains( Type.TEXT )
-                || host_types.contains( Type.HEATMAP ) || host_types.contains( Type.STACKED_BAR )
-                || host_types.contains( Type.PIE ) ) {
-            return fail( "a categorical field should allow COLOR_STRIP + SYMBOL + TEXT (no STACKED_BAR/PIE)" );
+                || !host_types.contains( Type.LABEL ) || host_types.contains( Type.HEATMAP )
+                || host_types.contains( Type.STACKED_BAR ) || host_types.contains( Type.PIE ) ) {
+            return fail( "a categorical field should allow LABEL + COLOR_STRIP + SYMBOL + TEXT (no STACKED_BAR/PIE)" );
         }
         final List<Type> score_types = AnnotationColumns.allowedTypes( phy, "data:score" );
-        if ( ( score_types.size() != 6 ) || !score_types.contains( Type.HEATMAP )
+        if ( ( score_types.size() != 7 ) || !score_types.contains( Type.HEATMAP )
                 || !score_types.contains( Type.MATRIX ) || !score_types.contains( Type.BAR )
                 || !score_types.contains( Type.STACKED_BAR ) || !score_types.contains( Type.PIE )
-                || !score_types.contains( Type.TEXT ) || score_types.contains( Type.COLOR_STRIP )
-                || score_types.contains( Type.SYMBOL ) ) {
-            return fail( "a numeric field should allow HEATMAP + MATRIX + BAR + STACKED_BAR + PIE + TEXT" );
+                || !score_types.contains( Type.TEXT ) || !score_types.contains( Type.LABEL )
+                || score_types.contains( Type.COLOR_STRIP ) || score_types.contains( Type.SYMBOL ) ) {
+            return fail( "a numeric field should allow LABEL + HEATMAP + MATRIX + BAR + STACKED_BAR + PIE + TEXT" );
+        }
+        // LABEL comes FIRST in every list: it is the role every field can take, and the one the chooser
+        // pre-selects for a field that is not currently a column
+        if ( ( host_types.get( 0 ) != Type.LABEL ) || ( score_types.get( 0 ) != Type.LABEL ) ) {
+            return fail( "\"In tip label\" should be the first role offered" );
         }
         return true;
     }

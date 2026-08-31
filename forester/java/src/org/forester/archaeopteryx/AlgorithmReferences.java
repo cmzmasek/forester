@@ -154,7 +154,7 @@ final class AlgorithmReferences {
                 "Reads a GTDB-Tk-style classification table (a tip-name column + a GTDB lineage column, "
                         + "d__Bacteria;p__…;g__…;s__…) and writes the genome-based bacterial/archaeal taxonomy onto the "
                         + "matching tips: each of the seven standardized ranks (domain/phylum/class/order/family/genus/"
-                        + "species) becomes a categorical gtdb:<rank> node property -- so Color by / Annotation Columns / "
+                        + "species) becomes a categorical gtdb:<rank> node property -- so Color by / Annotation Fields / "
                         + "search work at any rank -- plus a taxonomy at the most specific rank. Entirely offline; no "
                         + "network lookup. GTDB (Genome Taxonomy Database): Parks DH, Chuvochina M, Rinke C, Mussig AJ, "
                         + "Chaumeil P-A, Hugenholtz P (2022): \"GTDB: an ongoing census of bacterial and archaeal "

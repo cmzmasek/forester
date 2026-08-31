@@ -445,7 +445,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         } else if (o == _clade_bands_jmi) {
             labelCladesByRank();
         } else if (o == _annotation_columns_jmi) {
-            chooseAnnotationColumns();
+            chooseAnnotationFields();
         } else if (o == _undo_item) {
             undo();
         } else if (o == _redo_item) {
@@ -1358,11 +1358,43 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _found_selected_counter.setCounts(total, br[0], br[1], br[2], a_is_search, combine_label);
     }
 
+    /** One row of the Annotation Fields chooser: a field, its on/off box, its display role, the glyph shape a
+     *  SYMBOL column uses, and the buttons that move it -- the ROW ORDER is the column / label order. */
+    private static final class FieldRow {
+
+        final String                                   _ref;
+        final JCheckBox                                _on;
+        final JComboBox<AnnotationColumns.Type>        _role;
+        final JComboBox<AnnotationColumns.SymbolShape> _shape;
+        final JButton                                  _up   = new JButton("↑");
+        final JButton                                  _down = new JButton("↓");
+
+        FieldRow(final String ref, final JCheckBox on, final JComboBox<AnnotationColumns.Type> role,
+                final JComboBox<AnnotationColumns.SymbolShape> shape) {
+            _ref = ref;
+            _on = on;
+            _role = role;
+            _shape = shape;
+            for (final JButton b : new JButton[] { _up, _down }) {
+                b.setMargin(new java.awt.Insets(0, 4, 0, 4));
+                b.setFocusable(false); // keep tabbing through the dialog on the fields, not the move buttons
+            }
+            _up.setToolTipText("move this field one place earlier");
+            _down.setToolTipText("move this field one place later");
+        }
+    }
+
     /**
-     * Opens the "Annotation Columns" chooser: pick which annotation fields to show as tip-aligned columns and
-     * how to render each (color strip / heat map / bar / text), then applies them to the current tree.
+     * Opens the "Annotation Fields" chooser: for every annotation field of the current tree, pick its ONE display
+     * role -- a tip-aligned column (color strip / symbol / heat map / bar / stacked bar / pie / text) or the node's
+     * own label -- plus the order the fields appear in, then applies the result to the current tree.
+     * <p>
+     * A field's role is exclusive, and that is what keeps a ten-property tree readable: the fields that carry the
+     * figure become columns, and only the one or two that belong beside the name stay in the label. Fields not
+     * shown as columns default to the label, which is what the "Properties" display option showed before this
+     * chooser knew about labels -- so OK-ing an untouched dialog leaves the tree looking exactly as it did.
      */
-    void chooseAnnotationColumns() {
+    void chooseAnnotationFields() {
         if (_mainpanel.getCurrentTreePanel() == null) {
             return;
         }
@@ -1371,15 +1403,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((phy == null) || phy.isEmpty()) {
             return;
         }
-        final List<String> refs = PropertyColorScheme.colorableRefs(phy);
-        if (refs.isEmpty()) {
+        // the label can show ANY field, so the inventory is the full user-visible property set -- broader than the
+        // colorable refs, which drop the constant / per-tip-unique / internal-only fields a column cannot use
+        final List<String> all_refs = TreePanelUtil.userVisiblePropertyRefs(phy);
+        if (all_refs.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "This tree has no annotation fields to show as columns.\n"
+                    "This tree has no annotation fields.\n"
                             + "Import a table (File → Import Annotations) or load a tree with node properties first.",
                     "No Annotation Fields", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        // pre-select whatever columns are shown now (type AND, for a SYMBOL column, its glyph shape)
+        final List<String> colorable = PropertyColorScheme.colorableRefs(phy);
+        // pre-select whatever is shown now (a column's type AND, for a SYMBOL column, its glyph shape)
         final Map<String, AnnotationColumns.Type> current = new HashMap<String, AnnotationColumns.Type>();
         final Map<String, AnnotationColumns.SymbolShape> current_shape = new HashMap<String, AnnotationColumns.SymbolShape>();
         boolean current_normalize = false; // the STACKED_BAR group shares one normalize flag
@@ -1392,6 +1427,29 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     current_normalize = s._normalized; // read the FIRST stacked field, matching how the merge takes it
                     saw_stacked_spec = true;
                 }
+            }
+        }
+        final List<String> label_refs = tp.getLabelPropertyRefs(); // null = the default: every non-column field
+        // Row order: the columns as they are drawn, then the label fields as they are ordered, then the rest. The
+        // dialog therefore opens in the order the user last set it to.
+        final List<String> ordered = new ArrayList<String>();
+        if (tp.getAnnotationColumnSpecs() != null) {
+            for (final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs()) {
+                if (all_refs.contains(s._ref) && !ordered.contains(s._ref)) {
+                    ordered.add(s._ref);
+                }
+            }
+        }
+        if (label_refs != null) {
+            for (final String r : label_refs) {
+                if (all_refs.contains(r) && !ordered.contains(r)) {
+                    ordered.add(r);
+                }
+            }
+        }
+        for (final String r : all_refs) {
+            if (!ordered.contains(r)) {
+                ordered.add(r);
             }
         }
         final DefaultListCellRenderer type_renderer = new DefaultListCellRenderer() {
@@ -1418,83 +1476,161 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return this;
             }
         };
-        final JPanel panel = new JPanel(new GridLayout(0, 3, 10, 3));
-        panel.add(new JLabel("Field"));
-        panel.add(new JLabel("Show as"));
-        panel.add(new JLabel("Symbol shape"));
-        final List<JCheckBox> checks = new ArrayList<JCheckBox>();
-        final List<JComboBox<AnnotationColumns.Type>> combos = new ArrayList<JComboBox<AnnotationColumns.Type>>();
-        final List<JComboBox<AnnotationColumns.SymbolShape>> shape_combos = new ArrayList<JComboBox<AnnotationColumns.SymbolShape>>();
+        final List<FieldRow> rows = new ArrayList<FieldRow>();
+        // the label selection the dialog OPENS with, so an untouched OK can leave the label side alone
+        final List<String> opening_label_refs = new ArrayList<String>();
         // several fields set to "Stacked bar" MERGE into one segmented bar; this one flag governs that merged bar
         final JCheckBox normalize_cb = new JCheckBox("Normalize stacked bars to 100% (else absolute lengths)",
                 current_normalize);
         final Runnable sync_normalize = () -> {
             boolean any_stacked = false;
-            for (final JComboBox<AnnotationColumns.Type> c : combos) {
-                if (c.getSelectedItem() == AnnotationColumns.Type.STACKED_BAR) {
+            for (final FieldRow r : rows) {
+                if (r._on.isSelected() && (r._role.getSelectedItem() == AnnotationColumns.Type.STACKED_BAR)) {
                     any_stacked = true;
                     break;
                 }
             }
             normalize_cb.setEnabled(any_stacked);
         };
-        for (final String ref : refs) {
-            final JCheckBox cb = new JCheckBox(PropertyColorScheme.displayName(ref), current.containsKey(ref));
-            final List<AnnotationColumns.Type> types = AnnotationColumns.allowedTypes(phy, ref);
-            final JComboBox<AnnotationColumns.Type> combo = new JComboBox<AnnotationColumns.Type>(
-                    types.toArray(new AnnotationColumns.Type[0]));
-            combo.setRenderer(type_renderer);
-            combo.setSelectedItem(current.containsKey(ref) ? current.get(ref)
-                    : AnnotationColumns.defaultType(phy, ref));
+        for (final String ref : ordered) {
+            final boolean is_column = current.containsKey(ref);
+            // "all by default": a field that is not a column is in the label -- all of them, unless the user has
+            // already narrowed the set. Deliberately independent of whether the "Properties" checkbox happens to be
+            // on: the chooser shows the stored SELECTION, so opening it with properties hidden cannot lose it.
+            final boolean in_label = !is_column && ((label_refs == null) || label_refs.contains(ref));
+            final JCheckBox on = new JCheckBox(PropertyColorScheme.displayName(ref), is_column || in_label);
+            final List<AnnotationColumns.Type> roles = AnnotationColumns.allowedTypes(phy, ref, colorable);
+            // A column set earlier can have a type this field is no longer offered -- an annotation re-import can
+            // turn a varied categorical field constant, which drops the colour roles. Keep the CURRENT type in the
+            // model so the row still shows what is actually drawn instead of silently reading as something else.
+            if (is_column && (current.get(ref) != null) && !roles.contains(current.get(ref))) {
+                roles.add(current.get(ref));
+            }
+            final JComboBox<AnnotationColumns.Type> role = new JComboBox<AnnotationColumns.Type>(
+                    roles.toArray(new AnnotationColumns.Type[0]));
+            role.setRenderer(type_renderer);
+            role.setSelectedItem(is_column ? current.get(ref) : AnnotationColumns.Type.LABEL);
             // the glyph-shape picker is only meaningful for a SYMBOL column, so it is enabled only then
-            final JComboBox<AnnotationColumns.SymbolShape> shape_combo = new JComboBox<AnnotationColumns.SymbolShape>(
+            final JComboBox<AnnotationColumns.SymbolShape> shape = new JComboBox<AnnotationColumns.SymbolShape>(
                     AnnotationColumns.SymbolShape.values());
-            shape_combo.setRenderer(shape_renderer);
-            shape_combo.setSelectedItem(current_shape.containsKey(ref) ? current_shape.get(ref)
+            shape.setRenderer(shape_renderer);
+            shape.setSelectedItem(current_shape.containsKey(ref) ? current_shape.get(ref)
                     : AnnotationColumns.SymbolShape.CIRCLE);
-            shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
-            combo.addActionListener(e -> {
-                shape_combo.setEnabled(combo.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
+            shape.setEnabled(role.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
+            role.addActionListener(e -> {
+                shape.setEnabled(role.getSelectedItem() == AnnotationColumns.Type.SYMBOL);
                 sync_normalize.run();
             });
-            panel.add(cb);
-            panel.add(combo);
-            panel.add(shape_combo);
-            checks.add(cb);
-            combos.add(combo);
-            shape_combos.add(shape_combo);
+            on.addActionListener(e -> sync_normalize.run());
+            rows.add(new FieldRow(ref, on, role, shape));
+            if (in_label) {
+                opening_label_refs.add(ref);
+            }
         }
+        final JPanel panel = new JPanel(new GridLayout(0, 4, 10, 3));
+        final Runnable relayout = () -> {
+            panel.removeAll();
+            panel.add(new JLabel("Field"));
+            panel.add(new JLabel("Show as"));
+            panel.add(new JLabel("Symbol shape"));
+            panel.add(new JLabel("Order"));
+            for (int i = 0; i < rows.size(); ++i) {
+                final FieldRow r = rows.get(i);
+                r._up.setEnabled(i > 0);
+                r._down.setEnabled(i < (rows.size() - 1));
+                // flow, not grid: the two little arrows should size to their content instead of stretching to a
+                // quarter of the dialog's width
+                final JPanel move = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+                move.add(r._up);
+                move.add(r._down);
+                panel.add(r._on);
+                panel.add(r._role);
+                panel.add(r._shape);
+                panel.add(move);
+            }
+            panel.revalidate();
+            panel.repaint();
+        };
+        for (final FieldRow r : rows) {
+            r._up.addActionListener(e -> moveFieldRow(rows, r, -1, relayout));
+            r._down.addActionListener(e -> moveFieldRow(rows, r, 1, relayout));
+        }
+        relayout.run();
         sync_normalize.run(); // enable the normalize checkbox only when a Stacked bar column is actually selected
         final JScrollPane sp = new JScrollPane(panel);
-        sp.setPreferredSize(new java.awt.Dimension(480, Math.min(440, 50 + (refs.size() * 30))));
+        sp.setPreferredSize(new java.awt.Dimension(600, Math.min(440, 50 + (rows.size() * 30))));
         final JPanel content = new JPanel(new java.awt.BorderLayout(0, 6));
         content.add(sp, java.awt.BorderLayout.CENTER);
         content.add(normalize_cb, java.awt.BorderLayout.SOUTH);
-        if (JOptionPane.showConfirmDialog(this, content, "Annotation Columns", JOptionPane.OK_CANCEL_OPTION,
+        if (JOptionPane.showConfirmDialog(this, content, "Annotation Fields", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
         final List<AnnotationColumns.ColumnSpec> specs = new ArrayList<AnnotationColumns.ColumnSpec>();
-        for (int i = 0; i < refs.size(); ++i) {
-            if (checks.get(i).isSelected()) {
-                final AnnotationColumns.Type t = (AnnotationColumns.Type) combos.get(i).getSelectedItem();
-                if (t == AnnotationColumns.Type.SYMBOL) {
-                    specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t,
-                            (AnnotationColumns.SymbolShape) shape_combos.get(i).getSelectedItem()));
-                }
-                else if (t == AnnotationColumns.Type.STACKED_BAR) {
-                    specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t, normalize_cb.isSelected()));
-                }
-                else {
-                    specs.add(new AnnotationColumns.ColumnSpec(refs.get(i), t));
-                }
+        final List<String> new_label_refs = new ArrayList<String>();
+        for (final FieldRow r : rows) {
+            if (!r._on.isSelected()) {
+                continue;
+            }
+            final AnnotationColumns.Type t = (AnnotationColumns.Type) r._role.getSelectedItem();
+            if (t == AnnotationColumns.Type.LABEL) {
+                new_label_refs.add(r._ref);
+            }
+            else if (t == AnnotationColumns.Type.SYMBOL) {
+                specs.add(new AnnotationColumns.ColumnSpec(r._ref, t,
+                        (AnnotationColumns.SymbolShape) r._shape.getSelectedItem()));
+            }
+            else if (t == AnnotationColumns.Type.STACKED_BAR) {
+                specs.add(new AnnotationColumns.ColumnSpec(r._ref, t, normalize_cb.isSelected()));
+            }
+            else {
+                specs.add(new AnnotationColumns.ColumnSpec(r._ref, t));
             }
         }
         tp.setAnnotationColumns(specs);
+        tp.setLabelPropertyRefs(new_label_refs);
+        // Picking a label field has to actually SHOW it -- the "Properties" checkbox is off by default, so without
+        // this the chooser would silently do nothing. Only an ADDED field counts: opening the chooser to add a
+        // COLUMN necessarily drops that field from the label set, and losing a label field must never be what turns
+        // the tip labels on.
+        boolean added_label_field = false;
+        for (final String ref : new_label_refs) {
+            if (!opening_label_refs.contains(ref)) {
+                added_label_field = true;
+                break;
+            }
+        }
+        if (added_label_field && (getControlPanel() != null) && !getControlPanel().isShowProperties()) {
+            getControlPanel().setCheckbox(DisplayOption.SHOW_PROPERTIES, true);
+        }
         tp.setEdited(true);
         getControlPanel().fitWidth(); // reveal the columns even when they extend past the current width
         tp.repaint();
         repaint();
+    }
+
+    /** Moves {@code row} by {@code delta} places within {@code rows} and, if it actually moved, relays out. */
+    private static void moveFieldRow(final List<FieldRow> rows, final FieldRow row, final int delta,
+            final Runnable relayout) {
+        if (moveInList(rows, row, delta)) {
+            relayout.run();
+        }
+    }
+
+    /**
+     * Moves {@code item} {@code delta} places within {@code list}, returning whether it moved. A no-op (returning
+     * false) when the item is not in the list or the move would run off either end -- which is what makes the
+     * first row's "up" and the last row's "down" harmless even if they are somehow clicked while disabled.
+     */
+    static <T> boolean moveInList(final List<T> list, final T item, final int delta) {
+        final int i = list.indexOf(item);
+        final int j = i + delta;
+        if ((i < 0) || (j < 0) || (j >= list.size()) || (delta == 0)) {
+            return false;
+        }
+        list.remove(i);
+        list.add(j, item);
+        return true;
     }
 
     void labelCladesByRank() {
@@ -3104,7 +3240,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.setShowExternalDataForThisTab(true);
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
                 tp.resetNextstrainBranchModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
-                tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Columns selection (fresh install has none)
+                tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Fields selection (fresh install has none)
             }
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
@@ -4131,7 +4267,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * File -> Import GTDB Taxonomy: read a GTDB-Tk-style table (a tip-key column + a GTDB classification column
      * {@code d__…;…;s__…}) and write the genome-based taxonomy onto the matching tips -- each rank as a
      * {@code gtdb:<rank>} property + a taxonomy at the most specific rank -- so GTDB (the bacterial/archaeal standard)
-     * drives Color-by / Annotation Columns / search entirely offline. Undoable.
+     * drives Color-by / Annotation Fields / search entirely offline. Undoable.
      */
     void importGtdbTaxonomy() {
         final Phylogeny phy = currentPhylogenyForExport();

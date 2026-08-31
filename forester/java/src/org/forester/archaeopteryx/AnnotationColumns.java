@@ -75,7 +75,11 @@ final class AnnotationColumns {
          *  segment lengths (iTOL's DATASET_PIECHART). A pie is inherently proportional, so it has no absolute mode. */
         PIE,
         /** The raw value drawn as text. */
-        TEXT
+        TEXT,
+        /** NOT a column: the value is appended to the node's own label instead (the "Properties" display option).
+         *  A field has ONE display role, so choosing this is how a field leaves the columns and joins the label --
+         *  which is why it lives in this enum and is offered by the same chooser. Never reaches {@link Column}. */
+        LABEL
     }
 
     /** Whether {@code type} is a MERGED multi-series type -- several numeric fields drawn as one glyph per tip (a
@@ -147,6 +151,8 @@ final class AnnotationColumns {
                 return "Pie";
             case TEXT:
                 return "Text";
+            case LABEL:
+                return "In tip label";
             default:
                 return type.name();
         }
@@ -263,6 +269,9 @@ final class AnnotationColumns {
         }
         boolean stack_added = false, pie_added = false;
         for( final ColumnSpec spec : specs ) {
+            if ( spec._type == Type.LABEL ) {
+                continue; // a label field is drawn as part of the node's label, not as a column
+            }
             if ( spec._type == Type.STACKED_BAR ) {
                 if ( !stack_added && !stack_refs.isEmpty() ) {
                     // a stacked bar is absolute unless normalized (its own toggle)
@@ -465,12 +474,32 @@ final class AnnotationColumns {
     }
 
     /**
-     * The render types offered for a field, given its data: a numeric field can be a heat map, a bar, or text;
-     * a categorical field a color strip or text.
+     * The display roles offered for a field, given its data. {@link Type#LABEL} is always offered -- ANY field can
+     * be put in the node's label. The column roles depend on the data: a numeric field can be a heat map, a bar or
+     * text; a categorical field a color strip, a symbol or text.
+     * <p>
+     * Two kinds of field get no column role at all. One that appears only on INTERNAL nodes has nothing to draw in
+     * a tip-aligned column. One that is not {@link PropertyColorScheme#colorableRefs(Phylogeny) colorable} -- a
+     * constant field, or a categorical field with a different value on every tip -- can still be a TEXT column, but
+     * not a colored one, because one color for everything (or one color per tip) tells the reader nothing.
      */
     static List<Type> allowedTypes( final Phylogeny phylogeny, final String ref ) {
+        return allowedTypes( phylogeny, ref, PropertyColorScheme.colorableRefs( phylogeny ) );
+    }
+
+    /** As {@link #allowedTypes(Phylogeny, String)} but reusing an already-computed colorable-ref list, so a caller
+     *  asking about many fields at once does not rescan the whole tree for each of them. */
+    static List<Type> allowedTypes( final Phylogeny phylogeny, final String ref, final List<String> colorable ) {
         final List<Type> types = new ArrayList<Type>();
-        if ( new PropertyColorScheme( phylogeny, ref ).isGradient() ) {
+        types.add( Type.LABEL );
+        if ( !appearsOnAnyTip( phylogeny, ref ) ) {
+            return types;
+        }
+        if ( ( colorable != null ) && !colorable.contains( ref ) ) {
+            types.add( Type.TEXT );
+            return types;
+        }
+        if ( defaultType( phylogeny, ref ) == Type.HEATMAP ) {
             types.add( Type.HEATMAP );
             types.add( Type.MATRIX );
             types.add( Type.BAR );
@@ -484,5 +513,18 @@ final class AnnotationColumns {
             types.add( Type.TEXT );
         }
         return types;
+    }
+
+    /** Whether any EXTERNAL node carries {@code ref} -- i.e. whether a tip-aligned column of it would draw anything. */
+    private static boolean appearsOnAnyTip( final Phylogeny phylogeny, final String ref ) {
+        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
+            return false;
+        }
+        for( final PhylogenyNode leaf : phylogeny.getExternalNodes() ) {
+            if ( !ForesterUtil.isEmpty( valueOrEmpty( leaf, ref ) ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

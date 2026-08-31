@@ -283,6 +283,11 @@ public final class ResetToDefaultsTest {
                     if ( !tp.hasAnnotationColumns() ) {
                         fail( ok, "precondition: annotation columns should be active before reset" );
                     }
+                    // the same chooser assigns which properties go in the tip LABEL, so a reset owes them too
+                    tp.setLabelPropertyRefs( java.util.Arrays.asList( "data:sz" ) );
+                    if ( tp.getLabelPropertyRefs() == null ) {
+                        fail( ok, "precondition: label property fields should be set before reset" );
+                    }
                     frame.setDarkMode( true );
                     //    (c) always-visible ControlPanel controls held STALE: the sun/moon theme toggle + the
                     //        Inverse search checkbox (plus its Options field), which would clobber the reset on the
@@ -380,9 +385,14 @@ public final class ResetToDefaultsTest {
                         fail( ok, "the 'Ancestral pie' dropdown must be re-seeded to None after reset, got "
                                 + cp.getAncestralPieSelection() );
                     }
-                    // 3f-ter. per-tab annotation columns cleared (a fresh install has none)
+                    // 3f-ter. per-tab annotation columns cleared (a fresh install has none), and with them the
+                    //         per-tab label-field selection -- back to the default of showing every property
                     if ( tp.hasAnnotationColumns() ) {
                         fail( ok, "annotation columns must be cleared by reset" );
+                    }
+                    if ( tp.getLabelPropertyRefs() != null ) {
+                        fail( ok, "the label-field selection must be cleared by reset, got "
+                                + tp.getLabelPropertyRefs() );
                     }
                     // 3g. persisted settings file deleted (so the reset survives a restart)
                     if ( Files.exists( settings ) ) {

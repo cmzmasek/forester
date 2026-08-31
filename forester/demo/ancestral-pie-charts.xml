@@ -5,16 +5,16 @@
   <description>Synthetic BEAST phylogeography tree. Each TIP carries its single sampled location (beast:location); each INTERNAL node carries a posterior distribution over locations (beast:location_set + beast:location_set_prob), as a BEAST discrete-trait / phylogeography analysis produces. Pick &quot;Ancestral pie: location&quot; to draw an ancestral-state pie at each node -- wedges sized by state probability, tips as solid single-state discs -- with a state-&gt;color legend.</description>
   <clade>
     <branch_length>0.0</branch_length>
-    <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.5,0.25,0.15,0.1}</property>
     <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Africa,Europe,Asia,Americas}</property>
+    <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.5,0.25,0.15,0.1}</property>
     <clade>
       <branch_length>0.04</branch_length>
-      <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.55,0.3,0.15}</property>
       <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Africa,Europe,Asia}</property>
+      <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.55,0.3,0.15}</property>
       <clade>
         <branch_length>0.05</branch_length>
-        <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.9,0.1}</property>
         <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Africa,Europe}</property>
+        <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.9,0.1}</property>
         <clade>
           <name>EPI_ISL_401</name>
           <branch_length>0.02</branch_length>
@@ -33,12 +33,12 @@
       </clade>
       <clade>
         <branch_length>0.04</branch_length>
-        <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.45,0.35,0.2}</property>
         <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Europe,Asia,Africa}</property>
+        <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.45,0.35,0.2}</property>
         <clade>
           <branch_length>0.05</branch_length>
-          <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.7,0.2,0.1}</property>
           <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Europe,Africa,Asia}</property>
+          <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.7,0.2,0.1}</property>
           <clade>
             <name>EPI_ISL_511</name>
             <branch_length>0.02</branch_length>
@@ -57,8 +57,8 @@
         </clade>
         <clade>
           <branch_length>0.05</branch_length>
-          <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.8,0.2}</property>
           <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Asia,Europe}</property>
+          <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.8,0.2}</property>
           <clade>
             <name>EPI_ISL_621</name>
             <branch_length>0.02</branch_length>
@@ -79,8 +79,8 @@
     </clade>
     <clade>
       <branch_length>0.05</branch_length>
-      <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.6,0.3,0.1}</property>
       <property ref="beast:location_set" datatype="xsd:string" applies_to="node">{Americas,Europe,Asia}</property>
+      <property ref="beast:location_set_prob" datatype="xsd:string" applies_to="node">{0.6,0.3,0.1}</property>
       <clade>
         <name>EPI_ISL_731</name>
         <branch_length>0.02</branch_length>

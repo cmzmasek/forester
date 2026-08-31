@@ -32,11 +32,15 @@ import org.forester.util.ForesterUtil;
 public class PropertiesList implements PhylogenyData {
 
     private final List<Property> _properties;
+    // Sorted by ref so a node's properties display (and are written) in a stable, predictable order. Ascending:
+    // the arguments used to be swapped, which sorted them backwards -- "z_field" before "a_field" -- in the tip
+    // label, the rollover popup, the node panel and the phyloXML output alike. The sort is stable, so several
+    // properties sharing one ref keep the order they were added in.
     private final Comparator<Property> comp = new Comparator<Property>() {
 
         @Override
         public int compare(final Property p1, final Property p2) {
-            return p2.getRef().compareTo(p1.getRef());
+            return p1.getRef().compareTo(p2.getRef());
         }
     };
 

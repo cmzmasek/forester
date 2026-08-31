@@ -202,6 +202,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Label properties: ");
+        if (org.forester.archaeopteryx.LabelPropertiesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Annotation columns tool: ");
         if (org.forester.archaeopteryx.AnnotationColumnsToolTest.test()) {
             System.out.println("OK.");

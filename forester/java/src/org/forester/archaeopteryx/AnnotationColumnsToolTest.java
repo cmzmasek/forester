@@ -41,7 +41,7 @@ import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.PropertiesList;
 
 /**
- * Integration test for the "Annotation Columns" tool: on a real {@link MainFrame}/{@link TreePanel} it sets
+ * Integration test for the "Annotation Fields" tool: on a real {@link MainFrame}/{@link TreePanel} it sets
  * annotation columns of every render type, renders offscreen (exercising the paint + width-reservation path),
  * and checks the menu item is present. Guarded to a no-op on a headless box (needs FlatLaf via
  * {@code createInstance}); run standalone or as part of the non-headless suite.
@@ -74,7 +74,7 @@ public final class AnnotationColumnsToolTest {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
 
                 // menu item present + tooltip
-                final JMenuItem item = toolsItem( mf[ 0 ].getJMenuBar(), "Annotation Columns" );
+                final JMenuItem item = toolsItem( mf[ 0 ].getJMenuBar(), "Annotation Fields" );
                 if ( item == null ) {
                     System.out.println( "  [AnnotationColumnsToolTest] Tools menu item not found" );
                     ok[ 0 ] = false;

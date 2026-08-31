@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Annotation columns (demo)</name>
-  <description>Synthetic tree with four annotation kinds per tip: &apos;host&apos; and &apos;segment&apos; (categorical), &apos;viral_load&apos; (numeric) and &apos;clade&apos; (text). Try Tools &gt; Annotation Columns to render them as tip-aligned color-strip, heat-map/bar and text columns.</description>
+  <description>Synthetic tree with four annotation kinds per tip: &apos;host&apos; and &apos;segment&apos; (categorical), &apos;viral_load&apos; (numeric) and &apos;clade&apos; (text). Try Tools &gt; Annotation Fields to render them as tip-aligned color-strip, heat-map/bar and text columns.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -10,34 +10,34 @@
       <clade>
         <name>isolate_01</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">7.8</property>
-        <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
-        <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
         <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
+        <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
+        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">7.8</property>
       </clade>
       <clade>
         <name>isolate_02</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">6.1</property>
-        <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
-        <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
         <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
+        <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+        <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
+        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">6.1</property>
       </clade>
       <clade>
         <name>isolate_05</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">8.6</property>
-        <property ref="data:segment" datatype="xsd:string" applies_to="node">PB2</property>
-        <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
         <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
+        <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:segment" datatype="xsd:string" applies_to="node">PB2</property>
+        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">8.6</property>
       </clade>
       <clade>
         <name>isolate_08</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">9.1</property>
-        <property ref="data:segment" datatype="xsd:string" applies_to="node">PB2</property>
-        <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
         <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
+        <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:segment" datatype="xsd:string" applies_to="node">PB2</property>
+        <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">9.1</property>
       </clade>
     </clade>
     <clade>
@@ -47,26 +47,26 @@
         <clade>
           <name>isolate_03</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">3.4</property>
-          <property ref="data:segment" datatype="xsd:string" applies_to="node">NA</property>
-          <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
           <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.2.1c</property>
+          <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:segment" datatype="xsd:string" applies_to="node">NA</property>
+          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">3.4</property>
         </clade>
         <clade>
           <name>isolate_07</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">4.7</property>
-          <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
-          <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
           <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.2.1c</property>
+          <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
+          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">4.7</property>
         </clade>
         <clade>
           <name>isolate_10</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">6.8</property>
-          <property ref="data:segment" datatype="xsd:string" applies_to="node">NA</property>
-          <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
           <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
+          <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:segment" datatype="xsd:string" applies_to="node">NA</property>
+          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">6.8</property>
         </clade>
       </clade>
       <clade>
@@ -74,26 +74,26 @@
         <clade>
           <name>isolate_04</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">5.9</property>
-          <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
-          <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
           <property ref="data:clade" datatype="xsd:string" applies_to="node">1A.3.3.2</property>
+          <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
+          <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
+          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">5.9</property>
         </clade>
         <clade>
           <name>isolate_06</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">2.2</property>
-          <property ref="data:segment" datatype="xsd:string" applies_to="node">NA</property>
-          <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
           <property ref="data:clade" datatype="xsd:string" applies_to="node">1A.3.3.2</property>
+          <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
+          <property ref="data:segment" datatype="xsd:string" applies_to="node">NA</property>
+          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">2.2</property>
         </clade>
         <clade>
           <name>isolate_09</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">1.5</property>
-          <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
-          <property ref="data:host" datatype="xsd:string" applies_to="node">Equine</property>
           <property ref="data:clade" datatype="xsd:string" applies_to="node">Fc1</property>
+          <property ref="data:host" datatype="xsd:string" applies_to="node">Equine</property>
+          <property ref="data:segment" datatype="xsd:string" applies_to="node">HA</property>
+          <property ref="data:viral_load" datatype="xsd:decimal" applies_to="node">1.5</property>
         </clade>
       </clade>
     </clade>

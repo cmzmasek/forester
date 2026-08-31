@@ -70,6 +70,7 @@ public final class DemoTreeGenerator {
         write( dir, "size-by-property.xml", sizeByPropertyTree() );
         write( dir, "color-by-property.xml", colorByPropertyTree() );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
+        write( dir, "label-properties.xml", labelPropertiesTree() );
         write( dir, "symbol-columns.xml", symbolColumnsTree() );
         write( dir, "stacked-bar-columns.xml", stackedBarColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
@@ -367,7 +368,7 @@ public final class DemoTreeGenerator {
     }
 
     // ----- "Annotation Columns": several properties of the four supported kinds so the tool can render a color strip
-    //       (categorical), a heat map / bar (numeric) and a text column side by side. Load -> Tools > Annotation Columns.
+    //       (categorical), a heat map / bar (numeric) and a text column side by side. Load -> Tools > Annotation Fields.
     private static Phylogeny annotationColumnsTree() {
         final PhylogenyNode[] tips = {
                 annotated( "isolate_01", "Human", "2.3.4.4b", "HA", 7.8 ),
@@ -385,7 +386,7 @@ public final class DemoTreeGenerator {
                                                  clade( 0.03, tips[ 3 ], tips[ 5 ], tips[ 8 ] ) ) );
         return tree( root, "Annotation columns (demo)",
                      "Synthetic tree with four annotation kinds per tip: 'host' and 'segment' (categorical), "
-                             + "'viral_load' (numeric) and 'clade' (text). Try Tools > Annotation Columns to render "
+                             + "'viral_load' (numeric) and 'clade' (text). Try Tools > Annotation Fields to render "
                              + "them as tip-aligned color-strip, heat-map/bar and text columns." );
     }
 
@@ -396,6 +397,46 @@ public final class DemoTreeGenerator {
         cat( n, "data:segment", segment );
         cat( n, "data:clade", clade ); // free-text label -> text column
         num( n, "data:viral_load", Double.toString( viral_load ) );
+        return n;
+    }
+
+    // ----- "Properties in labels": tips carrying SIX properties each -- the case that makes a tip label unreadable
+    //       when every property is appended to it. The chooser gives each field ONE role: two stay in the label
+    //       (the accession and the passage history, which belong beside the name) and four become tip-aligned
+    //       columns. Load -> Tools > Annotation Fields.
+    private static Phylogeny labelPropertiesTree() {
+        final PhylogenyNode[] tips = {
+                isolate( "A/Vietnam/1203/2004", "EPI1731", "Human", "Viet Nam", "2.3.4.4b", "E3", 2004 ),
+                isolate( "A/HongKong/156/1997", "EPI0885", "Human", "China", "2.3.2.1c", "E2", 1997 ),
+                isolate( "A/duck/Hunan/795/2002", "EPI1442", "Avian", "China", "2.3.2.1c", "E1", 2002 ),
+                isolate( "A/chicken/Egypt/07/2010", "EPI2984", "Avian", "Egypt", "2.2.1", "E4", 2010 ),
+                isolate( "A/swine/Iowa/15/1930", "EPI0112", "Swine", "USA", "1A.3.3.2", "MDCK1", 1930 ),
+                isolate( "A/turkey/Ontario/6118/1968", "EPI0671", "Avian", "Canada", "2.2.1", "E2", 1968 ),
+                isolate( "A/equine/Prague/1/1956", "EPI0334", "Equine", "Czechia", "Fc1", "E5", 1956 ),
+                isolate( "A/mallard/Alberta/24/2001", "EPI1390", "Avian", "Canada", "2.3.4.4b", "E1", 2001 ) };
+        final PhylogenyNode root = clade( 0, clade( 0.05, tips[ 0 ], tips[ 1 ], tips[ 2 ], tips[ 3 ] ),
+                                          clade( 0.05, clade( 0.03, tips[ 4 ], tips[ 6 ] ),
+                                                 clade( 0.03, tips[ 5 ], tips[ 7 ] ) ) );
+        return tree( root, "Properties in labels (demo)",
+                     "Synthetic tree whose tips each carry SIX properties: 'accession' (a different value on every "
+                             + "tip), 'host', 'country', 'clade', 'passage' and 'year'. Showing all six in the tip "
+                             + "label makes it unreadable, so give each field ONE role in Tools > Annotation Fields: "
+                             + "keep 'accession' and 'passage' in the label, render 'host', 'country' and 'clade' as "
+                             + "color-strip columns and 'year' as a heat map -- and use the up/down buttons to set "
+                             + "the order the label reads in. Note that 'accession' is offered for the LABEL even "
+                             + "though it has a different value on every tip, which makes it useless as a color." );
+    }
+
+    private static PhylogenyNode isolate( final String name, final String accession, final String host,
+                                          final String country, final String clade, final String passage,
+                                          final int year ) {
+        final PhylogenyNode n = leaf( name );
+        cat( n, "data:accession", accession );
+        cat( n, "data:host", host );
+        cat( n, "data:country", country );
+        cat( n, "data:clade", clade );
+        cat( n, "data:passage", passage );
+        num( n, "data:year", Integer.toString( year ) );
         return n;
     }
 
@@ -415,7 +456,7 @@ public final class DemoTreeGenerator {
                                           clade( 0.05, tips[ 4 ], tips[ 5 ], tips[ 6 ], tips[ 7 ] ) );
         return tree( root, "Symbol columns (demo)",
                      "Synthetic tree whose tips carry a binary 'resistant' flag (yes / no / untested) and a "
-                             + "categorical 'host'. Try Tools > Annotation Columns and pick the 'Symbol' render "
+                             + "categorical 'host'. Try Tools > Annotation Fields and pick the 'Symbol' render "
                              + "type: a present value draws a filled mark, an explicit 'no' a hollow mark, and an "
                              + "untested tip nothing -- a presence/absence (binary) mark column. A many-valued "
                              + "categorical field ('host') becomes distinct colored marks." );
@@ -433,7 +474,7 @@ public final class DemoTreeGenerator {
     // ----- "Stacked bar columns": metagenomic samples whose tips carry read counts for three bacterial phyla. Setting
     //       all three to "Stacked bar" MERGES them into one segmented bar per tip (segment length = read count, so the
     //       bar's total length shows sequencing depth AND its segments show composition); a normalized bar fills the
-    //       width and shows pure proportion. Load -> Tools > Annotation Columns. (Compositional / proportional data.)
+    //       width and shows pure proportion. Load -> Tools > Annotation Fields. (Compositional / proportional data.)
     private static Phylogeny stackedBarColumnsTree() {
         final PhylogenyNode[] tips = {
                 sample( "gut_01", 820, 140, 40 ),
@@ -452,7 +493,7 @@ public final class DemoTreeGenerator {
                                           clade( 0.05, tips[ 7 ], tips[ 8 ], tips[ 9 ] ) );
         return tree( root, "Stacked bar columns (demo)",
                      "Synthetic metagenomic-sample tree: each tip carries read counts for three bacterial phyla "
-                             + "('firmicutes', 'bacteroidetes', 'proteobacteria'). Try Tools > Annotation Columns, set "
+                             + "('firmicutes', 'bacteroidetes', 'proteobacteria'). Try Tools > Annotation Fields, set "
                              + "all three to 'Stacked bar' -- they merge into one segmented bar per tip (segment length "
                              + "= the read count, so the bar's total length shows sequencing depth AND its segments show "
                              + "composition). Tick 'Normalize stacked bars to 100%' for pure proportional composition." );
@@ -921,8 +962,8 @@ public final class DemoTreeGenerator {
     }
 
     // ----- "Zebra Stripes": a wider (16-tip) tree with a categorical 'host' + numeric 'reads' per tip, so the faint
-    //       alternating row bands help track a label across to its Annotation Columns. Load -> Settings > Display >
-    //       Zebra Stripes (optionally Tools > Annotation Columns).
+    //       alternating row bands help track a label across to its annotation columns. Load -> Settings > Display >
+    //       Zebra Stripes (optionally Tools > Annotation Fields).
     private static Phylogeny zebraStripesTree() {
         final String[] hosts = { "Human", "Avian", "Swine", "Bat" };
         final PhylogenyNode[] clades = new PhylogenyNode[ 4 ];
@@ -942,7 +983,7 @@ public final class DemoTreeGenerator {
         return tree( root, "Zebra stripes (demo)",
                 "Synthetic 16-tip tree with a categorical 'host' and numeric 'reads' per tip. Turn on Settings > "
                         + "Display > Zebra Stripes -- faint alternating row bands make it easy to track a tip label "
-                        + "across to its Annotation Columns (Tools > Annotation Columns)." );
+                        + "across to its annotation columns (Tools > Annotation Fields)." );
     }
 
     // ----- "Reverse Tip Order": an 8-tip ladder (caterpillar) tree with sequentially-numbered tips, so the tip order
@@ -1361,7 +1402,7 @@ public final class DemoTreeGenerator {
                        matrixLeaf( "gene_H", 0.21, 4, 2, 0, 6, 7, 8 ) ) );
         return tree( root, "Heat map matrix (demo)",
                      "Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a "
-                             + "phylogram, then Tools > Annotation Columns and add s1..s6 as \"Heat map (matrix)\": "
+                             + "phylogram, then Tools > Annotation Fields and add s1..s6 as \"Heat map (matrix)\": "
                              + "they render on ONE shared color scale (a clustergram grid), best in a vertical "
                              + "orientation with Tip Labels Below Columns." );
     }

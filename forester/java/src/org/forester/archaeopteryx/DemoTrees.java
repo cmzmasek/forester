@@ -97,6 +97,21 @@ final class DemoTrees {
                                          new AnnotationColumns.ColumnSpec( "data:viral_load", AnnotationColumns.Type.HEATMAP ) ) );
                                  refit( mf );
                              } ) );
+        demos.add( new Demo( "Properties in Labels",
+                             "Six properties per tip: two stay in the tip label, four become tip-aligned columns -- each field gets ONE role.",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "label-properties.xml" );
+                                 // the label keeps the two fields that belong beside the name; the rest become
+                                 // columns, which is what keeps a six-property tree readable
+                                 tp.setLabelPropertyRefs( Arrays.asList( "data:accession", "data:passage" ) );
+                                 mf.getControlPanel().setCheckbox( DisplayOption.SHOW_PROPERTIES, true );
+                                 tp.setAnnotationColumns( Arrays.asList(
+                                         new AnnotationColumns.ColumnSpec( "data:host", AnnotationColumns.Type.COLOR_STRIP ),
+                                         new AnnotationColumns.ColumnSpec( "data:country", AnnotationColumns.Type.COLOR_STRIP ),
+                                         new AnnotationColumns.ColumnSpec( "data:clade", AnnotationColumns.Type.COLOR_STRIP ),
+                                         new AnnotationColumns.ColumnSpec( "data:year", AnnotationColumns.Type.HEATMAP ) ) );
+                                 refit( mf );
+                             } ) );
         demos.add( new Demo( "Symbol Columns",
                              "Tip-aligned shape marks: a binary flag as filled/hollow circles + a categorical host as colored squares (the glyph is picked per column).",
                              mf -> {

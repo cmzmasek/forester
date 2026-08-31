@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -43,6 +44,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Sequence;
@@ -1891,7 +1893,7 @@ public class TreePanelUtil {
         final StringBuffer sb = new StringBuffer();
         if ( props != null ) {
             for( final Property p : props.getProperties() ) {
-                if ( isInternalPropertyRef( p.getRef() ) ) {
+                if ( isInternalPropertyRef( p.getRef() ) || isVisualStylePropertyRef( p.getRef() ) ) {
                     continue;
                 }
                 if ( sb.length() > 0 ) {
@@ -1901,6 +1903,125 @@ public class TreePanelUtil {
             }
         }
         return sb;
+    }
+
+    /** A {@code style:*} property ref -- Archaeopteryx's own node-visual-style metadata. A NODE-level one is
+     *  consumed into {@link NodeVisualData} at parse time and never reaches the property list, but a stray one
+     *  with a different {@code applies_to} can, and it is machinery rather than user content either way. */
+    static boolean isVisualStylePropertyRef( final String ref ) {
+        return ( ref != null ) && ref.startsWith( NodeVisualData.APTX_VISUALIZATION_REF );
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Node properties in the tip label
+    // ---------------------------------------------------------------------------------------------------------------
+    // A node easily carries ten properties, and the "Properties" display option used to append EVERY one of them to
+    // the label as "<full ref>: <value>" -- NEWLINE-joined, into a string that is drawn as a single line. That gave an
+    // unreadably long label ("seq1 nextstrain:country: Brazil" and worse) with literal newlines embedded in it.
+    // The label now shows VALUES ONLY, comma-joined, on one line; WHICH fields appear and in WHICH order is chosen in
+    // Tools > Annotation Fields (see TreePanel#setLabelPropertyRefs). The full "ref: value" list is still one hover
+    // away in the rollover popup, and in Display Node Data -- so narrowing the label loses nothing.
+
+    /** Separator between property values in a tip label. A comma reads as a list, keeping the attributes visibly
+     *  distinct from the identity part of the label (name / accession), which is space-joined. */
+    private static final String LABEL_PROPERTY_SEPARATOR = ", ";
+
+    /**
+     * The node's properties as ONE-LINE tip-label text: values only (no {@code ref:} prefix), comma-joined.
+     * <p>
+     * {@code refs_in_order} selects and ORDERS the fields; a ref the node does not carry is simply skipped. Pass
+     * {@code null} for the default -- every user-visible property, in the property list's own (ref-sorted) order,
+     * which is what the rollover popup and the node panel show too. Internal {@code aptx:*} / {@code style:*}
+     * metadata and empty values never appear. A property's unit, if it has one, follows its value.
+     */
+    static String labelPropertiesText( final PropertiesList props, final List<String> refs_in_order ) {
+        return labelPropertiesText( props, refs_in_order, null );
+    }
+
+    /**
+     * As {@link #labelPropertiesText(PropertiesList, List)}, but with the refs that are already drawn as annotation
+     * COLUMNS excluded from the default selection -- so "a field has one display role" holds from the moment a tree
+     * is opened, not only once the user has visited the Annotation Fields chooser. {@code excluded} is ignored when
+     * {@code refs_in_order} is given: an explicit choice is the user's, and the chooser already keeps it exclusive.
+     */
+    static String labelPropertiesText( final PropertiesList props, final List<String> refs_in_order,
+                                       final Set<String> excluded ) {
+        final StringBuilder sb = new StringBuilder();
+        if ( props == null ) {
+            return "";
+        }
+        if ( refs_in_order == null ) {
+            for( final Property p : props.getProperties() ) {
+                if ( ( excluded != null ) && excluded.contains( p.getRef() ) ) {
+                    continue;
+                }
+                appendLabelPropertyValue( p, sb );
+            }
+        }
+        else {
+            // the chosen order wins over the list's own order, so the caller controls how the label reads
+            for( final String ref : refs_in_order ) {
+                for( final Property p : props.getProperties() ) {
+                    if ( ( ref != null ) && ref.equals( p.getRef() ) ) {
+                        appendLabelPropertyValue( p, sb );
+                    }
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void appendLabelPropertyValue( final Property p, final StringBuilder sb ) {
+        // isEmptyTrimmed, not isEmpty: a whitespace-only value contributes no text, so emitting the ", " separator
+        // for it would leave a doubled separator mid-label ("Brazil, , cat") or a trailing one
+        if ( isInternalPropertyRef( p.getRef() ) || isVisualStylePropertyRef( p.getRef() )
+                || ForesterUtil.isEmptyTrimmed( p.getValue() ) ) {
+            return;
+        }
+        if ( sb.length() > 0 ) {
+            sb.append( LABEL_PROPERTY_SEPARATOR );
+        }
+        sb.append( p.getValue().trim() );
+        if ( !ForesterUtil.isEmpty( p.getUnit() ) ) {
+            // a phyloXML unit is namespaced ("METRIC:m"); the label wants the unit, not the namespace
+            sb.append( " " );
+            sb.append( p.getUnit().substring( p.getUnit().lastIndexOf( ':' ) + 1 ) );
+        }
+    }
+
+    /**
+     * Every user-visible property ref carried by ANY node of the tree -- internal nodes included -- sorted by the
+     * name the user actually sees ({@link PropertyColorScheme#displayName(String)}), ties broken by ref.
+     * <p>
+     * This is the field inventory for the Annotation Fields chooser, and it is deliberately BROADER than
+     * {@link PropertyColorScheme#colorableRefs(Phylogeny)}: that one drops constant fields, per-tip-unique
+     * categorical fields and internal-node-only fields, because none of the three can COLOR anything -- but all
+     * three are perfectly good label text (a study tag, an accession, an ancestral-state annotation). Reusing the
+     * colorable list here would silently hide the most label-worthy fields.
+     */
+    static List<String> userVisiblePropertyRefs( final Phylogeny phy ) {
+        final List<String> refs = new ArrayList<String>();
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return refs;
+        }
+        final SortedSet<String> seen = new TreeSet<String>();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( ( n.getNodeData() == null ) || ( n.getNodeData().getProperties() == null ) ) {
+                continue;
+            }
+            for( final Property p : n.getNodeData().getProperties().getProperties() ) {
+                if ( !isInternalPropertyRef( p.getRef() ) && !isVisualStylePropertyRef( p.getRef() ) ) {
+                    seen.add( p.getRef() );
+                }
+            }
+        }
+        refs.addAll( seen );
+        refs.sort( ( a, b ) -> {
+            final int c = PropertyColorScheme.displayName( a ).compareToIgnoreCase( PropertyColorScheme.displayName( b ) );
+            return ( c != 0 ) ? c : a.compareTo( b );
+        } );
+        return refs;
     }
 
     // ---------------------------------------------------------------------------------------------------------------

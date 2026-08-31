@@ -2245,10 +2245,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             if (getControlPanel().isShowProperties() && node.getNodeData().isHasProperties()) {
-                if (sb.length() > 0) {
-                    sb.append(" ");
+                // may be empty (every field deselected, or only internal metadata) -- do not leave a trailing space
+                final String props = propertiesToString(node);
+                if (props.length() > 0) {
+                    if (sb.length() > 0) {
+                        sb.append(" ");
+                    }
+                    sb.append(props);
                 }
-                sb.append(propertiesToString(node));
             }
         }
     }
@@ -3942,6 +3946,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (getControlPanel().isShowSeqNames() && (seq.getName().length() > 0)) {
                 _sb.append(" ");
                 _sb.append(seq.getName());
+            }
+        }
+        // node PROPERTIES, in the same position the rectangular label puts them (nodeDataAsSB) -- the radial label
+        // used to stop at the sequence data, so the "Properties" display option and the Annotation Fields label
+        // selection silently did nothing in the circular and unrooted layouts
+        if (getControlPanel().isShowProperties() && node.getNodeData().isHasProperties()) {
+            final String props = propertiesToString(node);
+            if (props.length() > 0) {
+                _sb.append(" ");
+                _sb.append(props);
             }
         }
         String rest = _sb.toString();
@@ -6351,9 +6365,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    private final StringBuffer propertiesToString(final PhylogenyNode node) {
-        // hide internal aptx:* metadata (e.g. the persisted Re-import annotation profile on the root)
-        return TreePanelUtil.userVisiblePropertiesText(node.getNodeData().getProperties());
+    /** The node's properties as one-line label text: the chosen fields' VALUES, comma-joined (internal aptx:*
+     *  metadata, such as the persisted Re-import annotation profile, is never shown). May be empty. */
+    private final String propertiesToString(final PhylogenyNode node) {
+        return TreePanelUtil.labelPropertiesText(node.getNodeData().getProperties(), _label_property_refs,
+                _annotation_column_refs);
     }
 
     private void setColor(final Graphics2D g,
@@ -7235,6 +7251,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static float        CLADE_BRACKET_STROKE = 1.5f;
     // Tip-aligned annotation columns (color strip / heat map / bar / text), drawn right of the labels.
     private java.util.List<AnnotationColumns.ColumnSpec> _annotation_column_specs = null; // the user's selection
+    // which node properties the tip label shows, in order; null = every user-visible property that is not already
+    // drawn as a column (see _annotation_column_refs) -- the default
+    private java.util.List<String>     _label_property_refs = null;
+    private java.util.Set<String>      _annotation_column_refs = java.util.Collections.emptySet();
     private AnnotationColumns          _annotation_columns = null;                          // built for the current view
     private int[]                     _annotation_col_widths = null;                        // cached per-column pixel widths
     private Font                      _annotation_col_widths_font = null;                   // font they were computed for
@@ -9158,7 +9178,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _annotation_column_specs = ((specs == null) || specs.isEmpty()) ? null
                 : new java.util.ArrayList<AnnotationColumns.ColumnSpec>(specs);
         _focused_annotation_column = -1;
+        rebuildAnnotationColumnRefs();
         rebuildAnnotationColumns();
+        labelTextChanged(); // a field that became a column leaves the DEFAULT label set -> the labels got shorter
+    }
+
+    /** Re-derives the set of refs drawn as columns, which the default label selection excludes (one role per field). */
+    private void rebuildAnnotationColumnRefs() {
+        if (_annotation_column_specs == null) {
+            _annotation_column_refs = java.util.Collections.emptySet();
+            return;
+        }
+        final java.util.Set<String> refs = new java.util.HashSet<String>();
+        for (final AnnotationColumns.ColumnSpec s : _annotation_column_specs) {
+            if (s._type != AnnotationColumns.Type.LABEL) {
+                refs.add(s._ref);
+            }
+        }
+        _annotation_column_refs = refs;
     }
 
     /** The last annotation import applied to this tree (its source + column mapping), for one-click Re-import, or null. */
@@ -9170,11 +9207,51 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _last_import_profile = profile;
     }
 
+    /** Which node properties the tip label shows, in display order, or null for the default (all of them). */
+    java.util.List<String> getLabelPropertyRefs() {
+        return _label_property_refs;
+    }
+
+    /**
+     * Sets which node properties the tip label shows and in what order (the fields set to "In tip label" in
+     * Tools > Annotation Fields). An EMPTY list means "no properties in the label" -- distinct from null, which
+     * restores the default of showing every user-visible property. Either way the "Properties" display checkbox
+     * still has to be on for any of them to be drawn.
+     */
+    void setLabelPropertyRefs(final java.util.List<String> refs) {
+        _label_property_refs = (refs == null) ? null : new java.util.ArrayList<String>(refs);
+        labelTextChanged();
+    }
+
+    /**
+     * The tip-label TEXT changed, so the cached longest-label width has to be RECOMPUTED. Not merely zeroed: 0 is a
+     * legitimate value rather than a sentinel (an all-external-data-hidden tab reserves exactly 0), so a caller that
+     * only repaints would reserve no label width at all -- and that one number feeds the fit, the annotation-column
+     * x, the clade-band right edge and the radial radius, so the columns would be drawn over the labels.
+     */
+    private void labelTextChanged() {
+        if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
+            calculateLongestExtNodeInfo();
+        }
+    }
+
+    /** For tests: the label text the renderer would draw for {@code node}, assembled by the very method the paint
+     *  path uses -- so the "Properties" display gate, the chosen label fields and their order are all exercised. */
+    String nodeLabelTextForTest(final PhylogenyNode node) {
+        final StringBuilder sb = new StringBuilder();
+        nodeDataAsSB(node, sb);
+        return sb.toString();
+    }
+
     void clearAnnotationColumns() {
         _annotation_column_specs = null;
         _annotation_columns = null;
         _annotation_col_widths = null;
         _focused_annotation_column = -1;
+        // the same chooser assigns the label fields, so a reset drops those too (back to "all properties")
+        _label_property_refs = null;
+        _annotation_column_refs = java.util.Collections.emptySet();
+        labelTextChanged(); // both halves of the reset change the label text
     }
 
     /** Rebuilds the column model from the stored specs against the currently displayed tree (visible tips). */

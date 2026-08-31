@@ -89,6 +89,13 @@ public final class DemoTreesTest {
         ok &= hasNumericRef( "annotation-columns.xml", "data:viral_load" );
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:clade" );
         // symbol columns: a binary flag + a categorical host, both rendered as shape (SYMBOL) marks
+        ok &= hasAtLeastTips( "label-properties.xml", 8 );
+        // the point of this demo is a tip carrying MANY fields, one of them different on every tip (so it is
+        // offered for the label but not as a colour) -- a regression that thinned it out would gut the demo
+        ok &= hasCategoricalRef( "label-properties.xml", "data:host" );
+        ok &= hasCategoricalRef( "label-properties.xml", "data:passage" );
+        ok &= hasNumericRef( "label-properties.xml", "data:year" );
+        ok &= hasSixFieldsWithAUniqueOne( "label-properties.xml" );
         ok &= hasAtLeastTips( "symbol-columns.xml", 8 );
         ok &= hasCategoricalRef( "symbol-columns.xml", "data:resistant" );
         ok &= hasCategoricalRef( "symbol-columns.xml", "data:host" );
@@ -910,6 +917,42 @@ public final class DemoTreesTest {
         }
         if ( !PropertyColorScheme.numericRefs( phy ).contains( ref ) ) {
             return note( file_name + " must offer numeric property '" + ref + "' for its feature demo" );
+        }
+        return true;
+    }
+
+    /**
+     * The "properties in labels" demo only makes its point if every tip really does carry SIX fields, one of them
+     * ('data:accession') with a DIFFERENT value on every tip. That unique field is precisely what
+     * {@code colorableRefs} drops and what the Annotation Fields chooser must still offer for the label, so a
+     * regression that thinned the demo down -- or that made the field constant -- would leave the gallery green
+     * while the demo no longer demonstrated anything.
+     */
+    private static boolean hasSixFieldsWithAUniqueOne( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final java.util.List<String> refs = TreePanelUtil.userVisiblePropertyRefs( phy );
+        if ( refs.size() < 6 ) {
+            return note( file_name + " should offer at least 6 annotation fields, has " + refs.size() );
+        }
+        final java.util.Set<String> unique_values = new java.util.HashSet<String>();
+        for( final PhylogenyNode leaf : phy.getExternalNodes() ) {
+            final String acc = PropertyColorScheme.valueFor( leaf, "data:accession" );
+            if ( acc == null ) {
+                return note( file_name + " every tip needs a 'data:accession' value" );
+            }
+            unique_values.add( acc );
+        }
+        if ( unique_values.size() != phy.getExternalNodes().size() ) {
+            return note( file_name + " 'data:accession' must differ on every tip (that is what makes it a "
+                    + "label-only field), got " + unique_values.size() + " distinct values for "
+                    + phy.getExternalNodes().size() + " tips" );
+        }
+        if ( PropertyColorScheme.colorableRefs( phy ).contains( "data:accession" ) ) {
+            return note( file_name + " 'data:accession' should NOT be colorable -- the demo's point is that the "
+                    + "chooser offers it for the LABEL anyway" );
         }
         return true;
     }

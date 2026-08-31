@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Symbol columns (demo)</name>
-  <description>Synthetic tree whose tips carry a binary &apos;resistant&apos; flag (yes / no / untested) and a categorical &apos;host&apos;. Try Tools &gt; Annotation Columns and pick the &apos;Symbol&apos; render type: a present value draws a filled mark, an explicit &apos;no&apos; a hollow mark, and an untested tip nothing -- a presence/absence (binary) mark column. A many-valued categorical field (&apos;host&apos;) becomes distinct colored marks.</description>
+  <description>Synthetic tree whose tips carry a binary &apos;resistant&apos; flag (yes / no / untested) and a categorical &apos;host&apos;. Try Tools &gt; Annotation Fields and pick the &apos;Symbol&apos; render type: a present value draws a filled mark, an explicit &apos;no&apos; a hollow mark, and an untested tip nothing -- a presence/absence (binary) mark column. A many-valued categorical field (&apos;host&apos;) becomes distinct colored marks.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -10,20 +10,20 @@
       <clade>
         <name>isolate_01</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
       </clade>
       <clade>
         <name>isolate_02</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">no</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">no</property>
       </clade>
       <clade>
         <name>isolate_03</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
       </clade>
       <clade>
         <name>isolate_04</name>
@@ -36,26 +36,26 @@
       <clade>
         <name>isolate_05</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
       </clade>
       <clade>
         <name>isolate_06</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">no</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">no</property>
       </clade>
       <clade>
         <name>isolate_07</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">no</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">no</property>
       </clade>
       <clade>
         <name>isolate_08</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Equine</property>
+        <property ref="data:resistant" datatype="xsd:string" applies_to="node">yes</property>
       </clade>
     </clade>
   </clade>
