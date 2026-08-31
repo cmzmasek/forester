@@ -1107,6 +1107,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Command-line figure rendering (aptx_render): ");
+        if (org.forester.archaeopteryx.AptxRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Focus glow on the hovered node (all click-to modes): ");
         if (org.forester.archaeopteryx.FocusGlowRenderTest.test()) {
             System.out.println("OK.");

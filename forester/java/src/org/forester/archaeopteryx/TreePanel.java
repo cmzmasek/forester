@@ -6986,8 +6986,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 longest_txt_node = node;
             }
             boolean use_vis = false;
+            // null when the panel is not SHOWING (an off-screen render, a component not yet realized). Per-node
+            // visual fonts cannot be measured then, so fall back to the default font rather than throwing.
             final Graphics2D g = (Graphics2D) getGraphics();
-            if (getControlPanel().isUseVisualStyles()) {
+            if ((g != null) && getControlPanel().isUseVisualStyles()) {
                 use_vis = setFont(g, node);
             }
             final Font base = use_vis ? g.getFont() : getTreeFontSet().getLargeFont();

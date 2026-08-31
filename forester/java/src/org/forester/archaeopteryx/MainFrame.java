@@ -1803,6 +1803,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * trees are on screen. Informational only -- there is nothing to decide.
      */
     void reportIgnoredDomains(final Phylogeny[] phys) {
+        if (isRenderingOnly()) {
+            return;
+        }
         final int n = countIgnoredDomains(phys);
         if (n < 1) {
             return;
@@ -1815,12 +1818,27 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
+     * When true, the load-time OFFERS and REPORTS are suppressed. A command-line render builds a real (never
+     * shown) frame and so goes through the same load path as the GUI -- and a modal dialog there would hang a
+     * pipeline forever with nobody to answer it. Process-wide, set once by {@link FigureRenderer}.
+     */
+    private static boolean _rendering_only = false;
+
+    static void setRenderingOnly( final boolean b ) {
+        _rendering_only = b;
+    }
+
+    static boolean isRenderingOnly() {
+        return _rendering_only;
+    }
+
+    /**
      * Just after a tree is loaded, if most of its labels are UniProt FASTA headers, offer once to extract
      * their data (the proactive half of the feature; the Tools menu item is the on-demand half). A no-op
      * for ordinary trees, so it never nags.
      */
     void offerLabelExtraction(final Phylogeny[] phys) {
-        if (phys == null) {
+        if (isRenderingOnly() || (phys == null)) {
             return;
         }
         boolean offer = false;
@@ -1850,6 +1868,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * tree) preempts a redundant "treat as time tree" prompt.
      */
     void offerTipDateExtraction() {
+        if (isRenderingOnly()) {
+            return; // a modal dialog would hang a command-line render
+        }
         if ((_mainpanel == null) || (_mainpanel.getCurrentTreePanel() == null)) {
             return;
         }
@@ -1875,6 +1896,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      *  auto-labeled by the badge itself and needs no dialog; this handles only the ambiguous case (ultrametric
      *  could also be a UPGMA distance tree, so we ask rather than assert). One dialog covers all loaded tabs. */
     void offerTreatAsTimeTree() {
+        if (isRenderingOnly()) {
+            return; // a modal dialog would hang a command-line render
+        }
         if (_mainpanel == null) {
             return;
         }
@@ -1909,6 +1933,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void offerInternalNamesAsConfidence(final Phylogeny[] phys) {
+        if (isRenderingOnly()) {
+            return; // a modal dialog would hang a command-line render
+        }
         if ((phys == null) || getOptions().isInternalNumberAreConfidenceForNhParsing()) {
             return;
         }

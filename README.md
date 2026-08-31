@@ -50,8 +50,8 @@ What's in forester
 
 **Command-line tools** live in `org.forester.application` — among them `gsdi`,
 `rio`, `cladinator`, `decorator`, `count_support`, `confadd`, `nj`,
-`phyloxml_converter`, and the `msa_*` alignment utilities. Each is a `main`-class
-you can run from the built jar, e.g.:
+`phyloxml_converter`, the `msa_*` alignment utilities, and `aptx_render`. Each is
+a `main`-class you can run from the built jar, e.g.:
 
 ```
 java -cp forester.jar org.forester.application.gsdi
@@ -59,6 +59,24 @@ java -cp forester.jar org.forester.application.gsdi
 
 (run with no arguments for usage). Building the jar is described under
 [For Developers](#for-developers).
+
+**`aptx_render`** is the odd one out: rather than analysing a tree it draws one,
+using the same renderer and exporters as Archaeopteryx, so a script produces the
+figure the window would have shown.
+
+```
+java -cp forester.jar org.forester.application.aptx_render \
+     -size=170x120mm -dpi=300 -support  tree.xml  figure.pdf
+```
+
+The output format comes from the file extension (`.pdf`, `.svg`, `.eps`, `.png`,
+`.jpg`, `.tiff`). The render starts from documented defaults plus the options you
+pass — never from settings saved by the Archaeopteryx GUI — so the same command
+yields the same figure on any machine. It does need a *display*, even though no
+window is shown, because Archaeopteryx's display settings live in its control
+panel; on a headless server run it under `xvfb-run`. The full option list is in
+the [Archaeopteryx user manual](https://github.com/cmzmasek/archaeopteryx#rendering-figures-from-the-command-line),
+or run it with `-help`.
 
 
 Citing
