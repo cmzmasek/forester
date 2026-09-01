@@ -401,6 +401,56 @@ public final class MsaTrackRenderTest {
                 }
                 mf[ 0 ].showWhole();
             } );
+            // (6e) A CLICK on a Display checkbox must re-measure with the state the user just chose, not the one
+            // they left. The checkboxes are shared by the window and the paint reads the TAB's copy, so a click
+            // arrives with the widget flipped and the tab still holding the old value; measuring before copying it
+            // across reserved the label width for the PREVIOUS state. User-visible symptom, exactly as reported:
+            // turning "Node Name" ON reserved for names OFF and the labels ran into the alignment, turning it OFF
+            // reserved for names ON and left a large gap. Drives the REAL listener -- setCheckbox writes the tab
+            // through itself and so takes a different path, which is why a sweep built on it saw nothing.
+            SwingUtilities.invokeAndWait( () -> {
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.getOptions().setShowMsa( true );
+                tp.getOptions().setMsaColumnWidth( 12 );
+                for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
+                    if ( !t.getName().startsWith( "influenza_" ) ) {
+                        t.setName( "influenza_" + t.getName() + "_A_H3N2_2026" );
+                    }
+                }
+                tp.setSize( 900, 460 );
+                mf[ 0 ].showWhole();
+                final ControlPanel cp2 = tp.getControlPanel();
+                for( final DisplayOption d : DisplayOption.values() ) {
+                    final javax.swing.JCheckBox cb = cp2.checkboxForTest( d );
+                    if ( cb == null ) {
+                        continue; // DISPLAY_AS_PHYLOGRAM is a radio group, not a checkbox
+                    }
+                    final boolean was = cb.isSelected();
+                    for( final boolean on : new boolean[] { !was, was } ) {
+                        cb.setSelected( on );
+                        cp2.actionPerformed( new java.awt.event.ActionEvent( cb, 0, "click" ) );
+                        AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                        final float over = tp.labelOverrunPastTrackForTest();
+                        if ( over == Float.NEGATIVE_INFINITY ) {
+                            continue; // that click hid the external data: nothing to measure, nothing to prove
+                        }
+                        if ( over > 0 ) {
+                            fail( ok, "clicking " + d + " " + ( on ? "on" : "off" )
+                                    + " left the labels reaching " + Math.round( over )
+                                    + "px into the alignment -- the reservation was measured before the click was "
+                                    + "copied onto the tab" );
+                            return;
+                        }
+                    }
+                }
+                for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
+                    if ( t.getName().startsWith( "influenza_" ) ) {
+                        t.setName( t.getName().substring( "influenza_".length() ).replace( "_A_H3N2_2026", "" ) );
+                    }
+                }
+                mf[ 0 ].showWhole();
+            } );
             // (6c) tip-aligned cells TILE: adjacent row bands must abut exactly, at every layout. The boundary
             // between two rows used to be derived twice -- (y + ydistance) for one, (y - ydistance) for the next --
             // and float noise could round those a pixel apart, leaving a white seam across the alignment.

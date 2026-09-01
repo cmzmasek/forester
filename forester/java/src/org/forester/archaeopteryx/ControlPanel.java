@@ -464,12 +464,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                         && !_dynamically_hide_data.isSelected()) {
                     setDynamicHidingIsOn(false);
                     displayedPhylogenyMightHaveChanged(true);
-                } else if ((e.getSource() == _display_internal_data) || (e.getSource() == _display_external_data)) {
-                    // These two are PER TAB: the paint reads the tab's own copy, so a click has to be written
-                    // through or the checkbox is inert -- it would toggle, repaint, change nothing, and then be
-                    // silently un-ticked again by the next tab switch re-seeding it from the tab.
-                    pushDisplayDataToCurrentTab();
-                    displayedPhylogenyMightHaveChanged(true);
                 } else {
                     displayedPhylogenyMightHaveChanged(true);
                 }
@@ -1389,6 +1383,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     void displayedPhylogenyMightHaveChanged(final boolean recalc_longest_ext_node_info) {
         if ((_mainpanel != null)
                 && ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty())) {
+            // FIRST, before anything measures the tree: copy the Display checkboxes onto the tab, because the tab's
+            // copy is what the paint -- and therefore the label-width measurement below -- reads.
+            //
+            // A click on a Display checkbox lands here with the widget already flipped but the tab still holding the
+            // OLD value. Measuring first and pushing afterwards reserved the label width for the state the user just
+            // left: turning "Node Name" ON reserved for names OFF, so the labels were drawn wider than their
+            // reservation and ran into the alignment; turning it OFF reserved for names ON and left a large gap.
+            pushDisplayDataToCurrentTab();
             if (recalc_longest_ext_node_info) {
                 _mainpanel.getCurrentTreePanel().initNodeData();
                 _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
@@ -1400,11 +1402,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
             _mainpanel.getCurrentTreePanel().rebuildPropertyDisplays();
             _mainpanel.getCurrentTreePanel().rebuildAnnotationColumns();
-            // A newly loaded tree has just had its checkboxes configured for its own data (the data-presence scan
-            // auto-enables Domain Architectures, confidence values, events...). The paint reads the TAB's copy, so
-            // the tab has to take those on -- otherwise a tree that auto-enabled domains would draw none. On a tab
-            // SWITCH this is a no-op: the reseed has already put the tab's own values into the widgets.
-            pushDisplayDataToCurrentTab();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
             getMainPanel().getControlPanel();
@@ -1506,6 +1503,12 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowDomainArchitectures() {
         return ((_show_domain_architectures != null) && _show_domain_architectures.isSelected());
+    }
+
+    /** Test hook: the widget behind a display option, so a test can drive a REAL user click (flip it, then fire
+     *  actionPerformed) instead of the programmatic setCheckbox -- the two take different paths. */
+    JCheckBox checkboxForTest(final DisplayOption which) {
+        return checkboxFor(which);
     }
 
     /** Test hook: force the "Show Domain Architectures" checkbox on/off. */
