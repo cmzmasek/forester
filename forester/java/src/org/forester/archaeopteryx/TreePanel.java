@@ -7048,9 +7048,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ((g != null) && shows(DisplayOption.USE_STYLE)) {
                 use_vis = setFont(g, node);
             }
-            final Font base = use_vis ? g.getFont() : getTreeFontSet().getLargeFont();
-            sum = (use_vis ? getFontMetrics(g.getFont()) : getFontMetricsForLargeDefaultFont())
-                    .stringWidth(sb.toString());
+            Font base = use_vis ? g.getFont() : getTreeFontSet().getLargeFont();
+            // "Bold Found Labels" draws a search hit BOLD, which is a few percent wider than the roman text this
+            // reservation is measured from -- and a search deliberately does NOT re-run this measurement (it is
+            // per-keystroke; see repaintTreeAfterSearch). So while the option is on, reserve for the BOLD width of
+            // EVERY tip: any of them can become the hit, and the reserve has to be an upper bound whichever does.
+            // It over-reserves by a few px when nothing is found, which is invisible; under-reserving is not --
+            // everything anchored to this (the alignment track, the annotation columns, the clade bands) would
+            // start inside the label.
+            if (getOptions().isBoldFoundLabels()) {
+                base = boldOf(base);
+            }
+            sum = getFontMetrics(base).stringWidth(sb.toString());
             if (has_tax) {
                 sum += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
             }
@@ -11947,6 +11956,43 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** For tests: the consensus residue the track would draw for a 0-based alignment column (0 when none). */
     char msaConsensusForTest(final int col) {
         return msaConservation().consensusAt(col);
+    }
+
+    /**
+     * For tests: how far the widest DRAWN tip label reaches past the point where the tip-aligned track next to it
+     * (the alignment, or the annotation columns) begins. Zero or negative means they clear each other.
+     * <p>
+     * Measured with the font each tip is actually drawn with -- a per-node visual font, and BOLD when the tip is a
+     * search hit and "Bold Found Labels" is on -- because a reservation measured in one font and a label drawn in
+     * another is exactly how a label ends up sitting on top of the alignment.
+     */
+    float labelOverrunPastTrackForTest() {
+        if ((_phylogeny == null) || _phylogeny.isEmpty() || !isShowExternalDataForThisTab()) {
+            return Float.NEGATIVE_INFINITY;
+        }
+        final float track_start = annotationColumnsEndX() + MSA_TRACK_GAP;
+        float worst = Float.NEGATIVE_INFINITY;
+        for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
+            if (node.isCollapse() || isHiddenUnderCollapse(node)) {
+                continue;
+            }
+            final StringBuilder sb = new StringBuilder();
+            nodeDataAsSB(node, sb);
+            Font base = getTreeFontSet().getLargeFont();
+            if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
+                    && (node.getNodeData().getNodeVisualData().getFont() != null)) {
+                base = node.getNodeData().getNodeVisualData().getFont();
+            }
+            if (getOptions().isBoldFoundLabels() && isInFoundNodes(node)) {
+                base = boldOf(base);
+            }
+            float w = getFontMetrics(base).stringWidth(sb.toString());
+            if (node.getNodeData().isHasTaxonomy()) {
+                w += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
+            }
+            worst = Math.max(worst, (labelTextStartX(node) + w) - track_start);
+        }
+        return worst;
     }
 
     /** For tests: the text the track names itself with (measure + how many sequences it covers). */

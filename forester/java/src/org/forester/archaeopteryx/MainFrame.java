@@ -604,6 +604,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _bold_found_labels_cbmi) {
             updateOptions(getOptions());
+            // Bold text is WIDER than roman, and the tip-label width reservation -- which is where the alignment
+            // track and the annotation columns start -- is measured once per layout, not per search. So the option
+            // has to re-measure when it is switched on, or the next search's bold hit is drawn into the alignment.
+            if (getMainPanel().getControlPanel() != null) {
+                getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
+            }
         } else if (o == _dim_non_matches_cbmi) {
             updateOptions(getOptions());
         } else if (o == _pulse_found_nodes_cbmi) {

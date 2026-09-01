@@ -310,6 +310,71 @@ public final class MsaTrackRenderTest {
                             + tp.msaConservationReserveForTest() );
                 }
             } );
+            // (6d) THE TIP LABELS MUST NEVER REACH INTO THE ALIGNMENT. The reservation the alignment is positioned
+            // from is measured once per layout, in ROMAN; "Bold Found Labels" then draws a search hit BOLD, a few
+            // percent wider, and a search deliberately does not re-measure (it runs per keystroke). So the widest
+            // tip becoming a hit used to push its label straight into the first alignment column -- reported by a
+            // user, and previously invisible because before the alignment existed it only clipped the right margin.
+            SwingUtilities.invokeAndWait( () -> {
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.getOptions().setShowMsa( true );
+                tp.getOptions().setMsaColumnWidth( 12 );
+                // names long enough that the label column is a real share of the width
+                for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
+                    if ( !t.getName().startsWith( "influenza_" ) ) {
+                        t.setName( "influenza_" + t.getName() + "_A_H3N2_2026" );
+                    }
+                }
+                tp.getOptions().setBoldFoundLabels( true );
+                tp.setSize( 900, 460 );
+                mf[ 0 ].showWhole();
+                AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                if ( tp.labelOverrunPastTrackForTest() > 0 ) {
+                    fail( ok, "with nothing found, the labels already reach into the alignment by "
+                            + tp.labelOverrunPastTrackForTest() + "px" );
+                }
+                // now make the WIDEST tip a search hit -- the case the reservation has to survive
+                String widest = "";
+                for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
+                    if ( t.getName().length() > widest.length() ) {
+                        widest = t.getName();
+                    }
+                }
+                tp.getControlPanel().getSearchTextField0().setText( widest );
+                tp.getControlPanel().search0();
+                // deliberately NO re-fit here: a search does not re-measure, which is the whole point
+                AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                final float over = tp.labelOverrunPastTrackForTest();
+                if ( over > 0 ) {
+                    fail( ok, "a BOLD found label must not reach into the alignment -- it overruns by "
+                            + Math.round( over ) + "px (the reservation is measured roman and a search does not "
+                            + "re-measure, so it must reserve the bold width up front)" );
+                }
+                tp.getControlPanel().getSearchTextField0().setText( "" );
+                tp.getControlPanel().search0();
+                tp.getOptions().setBoldFoundLabels( false );
+
+                // ...and the other half: switching the option ON from Settings AFTER the layout must re-measure.
+                // Reserving the bold width is only an upper bound if a layout pass ran while the option was on;
+                // the toggle used to just repaint, leaving a roman reservation behind a bold label.
+                mf[ 0 ].showWhole();
+                AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                mf[ 0 ]._bold_found_labels_cbmi.setSelected( true );
+                mf[ 0 ].actionPerformed( new java.awt.event.ActionEvent( mf[ 0 ]._bold_found_labels_cbmi, 0, "t" ) );
+                tp.getControlPanel().getSearchTextField0().setText( widest );
+                tp.getControlPanel().search0();
+                AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                final float after_toggle = tp.labelOverrunPastTrackForTest();
+                if ( after_toggle > 0 ) {
+                    fail( ok, "turning Bold Found Labels on must re-measure the label reservation -- a bold hit "
+                            + "overruns the alignment by " + Math.round( after_toggle ) + "px" );
+                }
+                mf[ 0 ]._bold_found_labels_cbmi.setSelected( false );
+                mf[ 0 ].actionPerformed( new java.awt.event.ActionEvent( mf[ 0 ]._bold_found_labels_cbmi, 0, "t" ) );
+                tp.getControlPanel().getSearchTextField0().setText( "" );
+                tp.getControlPanel().search0();
+            } );
             // (6c) tip-aligned cells TILE: adjacent row bands must abut exactly, at every layout. The boundary
             // between two rows used to be derived twice -- (y + ydistance) for one, (y - ydistance) for the next --
             // and float noise could round those a pixel apart, leaving a white seam across the alignment.
