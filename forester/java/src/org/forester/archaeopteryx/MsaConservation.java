@@ -166,6 +166,15 @@ final class MsaConservation {
         return ( d > 1 ) ? 1 : d;
     }
 
+    /**
+     * How the track names itself in the figure: the measure, and how many sequences it was scored over. The count
+     * is the load-bearing half -- the profile covers the tips CURRENTLY DISPLAYED, so without it a reader cannot
+     * tell whether a bar describes the whole alignment or the six tips left after a clade was collapsed.
+     */
+    static String label( final Measure measure, final int rows ) {
+        return measure + " (n = " + rows + ")";
+    }
+
     /** Number of columns scored. */
     int length() {
         return _identity.length;

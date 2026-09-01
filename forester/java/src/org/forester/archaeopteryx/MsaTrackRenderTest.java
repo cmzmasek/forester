@@ -285,6 +285,54 @@ public final class MsaTrackRenderTest {
                 if ( tp.msaConsensusForTest( 10 ) != 0 ) {
                     fail( ok, "the all-gap column must have no consensus residue" );
                 }
+                // the band NAMES its measure, and how many sequences it covers -- an exported conservation chart
+                // is unreadable without both
+                if ( !"Consensus identity (n = 4)".equals( tp.msaConservationLabelForTest() ) ) {
+                    fail( ok, "the track must name its measure and n, got " + tp.msaConservationLabelForTest() );
+                }
+                tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.INFORMATION );
+                if ( !tp.msaConservationLabelForTest().startsWith( "Information content" ) ) {
+                    fail( ok, "the label must follow the chosen measure, got " + tp.msaConservationLabelForTest() );
+                }
+                tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.IDENTITY );
+                // ...and the name has its OWN reserved row inside the band. Without it the label would be drawn
+                // above the bars but outside the reservation -- i.e. over the last alignment row.
+                final int[] parts = tp.msaConservationBandPartsForTest();
+                if ( parts[ 0 ] <= 0 ) {
+                    fail( ok, "the measure name must have its own reserved row in the band" );
+                }
+                int sum = 0;
+                for( final int part : parts ) {
+                    sum += part;
+                }
+                if ( sum != tp.msaConservationReserveForTest() ) {
+                    fail( ok, "the band's parts must account for its whole reserved height: " + sum + " vs "
+                            + tp.msaConservationReserveForTest() );
+                }
+            } );
+            // (6c) tip-aligned cells TILE: adjacent row bands must abut exactly, at every layout. The boundary
+            // between two rows used to be derived twice -- (y + ydistance) for one, (y - ydistance) for the next --
+            // and float noise could round those a pixel apart, leaving a white seam across the alignment.
+            SwingUtilities.invokeAndWait( () -> {
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.getOptions().setShowMsa( true );
+                // sweep heights so at least one lands on the fractional ydistance that straddles a rounding boundary
+                for( int h = 331; h <= 520; h += 7 ) {
+                    tp.setSize( 700, h );
+                    mf[ 0 ].showWhole();
+                    tp.calcParametersForPainting( 700, h );
+                    final int[][] bands = tp.tipRowBandsForTest();
+                    for( int i = 0; i < ( bands.length - 1 ); ++i ) {
+                        final int bottom = bands[ i ][ 0 ] + bands[ i ][ 1 ];
+                        if ( bottom != bands[ i + 1 ][ 0 ] ) {
+                            fail( ok, "alignment rows must tile with no seam or overlap: at height " + h + " row "
+                                    + i + " ends at " + bottom + " but row " + ( i + 1 ) + " starts at "
+                                    + bands[ i + 1 ][ 0 ] );
+                            return;
+                        }
+                    }
+                }
             } );
             // (6b) scored over the tips ON SCREEN: collapsing a clade re-scores the profile for what is left
             SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );

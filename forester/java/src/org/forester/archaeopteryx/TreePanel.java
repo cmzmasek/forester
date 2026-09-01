@@ -9983,6 +9983,36 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return tips;
     }
 
+    /**
+     * The device row band {top, height} for tip {@code index} of {@code tips} -- the strip a tip-aligned cell
+     * (alignment residue, annotation column) fills.
+     * <p>
+     * The boundary between two rows is derived ONCE, as the midpoint between the two tips, and used by BOTH of
+     * them. Taking it as {@code y - ydistance} for the lower row and {@code y + ydistance} for the upper one looks
+     * equivalent and is not: the two are computed from different accumulated float y-coordinates, so they can land
+     * either side of a .5 and round a pixel apart -- measured 360.49997 against 360.50003 on a six-tip tree, which
+     * drew a white seam straight across the alignment. Sharing the expression makes the bands abut by construction.
+     */
+    private int[] tipRowBand(final java.util.List<PhylogenyNode> tips, final int index) {
+        final float pad = getYdistance();
+        final float y = tips.get(index).getYcoord();
+        final float top = (index == 0) ? (y - pad) : ((tips.get(index - 1).getYcoord() + y) / 2f);
+        final float bottom = (index == (tips.size() - 1)) ? (y + pad)
+                : ((y + tips.get(index + 1).getYcoord()) / 2f);
+        final int cy = Math.round(top);
+        return new int[] { cy, Math.max(1, Math.round(bottom) - cy) };
+    }
+
+    /** For tests: the row bands of the visible tips, {top, height} each, in tree order. */
+    int[][] tipRowBandsForTest() {
+        final java.util.List<PhylogenyNode> tips = visibleExternalTips();
+        final int[][] bands = new int[tips.size()][];
+        for (int i = 0; i < tips.size(); ++i) {
+            bands[i] = tipRowBand(tips, i);
+        }
+        return bands;
+    }
+
     private void paintAnnotationColumns(final Graphics2D g) {
         if (!hasAnnotationColumns()) {
             return;
@@ -10003,11 +10033,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int w = annotationColumnWidth(i);
             final int xi = Math.round(x);
             final AnnotationColumns.Type type = _annotation_columns.getColumn(i).getType();
-            for (final PhylogenyNode t : tips) {
-                // round each cell's top and bottom to the row boundaries so adjacent cells tile exactly
-                // (no 1px seam or overlap) even when getYdistance() is fractional after a fit/zoom
-                final int cy = Math.round(t.getYcoord() - pad);
-                final int cell_h = Math.max(1, Math.round(t.getYcoord() + pad) - cy);
+            for (int r = 0; r < tips.size(); ++r) {
+                final PhylogenyNode t = tips.get(r);
+                // adjacent cells tile EXACTLY, with no 1px seam or overlap, however fractional getYdistance() is
+                // after a fit/zoom -- see tipRowBand for why the shared boundary has to be one expression
+                final int[] band = tipRowBand(tips, r);
+                final int cy = band[0];
+                final int cell_h = band[1];
                 switch (type) {
                     case COLOR_STRIP:
                     case HEATMAP:
@@ -11875,10 +11907,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() * 2);
     }
 
-    /** Height of the conservation band: the bar area plus, when they are drawn, a row for the consensus letters. */
+    /** Height of the conservation band: a row naming the measure, the bar area, and -- when they are drawn -- a
+     *  row for the consensus letters. The name row is reserved ABOVE the bars, so it can never sit under a tall
+     *  bar, and the tips compress to make room for it rather than the label overlapping the alignment. */
     private int msaConservationBandHeight() {
         final int fh = getFontMetrics(getTreeFontSet().getSmallFont()).getHeight();
-        return msaConservationBarHeight() + (msaConsensusLettersDrawn() ? fh : 0)
+        return fh + msaConservationBarHeight() + (msaConsensusLettersDrawn() ? fh : 0)
                 + AptxConstants.MSA_CONSERVATION_TOP_GAP;
     }
 
@@ -11911,6 +11945,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** For tests: the consensus residue the track would draw for a 0-based alignment column (0 when none). */
     char msaConsensusForTest(final int col) {
         return msaConservation().consensusAt(col);
+    }
+
+    /** For tests: the text the track names itself with (measure + how many sequences it covers). */
+    String msaConservationLabelForTest() {
+        return MsaConservation.label(getOptions().getMsaConservationMeasure(), msaConservation().rows());
+    }
+
+    /** For tests: how the conservation band's reserved height is spent -- {label row, bar area, consensus-letter
+     *  row, top gap}. They must sum to the reserve, and the label row must be non-zero: the measure name is drawn
+     *  in it, so without its own reservation it would be drawn over the last alignment row. */
+    int[] msaConservationBandPartsForTest() {
+        final int fh = getFontMetrics(getTreeFontSet().getSmallFont()).getHeight();
+        return new int[] { fh, msaConservationBarHeight(), msaConsensusLettersDrawn() ? fh : 0,
+                           AptxConstants.MSA_CONSERVATION_TOP_GAP };
     }
 
     /** For tests: the vertical space the conservation band takes from the tree (0 when it is not drawn). */
@@ -12070,7 +12118,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(STROKE_1);
         int y_top = Integer.MAX_VALUE; // vertical span of the aligned rows (for the start/end boundary lines)
         int y_bottom = Integer.MIN_VALUE;
-        for (final PhylogenyNode tip : visibleExternalTips()) {
+        final java.util.List<PhylogenyNode> msa_tips = visibleExternalTips();
+        for (int r = 0; r < msa_tips.size(); ++r) {
+            final PhylogenyNode tip = msa_tips.get(r);
             if (!tip.getNodeData().isHasSequence()) {
                 continue;
             }
@@ -12082,9 +12132,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (ForesterUtil.isEmpty(mol)) {
                 continue;
             }
-            final float pad = getYdistance();
-            final int cy = Math.round(tip.getYcoord() - pad);
-            final int cell_h = Math.max(1, Math.round(tip.getYcoord() + pad) - cy);
+            final int[] band = tipRowBand(msa_tips, r); // see tipRowBand: the shared boundary, not y +/- ydistance
+            final int cy = band[0];
+            final int cell_h = band[1];
             y_top = Math.min(y_top, cy);
             y_bottom = Math.max(y_bottom, cy + cell_h);
             for (int i = first_i; i <= last_i; ++i) {
@@ -12207,6 +12257,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     g.drawString(ch, cx + ((cell_w - fm.stringWidth(ch)) / 2), bar_bottom + fm.getAscent());
                 }
             }
+        }
+        // Name the measure IN the figure, in the row reserved above the bars: an exported conservation chart is
+        // unreadable without knowing which measure drew it, and over how many sequences. Degrades rather than
+        // overruns a narrow band -- the count goes first, then the whole label.
+        g.setFont(small);
+        g.setColor(ink);
+        final int label_baseline = (bar_bottom - bar_h) - fm.getDescent() - 1;
+        final int avail = Math.round(shown * cw);
+        final String full = MsaConservation.label(getOptions().getMsaConservationMeasure(), cons.rows());
+        final String short_form = getOptions().getMsaConservationMeasure().toString();
+        final String label = (fm.stringWidth(full) <= avail) ? full
+                : ((fm.stringWidth(short_form) <= avail) ? short_form : null);
+        if (label != null) {
+            g.drawString(label, Math.round(origin_x), label_baseline);
         }
         // a baseline under the bars, so a column of zero conservation still reads as a measured zero, not a gap in
         // the chart -- and so the bar heights have something to be read against
