@@ -824,7 +824,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (action == NodeClickAction.ADD_NEW_NODE)) && (getCutOrCopiedTree() != null)
                 && (getCopiedAndPastedNodes() != null) && !to_pdf && !to_graphics_file
                 && getCopiedAndPastedNodes().contains(node.getId())) {
-            g.setColor(getTreeColorSet().getFoundColor0());
+            g.setColor(CLIPBOARD_HIGHLIGHT); // held by Cut/Copy -- an editing state, not a search hit
         } else if ((getOptions().getSupportVisualization() == Options.SUPPORT_VISUALIZATION.COLOR_BRANCHES)
                 && !node.isExternal() && node.getBranchData().isHasConfidences()
                 && (PhylogenyMethods.getConfidenceValue(node) >= 0.0)) {
@@ -4387,7 +4387,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float height = getOvMaxHeight() / h_ratio;
         final float x = getVisibleRect().x + getOvXPosition() + (getOvMaxWidth() / x_ratio);
         final float y = getVisibleRect().y + getOvYPosition() + (getOvMaxHeight() / y_ratio);
-        g.setColor(getTreeColorSet().getFoundColor0());
+        // The viewport box is NAVIGATION chrome. It used to borrow the search-hit colour, so the box and a matched
+        // node wore the same red -- in this very overview, where the found-node marks legitimately use it.
+        g.setColor(uiAccentColor());
         getOvRectangle().setRect(x, y, width, height);
         final Stroke s = g.getStroke();
         g.setStroke(STROKE_1);
@@ -12756,6 +12758,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int[]   HOVER_GLOW_ALPHAS  = { 34, 44, 58 };
     private static final int     HOVER_GLOW_MIN_DIA = 18;                        // readable on a tiny default node
     private static final Color   HOVER_GLOW_ACCENT_FALLBACK = new Color(0x26, 0x75, 0xbf);
+    /** A subtree currently held by Cut/Copy. Its own muted amber: it is neither a search hit (red) nor navigation
+     *  chrome (the accent), and a deliberately different amber from the Okabe-Ito duplication-or-speciation event
+     *  colour, so a held subtree cannot be misread as an event box. Readable on both grounds. */
+    private static final Color   CLIPBOARD_HIGHLIGHT        = new Color(0xC8, 0x7A, 0x1E);
 
     /** Sets the hover-preview target -- a single node ({@code subtree}=false, drawn as one marker on the node)
      *  or a branch ({@code subtree}=true, drawn on the subtree's tips) -- repainting only on an actual change
@@ -12880,8 +12886,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             return getTreeColorSet().getFoundColor0(); // "a click here will select"
         }
+        return uiAccentColor();
+    }
+
+    /** The look-and-feel's accent, with the house fallback -- the colour interactive CHROME is drawn in (the focus
+     *  glow outside Select mode, the overview's viewport box). Deliberately NOT a data colour: red belongs to
+     *  search hits and nothing else. */
+    static Color uiAccentColor() {
         final Color accent = UIManager.getColor("Component.accentColor");
         return (accent != null) ? accent : HOVER_GLOW_ACCENT_FALLBACK;
+    }
+
+    /** For tests: the colour a Cut/Copy-held subtree is drawn in. */
+    static Color clipboardHighlightColorForTest() {
+        return CLIPBOARD_HIGHLIGHT;
     }
 
     /**

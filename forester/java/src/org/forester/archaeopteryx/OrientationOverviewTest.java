@@ -36,7 +36,8 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
  * Verifies the overview thumbnail is drawn in a VERTICAL orientation. Two things are checked: (1) the navigator
- * rectangle draws (found-0 colour, the only such pixels with no search active); and (2) the ROTATED MINI-TREE itself
+ * rectangle draws (the UI accent -- the navigator is chrome, so it no longer borrows the search-hit colour, and with
+ * no search active the accent is the only thing painting those pixels); and (2) the ROTATED MINI-TREE itself
  * draws branches -- the navigator alone draws even if R is degenerate, so the mini-tree is detected by rendering the
  * viewport with the overview ON and OFF and counting the pixels that DIFFER but are not the navigator colour (the main
  * tree is identical between the two, so those differing pixels are the mini-tree's branches). Headful; a green no-op
@@ -97,11 +98,15 @@ public final class OrientationOverviewTest {
                     final JViewport vp = frame.getMainPanel().getCurrentScrollPane().getViewport();
                     vp.validate();
                     final BufferedImage img = renderViewport( vp ); // the visible tree + the overview at the corner
-                    final Color nav = tp.getTreeColorSet().getFoundColor0(); // the navigator rectangle colour
+                    final Color nav = TreePanel.uiAccentColor(); // the navigator rectangle colour (UI chrome)
                     final int n = countColor( img, nav );
                     if ( n < 8 ) {
-                        fail( ok, "the overview navigator rectangle was not drawn in the vertical view (found-0 px="
+                        fail( ok, "the overview navigator rectangle was not drawn in the vertical view (accent px="
                                 + n + ")" );
+                    }
+                    // ...and it must NOT be the search-hit colour: nothing is found here, so none may be painted
+                    if ( countColor( img, tp.getTreeColorSet().getFoundColor0() ) > 0 ) {
+                        fail( ok, "the navigator must not be drawn in the search-hit colour" );
                     }
                     // render again with the overview OFF: the main tree is identical, so every pixel that DIFFERS is
                     // overview ink; excluding the navigator colour leaves the rotated mini-tree's own branches, proving

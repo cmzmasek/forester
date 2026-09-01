@@ -269,6 +269,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _clear_overlays_jmi;
     /** Appears in the menu bar the first time something is logged, so a user knows there is something to send. */
     private JMenu _error_indicator_menu;
+    /** The "something went wrong" marker: Okabe-Ito vermillion, the same one the duplication boxes use. A warning,
+     *  not a fire alarm -- and colourblind-safe, which raw red is not. */
+    private static final Color ERROR_MARKER_COLOR = new Color(0xD5, 0x5E, 0x00);
+    /** Stand-in for the look-and-feel accent when it has none (FlatLaf always does). The one house accent, shared
+     *  with the equalizer icon and the focus glow. */
+    private static final Color ACCENT_FALLBACK = new Color(0x26, 0x75, 0xbf);
+
+    /** For tests: the colour the "error logged" menu-bar marker is drawn in. */
+    static Color errorMarkerColorForTest() {
+        return ERROR_MARKER_COLOR;
+    }
     JMenuItem _import_annotations_url_item;
     JMenuItem _load_alignment_item;
     JMenuItem _import_gtdb_item;
@@ -926,7 +937,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             // a running task is "in progress", not an error -> use the FlatLaf theme accent, not red
             final Color accent = UIManager.getColor("Component.accentColor");
-            _process_menu.setForeground(accent != null ? accent : Color.BLUE);
+            _process_menu.setForeground(accent != null ? accent : ACCENT_FALLBACK);
             _process_menu.removeAll();
             final String text = "processes running: " + _process_pool.size();
             _process_menu.setText(text);
@@ -1153,7 +1164,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         _error_indicator_menu = createMenu("⚠ error logged", getConfiguration());
         _error_indicator_menu.setToolTipText("Something went wrong and was written to the error log.");
-        _error_indicator_menu.setForeground(Color.RED);
+        _error_indicator_menu.setForeground(ERROR_MARKER_COLOR);
         final JMenuItem open = customizeJMenuItem(new JMenuItem("Show Error Log"));
         open.addActionListener(e -> showErrorLog());
         _error_indicator_menu.add(open);

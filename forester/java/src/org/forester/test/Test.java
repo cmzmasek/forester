@@ -251,6 +251,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Chrome colors (chrome must not wear data colors): ");
+        if (org.forester.archaeopteryx.ChromeColorsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("MSA conservation measures: ");
         if (org.forester.archaeopteryx.MsaConservationTest.test()) {
             System.out.println("OK.");

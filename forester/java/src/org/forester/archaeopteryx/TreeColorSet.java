@@ -27,9 +27,7 @@ import org.forester.util.ForesterUtil;
 
 public final class TreeColorSet {
 
-    public static final String ANNOTATION                 = "Annotation";
     public static final String BACKGROUND                 = "Background";
-    public static final String BINARY_DOMAIN_COMBINATIONS = "Binary Domain Combinations";
     public static final String BRANCH                     = "Branch";
     public static final String BRANCH_LENGTH              = "Branch Length";
     public static final String COLLAPSED                  = "Collapsed";
@@ -38,18 +36,20 @@ public final class TreeColorSet {
     public static final String DOMAIN_BASE                = "Domain Base";
     public static final String DUPLICATION                = "Duplication";
     public static final String DUPLICATION_OR_SPECATION   = "Duplication or Specation";
-    public static final String MATCHING_NODES_A           = "Matching A";
-    public static final String MATCHING_NODES_A_AND_B     = "Matching A and B";
-    public static final String MATCHING_NODES_B           = "Matching B";
-    public static final String NODE_BOX                   = "Node Box";
     public static final String OVERVIEW                   = "Overview";
     public static final String SEQUENCE                   = "Sequence";
     public static final String SPECIATION                 = "Speciation";
     public static final String TAXONOMY                   = "Taxonomy";
-    static final String[]      COLOR_FIELDS               = { BACKGROUND, SEQUENCE,
-            TAXONOMY, CONFIDENCE, BRANCH_LENGTH, BRANCH, NODE_BOX, COLLAPSED, MATCHING_NODES_A, MATCHING_NODES_B,
-            MATCHING_NODES_A_AND_B, DUPLICATION, SPECIATION, DUPLICATION_OR_SPECATION, DOMAIN_LABEL, DOMAIN_BASE,
-            BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
+    /**
+     * The colour each scheme row carries, IN ORDER (see setColorSchema). Every entry is read by setColorSchema --
+     * there are no dead slots. Six once were: the three MATCHING_NODES_* (superseded by applyFoundColors, which
+     * derives them so the two themes agree), NODE_BOX, BINARY_DOMAIN_COMBINATIONS and ANNOTATION (whose features
+     * were removed). They held the last raw primaries in the app -- (255,0,0), (0,255,0), (0,0,255), chartreuse --
+     * unreachable, but one re-wired getter away from coming back, so they are gone.
+     */
+    static final String[]      COLOR_FIELDS               = { BACKGROUND, SEQUENCE, TAXONOMY, CONFIDENCE,
+            BRANCH_LENGTH, BRANCH, COLLAPSED, DUPLICATION, SPECIATION, DUPLICATION_OR_SPECATION, DOMAIN_LABEL,
+            DOMAIN_BASE, OVERVIEW };
     // Archaeopteryx has exactly two tree color schemes: index 0 = Dark, index 1 = Light. They mirror the
     // FlatLaf light/dark UI theme and are selected by MainFrame.updateTreeCanvasColors (driven by the
     // control panel's sun/moon theme toggle). There is no scheme chooser or cycling.
@@ -66,18 +66,12 @@ public final class TreeColorSet {
             new Color( 180, 180, 180 ), // support
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
-            new Color( 255, 255, 255 ), // box_color
             new Color( 255, 255, 255 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color 0
-            new Color( 255, 0, 0 ), // found_color 1
-            new Color( 255, 255, 0 ), // found_color 1 + 2
             new Color( 213, 94, 0 ), // duplication_box_color (Okabe-Ito vermillion #D55E00; colorblind-safe vs speciation)
             new Color( 0, 158, 115 ), // speciation_box_color (Okabe-Ito bluish-green #009E73)
             new Color( 230, 159, 0 ), // duplication_speciation_color (Okabe-Ito amber #E69F00)
             new Color( 230, 230, 230 ), // domain_label
             new Color( 100, 100, 100 ), // domains_base
-            new Color( 65, 105, 255 ), // binary_domain_combinations_color
-            new Color( 173, 255, 47 ), // annotation
             new Color( 130, 130, 130 ) }, // overview
             { new Color( 255, 255, 255 ), // background_color  __ Light
             new Color( 0, 0, 0 ), // sequence
@@ -85,21 +79,14 @@ public final class TreeColorSet {
             new Color( 0, 0, 0 ), // support
             new Color( 0, 0, 0 ), // branch_length_color
             new Color( 0, 0, 0 ), // branch_color
-            new Color( 0, 0, 0 ), // box_color
             new Color( 0, 0, 0 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color 0
-            new Color( 0, 255, 0 ), // found_color 1
-            new Color( 0, 0, 255 ), // found_color 1 + 2
             new Color( 213, 94, 0 ), // duplication_box_color (Okabe-Ito vermillion #D55E00; colorblind-safe vs speciation)
             new Color( 0, 158, 115 ), // speciation_box_color (Okabe-Ito bluish-green #009E73)
             new Color( 230, 159, 0 ), // duplication_speciation_color (Okabe-Ito amber #E69F00)
             new Color( 0, 0, 0 ), // domain_label
             new Color( 100, 100, 100 ), // domains_base
-            new Color( 0, 0, 0 ), // binary_domain_combinations_color
-            new Color( 0, 0, 0 ), // annotation
             new Color( 220, 220, 220 ) } }; // overview
     private Color              background_color;
-    private Color              binary_domain_combinations_color;
     private Color              bootstrap_color;
     private Color              branch_color;
     private Color              branch_length_color;
@@ -138,10 +125,6 @@ public final class TreeColorSet {
 
     Color getBackgroundColor() {
         return background_color;
-    }
-
-    Color getBinaryDomainCombinationsColor() {
-        return binary_domain_combinations_color;
     }
 
     Color getBranchColor() {
@@ -236,15 +219,14 @@ public final class TreeColorSet {
         bootstrap_color = _color_schemes[ scheme ][ 3 ];
         branch_length_color = _color_schemes[ scheme ][ 4 ];
         branch_color = _color_schemes[ scheme ][ 5 ];
-        collapse_fill_color = _color_schemes[ scheme ][ 7 ];
-        applyFoundColors(); // found_color_0/1/0and1 -- computed (unified across themes), not read from the array [8..10]
-        dup_box_color = _color_schemes[ scheme ][ 11 ];
-        spec_box_color = _color_schemes[ scheme ][ 12 ];
-        duplication_or_specation_color = _color_schemes[ scheme ][ 13 ];
-        domain_label_color = _color_schemes[ scheme ][ 14 ];
-        domain_base_color = _color_schemes[ scheme ][ 15 ];
-        binary_domain_combinations_color = _color_schemes[ scheme ][ 16 ];
-        ov_color = _color_schemes[ scheme ][ 18 ];
+        collapse_fill_color = _color_schemes[ scheme ][ 6 ];
+        applyFoundColors(); // found_color_0/1/0and1 are COMPUTED (unified across themes), never read from a row
+        dup_box_color = _color_schemes[ scheme ][ 7 ];
+        spec_box_color = _color_schemes[ scheme ][ 8 ];
+        duplication_or_specation_color = _color_schemes[ scheme ][ 9 ];
+        domain_label_color = _color_schemes[ scheme ][ 10 ];
+        domain_base_color = _color_schemes[ scheme ][ 11 ];
+        ov_color = _color_schemes[ scheme ][ 12 ];
     }
 
     /** Sets the Search-B / secondary-highlight hue (the "Found/Selected Colors" setting) and re-derives the found

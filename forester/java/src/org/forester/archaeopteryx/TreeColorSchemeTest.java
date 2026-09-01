@@ -70,14 +70,30 @@ public final class TreeColorSchemeTest {
                 || !Color.BLACK.equals( tcs.getSequenceColor() ) || !"Light".equals( tcs.getCurrentColorSchemeName() ) ) {
             return false;
         }
-        // the binary-domain-combinations color must come straight from the active scheme (the dead
-        // SPECIAL_CUSTOM override that returned a fixed gray was removed)
-        tcs.setColorSchema( 0 );
-        if ( !new Color( 65, 105, 255 ).equals( tcs.getBinaryDomainCombinationsColor() ) ) {
-            return false;
+        // NO RAW PRIMARY may sit in a scheme row. The six dead slots that held them -- the three MATCHING_NODES_*,
+        // NODE_BOX, BINARY_DOMAIN_COMBINATIONS and ANNOTATION -- were removed once their features were; this keeps
+        // (255,0,0), (0,255,0), (0,0,255), (255,255,0) and chartreuse from creeping back into a row. Greys and the
+        // black/white ends are fine: it is SATURATION that is garish, not extremity.
+        // What makes a colour garish is not extremity but sitting on the OUTER SKIN of the RGB cube: a channel
+        // blown out to 255 while another is near zero. That catches (255,0,0), (0,255,0), (0,0,255), (255,255,0),
+        // chartreuse (173,255,47) and royal blue (65,105,255) -- every value the removed slots held -- while
+        // leaving the deliberate Okabe-Ito tones alone, since vermillion (213,94,0) and amber (230,159,0) top out
+        // BELOW 255. Greys and pure white/black are min == max, so they never trip it.
+        for( final Color[] row : tcs._color_schemes ) {
+            for( final Color c : row ) {
+                final int max = Math.max( c.getRed(), Math.max( c.getGreen(), c.getBlue() ) );
+                final int min = Math.min( c.getRed(), Math.min( c.getGreen(), c.getBlue() ) );
+                if ( ( max == 255 ) && ( min <= 110 ) ) {
+                    System.out.println( "  [TreeColorSchemeTest] raw primary in a scheme row: " + c );
+                    return false;
+                }
+            }
         }
-        tcs.setColorSchema( 1 );
-        if ( !Color.BLACK.equals( tcs.getBinaryDomainCombinationsColor() ) ) {
+        // ...and every slot a row carries must actually be READ by setColorSchema -- one name per colour, no
+        // dead slots left for a future getter to resurrect
+        if ( tcs._color_schemes[ 0 ].length != TreeColorSet.COLOR_FIELDS.length ) {
+            System.out.println( "  [TreeColorSchemeTest] a scheme row and COLOR_FIELDS must agree: "
+                    + tcs._color_schemes[ 0 ].length + " vs " + TreeColorSet.COLOR_FIELDS.length );
             return false;
         }
         // ---- found-node highlights: UNIFIED across themes (A = red, "both" = teal, same hue per role in Light and
