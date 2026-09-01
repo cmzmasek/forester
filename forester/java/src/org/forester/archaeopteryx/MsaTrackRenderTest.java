@@ -330,9 +330,14 @@ public final class MsaTrackRenderTest {
                 tp.setSize( 900, 460 );
                 mf[ 0 ].showWhole();
                 AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
-                if ( tp.labelOverrunPastTrackForTest() > 0 ) {
+                final float baseline_over = tp.labelOverrunPastTrackForTest();
+                if ( baseline_over == Float.NEGATIVE_INFINITY ) {
+                    fail( ok, "precondition: no tip label was measured at all -- this block would pass vacuously" );
+                    return;
+                }
+                if ( baseline_over > 0 ) {
                     fail( ok, "with nothing found, the labels already reach into the alignment by "
-                            + tp.labelOverrunPastTrackForTest() + "px" );
+                            + baseline_over + "px" );
                 }
                 // now make the WIDEST tip a search hit -- the case the reservation has to survive
                 String widest = "";
@@ -370,10 +375,31 @@ public final class MsaTrackRenderTest {
                     fail( ok, "turning Bold Found Labels on must re-measure the label reservation -- a bold hit "
                             + "overruns the alignment by " + Math.round( after_toggle ) + "px" );
                 }
+                // The ALIGNED DOMAIN COLUMN hangs off a SECOND reservation (_length_of_longest_text), not the one
+                // above -- measuring only that one roman would leave the same defect one track over, on any tree
+                // with domain architectures. Both must follow the option.
+                final int reserved_bold = tp.lengthOfLongestTextForTest();
+                mf[ 0 ]._bold_found_labels_cbmi.setSelected( false );
+                mf[ 0 ].actionPerformed( new java.awt.event.ActionEvent( mf[ 0 ]._bold_found_labels_cbmi, 0, "t" ) );
+                final int reserved_roman = tp.lengthOfLongestTextForTest();
+                if ( reserved_bold <= reserved_roman ) {
+                    fail( ok, "the aligned domain column's reservation must widen for bold too (bold "
+                            + reserved_bold + " vs roman " + reserved_roman + ")" );
+                }
                 mf[ 0 ]._bold_found_labels_cbmi.setSelected( false );
                 mf[ 0 ].actionPerformed( new java.awt.event.ActionEvent( mf[ 0 ]._bold_found_labels_cbmi, 0, "t" ) );
                 tp.getControlPanel().getSearchTextField0().setText( "" );
                 tp.getControlPanel().search0();
+                // restore the original tip names: (6c) below sweeps panel heights to land on the fractional
+                // y-distance that exposes the row seam, and longer labels change the font auto-shrink and so the
+                // y-distance -- leaving them renamed would quietly stop that sweep probing the case it guards.
+                for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
+                    if ( t.getName().startsWith( "influenza_" ) ) {
+                        t.setName( t.getName().substring( "influenza_".length() )
+                                .replace( "_A_H3N2_2026", "" ) );
+                    }
+                }
+                mf[ 0 ].showWhole();
             } );
             // (6c) tip-aligned cells TILE: adjacent row bands must abut exactly, at every layout. The boundary
             // between two rows used to be derived twice -- (y + ydistance) for one, (y - ydistance) for the next --

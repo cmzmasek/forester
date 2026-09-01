@@ -864,20 +864,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && (calcDynamicHidingFactor() > 1);
     }
 
+    /** Where the ALIGNED domain column is anchored ({@code tip_x + _length_of_longest_text}). This is a
+     *  RESERVATION like {@link #calculateLongestExtNodeInfo}, so it follows the same font rule -- measuring it
+     *  roman while a bold found label is drawn puts that label on top of the first domain box: the same defect,
+     *  one track over. */
     final private int calcLengthOfLongestText() {
         if (_ext_node_with_longest_txt_info == null) {
             return 0;
         }
-        final StringBuilder sb = new StringBuilder();
-        nodeDataAsSB(_ext_node_with_longest_txt_info, sb);
-        int sum = getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());
-        // Measure the taxonomy part italic-aware (the scientific name may be drawn in italics), so the
-        // reserved width matches what is painted instead of a roman over/under-estimate.
-        if (_ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy()) {
-            sum += taxonomyLabelWidth(_ext_node_with_longest_txt_info.getNodeData().getTaxonomy(),
-                    getTreeFontSet().getLargeFont());
-        }
-        return sum;
+        return labelTextWidth(_ext_node_with_longest_txt_info,
+                              reservationFontFor(_ext_node_with_longest_txt_info));
     }
 
     /**
@@ -4320,19 +4316,73 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return lw;
     }
 
-    /** The pixel width of an external tip's drawn text label (node data + taxonomy) at the large default font -- used
-     *  to centre an upright horizontal tip label. Measured the same (non-bold) way as {@code _length_of_longest_text_only}
-     *  (the breadth reserve), so the centring and the reserve agree. NOTE: like the reserve, it does not account for a
-     *  Bold-Found / visual-style font, so such a label centres a few px off (the documented non-bold-reservation class);
-     *  matching the reserve avoids centring a bold label WIDER than the space reserved for it (which would clip). */
-    private int tipLabelTextWidth(final PhylogenyNode node) {
+    /**
+     * The font a tip's text label is DRAWN in -- the per-node visual font when visual styles are on, made BOLD when
+     * the node is a search hit and "Bold Found Labels" is on. Mirrors {@link #setFont(Graphics2D, PhylogenyNode)}
+     * without needing a Graphics, so a width can be measured off-screen -- during a layout pass, in a test -- in
+     * exactly the font the paint will use.
+     */
+    private Font drawnLabelFont(final PhylogenyNode node) {
+        Font base = getTreeFontSet().getLargeFont();
+        if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
+                && (node.getNodeData().getNodeVisualData().getFont() != null)) {
+            base = node.getNodeData().getNodeVisualData().getFont();
+        }
+        if (getOptions().isBoldFoundLabels() && isInFoundNodes(node)) {
+            base = boldOf(base);
+        }
+        return base;
+    }
+
+    /**
+     * The font a tip's label must be RESERVED for. Like {@link #drawnLabelFont} but bold for EVERY tip while
+     * "Bold Found Labels" is on, not only the ones currently found: a search draws its hit bold and deliberately
+     * does NOT re-run the measurement (it runs per keystroke -- see repaintTreeAfterSearch), so the reservation has
+     * to be an upper bound whichever tip becomes the hit.
+     * <p>
+     * That bold width also feeds the font auto-fit in calcParametersForPainting, so switching the option on can
+     * cost one font step on a tree whose labels already fill most of the width. That is the honest outcome -- bold
+     * labels really are wider -- and the alternative, reserving less than is drawn, is what put a label on top of
+     * the alignment in the first place.
+     */
+    private Font reservationFontFor(final PhylogenyNode node) {
+        Font base = getTreeFontSet().getLargeFont();
+        if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
+                && (node.getNodeData().getNodeVisualData().getFont() != null)) {
+            base = node.getNodeData().getNodeVisualData().getFont();
+        }
+        return getOptions().isBoldFoundLabels() ? boldOf(base) : base;
+    }
+
+    /** Metrics for {@code f}, reusing the font set's cached metrics for the default font so every width in the
+     *  layout is measured through the same FontRenderContext. */
+    private FontMetrics metricsFor(final Font f) {
+        return (f == getTreeFontSet().getLargeFont()) ? getFontMetricsForLargeDefaultFont() : getFontMetrics(f);
+    }
+
+    /**
+     * THE pixel width of an external tip's drawn text label (node data + taxonomy) in {@code base}.
+     * <p>
+     * One measurement, shared by every consumer: the label-width RESERVATION the tip-aligned tracks are placed
+     * from, the aligned domain column, the centring of an upright tip label, and the test hook. A label measured
+     * one way and drawn another is precisely how a label ends up sitting on top of the alignment, so there is
+     * deliberately only one place that can be got wrong.
+     */
+    private int labelTextWidth(final PhylogenyNode node, final Font base) {
         final StringBuilder sb = new StringBuilder();
         nodeDataAsSB(node, sb);
-        int w = getFontMetricsForLargeDefaultFont().stringWidth(sb.toString());
+        int w = metricsFor(base).stringWidth(sb.toString());
         if (node.getNodeData().isHasTaxonomy()) {
-            w += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), getTreeFontSet().getLargeFont());
+            w += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
         }
         return w;
+    }
+
+    /** The width of an upright horizontal tip label, for centring it -- in the font it is actually DRAWN in, so a
+     *  bold search hit centres on its bold width. The reserve it is centred inside is bold for every tip while the
+     *  option is on, so a bold label can never be wider than the space reserved for it. */
+    private int tipLabelTextWidth(final PhylogenyNode node) {
+        return labelTextWidth(node, drawnLabelFont(node));
     }
 
     final private void paintNodeWithRenderableData(final Graphics2D g,
@@ -7041,28 +7091,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 longest_txt = txt;
                 longest_txt_node = node;
             }
-            boolean use_vis = false;
-            // null when the panel is not SHOWING (an off-screen render, a component not yet realized). Per-node
-            // visual fonts cannot be measured then, so fall back to the default font rather than throwing.
-            final Graphics2D g = (Graphics2D) getGraphics();
-            if ((g != null) && shows(DisplayOption.USE_STYLE)) {
-                use_vis = setFont(g, node);
-            }
-            Font base = use_vis ? g.getFont() : getTreeFontSet().getLargeFont();
-            // "Bold Found Labels" draws a search hit BOLD, which is a few percent wider than the roman text this
-            // reservation is measured from -- and a search deliberately does NOT re-run this measurement (it is
-            // per-keystroke; see repaintTreeAfterSearch). So while the option is on, reserve for the BOLD width of
-            // EVERY tip: any of them can become the hit, and the reserve has to be an upper bound whichever does.
-            // It over-reserves by a few px when nothing is found, which is invisible; under-reserving is not --
-            // everything anchored to this (the alignment track, the annotation columns, the clade bands) would
-            // start inside the label.
-            if (getOptions().isBoldFoundLabels()) {
-                base = boldOf(base);
-            }
-            sum = getFontMetrics(base).stringWidth(sb.toString());
-            if (has_tax) {
-                sum += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
-            }
+            // Measured in the font the label will be reserved for -- bold while "Bold Found Labels" is on, since
+            // any tip can become the hit and a search does not re-measure. (No Graphics is needed, and none is
+            // taken: getGraphics() allocates a context per call that has to be disposed, and this runs per tip,
+            // repeatedly, inside the font auto-fit loop.)
+            final Font base = reservationFontFor(node);
+            sum = labelTextWidth(node, base);
             if (isRadialLayout()) {
                 // radial labels are truncated to this reach (see paintNodeDataUnrootedCirc) -- so the reservation, the
                 // domain start (radius + longest_text) and the drawn labels all agree, keeping everything on-canvas
@@ -11962,9 +11996,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * For tests: how far the widest DRAWN tip label reaches past the point where the tip-aligned track next to it
      * (the alignment, or the annotation columns) begins. Zero or negative means they clear each other.
      * <p>
-     * Measured with the font each tip is actually drawn with -- a per-node visual font, and BOLD when the tip is a
-     * search hit and "Bold Found Labels" is on -- because a reservation measured in one font and a label drawn in
-     * another is exactly how a label ends up sitting on top of the alignment.
+     * Goes through the same {@link #labelTextWidth} the reservation and the paint use, in the font each tip is
+     * actually drawn in ({@link #drawnLabelFont}) -- a guard that re-implemented the measurement could agree with
+     * itself while the product drifted.
+     * <p>
+     * Returns {@link Float#NEGATIVE_INFINITY} when there was nothing to measure (no tree, external data hidden,
+     * every label culled). A test must treat that as "this proved nothing", not as a pass.
      */
     float labelOverrunPastTrackForTest() {
         if ((_phylogeny == null) || _phylogeny.isEmpty() || !isShowExternalDataForThisTab()) {
@@ -11973,26 +12010,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float track_start = annotationColumnsEndX() + MSA_TRACK_GAP;
         float worst = Float.NEGATIVE_INFINITY;
         for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
-            if (node.isCollapse() || isHiddenUnderCollapse(node)) {
-                continue;
+            if (node.isCollapse() || isHiddenUnderCollapse(node) || isNodeDataInvisible(node)) {
+                continue; // collapsed away, or culled by dynamic label hiding: no label is painted for it
             }
-            final StringBuilder sb = new StringBuilder();
-            nodeDataAsSB(node, sb);
-            Font base = getTreeFontSet().getLargeFont();
-            if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
-                    && (node.getNodeData().getNodeVisualData().getFont() != null)) {
-                base = node.getNodeData().getNodeVisualData().getFont();
-            }
-            if (getOptions().isBoldFoundLabels() && isInFoundNodes(node)) {
-                base = boldOf(base);
-            }
-            float w = getFontMetrics(base).stringWidth(sb.toString());
-            if (node.getNodeData().isHasTaxonomy()) {
-                w += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
-            }
-            worst = Math.max(worst, (labelTextStartX(node) + w) - track_start);
+            worst = Math.max(worst, (labelTextStartX(node) + tipLabelTextWidth(node)) - track_start);
         }
         return worst;
+    }
+
+    /** For tests: the reservation the ALIGNED domain column is anchored on ({@code _length_of_longest_text}). A
+     *  separate anchor from {@link #getLongestExtNodeInfo()}, so it needs its own guard: it was measured roman
+     *  while a bold found label was drawn, putting that label on top of the first domain box. */
+    int lengthOfLongestTextForTest() {
+        return _length_of_longest_text;
     }
 
     /** For tests: the text the track names itself with (measure + how many sequences it covers). */

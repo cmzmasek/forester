@@ -604,12 +604,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _bold_found_labels_cbmi) {
             updateOptions(getOptions());
-            // Bold text is WIDER than roman, and the tip-label width reservation -- which is where the alignment
-            // track and the annotation columns start -- is measured once per layout, not per search. So the option
-            // has to re-measure when it is switched on, or the next search's bold hit is drawn into the alignment.
-            if (getMainPanel().getControlPanel() != null) {
-                getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged(true);
-            }
+            remeasureLabelReservations();
         } else if (o == _dim_non_matches_cbmi) {
             updateOptions(getOptions());
         } else if (o == _pulse_found_nodes_cbmi) {
@@ -1112,6 +1107,31 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         JOptionPane.showMessageDialog(this, "The error log is at:\n" + f, "Error Log",
                                       JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Re-measures the tip-label width reservation on EVERY open tab.
+     * <p>
+     * That reservation is where the alignment track, the annotation columns and the clade bands start, and it is
+     * computed once per layout -- not per search. "Bold Found Labels" draws a hit in a WIDER font, so switching it
+     * on has to re-measure or the next search's bold label is drawn on top of the alignment. It is a GLOBAL option
+     * while the reservation is per tab, and a tab switch does not re-measure, so every tab has to be done now
+     * rather than only the one in front.
+     */
+    private void remeasureLabelReservations() {
+        if ((getMainPanel() == null) || (getMainPanel().getTreePanels() == null)) {
+            return;
+        }
+        for (final TreePanel tp : getMainPanel().getTreePanels()) {
+            if ((tp != null) && (tp.getPhylogeny() != null) && !tp.getPhylogeny().isEmpty()) {
+                tp.calculateLongestExtNodeInfo();
+                tp.resetPreferredSize(); // the tracks moved: the scrollable extent has to follow them
+            }
+        }
+        if (getMainPanel().getCurrentTreePanel() != null) {
+            getMainPanel().adjustJScrollPane();
+            getMainPanel().getCurrentTreePanel().repaint();
+        }
     }
 
     /**
