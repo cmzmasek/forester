@@ -607,6 +607,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         setSpeciesColors(new HashMap<String, Color>());
     }
 
+    /** The per-tab display type, package-visible so the figure spec can capture it. Null for an index with no
+     *  tab (a panel that is still being built), rather than an index-out-of-bounds. */
+    Options.PHYLOGENY_DISPLAY_TYPE treeDisplayTypeAt(final int index) {
+        if ((index < 0) || (index >= getTreeDisplayTypes().size())) {
+            return null;
+        }
+        return getTreeDisplayType(index);
+    }
+
     private Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType(final int index) {
         return getTreeDisplayTypes().get(index);
     }
@@ -1391,6 +1400,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().recalculateMaxDistanceToRoot();
             _mainpanel.getCurrentTreePanel().rebuildPropertyDisplays();
             _mainpanel.getCurrentTreePanel().rebuildAnnotationColumns();
+            // A newly loaded tree has just had its checkboxes configured for its own data (the data-presence scan
+            // auto-enables Domain Architectures, confidence values, events...). The paint reads the TAB's copy, so
+            // the tab has to take those on -- otherwise a tree that auto-enabled domains would draw none. On a tab
+            // SWITCH this is a no-op: the reseed has already put the tab's own values into the widgets.
+            pushDisplayDataToCurrentTab();
             setVisibilityOfDomainStrucureControls();
             updateDomainStructureEvaluethresholdDisplay();
             getMainPanel().getControlPanel();
@@ -1499,6 +1513,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (_show_domain_architectures != null) {
             _show_domain_architectures.setSelected(selected);
         }
+        pushDisplayDataToCurrentTab(); // the paint reads the tab's copy; the widget alone changes nothing
     }
 
     void setShowExternalDataForTest(final boolean selected) {
@@ -1602,6 +1617,41 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (_display_external_data != null) {
             _display_external_data.setSelected(tp.isShowExternalDataForThisTab());
         }
+        // ...and the rest of the Display checkboxes. A tab that already has an opinion SHOWS it; a tab that does
+        // not yet (a freshly opened one) ADOPTS what the widgets currently say, so every tab ends up with a
+        // definite state instead of silently tracking whatever the last-used widgets happened to be.
+        for (final DisplayOption opt : DisplayOption.values()) {
+            if ((opt == DisplayOption.DISPLAY_INTERNAL_DATA) || (opt == DisplayOption.DISPLAY_EXTERNAL_DATA)) {
+                continue; // handled above, and they push back to the tab themselves
+            }
+            if (opt == DisplayOption.DISPLAY_AS_PHYLOGRAM) {
+                continue; // see the note in pushDisplayDataToCurrentTab: it is a THREE-way choice, not a toggle
+            }
+            if (tp.hasOwnDisplayState(opt)) {
+                setCheckboxWidget(opt, tp.shows(opt));
+            }
+            else {
+                tp.setShows(opt, currentValueOf(opt));
+            }
+        }
+    }
+
+    /** {@link #setCheckbox} without its per-tab side effects -- used while RE-SEEDING from a tab, where pushing
+     *  back to that same tab would be circular. Goes through {@link #checkboxFor}, so which widget an option reads
+     *  from and which one it writes to are one and the same by construction. */
+    private void setCheckboxWidget(final DisplayOption which, final boolean state) {
+        if (which == DisplayOption.DISPLAY_AS_PHYLOGRAM) {
+            if (getDisplayAsUnalignedPhylogramRb() != null) {
+                getDisplayAsUnalignedPhylogramRb().setSelected(state);
+                getDisplayAsAlignedPhylogramRb().setSelected(!state);
+                getDisplayAsCladogramRb().setSelected(!state);
+            }
+            return;
+        }
+        final JCheckBox cb = checkboxFor(which);
+        if (cb != null) {
+            cb.setSelected(state);
+        }
     }
 
     /** Copies the two Display-Data checkboxes onto the current tab, which is where the paint reads them from. */
@@ -1610,6 +1660,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (tp != null) {
             tp.setShowInternalDataForThisTab(isShowInternalData());
             tp.setShowExternalDataForThisTab(isShowExternalData());
+            // ...and every other Display option, so the tab owns the whole figure rather than just two toggles.
+            // DISPLAY_AS_PHYLOGRAM is deliberately NOT one of them: it is a THREE-way radio choice (unaligned
+            // phylogram / aligned phylogram / cladogram), and squeezing it through a boolean turns "aligned" into
+            // "cladogram" on the way back. It keeps its own per-tab representation.
+            for (final DisplayOption opt : DisplayOption.values()) {
+                if (opt != DisplayOption.DISPLAY_AS_PHYLOGRAM) {
+                    tp.setShows(opt, currentValueOf(opt));
+                }
+            }
         }
     }
 
@@ -1897,126 +1956,95 @@ final class ControlPanel extends JPanel implements ActionListener {
         _action_when_node_clicked = action;
     }
 
-    void setCheckbox(final DisplayOption which, final boolean state) {
+    /**
+     * The widget behind a {@link DisplayOption} -- THE mapping, so reading an option and writing it can never drift
+     * apart (they used to be two switches waiting to disagree). Null when the option has no checkbox: only
+     * {@link DisplayOption#DISPLAY_AS_PHYLOGRAM}, which is a three-way radio group, handled by its callers.
+     */
+    private JCheckBox checkboxFor(final DisplayOption which) {
         switch (which) {
-            case DISPLAY_AS_PHYLOGRAM:
-                if (getDisplayAsUnalignedPhylogramRb() != null) {
-                    getDisplayAsUnalignedPhylogramRb().setSelected(state);
-                    getDisplayAsAlignedPhylogramRb().setSelected(!state);
-                    getDisplayAsCladogramRb().setSelected(!state);
-                }
-                break;
-            case DISPLAY_INTERNAL_DATA:
-                if (_display_internal_data != null) {
-                    _display_internal_data.setSelected(state);
-                }
-                pushDisplayDataToCurrentTab(); // these two are per-tab; the widget only shows the current one
-                break;
-            case DISPLAY_EXTERNAL_DATA:
-                if (_display_external_data != null) {
-                    _display_external_data.setSelected(state);
-                }
-                pushDisplayDataToCurrentTab();
-                break;
-            case SHOW_NODE_NAMES:
-                if (_show_node_names != null) {
-                    _show_node_names.setSelected(state);
-                }
-                break;
-            case SHORTEN_LABELS:
-                if (_shorten_labels_cb != null) {
-                    _shorten_labels_cb.setSelected(state);
-                }
-                break;
-            case SHOW_TAXONOMY_SCIENTIFIC_NAMES:
-                if (_show_taxo_scientific_names != null) {
-                    _show_taxo_scientific_names.setSelected(state);
-                }
-                break;
-            case SHOW_TAXONOMY_COMMON_NAMES:
-                if (_show_taxo_common_names != null) {
-                    _show_taxo_common_names.setSelected(state);
-                }
-                break;
-            case SHOW_TAX_CODE:
-                if (_show_taxo_code != null) {
-                    _show_taxo_code.setSelected(state);
-                }
-                break;
-            case SHOW_TAX_RANK:
-                if (_show_taxo_rank != null) {
-                    _show_taxo_rank.setSelected(state);
-                }
-                break;
-            case WRITE_CONFIDENCE_VALUES:
-                if (getWriteConfidenceCb() != null) {
-                    getWriteConfidenceCb().setSelected(state);
-                }
-                break;
-            case WRITE_EVENTS:
-                if (getShowEventsCb() != null) {
-                    getShowEventsCb().setSelected(state);
-                }
-                break;
-            case USE_STYLE:
-                if (getUseVisualStylesCb() != null) {
-                    getUseVisualStylesCb().setSelected(state);
-                }
-                break;
-            case WIDTH_BRANCHES:
-                if (_width_branches != null) {
-                    _width_branches.setSelected(state);
-                }
-                break;
-            case SHOW_DOMAIN_ARCHITECTURES:
-                if (_show_domain_architectures != null) {
-                    _show_domain_architectures.setSelected(state);
-                }
-                break;
-            case WRITE_BRANCH_LENGTH_VALUES:
-                if (_write_branch_length_values != null) {
-                    _write_branch_length_values.setSelected(state);
-                }
-                break;
-            case SHOW_SEQ_NAMES:
-                if (_show_seq_names != null) {
-                    _show_seq_names.setSelected(state);
-                }
-                break;
-            case SHOW_GENE_NAMES:
-                if (_show_gene_names != null) {
-                    _show_gene_names.setSelected(state);
-                }
-                break;
-            case SHOW_SEQ_SYMBOLS:
-                if (_show_seq_symbols != null) {
-                    _show_seq_symbols.setSelected(state);
-                }
-                break;
-            case SHOW_PROPERTIES:
-                if (_show_properties_cb != null) {
-                    _show_properties_cb.setSelected(state);
-                }
-                break;
-            case SHOW_SEQUENCE_ACC:
-                if (_show_sequence_acc != null) {
-                    _show_sequence_acc.setSelected(state);
-                }
-                break;
-            case DYNAMICALLY_HIDE_DATA:
-                if (getDynamicallyHideData() != null) {
-                    getDynamicallyHideData().setSelected(state);
-                }
-                break;
-            case NODE_DATA_POPUP:
-                if (getNodeDescPopupCb() != null) {
-                    getNodeDescPopupCb().setSelected(state);
-                }
-                break;
+            case DISPLAY_AS_PHYLOGRAM:          return null; // a radio group, not a checkbox
+            case DISPLAY_INTERNAL_DATA:         return _display_internal_data;
+            case DISPLAY_EXTERNAL_DATA:         return _display_external_data;
+            case SHOW_NODE_NAMES:               return _show_node_names;
+            case SHORTEN_LABELS:                return _shorten_labels_cb;
+            case SHOW_TAXONOMY_SCIENTIFIC_NAMES: return _show_taxo_scientific_names;
+            case SHOW_TAXONOMY_COMMON_NAMES:    return _show_taxo_common_names;
+            case SHOW_TAX_CODE:                 return _show_taxo_code;
+            case SHOW_TAX_RANK:                 return _show_taxo_rank;
+            case WRITE_CONFIDENCE_VALUES:       return getWriteConfidenceCb();
+            case WRITE_EVENTS:                  return getShowEventsCb();
+            case USE_STYLE:                     return getUseVisualStylesCb();
+            case WIDTH_BRANCHES:                return _width_branches;
+            case SHOW_DOMAIN_ARCHITECTURES:     return _show_domain_architectures;
+            case WRITE_BRANCH_LENGTH_VALUES:    return _write_branch_length_values;
+            case SHOW_SEQ_NAMES:                return _show_seq_names;
+            case SHOW_GENE_NAMES:               return _show_gene_names;
+            case SHOW_SEQ_SYMBOLS:              return _show_seq_symbols;
+            case SHOW_PROPERTIES:               return _show_properties_cb;
+            case SHOW_SEQUENCE_ACC:             return _show_sequence_acc;
+            case DYNAMICALLY_HIDE_DATA:         return getDynamicallyHideData();
+            case NODE_DATA_POPUP:               return getNodeDescPopupCb();
             default:
-                throw new AssertionError("unknown checkbox: " + which);
+                throw new IllegalStateException("unhandled display option: " + which);
         }
     }
+
+    /**
+     * What the PAINT would currently read for {@code which} -- i.e. the existing {@code isXxx()} reader, not the
+     * raw checkbox. They differ in ways that matter: {@link #isUseVisualStyles()} falls back to the branch-colour
+     * flag when its checkbox does not exist, and the two Display-Data readers default to TRUE rather than false
+     * when theirs are absent. Seeding a tab from this (rather than from the widget) is what makes moving the paint
+     * onto the tab's own copy behaviour-preserving.
+     */
+    boolean currentValueOf(final DisplayOption which) {
+        switch (which) {
+            case DISPLAY_AS_PHYLOGRAM:           return isDrawPhylogram(); // already per-tab; kept for completeness
+            case DISPLAY_INTERNAL_DATA:          return isShowInternalData();
+            case DISPLAY_EXTERNAL_DATA:          return isShowExternalData();
+            case SHOW_NODE_NAMES:                return isShowNodeNames();
+            case SHORTEN_LABELS:                 return isShortenLabels();
+            case SHOW_TAXONOMY_SCIENTIFIC_NAMES: return isShowTaxonomyScientificNames();
+            case SHOW_TAXONOMY_COMMON_NAMES:     return isShowTaxonomyCommonNames();
+            case SHOW_TAX_CODE:                  return isShowTaxonomyCode();
+            case SHOW_TAX_RANK:                  return isShowTaxonomyRank();
+            case WRITE_CONFIDENCE_VALUES:        return isShowConfidenceValues();
+            case WRITE_EVENTS:                   return isEvents();
+            case USE_STYLE:                      return isUseVisualStyles();
+            case WIDTH_BRANCHES:                 return isWidthBranches();
+            case SHOW_DOMAIN_ARCHITECTURES:      return isShowDomainArchitectures();
+            case WRITE_BRANCH_LENGTH_VALUES:     return isWriteBranchLengthValues();
+            case SHOW_SEQ_NAMES:                 return isShowSeqNames();
+            case SHOW_GENE_NAMES:                return isShowGeneNames();
+            case SHOW_SEQ_SYMBOLS:               return isShowSeqSymbols();
+            case SHOW_PROPERTIES:                return isShowProperties();
+            case SHOW_SEQUENCE_ACC:              return isShowSequenceAcc();
+            case DYNAMICALLY_HIDE_DATA:          return isDynamicallyHideData();
+            case NODE_DATA_POPUP:                return isNodeDescPopup();
+            default:
+                throw new IllegalStateException("unhandled display option: " + which);
+        }
+    }
+
+    /**
+     * Whether the widget for {@code which} is currently on -- the mirror of
+     * {@link #setCheckbox(DisplayOption, boolean)}, which is what lets the whole set be copied to and from a tab.
+     */
+    boolean isCheckboxSelected(final DisplayOption which) {
+        if (which == DisplayOption.DISPLAY_AS_PHYLOGRAM) {
+            return (getDisplayAsUnalignedPhylogramRb() != null) && getDisplayAsUnalignedPhylogramRb().isSelected();
+        }
+        final JCheckBox cb = checkboxFor(which);
+        return (cb != null) && cb.isSelected();
+    }
+
+    void setCheckbox(final DisplayOption which, final boolean state) {
+        setCheckboxWidget(which, state);
+        // The paint reads the TAB's copy, so flipping a widget without telling the tab would change nothing on
+        // screen. Every programmatic change goes through here, so this is the one place that has to keep step.
+        pushDisplayDataToCurrentTab();
+    }
+
 
     /**
      * Set this checkbox state. Not all checkboxes have been instantiated

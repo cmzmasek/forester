@@ -251,7 +251,7 @@ public final class VectorGraphicsExporterTest {
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
             } );
             return ok[ 0 ];

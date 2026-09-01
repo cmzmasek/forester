@@ -72,7 +72,7 @@ public final class ViewportScrollModeTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 finally {
                     ( (JFrame) mf[ 0 ] ).dispose();

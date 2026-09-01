@@ -64,24 +64,24 @@ public final class MadSupportClearedTest {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
                 tp.madRoot();
                 if ( !hasMad( tp.getPhylogeny() ) ) {
-                    ok[ 0 ] = false; // MAD rooting adds the support
+                    ok[ 0 ] = TestFail.here(); // MAD rooting adds the support
                 }
                 tp.midpointRoot();
                 if ( hasMad( tp.getPhylogeny() ) ) {
-                    ok[ 0 ] = false; // midpoint rooting clears it
+                    ok[ 0 ] = TestFail.here(); // midpoint rooting clears it
                 }
                 tp.madRoot();
                 if ( !hasMad( tp.getPhylogeny() ) ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 final PhylogenyNode internal = firstInternalNonRoot( tp.getPhylogeny() );
                 if ( internal == null ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 else {
                     tp.reRoot( internal ); // a manual reroot on a non-root node clears it
                     if ( hasMad( tp.getPhylogeny() ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();

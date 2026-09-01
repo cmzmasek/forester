@@ -103,7 +103,7 @@ public final class CollapsedCladeConfidenceTest {
                     }
 
                     // confidence ON: paint and read node coordinates (set during the paint pass)
-                    mp.getControlPanel().getWriteConfidenceCb().setSelected( true );
+                    mp.getControlPanel().setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, true );
                     final BufferedImage on = paint( tp );
                     final int ab_on = branchMagenta( on, ab );
                     final int cd_on = branchMagenta( on, cd );
@@ -120,7 +120,7 @@ public final class CollapsedCladeConfidenceTest {
 
                     // confidence OFF: the magenta label must disappear from the collapsed clade's branch, proving
                     // the magenta really is the (toggle-gated) confidence label and not some other artifact
-                    mp.getControlPanel().getWriteConfidenceCb().setSelected( false );
+                    mp.getControlPanel().setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, false );
                     final BufferedImage off = paint( tp );
                     final int ab_off = branchMagenta( off, ab );
                     if ( ab_off != 0 ) {
@@ -132,7 +132,7 @@ public final class CollapsedCladeConfidenceTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
             } );
             return ok[ 0 ];

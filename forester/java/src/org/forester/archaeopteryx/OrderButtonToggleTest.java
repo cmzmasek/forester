@@ -63,7 +63,7 @@ public final class OrderButtonToggleTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );

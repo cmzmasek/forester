@@ -88,7 +88,7 @@ public final class SettingsDialogTest {
                     }
                 }
                 if ( !has_settings || has_old ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 final SettingsDialog dlg = new SettingsDialog( mf[ 0 ] );
                 dlg.pack();
@@ -97,7 +97,7 @@ public final class SettingsDialogTest {
                 // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays", and the
                 // former "Search" tab (its one clumsy colorize-all-found setting) was removed entirely -> 8 tabs
                 if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 8 ) ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 else {
                     final List<String> titles = new ArrayList<>();
@@ -110,19 +110,19 @@ public final class SettingsDialogTest {
                             || !titles.contains( "Overlays" ) || titles.contains( "Display" )
                             || titles.contains( "Search" ) || !titles.contains( "Taxonomy Cache" )
                             || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                 }
                 // the default width is widened so the whole tab-header row fits on ONE row (pack() alone sizes to
                 // the narrow tab content and would wrap the header onto two cramped rows)
                 if ( dlg.getWidth() < 900 ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // the retired "Behavior" section and its "Data returned on copy:" combo (the old "List Node
                 // Data" config) must no longer appear anywhere in the dialog
                 if ( ( findLabel( dlg.getContentPane(), "Behavior" ) != null )
                         || ( findLabel( dlg.getContentPane(), "Data returned on copy:" ) != null ) ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // the "Reset to Defaults" button must be present in the footer (its action is covered by
                 // ResetToDefaultsTest; the modal confirm can't be clicked through here)
@@ -135,18 +135,18 @@ public final class SettingsDialogTest {
                     }
                 }
                 if ( !has_reset ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // a dialog checkbox must drive its backing menu item (the doClick binding)
                 final boolean before = mf[ 0 ]._show_scale_cbmi.isSelected();
                 final JCheckBox cb = findCheckBox( dlg.getContentPane(), mf[ 0 ]._show_scale_cbmi.getText() );
                 if ( cb == null ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 else {
                     cb.doClick();
                     if ( mf[ 0 ]._show_scale_cbmi.isSelected() == before ) {
-                        ok[ 0 ] = false; // toggling the dialog control did not flip the menu item
+                        ok[ 0 ] = TestFail.here(); // toggling the dialog control did not flip the menu item
                     }
                 }
                 // the Node-shape / Node-fill combos must render enum constants proper-cased, not ALL-CAPS: find
@@ -160,18 +160,18 @@ public final class SettingsDialogTest {
                     if ( ( combo.getItemCount() > 0 ) && ( combo.getItemAt( 0 ) instanceof NodeShape ) ) {
                         saw_shape = true;
                         if ( !"Rectangle".equals( renderedText( combo, NodeShape.RECTANGLE ) ) ) {
-                            ok[ 0 ] = false;
+                            ok[ 0 ] = TestFail.here();
                         }
                     }
                     else if ( ( combo.getItemCount() > 0 ) && ( combo.getItemAt( 0 ) instanceof NodeFill ) ) {
                         saw_fill = true;
                         if ( !"Solid".equals( renderedText( combo, NodeFill.SOLID ) ) ) {
-                            ok[ 0 ] = false;
+                            ok[ 0 ] = TestFail.here();
                         }
                     }
                 }
                 if ( !saw_shape || !saw_fill ) {
-                    ok[ 0 ] = false; // the combos we mean to check must actually be present
+                    ok[ 0 ] = TestFail.here(); // the combos we mean to check must actually be present
                 }
                 dlg.dispose();
                 ( (JFrame) mf[ 0 ] ).dispose();

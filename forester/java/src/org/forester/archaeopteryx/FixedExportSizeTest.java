@@ -151,13 +151,15 @@ public final class FixedExportSizeTest {
 
                     // 3b. DYNA-HIDE report warning: with "Dyna Hide" on, a cramped export layout hides labels
                     //     (labelsDynamicallyHidden -> the report warns); a roomy one does not; off -> never.
+                    // via setCheckbox, not the raw widget: the paint reads the TAB's copy of a display option, and
+                    // JCheckBox.setSelected fires no listener, so poking the widget alone leaves the tab stale
                     final javax.swing.JCheckBox dh = mp.getControlPanel().getDynamicallyHideData();
                     if ( dh != null ) {
-                        dh.setSelected( false );
+                        mp.getControlPanel().setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, false );
                         int[] t = tp.layoutForExportSize( 300, 24 );
                         final boolean off_cramped = tp.labelsDynamicallyHidden();
                         tp.restoreLayoutAfterExport( t );
-                        dh.setSelected( true );
+                        mp.getControlPanel().setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, true );
                         t = tp.layoutForExportSize( 300, 24 );
                         final boolean on_cramped = tp.labelsDynamicallyHidden();
                         tp.restoreLayoutAfterExport( t );
@@ -248,7 +250,7 @@ public final class FixedExportSizeTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 finally {
                     f.dispose();

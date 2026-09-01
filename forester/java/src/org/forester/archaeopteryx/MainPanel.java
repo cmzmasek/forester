@@ -99,6 +99,11 @@ public class MainPanel extends JPanel implements ComponentListener {
         // restore a saved per-tree Time-Axis config (aptx:time_axis on the root); a saved config wins over the
         // auto-derived default, and null (no/unparsable property) leaves this tab on auto-derive
         treepanel.applyTimeAxisConfig(TimeAxisConfig.readFromTree(phy));
+        // ...and the saved FIGURE (aptx:figure on the root): the overlays, layout and which labels are drawn, so a
+        // reopened tree looks like the figure that was saved rather than the defaults. Read here, but APPLIED at
+        // the very end -- the phylogram/cladogram choice is stored per TAB INDEX, so it can only be set once this
+        // tab exists and is the selected one. Applying it earlier wrote it onto whichever tab was in front.
+        final FigureSpec figure = FigureSpec.readFrom(phy);
         getControlPanel().phylogenyAdded(config);
         treepanel.setControlPanel(getControlPanel());
         _treepanels.add(treepanel);
@@ -137,6 +142,13 @@ public class MainPanel extends JPanel implements ComponentListener {
         _treegraphic_scroll_panes.add(treegraphic_scroll_pane);
         getTabbedPane().addTab(name, null, treegraphic_scroll_pane_panel, "");
         getTabbedPane().setSelectedIndex(getTabbedPane().getTabCount() - 1);
+        if (figure != null) {
+            // this tab is now the selected one, so the per-tab display type lands on it and not on its neighbour
+            figure.applyTo(treepanel);
+            // the shared checkboxes show the CURRENT tab, which this now is -- without this they would still show
+            // the previous tab's toggles while the tree drew the restored figure's
+            getControlPanel().reseedDisplayDataFromCurrentTab();
+        }
         getControlPanel().showWhole();
     }
 

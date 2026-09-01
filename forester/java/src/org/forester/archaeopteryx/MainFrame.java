@@ -266,6 +266,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _export_node_data_item;
     JMenuItem _import_annotations_item;
     JMenuItem _error_log_item;
+    JMenuItem _clear_overlays_jmi;
     /** Appears in the menu bar the first time something is logged, so a user knows there is something to send. */
     private JMenu _error_indicator_menu;
     JMenuItem _import_annotations_url_item;
@@ -1039,6 +1040,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 }
                 trees.add(phy);
                 getMainPanel().getTreePanels().get(i).syncTimeAxisConfigToTree(); // embed each tab's Time-Axis config
+                getMainPanel().getTreePanels().get(i).syncFigureToTree(); // ...and each tab's own figure
                 getMainPanel().getTreePanels().get(i).setEdited(false);
             }
             final PhylogenyWriter writer = new PhylogenyWriter();
@@ -1093,6 +1095,29 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         JOptionPane.showMessageDialog(this, "The error log is at:\n" + f, "Error Log",
                                       JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Switches off every overlay on the current tree in one action -- the inverse of a saved figure, and the answer
+     * to "once the clade bands are there they are hard to remove". Only the overlays: the layout and which labels
+     * are drawn are left alone, because clearing overlays should not also re-orient the tree or strip its labels.
+     */
+    void clearAllOverlays() {
+        final TreePanel tp = (_mainpanel == null) ? null : _mainpanel.getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        FigureSpec.overlaysOff().applyTo(tp);
+        if (getControlPanel() != null) {
+            // the dropdowns must follow, or one would keep naming a property nothing draws any more -- and
+            // re-picking that same entry fires no change event, so the user could not get it back
+            getControlPanel().setColorByPropertySelectionToNone();
+            getControlPanel().setSizeByPropertySelectionToNone();
+            getControlPanel().setAncestralPieSelectionToNone();
+            getControlPanel().fitWidth(); // the columns/bars gave back their reserved width
+        }
+        tp.repaint();
+        repaint();
     }
 
     /**
@@ -3722,6 +3747,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static boolean writeAsPhyloXml(final TreePanel tp, final Options op, boolean exception, final File file) {
         try {
             tp.syncTimeAxisConfigToTree(); // embed the per-tree Time-Axis config (only if it deviates from auto-derive)
+            tp.syncFigureToTree(); // ...and the figure, so reopening the file gives back what was on screen
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML(file, tp.getPhylogeny(), 0);
         } catch (final Exception e) {

@@ -542,6 +542,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (and so, unlike the orientation, they do NOT persist across restarts -- deliberately: they are a
         // per-figure decluttering choice, not a standing preference).
         if (tjp.getControlPanel() != null) {
+            // a BRAND-NEW tab is seeded from the shared widgets (there is no tab of our own to read yet)
             _show_internal_data = tjp.getControlPanel().isShowInternalData();
             _show_external_data = tjp.getControlPanel().isShowExternalData();
         }
@@ -823,7 +824,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && !node.isExternal() && node.getBranchData().isHasConfidences()
                 && (PhylogenyMethods.getConfidenceValue(node) >= 0.0)) {
             g.setColor(supportBranchColor(node, to_pdf));
-        } else if (getControlPanel().isUseVisualStyles() && (PhylogenyMethods.getBranchColorValue(node) != null)) {
+        } else if (shows(DisplayOption.USE_STYLE) && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             g.setColor(PhylogenyMethods.getBranchColorValue(node));
         } else if (to_pdf) {
             g.setColor(getTreeColorSet().getBranchColorForPdf());
@@ -854,7 +855,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  layout (getYdistance), so it is meaningful only right after a layout/paint. Rectangular family only: the
      *  radial layouts have their own hiding logic, so return false there rather than mis-warn. */
     final boolean labelsDynamicallyHidden() {
-        return !isRadialLayout() && (getControlPanel() != null) && getControlPanel().isDynamicallyHideData()
+        return !isRadialLayout() && (getControlPanel() != null) && shows(DisplayOption.DYNAMICALLY_HIDE_DATA)
                 && (calcDynamicHidingFactor() > 1);
     }
 
@@ -2208,22 +2209,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     private final void nodeDataAsSB(final PhylogenyNode node, final StringBuilder sb) {
         if (node != null) {
-            if (getControlPanel().isShowNodeNames() && (!ForesterUtil.isEmpty(node.getName()))
+            if (shows(DisplayOption.SHOW_NODE_NAMES) && (!ForesterUtil.isEmpty(node.getName()))
                     && !nameDuplicatesShownTaxonomy(node)) {
                 if (sb.length() > 0) {
                     sb.append(" ");
                 }
                 // Display-only shortening of an over-long name (e.g. a whole UniProt/NCBI header): the
                 // node's actual name is left intact, so export / Find / accession parsing keep the full text.
-                sb.append(getControlPanel().isShortenLabels()
+                sb.append(shows(DisplayOption.SHORTEN_LABELS)
                         ? AptxUtil.shortenLabel(node.getName(), AptxConstants.LONG_NODE_NAME_LIMIT)
                         : node.getName());
             }
             if (node.getNodeData().isHasSequence()
-                    && (getControlPanel().isShowSeqSymbols()
-                    || getControlPanel().isShowGeneNames()
-                    || getControlPanel().isShowSeqNames()
-                    || getControlPanel().isShowSequenceAcc()
+                    && (shows(DisplayOption.SHOW_SEQ_SYMBOLS)
+                    || shows(DisplayOption.SHOW_GENE_NAMES)
+                    || shows(DisplayOption.SHOW_SEQ_NAMES)
+                    || shows(DisplayOption.SHOW_SEQUENCE_ACC)
             )) {
                 final int s = node.getNodeData().getSequences().size();
                 for (int i = 0; i < s; ++i) {
@@ -2240,28 +2241,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             sb.append(s - 1);
                             sb.append("]");
                         }
-                        if (getControlPanel().isShowSeqSymbols()
+                        if (shows(DisplayOption.SHOW_SEQ_SYMBOLS)
                                 && (seq.getSymbol().length() > 0)) {
                             if (sb.length() > 0) {
                                 sb.append(" ");
                             }
                             sb.append(seq.getSymbol());
                         }
-                        if (getControlPanel().isShowGeneNames()
+                        if (shows(DisplayOption.SHOW_GENE_NAMES)
                                 && (seq.getGeneName().length() > 0)) {
                             if (sb.length() > 0) {
                                 sb.append(" ");
                             }
                             sb.append(seq.getGeneName());
                         }
-                        if (getControlPanel().isShowSeqNames()
+                        if (shows(DisplayOption.SHOW_SEQ_NAMES)
                                 && (seq.getName().length() > 0)) {
                             if (sb.length() > 0) {
                                 sb.append(" ");
                             }
                             sb.append(seq.getName());
                         }
-                        if (getControlPanel().isShowSequenceAcc()
+                        if (shows(DisplayOption.SHOW_SEQUENCE_ACC)
                                 && (seq.getAccession() != null)) {
                             if (sb.length() > 0) {
                                 sb.append(" ");
@@ -2275,7 +2276,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             }
-            if (getControlPanel().isShowProperties() && node.getNodeData().isHasProperties()) {
+            if (shows(DisplayOption.SHOW_PROPERTIES) && node.getNodeData().isHasProperties()) {
                 // may be empty (every field deselected, or only internal metadata) -- do not leave a trailing space
                 final String props = propertiesToString(node);
                 if (props.length() > 0) {
@@ -2371,7 +2372,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Taxonomy tax = node.getNodeData().getTaxonomy();
         return TreePanelUtil.nodeNameDuplicatesTaxonomy(node.getName(), tax.getScientificName(), tax.getCommonName(),
-                getControlPanel().isShowTaxonomyScientificNames(), getControlPanel().isShowTaxonomyCommonNames());
+                shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES), shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES));
     }
 
     final private void openSeqWeb(final PhylogenyNode node) {
@@ -2601,7 +2602,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return;
             }
             float x1_r = 0;
-            if (!getControlPanel().isWidthBranches() || (PhylogenyMethods.getBranchWidthValue(node) == 1)) {
+            if (!shows(DisplayOption.WIDTH_BRANCHES) || (PhylogenyMethods.getBranchWidthValue(node) == 1)) {
                 if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED) {
                     x1_r = x1a + ROUNDED_D;
                     if (x1_r < x2a) {
@@ -2753,7 +2754,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if (all_tips_found) {
             c = found_c; // the whole collapsed clade is selected -> paint the triangle in the found colour
         }
-        else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
+        else if (getOptions().isColorLabelsSameAsParentBranch() && shows(DisplayOption.USE_STYLE)
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             c = PhylogenyMethods.getBranchColorValue(node);
         } else if (to_pdf) {
@@ -2994,7 +2995,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         String support = "";
-        if (getControlPanel().isShowConfidenceValues() && !node.isExternal()
+        if (shows(DisplayOption.WRITE_CONFIDENCE_VALUES) && !node.isExternal()
                 && node.getBranchData().isHasConfidences()) {
             final List<Confidence> confidences = node.getBranchData().getConfidences();
             Collections.sort(confidences);
@@ -3003,7 +3004,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getOptions().isShowConfidenceStddev(),
                     getOptions().getNumberOfDigitsAfterCommaForConfidenceValues());
         }
-        final String length = (getControlPanel().isWriteBranchLengthValues()
+        final String length = (shows(DisplayOption.WRITE_BRANCH_LENGTH_VALUES)
                 && (node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT))
                         ? FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()) : "";
         if (support.isEmpty() && length.isEmpty()) {
@@ -3066,7 +3067,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             fill = Color.BLACK;
         } else if (all_tips_found) {
             fill = found_c; // the whole collapsed clade is selected -> paint the triangle in the found colour
-        } else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
+        } else if (getOptions().isColorLabelsSameAsParentBranch() && shows(DisplayOption.USE_STYLE)
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             fill = PhylogenyMethods.getBranchColorValue(node);
         } else if (to_pdf) {
@@ -3155,8 +3156,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final boolean is_in_found_nodes = isInFoundNodes(node);
         final Taxonomy taxonomy = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : null;
         final boolean show_tax = (taxonomy != null)
-                && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                        || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
+                && (shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
+                        || shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES) || shows(DisplayOption.SHOW_TAX_RANK))
                 && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText);
         final StringBuilder sb = new StringBuilder();
         nodeDataAsSB(node, sb);
@@ -3201,7 +3202,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * internal node).
      */
     final private boolean isShowConfidenceValuesForNode(final PhylogenyNode node) {
-        return getControlPanel().isShowConfidenceValues() && !node.isExternal() && !node.isRoot()
+        return shows(DisplayOption.WRITE_CONFIDENCE_VALUES) && !node.isExternal() && !node.isRoot()
                 && ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)
                         || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
                         || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE))
@@ -3311,17 +3312,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (getOptions().isShowDefaultNodeShapesForMarkedNodes()
                 && (node.getNodeData().getNodeVisualData() != null)
                 && (!node.getNodeData().getNodeVisualData().isEmpty()))
-                || (getControlPanel().isUseVisualStyles() && ((node.getNodeData().getNodeVisualData() != null)
+                || (shows(DisplayOption.USE_STYLE) && ((node.getNodeData().getNodeVisualData() != null)
                 && ((node.getNodeData().getNodeVisualData().getNodeColor() != null)
                 || (node.getNodeData().getNodeVisualData().getSize() != NodeVisualData.DEFAULT_SIZE)
                 || (node.getNodeData().getNodeVisualData().getFillType() != NodeFill.DEFAULT)
                 || (node.getNodeData().getNodeVisualData().getShape() != NodeShape.DEFAULT))))
-                || (getControlPanel().isEvents() && node.isHasAssignedEvent()
+                || (shows(DisplayOption.WRITE_EVENTS) && node.isHasAssignedEvent()
                 && (node.getNodeData().getEvent().isDuplication()
                 || node.getNodeData().getEvent().isSpeciation()
                 || node.getNodeData().getEvent().isSpeciationOrDuplication()))) {
             NodeVisualData vis = null;
-            if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)
+            if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
                     && (!node.getNodeData().getNodeVisualData().isEmpty())) {
                 vis = node.getNodeData().getNodeVisualData();
             }
@@ -3341,7 +3342,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else if (vis.getFontColor() != null) {
                     outline_color = vis.getFontColor();
                 }
-            } else if (getControlPanel().isEvents() && TreePanelUtil.isHasAssignedEvent(node)) {
+            } else if (shows(DisplayOption.WRITE_EVENTS) && TreePanelUtil.isHasAssignedEvent(node)) {
                 final Event event = node.getNodeData().getEvent();
                 if (event.isDuplication()) {
                     outline_color = getTreeColorSet().getDuplicationBoxColor();
@@ -3528,8 +3529,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (the old paintTaxonomy did, and this flag used to read _sb.length()), so derive it from the
         // painted advance instead -- the collapsed-node label logic below depends on it.
         boolean saw_species = false;
-        if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
+        if ((shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
+                || shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES) || shows(DisplayOption.SHOW_TAX_RANK))
                 && node.getNodeData().isHasTaxonomy()
                 && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText)) {
             final int taxonomy_width = paintTaxonomy(g, node, is_in_found_nodes, to_pdf, to_graphics_file, x);
@@ -3542,17 +3543,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node.isCollapse() && ((!node.isRoot() && !node.getParent().isCollapse()) || node.isRoot())) {
             if ((_sb.length() == 0) && !saw_species) {
                 if (getOptions().isShowAbbreviatedLabelsForCollapsedNodes()
-                        && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                        || getControlPanel().isShowSeqNames() || getControlPanel().isShowNodeNames())) {
+                        && (shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
+                        || shows(DisplayOption.SHOW_SEQ_NAMES) || shows(DisplayOption.SHOW_NODE_NAMES))) {
                     // prefer the clade's COMMON taxon (deepest shared among its tips) when taxonomy is shown -- more
                     // informative than the boundary tip names; falls back to first...last when none is derivable
-                    final String common = (getControlPanel().isShowTaxonomyScientificNames()
-                            || getControlPanel().isShowTaxonomyCode()) ? collapsedCommonTaxon(node) : "";
+                    final String common = (shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
+                            || shows(DisplayOption.SHOW_TAX_CODE)) ? collapsedCommonTaxon(node) : "";
                     final PhylogenyNode first = PhylogenyMethods.getFirstExternalNode(node);
                     final PhylogenyNode last = PhylogenyMethods.getLastExternalNode(node);
                     if (!ForesterUtil.isEmpty(common)) {
                         addLabelForCollapsedCommonTaxon(common, node.getAllExternalDescendants().size(), node);
-                    } else if (getControlPanel().isShowTaxonomyCode() && first.getNodeData().isHasTaxonomy()
+                    } else if (shows(DisplayOption.SHOW_TAX_CODE) && first.getNodeData().isHasTaxonomy()
                             && last.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty(first.getNodeData().getTaxonomy().getTaxonomyCode())
                             && !ForesterUtil.isEmpty(last.getNodeData().getTaxonomy().getTaxonomyCode())) {
@@ -3560,7 +3561,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 last.getNodeData().getTaxonomy().getTaxonomyCode(),
                                 node.getAllExternalDescendants().size(),
                                 node);
-                    } else if (getControlPanel().isShowTaxonomyScientificNames() && first.getNodeData().isHasTaxonomy()
+                    } else if (shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES) && first.getNodeData().isHasTaxonomy()
                             && last.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty(first.getNodeData().getTaxonomy().getScientificName())
                             && !ForesterUtil.isEmpty(last.getNodeData().getTaxonomy().getScientificName())) {
@@ -3568,7 +3569,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 last.getNodeData().getTaxonomy().getScientificName(),
                                 node.getAllExternalDescendants().size(),
                                 node);
-                    } else if (getControlPanel().isShowSeqNames() && first.getNodeData().isHasSequence()
+                    } else if (shows(DisplayOption.SHOW_SEQ_NAMES) && first.getNodeData().isHasSequence()
                             && last.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty(first.getNodeData().getSequence().getName())
                             && !ForesterUtil.isEmpty(last.getNodeData().getSequence().getName())) {
@@ -3576,7 +3577,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 last.getNodeData().getSequence().getName(),
                                 node.getAllExternalDescendants().size(),
                                 node);
-                    } else if (getControlPanel().isShowNodeNames() && !ForesterUtil.isEmpty(first.getName())
+                    } else if (shows(DisplayOption.SHOW_NODE_NAMES) && !ForesterUtil.isEmpty(first.getName())
                             && !ForesterUtil.isEmpty(last.getName())) {
                         addLabelForCollapsed(first.getName(),
                                 last.getName(),
@@ -3697,8 +3698,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (nodeTaxonomyDataAsSB appends one; a property's asText() might) would otherwise push the visible
         // glyphs left of the node. Unlike the classic left-anchored path, trailing space is not harmless.
         String taxo = "";
-        if ((getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank())
+        if ((shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
+                || shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES) || shows(DisplayOption.SHOW_TAX_RANK))
                 && node.getNodeData().isHasTaxonomy()
                 && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText)) {
             _sb.setLength(0);
@@ -3948,16 +3949,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // the rank is included, and the "Abbreviate Scientific Names" option applies) -- matching the rectangular
         // layout. The trailing node name / sequence text is built into _sb and drawn after it.
         final boolean show_tax = node.getNodeData().isHasTaxonomy()
-                && (getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames()
-                        || getControlPanel().isShowTaxonomyCommonNames() || getControlPanel().isShowTaxonomyRank());
+                && (shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
+                        || shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES) || shows(DisplayOption.SHOW_TAX_RANK));
         _sb.setLength(0);
-        if (getControlPanel().isShowNodeNames() && (node.getName().length() > 0)) {
+        if (shows(DisplayOption.SHOW_NODE_NAMES) && (node.getName().length() > 0)) {
             _sb.append(" ");
             _sb.append(node.getName());
         }
         if (node.getNodeData().isHasSequence()) {
             final Sequence seq = node.getNodeData().getSequence();
-            if (getControlPanel().isShowSequenceAcc() && (seq.getAccession() != null)) {
+            if (shows(DisplayOption.SHOW_SEQUENCE_ACC) && (seq.getAccession() != null)) {
                 _sb.append(" ");
                 if (!ForesterUtil.isEmpty(seq.getAccession().getSource())) {
                     _sb.append(seq.getAccession().getSource());
@@ -3966,15 +3967,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append(seq.getAccession().getValue());
             }
             // gene symbol + gene name (were missing radially -- rectangular parity, see paintNodeData)
-            if (getControlPanel().isShowSeqSymbols() && (seq.getSymbol().length() > 0)) {
+            if (shows(DisplayOption.SHOW_SEQ_SYMBOLS) && (seq.getSymbol().length() > 0)) {
                 _sb.append(" ");
                 _sb.append(seq.getSymbol());
             }
-            if (getControlPanel().isShowGeneNames() && (seq.getGeneName().length() > 0)) {
+            if (shows(DisplayOption.SHOW_GENE_NAMES) && (seq.getGeneName().length() > 0)) {
                 _sb.append(" ");
                 _sb.append(seq.getGeneName());
             }
-            if (getControlPanel().isShowSeqNames() && (seq.getName().length() > 0)) {
+            if (shows(DisplayOption.SHOW_SEQ_NAMES) && (seq.getName().length() > 0)) {
                 _sb.append(" ");
                 _sb.append(seq.getName());
             }
@@ -3982,7 +3983,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // node PROPERTIES, in the same position the rectangular label puts them (nodeDataAsSB) -- the radial label
         // used to stop at the sequence data, so the "Properties" display option and the Annotation Fields label
         // selection silently did nothing in the circular and unrooted layouts
-        if (getControlPanel().isShowProperties() && node.getNodeData().isHasProperties()) {
+        if (shows(DisplayOption.SHOW_PROPERTIES) && node.getNodeData().isHasProperties()) {
             final String props = propertiesToString(node);
             if (props.length() > 0) {
                 _sb.append(" ");
@@ -4245,7 +4246,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  are shown, external data is shown, and the tip carries a renderable architecture. */
     private void paintDomainsVertical(final Graphics2D g, final PhylogenyNode node,
                                       final boolean to_pdf, final boolean to_graphics_file) {
-        if (!getControlPanel().isShowDomainArchitectures() || !isShowExternalDataForThisTab()) {
+        if (!shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) || !isShowExternalDataForThisTab()) {
             return;
         }
         if (isNodeDataInvisible(node) && !(to_graphics_file || to_pdf)) {
@@ -4342,7 +4343,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((!isShowExternalDataForThisTab() && node.isExternal())) {
             return;
         }
-        if (getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
+        if (shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) && node.getNodeData().isHasSequence()
                 && (node.getNodeData().getSequence().getDomainArchitecture() != null) && (node.getNodeData()
                 .getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture)) {
             RenderableDomainArchitecture rds = null;
@@ -4507,7 +4508,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (d < MIN_ROOT_LENGTH) {
             d = MIN_ROOT_LENGTH;
         }
-        if (!getControlPanel().isWidthBranches() || (PhylogenyMethods.getBranchWidthValue(root) == 1)) {
+        if (!shows(DisplayOption.WIDTH_BRANCHES) || (PhylogenyMethods.getBranchWidthValue(root) == 1)) {
             drawLine(x1 - d, root.getYcoord(), x1, root.getYcoord(), g);
         } else {
             final double w = PhylogenyMethods.getBranchWidthValue(root);
@@ -6088,7 +6089,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  per-node node shape doesn't overlap its label (a plain default node uses the default, unchanged). */
     int effectiveNodeHalfBoxSize(final PhylogenyNode node) {
         float box_size = getOptions().getDefaultNodeShapeSize();
-        if (getControlPanel().isUseVisualStyles() && (node != null)) {
+        if (shows(DisplayOption.USE_STYLE) && (node != null)) {
             final NodeVisualData vis = node.getNodeData().getNodeVisualData();
             if ((vis != null) && (vis.getSize() != NodeVisualData.DEFAULT_SIZE)) {
                 box_size = vis.getSize();
@@ -6103,7 +6104,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  O(tips) walk runs only when visual styles are on; otherwise every tip resolves to the (constant) default. */
     private int maxTipEffectiveHalfBoxSize() {
         final int def = (int) (getOptions().getDefaultNodeShapeSize() / 2.0);
-        if ((_phylogeny == null) || (getControlPanel() == null) || !getControlPanel().isUseVisualStyles()) {
+        if ((_phylogeny == null) || (getControlPanel() == null) || !shows(DisplayOption.USE_STYLE)) {
             return def;
         }
         int max = def;
@@ -6172,7 +6173,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     isInFoundNodes(n));
             // the tip's domain architecture rides its spoke, extending outward past the label (like circular) -- only
             // with RADIAL labels; under horizontal labels it would clash with the upright labels (see domainBoxesDrawn)
-            if (radial_labels && (getControlPanel() != null) && getControlPanel().isShowDomainArchitectures()) {
+            if (radial_labels && (getControlPanel() != null) && shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)) {
                 final int num_ext = _phylogeny.getNumberOfExternalNodes();
                 // tips sit near the periphery (radius ~ radialDiameter/2); estimate the arc between adjacent tips there
                 final double spacing = (Math.PI * radialDiameter()) / Math.max(1, num_ext);
@@ -6417,10 +6418,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             c = getColorForFoundNode(node);
         } else if (isColorByProperty()) {
             c = getPropertyBasedColor(node);
-        } else if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)
+        } else if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
                 && (node.getNodeData().getNodeVisualData().getFontColor() != null)) {
             c = node.getNodeData().getNodeVisualData().getFontColor();
-        } else if (getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
+        } else if (getOptions().isColorLabelsSameAsParentBranch() && shows(DisplayOption.USE_STYLE)
                 && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             c = PhylogenyMethods.getBranchColorValue(node);
         } else if (to_pdf) {
@@ -6469,7 +6470,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     private boolean setFont(final Graphics2D g, final PhylogenyNode node) {
         Font visual_font = null;
-        if (getControlPanel().isUseVisualStyles() && (node.getNodeData().getNodeVisualData() != null)) {
+        if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)) {
             visual_font = node.getNodeData().getNodeVisualData().getFont();
             g.setFont(visual_font != null ? visual_font : getTreeFontSet().getLargeFont());
         } else {
@@ -7036,7 +7037,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // null when the panel is not SHOWING (an off-screen render, a component not yet realized). Per-node
             // visual fonts cannot be measured then, so fall back to the default font rather than throwing.
             final Graphics2D g = (Graphics2D) getGraphics();
-            if ((g != null) && getControlPanel().isUseVisualStyles()) {
+            if ((g != null) && shows(DisplayOption.USE_STYLE)) {
                 use_vis = setFont(g, node);
             }
             final Font base = use_vis ? g.getFont() : getTreeFontSet().getLargeFont();
@@ -7059,7 +7060,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // spoke footprint separately (see paintNodeDataUnrootedCirc); 0 for a non-imaged/aligned/off tip.
                 sum += tipImageAdvance(node);
             }
-            if (getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
+            if (shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) && node.getNodeData().isHasSequence()
                     && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
                 // FIXME
                 // TODO this might need some clean up
@@ -7335,7 +7336,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  recorded bounds mean it was drawn. */
     final boolean isOnDomainLegend(final MouseEvent e) {
         return (getOptions().getDomainLabelMode() == Options.DOMAIN_LABEL_MODE.LEGEND) && (getControlPanel() != null)
-                && getControlPanel().isShowDomainArchitectures() && (_domain_legend_bounds != null)
+                && shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) && (_domain_legend_bounds != null)
                 && _domain_legend_bounds.contains(e.getX(), e.getY());
     }
 
@@ -9108,6 +9109,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return n;
     }
 
+    // --- accessors the figure spec captures from (see FigureSpec) ---------------------------------------------
+
+    String getColorByPropertyRef() {
+        return _color_by_property_ref;
+    }
+
+    String getSizeByPropertyRef() {
+        return _size_by_property_ref;
+    }
+
+    boolean isCladeBandsSkipSingletons() {
+        return _clade_bands_skip_singletons;
+    }
+
+    java.util.List<CladeLevel.Spec> getCladeLevelSpecs() {
+        return _clade_level_specs;
+    }
+
+    /** The phylogram / aligned-phylogram / cladogram choice for THIS tab (already per-tab; see ControlPanel).
+     *  Keyed on THIS panel's own index, not the current tab's -- "Save All" captures every tab's figure while only
+     *  one of them is in front, and the current tab's choice is not this tab's. */
+    Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayTypeForThisTab() {
+        if ((getControlPanel() == null) || (getMainPanel() == null)) {
+            return null;
+        }
+        int index = getMainPanel().getTreePanels().indexOf(this);
+        if (index < 0) {
+            index = getMainPanel().getCurrentTabIndex(); // not in a tab yet (being constructed)
+        }
+        return getControlPanel().treeDisplayTypeAt(index);
+    }
+
+    /** Stamps THIS tab's figure onto its own tree, so a saved file reproduces what is on screen. Called from the
+     *  save paths beside {@link #syncTimeAxisConfigToTree()}, which is the same kind of embedded per-tree state. */
+    void syncFigureToTree() {
+        if (_phylogeny != null) {
+            FigureSpec.writeToTree(_phylogeny, FigureSpec.capture(this));
+        }
+    }
+
     /** For tests: how many clade LEVELS are configured, regardless of whether any band could actually be placed.
      *  The specs are stored even when the tree resolves nothing at that rank, so this is the honest way to assert
      *  that a reset dropped the configuration on a fixture whose taxonomy is not resolvable offline. */
@@ -10682,7 +10723,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  labels a spoke-riding domain bar would clash with the upright labels and has no clean radial track, so domains
      *  -- and their legend -- are suppressed there. */
     boolean domainBoxesDrawnInCurrentLayout() {
-        return (getControlPanel() != null) && getControlPanel().isShowDomainArchitectures()
+        return (getControlPanel() != null) && shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)
                 && (!isRadialLayout() || (getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL));
     }
 
@@ -12760,7 +12801,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color getGraphicsForNodeBoxWithColorForParentBranch(final PhylogenyNode node) {
-        if (getControlPanel().isUseVisualStyles() && (PhylogenyMethods.getBranchColorValue(node) != null)) {
+        if (shows(DisplayOption.USE_STYLE) && (PhylogenyMethods.getBranchColorValue(node) != null)) {
             return (PhylogenyMethods.getBranchColorValue(node));
         } else {
             return (getTreeColorSet().getBranchColor());
@@ -12843,7 +12884,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 } else {
                     rds = (RenderableDomainArchitecture) node.getNodeData().getSequence().getDomainArchitecture();
                 }
-                if (getControlPanel().isShowDomainArchitectures()) {
+                if (shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)) {
                     final double dsw = rds.getOriginalSize().getWidth();
                     if (dsw > _max_original_domain_structure_width) {
                         _max_original_domain_structure_width = dsw;
@@ -12851,7 +12892,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
-        if (getControlPanel().isShowDomainArchitectures()) {
+        if (shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)) {
             final float ds_factor_width = (float) (effectiveDomainStructureWidth() / _max_original_domain_structure_width);
             for (final PhylogenyNode node : _phylogeny.getExternalNodes()) {
                 if (node.getNodeData().isHasSequence()
@@ -13140,7 +13181,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void mouseMoved(final MouseEvent e) {
         requestFocusInWindow();
-        if (getControlPanel().isNodeDescPopup()) {
+        if (shows(DisplayOption.NODE_DATA_POPUP)) {
             if (_node_desc_popup != null) {
                 _node_desc_popup.hide();
                 _node_desc_popup = null;
@@ -13180,7 +13221,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     setCursor(CUT_CURSOR);
                 } else {
                     setCursor(HAND_CURSOR);
-                    if (getControlPanel().isNodeDescPopup()) {
+                    if (shows(DisplayOption.NODE_DATA_POPUP)) {
                         showNodeDataPopup(e, node);
                     }
                 }
@@ -13546,7 +13587,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // fallback -- when neither consumer is active (the default), so plain repaints on the hot hover/scroll/
         // zoom path don't pay for it.
         _confidence_scale_max = ((getOptions().getSupportVisualization() != Options.SUPPORT_VISUALIZATION.NONE)
-                || getControlPanel().isShowConfidenceValues())
+                || shows(DisplayOption.WRITE_CONFIDENCE_VALUES))
                         ? TreePanelUtil.detectConfidenceScaleMax(_phylogeny)
                         : 1.0;
         // "Dim Non-Matches": resolve once per paint whether any hit is actually visible (see anyVisibleFoundNode);
@@ -13597,7 +13638,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.getRoot().setYcoord((getYdistance() * _phylogeny.getRoot().getNumberOfExternalNodes())
                     + (TreePanel.MOVE / 2.0f) + verticalBreadthPad() + annotationHeaderTopReserve());
             final int dynamic_hiding_factor = calcDynamicHidingFactor();
-            if (getControlPanel().isDynamicallyHideData()) {
+            if (shows(DisplayOption.DYNAMICALLY_HIDE_DATA)) {
                 if (dynamic_hiding_factor > 1) {
                     getControlPanel().setDynamicHidingIsOn(true);
                 } else {
@@ -13612,7 +13653,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             final boolean disallow_shortcutting = (dynamic_hiding_factor < 40)
-                    /* || getControlPanel().isUseVisualStyles() || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
+                    /* || shows(DisplayOption.USE_STYLE) || getOptions().isShowDefaultNodeShapesForMarkedNodes()*/ //TODO check if this is really not needed.
                     || to_graphics_file || to_pdf;
             final boolean vertical = isVerticalOrientation();
             // the geologic axis is an alternative time-scale representation; suppress the numeric grid lines when it is
@@ -13649,7 +13690,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintNodeRectangular(g,
                         element,
                         to_pdf,
-                        getControlPanel().isDynamicallyHideData() && (dynamic_hiding_factor > 1),
+                        shows(DisplayOption.DYNAMICALLY_HIDE_DATA) && (dynamic_hiding_factor > 1),
                         dynamic_hiding_factor,
                         to_graphics_file,
                         disallow_shortcutting);
@@ -13782,7 +13823,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double angle = getStartingAngle();
             final boolean radial_labels = getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL;
             _dynamic_hiding_factor = 0;
-            if (getControlPanel().isDynamicallyHideData()) {
+            if (shows(DisplayOption.DYNAMICALLY_HIDE_DATA)) {
                 _dynamic_hiding_factor = (int) ((getFontMetricsForLargeDefaultFont().getHeight() * 1.5
                         * getPhylogeny().getNumberOfExternalNodes()) / (TWO_PI * 10));
             }
@@ -13845,7 +13886,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _circular_center_y = center_y;
             _circular_radius = radius;
             _dynamic_hiding_factor = 0;
-            if (getControlPanel().isDynamicallyHideData() && (radius > 0)) {
+            if (shows(DisplayOption.DYNAMICALLY_HIDE_DATA) && (radius > 0)) {
                 _dynamic_hiding_factor = (int) ((getFontMetricsForLargeDefaultFont().getHeight() * 1.5
                         * getPhylogeny().getNumberOfExternalNodes()) / (TWO_PI * radius));
             }
@@ -14149,7 +14190,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  by sin(angle), but the domain boxes are axis-aligned (their FULL rendered width runs along the depth), so add
      *  the widest rendered track + the label gap + the render's internal 20px lead-in. */
     private int verticalDomainReserve() {
-        if (!isVerticalOrientation() || !getControlPanel().isShowDomainArchitectures()) {
+        if (!isVerticalOrientation() || !shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)) {
             return 0;
         }
         return (int) Math.ceil(_longest_rendered_domain) + VERTICAL_DOMAIN_GAP + 20;
@@ -14375,7 +14416,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Whether a branch-length value should be drawn for {@code node} -- the same gate {@link #paintNodeData} used
      *  inline, factored out so the vertical-orientation path (which draws it separately) shares one condition. */
     private boolean shouldWriteBranchLength(final PhylogenyNode node) {
-        return getControlPanel().isWriteBranchLengthValues()
+        return shows(DisplayOption.WRITE_BRANCH_LENGTH_VALUES)
                 && ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR)
                         || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED)
                         || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE))
@@ -14594,6 +14635,38 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /**
+     * Every {@link DisplayOption}'s state FOR THIS TAB. The checkboxes in the control panel are shared by the whole
+     * window and show whichever tab is in front; this is the tab's own copy, which is what a figure is made of and
+     * what a saved figure has to restore. Continues the migration that already moved the orientation and the two
+     * Display-Data toggles off the shared {@code Options} (see {@code PerTabViewStateTest}).
+     * <p>
+     * An option with no entry falls back to the shared widget, so a tab that has never been seeded behaves exactly
+     * as it did before.
+     */
+    private final java.util.EnumMap<DisplayOption, Boolean> _display_state =
+            new java.util.EnumMap<DisplayOption, Boolean>(DisplayOption.class);
+
+    /** Whether {@code which} is on FOR THIS TAB. A tab with no opinion yet falls back to what the paint would
+     *  have read before this state existed ({@link ControlPanel#currentValueOf}), so an unseeded tab behaves
+     *  exactly as it always did -- including the readers that are not plain checkbox reads. */
+    final boolean shows(final DisplayOption which) {
+        final Boolean b = _display_state.get(which);
+        if (b != null) {
+            return b.booleanValue();
+        }
+        return (getControlPanel() != null) && getControlPanel().currentValueOf(which);
+    }
+
+    final void setShows(final DisplayOption which, final boolean on) {
+        _display_state.put(which, Boolean.valueOf(on));
+    }
+
+    /** For tests: whether this tab has its own opinion on {@code which} yet. */
+    final boolean hasOwnDisplayState(final DisplayOption which) {
+        return _display_state.containsKey(which);
+    }
+
     /** Whether THIS tab shows internal-node labels (the shared "Show Internal Data" checkbox reflects the
      *  current tab). */
     final boolean isShowInternalDataForThisTab() {
@@ -14757,10 +14830,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
-        if (getControlPanel().isShowTaxonomyScientificNames() || getControlPanel().isShowTaxonomyCode()) {
+        if (shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES) || shows(DisplayOption.SHOW_TAX_CODE)) {
             pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
-        } else if (getControlPanel().isShowSeqNames() || getControlPanel().isShowSeqSymbols()
-                || getControlPanel().isShowGeneNames()) {
+        } else if (shows(DisplayOption.SHOW_SEQ_NAMES) || shows(DisplayOption.SHOW_SEQ_SYMBOLS)
+                || shows(DisplayOption.SHOW_GENE_NAMES)) {
             pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
         }
         pushUndoCheckpoint("Ladderize Subtree");

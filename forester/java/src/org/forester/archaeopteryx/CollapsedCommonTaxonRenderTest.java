@@ -83,7 +83,7 @@ public final class CollapsedCommonTaxonRenderTest {
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
-            ok[ 0 ] = false;
+            ok[ 0 ] = TestFail.here();
         }
         return ok[ 0 ];
     }

@@ -72,13 +72,13 @@ public final class LegendDragTest {
                 paint( tp, vp );
                 final Rectangle home = tp.getPropertyLegendBounds();
                 if ( home == null ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 else {
                     // hit-test: a point inside the legend vs. one in the opposite corner
                     if ( !tp.isOnPropertyLegend( at( tp, home.x + ( home.width / 2 ), home.y + 3 ) )
                             || tp.isOnPropertyLegend( at( tp, vp.x + 5, vp.y + 5 ) ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     // drag it left 80 / down 120; the box must follow
                     tp.startLegendDrag( at( tp, home.x + 10, home.y + 5 ) );
@@ -87,14 +87,14 @@ public final class LegendDragTest {
                     paint( tp, vp );
                     final Rectangle moved = tp.getPropertyLegendBounds();
                     if ( ( Math.abs( moved.x - ( home.x - 80 ) ) > 1 ) || ( Math.abs( moved.y - ( home.y + 120 ) ) > 1 ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     // reset returns it to the default corner
                     tp.resetLegendPosition();
                     paint( tp, vp );
                     final Rectangle back = tp.getPropertyLegendBounds();
                     if ( ( Math.abs( back.x - home.x ) > 1 ) || ( Math.abs( back.y - home.y ) > 1 ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     // a left-click on a value row maps to that value; setting/clearing an override
                     // updates the scheme's color for it
@@ -107,29 +107,29 @@ public final class LegendDragTest {
                         }
                     }
                     if ( first == null ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     else {
                         final String key = tp.getPropertyColorScheme().getValueKeys().get( first );
                         tp.setColorOverride( key, new java.awt.Color( 0x010203 ) );
                         if ( !new java.awt.Color( 0x010203 )
                                 .equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
-                            ok[ 0 ] = false;
+                            ok[ 0 ] = TestFail.here();
                         }
                         tp.clearColorOverride( key );
                         if ( new java.awt.Color( 0x010203 )
                                 .equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
-                            ok[ 0 ] = false;
+                            ok[ 0 ] = TestFail.here();
                         }
                         // switching the palette recolors; switching back restores
                         final java.awt.Color before = tp.getPropertyColorScheme().getValueColors().get( first );
                         tp.setColorPaletteName( "Colorblind-friendly" );
                         if ( before.equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
-                            ok[ 0 ] = false;
+                            ok[ 0 ] = TestFail.here();
                         }
                         tp.setColorPaletteName( "Default" );
                         if ( !before.equals( tp.getPropertyColorScheme().getValueColors().get( first ) ) ) {
-                            ok[ 0 ] = false;
+                            ok[ 0 ] = TestFail.here();
                         }
                     }
                 }

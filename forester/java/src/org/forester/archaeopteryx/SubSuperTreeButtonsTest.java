@@ -67,41 +67,41 @@ public final class SubSuperTreeButtonsTest {
                 final ControlPanel cp = mp.getControlPanel();
                 // the complete tree has 4 leaves and is not a sub-tree
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // descend into A (3 leaves) and then the nested B (2 leaves): now two levels deep
                 tp.subTree( internalNamed( tp.getPhylogeny(), "A" ) );
                 if ( leaves( tp ) != 3 ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 tp.subTree( internalNamed( tp.getPhylogeny(), "B" ) );
                 if ( ( leaves( tp ) != 2 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // R1 moves up exactly one level -> back at A (3 leaves), still a sub-tree
                 cp.returnedToSuperTreePressed();
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // R1 again -> back at the complete tree (4 leaves), no longer a sub-tree
                 cp.returnedToSuperTreePressed();
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // descend two levels again, then R jumps straight to the root in a single press
                 tp.subTree( internalNamed( tp.getPhylogeny(), "A" ) );
                 tp.subTree( internalNamed( tp.getPhylogeny(), "B" ) );
                 if ( leaves( tp ) != 2 ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 cp.returnedToWholeTreePressed();
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // R on the complete tree is a harmless no-op
                 cp.returnedToWholeTreePressed();
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // keyboard shortcuts (dispatched through the panel's own key listener):
                 // Alt+R moves up one level, Alt+Shift+R returns all the way to the root.
@@ -109,17 +109,17 @@ public final class SubSuperTreeButtonsTest {
                 tp.subTree( internalNamed( tp.getPhylogeny(), "B" ) );
                 pressR( tp, false ); // Alt+R: up one -> A (3 leaves)
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 pressR( tp, false ); // Alt+R again: up one -> whole tree (4 leaves)
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 tp.subTree( internalNamed( tp.getPhylogeny(), "A" ) );
                 tp.subTree( internalNamed( tp.getPhylogeny(), "B" ) );
                 pressR( tp, true ); // Alt+Shift+R: straight to the root (4 leaves)
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // Clicking an external node in "subtree" mode shows the subtree of the leaf's
                 // PARENT (it used to pop a modal warning that could freeze the app). Calling this
@@ -127,48 +127,48 @@ public final class SubSuperTreeButtonsTest {
                 // We are at the whole tree now.
                 tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) ); // parent B (two levels down) -> B (b1, b2)
                 if ( ( leaves( tp ) != 2 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // R1 must climb exactly ONE branch: B -> its parent clade A -- NOT jump back to the
                 // root, even though B was reached by a single (deep) leaf click (one stack frame).
                 cp.returnedToSuperTreePressed();
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) { // A: b1, b2, a3
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // one more branch up reaches the root (the complete tree)
                 cp.returnedToSuperTreePressed();
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // a leaf directly under the whole-tree root is a harmless no-op (parent is the root)
                 tp.subTree( leafNamed( tp.getPhylogeny(), "r2" ) );
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // a leaf under an internal, non-root clade descends into that clade
                 tp.subTree( leafNamed( tp.getPhylogeny(), "a3" ) ); // parent A -> descend into A (b1, b2, a3)
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // in A's sub-tree, clicking a3 (whose parent is A, the current root) is a no-op
                 tp.subTree( leafNamed( tp.getPhylogeny(), "a3" ) );
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 // Clicking the displayed sub-tree's ROOT climbs one branch (like R1), not back to
                 // the whole tree. Reset, then dive two levels in with a single leaf click.
                 cp.returnedToWholeTreePressed();
                 tp.subTree( leafNamed( tp.getPhylogeny(), "b1" ) ); // -> B (b1, b2), two levels deep
                 if ( ( leaves( tp ) != 2 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 tp.subTree( tp.getPhylogeny().getRoot() ); // click the sub-tree root -> up one branch to A
                 if ( ( leaves( tp ) != 3 ) || !tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 tp.subTree( tp.getPhylogeny().getRoot() ); // again -> A's parent is the root -> whole tree
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );

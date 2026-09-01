@@ -131,7 +131,7 @@ public final class ExportResolutionTest {
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 finally {
                     f.dispose();

@@ -65,7 +65,7 @@ public final class TabContextMenuTest {
                 try {
                     final JTabbedPane tabs = mf[ 0 ].getMainPanel().getTabbedPane();
                     if ( tabs.getTabCount() != 2 ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     // the right-click popup for tab 0 is exactly: "Edit Tree Name and Description...", a separator,
                     // then "Close Tab" -- pin the count, types and order so a stray/duplicate item is caught
@@ -76,17 +76,17 @@ public final class TabContextMenuTest {
                             || !( popup.getComponent( 1 ) instanceof javax.swing.JSeparator )
                             || !( popup.getComponent( 2 ) instanceof JMenuItem )
                             || !"Close Tab".equals( ( (JMenuItem) popup.getComponent( 2 ) ).getText() ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     // invoking "Close Tab" must close the clicked tab
                     ( (JMenuItem) popup.getComponent( 2 ) ).doClick();
                     if ( tabs.getTabCount() != 1 ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                     // the clicked tab ("A") must be gone, leaving "B"
                     final Phylogeny remaining = mf[ 0 ].getMainPanel().getCurrentTreePanel().getPhylogeny();
                     if ( ( remaining == null ) || !"B".equals( remaining.getName() ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                 }
                 finally {

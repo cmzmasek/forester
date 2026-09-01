@@ -1861,6 +1861,12 @@ public final class MainFrameApplication extends MainFrame {
         _annotation_columns_jmi.setToolTipText(
                 "choose how each node annotation field is shown -- as a tip-aligned column (color strip, symbol, heat map, bar, or text) or in the node label -- and in which order");
         _tools_menu.addSeparator();
+        _tools_menu.add(_clear_overlays_jmi = new JMenuItem("Clear All Overlays"));
+        customizeJMenuItem(_clear_overlays_jmi);
+        _clear_overlays_jmi.setToolTipText("Switch off every overlay on this tree at once -- annotation columns, "
+                + "clade marks, colour-by, size-by, ancestral pies and the properties shown in the labels. The tree "
+                + "itself, its layout and its labels are untouched.");
+        _clear_overlays_jmi.addActionListener(e -> clearAllOverlays());
         // Clearing styles & colors
         _tools_menu.add(_remove_visual_styles_item = new JMenuItem("Delete All Visual Styles From Nodes"));
         _remove_visual_styles_item

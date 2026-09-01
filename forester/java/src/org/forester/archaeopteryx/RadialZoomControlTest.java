@@ -277,7 +277,7 @@ public final class RadialZoomControlTest {
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
-            ok[ 0 ] = false;
+            ok[ 0 ] = TestFail.here();
         }
     }
 

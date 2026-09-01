@@ -201,7 +201,7 @@ public final class TreeInfoEditTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 finally {
                     ( (JFrame) mf[ 0 ] ).dispose(); // never leak the frame into the shared suite JVM
@@ -259,7 +259,7 @@ public final class TreeInfoEditTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 finally {
                     ( (JFrame) mf[ 0 ] ).dispose();

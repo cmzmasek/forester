@@ -85,7 +85,7 @@ public final class ExternalDataFitTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
             } );
         }

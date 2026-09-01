@@ -104,12 +104,12 @@ public final class NodeSupportSymbolTest {
                     }
                     if ( ( i90 != null )
                             && !dotIsMidBranch( renderImage( tp, mp, SUPPORT_VISUALIZATION.SIZE_SCALED ), i90 ) ) {
-                        ok[ 0 ] = false;
+                        ok[ 0 ] = TestFail.here();
                     }
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 finally {
                     f.dispose();

@@ -466,7 +466,7 @@ public final class RadialInteractionTest {
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
-            ok[ 0 ] = false;
+            ok[ 0 ] = TestFail.here();
         }
     }
 

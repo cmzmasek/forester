@@ -210,7 +210,7 @@ public final class MsaHitTestTest {
                     }
                 }
                 if ( !overlaps ) {
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                     int minx = Integer.MAX_VALUE, maxx = 0, miny = Integer.MAX_VALUE, maxy = 0;
                     for( final int[] pt : before ) {
                         minx = Math.min( minx, pt[ 0 ] );

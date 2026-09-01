@@ -62,7 +62,7 @@ public final class ConfidenceRenderTest {
                     final MainPanel mp = mf[ 0 ].getMainPanel();
                     final TreePanel tp = mp.getCurrentTreePanel();
                     if ( mp.getControlPanel().getWriteConfidenceCb() == null ) {
-                        ok[ 0 ] = false; // the test can only exercise the render path with this control present
+                        ok[ 0 ] = TestFail.here(); // the test can only exercise the render path with this control present
                     }
                     else {
                         mp.getControlPanel().getWriteConfidenceCb().setSelected( true );
@@ -75,7 +75,7 @@ public final class ConfidenceRenderTest {
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();
-                    ok[ 0 ] = false;
+                    ok[ 0 ] = TestFail.here();
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );

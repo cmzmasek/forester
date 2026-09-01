@@ -251,6 +251,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Figure spec (save/restore a figure): ");
+        if (org.forester.archaeopteryx.FigureSpecTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Per-tab display state: ");
+        if (org.forester.archaeopteryx.PerTabDisplayStateTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Taxonomy id provider (UniProt/NCBI) reconciliation: ");
         if (org.forester.archaeopteryx.TaxonomyIdProviderTest.test()) {
             System.out.println("OK.");
