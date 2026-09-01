@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Sequence Alignment</name>
-  <description>Synthetic 34-column protein alignment (one aligned gap) beside a six-tip tree. Turn it on with Settings &gt; Overlays &gt; Sequence Alignment. HOVER A RESIDUE for its alignment column, its number within that sequence&apos;s own ungapped residues, its full name and physico-chemical class, and its Kyte-Doolittle hydropathy -- the column number is a property of the alignment, the residue number is the coordinate that maps back onto the real protein.</description>
+  <description>Synthetic 34-column protein alignment (one aligned gap) beside a six-tip tree. Turn it on with Settings &gt; Overlays &gt; Sequence Alignment. HOVER A RESIDUE for its alignment column, its number within that sequence&apos;s own ungapped residues, its full name and physico-chemical class, and its Kyte-Doolittle hydropathy -- the column number is a property of the alignment, the residue number is the coordinate that maps back onto the real protein. Under the alignment, the CONSERVATION TRACK shows a bar per column and the consensus residue beneath it, scored over the tips currently displayed: collapse a clade and the profile re-scores for what is left. Switch between consensus identity and information content under Settings &gt; Overlays &gt; Conservation measure.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>

@@ -289,6 +289,8 @@ final public class Options {
     private int     _tip_image_size;
     private boolean _show_msa;
     private int     _msa_column_width;
+    private boolean _show_msa_conservation;
+    private MsaConservation.Measure _msa_conservation_measure;
     private boolean _break_long_branches;
     private boolean _show_internal_taxonomy_key;
     private boolean _reverse_tip_order;
@@ -376,6 +378,10 @@ final public class Options {
         _tip_image_size = AptxConstants.TIP_IMAGE_SIZE_DEFAULT;
         _show_msa = false;
         _msa_column_width = AptxConstants.MSA_COLUMN_WIDTH_DEFAULT;
+        // On by default, so an alignment arrives with its conservation profile the way Jalview shows one; it costs
+        // nothing when no alignment is displayed, and it is a persisted preference so switching it off sticks.
+        _show_msa_conservation = true;
+        _msa_conservation_measure = MsaConservation.Measure.IDENTITY;
         _break_long_branches = false;
         _show_internal_taxonomy_key = false;
         _reverse_tip_order = false;
@@ -788,6 +794,22 @@ final public class Options {
 
     final int getMsaColumnWidth() {
         return _msa_column_width;
+    }
+
+    final boolean isShowMsaConservation() {
+        return _show_msa_conservation;
+    }
+
+    final void setShowMsaConservation(final boolean show) {
+        _show_msa_conservation = show;
+    }
+
+    final MsaConservation.Measure getMsaConservationMeasure() {
+        return _msa_conservation_measure;
+    }
+
+    final void setMsaConservationMeasure(final MsaConservation.Measure measure) {
+        _msa_conservation_measure = measure;
     }
 
     final void setMsaColumnWidth(final int msa_column_width) {

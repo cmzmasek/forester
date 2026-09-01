@@ -162,6 +162,9 @@ final class GuiPreferences {
             intPref( "tip_image_size", Options::getTipImageSize, Options::setTipImageSize, 12, 200 ),
             intPref( "msa_column_width", Options::getMsaColumnWidth, Options::setMsaColumnWidth,
                     AptxConstants.MSA_COLUMN_WIDTH_MIN, AptxConstants.MSA_COLUMN_WIDTH_MAX ),
+            boolPref( "show_msa_conservation", Options::isShowMsaConservation, Options::setShowMsaConservation ),
+            enumPref( "msa_conservation_measure", Options::getMsaConservationMeasure,
+                      Options::setMsaConservationMeasure, MsaConservation.Measure::valueOf ),
             // Export appearance: raster scale + the two background toggles (white background already persisted above)
             intPref( "raster_export_scale", Options::getRasterExportScale, Options::setRasterExportScale, 1, 8 ),
             boolPref( "transparent_export_background", Options::isTransparentExportBackground,

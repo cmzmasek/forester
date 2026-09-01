@@ -115,6 +115,8 @@ public final class ResetToDefaultsTest {
         o.setShowDomainGlow( true ); // default is false
         o.setShowMsa( true ); // default is false
         o.setMsaColumnWidth( AptxConstants.MSA_COLUMN_WIDTH_MAX ); // default is MSA_COLUMN_WIDTH_DEFAULT
+        o.setShowMsaConservation( false ); // default is true
+        o.setMsaConservationMeasure( MsaConservation.Measure.INFORMATION ); // default is IDENTITY
         // "Export at a fixed size" (default off / MILLIMETERS / 170 x 120 mm / 300 DPI)
         o.setExportUseFixedSize( true );
         o.setExportSizeUnit( ExportSizeSpec.Unit.PIXELS );
@@ -187,6 +189,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "showDomainGlow", o.isShowDomainGlow(), def.isShowDomainGlow() );
         ok &= eq( "showMsa", o.isShowMsa(), def.isShowMsa() );
         ok &= eq( "msaColumnWidth", o.getMsaColumnWidth(), def.getMsaColumnWidth() );
+        ok &= eq( "showMsaConservation", o.isShowMsaConservation(), def.isShowMsaConservation() );
+        ok &= eq( "msaConservationMeasure", o.getMsaConservationMeasure(), def.getMsaConservationMeasure() );
         ok &= eq( "exportUseFixedSize", o.isExportUseFixedSize(), def.isExportUseFixedSize() );
         ok &= eq( "exportSizeUnit", o.getExportSizeUnit(), def.getExportSizeUnit() );
         ok &= eq( "exportWidth", o.getExportWidth(), def.getExportWidth() );

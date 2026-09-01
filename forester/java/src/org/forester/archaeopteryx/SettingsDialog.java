@@ -287,6 +287,21 @@ final class SettingsDialog extends JDialog {
                             _mf.getOptions().setMsaColumnWidth( v );
                             _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
                         } ) ) );
+        // The conservation/consensus track under the alignment. Scored over the tips ON SCREEN, so it follows
+        // navigation; see MsaConservation for what each measure means and how gaps count.
+        final JCheckBox msa_cons = new JCheckBox( "Conservation track", _mf.getOptions().isShowMsaConservation() );
+        msa_cons.setToolTipText( "Show a per-column conservation bar and the consensus residue under the alignment, "
+                + "scored over the tips currently displayed." );
+        msa_cons.addActionListener( e -> {
+            _mf.getOptions().setShowMsaConservation( msa_cons.isSelected() );
+            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+        } );
+        add( c, msa_cons );
+        add( c, labeled( "Conservation measure:",
+                enumCombo( MsaConservation.Measure.values(), _mf.getOptions().getMsaConservationMeasure(), v -> {
+                    _mf.getOptions().setMsaConservationMeasure( v );
+                    _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+                } ) ) );
         // The Time Axis is PER-TREE (per-tab): a SARS-CoV-2 (calendar) tab and a Dinosaur (geologic) tab show
         // different axes at once. These controls act on the CURRENT tab and are seeded from it at open (like the
         // Tree style / palette combos above -- so they reflect the tab that was current when the dialog opened).

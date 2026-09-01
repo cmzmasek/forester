@@ -227,7 +227,68 @@ public final class MsaTrackRenderTest {
                 tp.setMsaColumnOffset( 0 );
             } );
 
+            // (6) the conservation/consensus track under the alignment
+            SwingUtilities.invokeAndWait( () -> {
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.getOptions().setShowMsa( true );
+                tp.getOptions().setMsaColumnWidth( 12 ); // wide enough that the consensus letters are drawn
+                tp.setSize( 900, 460 );
+                mf[ 0 ].showWhole();
+                // it takes vertical space from the tree only when it is actually drawn
+                tp.getOptions().setShowMsaConservation( false );
+                if ( tp.msaConservationReserveForTest() != 0 ) {
+                    fail( ok, "the conservation band must reserve nothing when it is off" );
+                }
+                final BufferedImage off = AptxUtil
+                        .renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                tp.getOptions().setShowMsaConservation( true );
+                if ( tp.msaConservationReserveForTest() <= 0 ) {
+                    fail( ok, "the conservation band must reserve a band when it is on" );
+                }
+                mf[ 0 ].showWhole();
+                final BufferedImage on = AptxUtil
+                        .renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                if ( !imagesDiffer( off, on ) ) {
+                    fail( ok, "the conservation track must render something" );
+                }
+                // the two measures are genuinely different renders on this fixture (column 3 is L,I,M,L: identity
+                // 2/4 = 0.50, information 1 - H/ln20 = 0.65), not one drawing dressed up as two
+                tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.IDENTITY );
+                final double ident = tp.msaConservationScoreForTest( 3 );
+                final BufferedImage as_identity = AptxUtil
+                        .renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.INFORMATION );
+                final double info = tp.msaConservationScoreForTest( 3 );
+                final BufferedImage as_information = AptxUtil
+                        .renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                if ( Math.abs( ident - 0.5 ) > 1e-9 ) {
+                    fail( ok, "column 4 identity should be 0.50, got " + ident );
+                }
+                if ( info <= ident ) {
+                    fail( ok, "information should exceed identity on a 2/1/1 column, got " + info );
+                }
+                if ( !imagesDiffer( as_identity, as_information ) ) {
+                    fail( ok, "switching the measure must change the track" );
+                }
+                tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.IDENTITY );
+                // the consensus is the most common NON-gap residue, so a gappy column still names one: column 2 is
+                // Q,Q,Q and one gap -> consensus Q, identity 3/4
+                if ( tp.msaConsensusForTest( 2 ) != 'Q' ) {
+                    fail( ok, "column 3 consensus should be Q, got " + tp.msaConsensusForTest( 2 ) );
+                }
+                if ( Math.abs( tp.msaConservationScoreForTest( 2 ) - 0.75 ) > 1e-9 ) {
+                    fail( ok, "a gap must count against the column: expected 0.75, got "
+                            + tp.msaConservationScoreForTest( 2 ) );
+                }
+                // ...and the all-gap column names nothing
+                if ( tp.msaConsensusForTest( 10 ) != 0 ) {
+                    fail( ok, "the all-gap column must have no consensus residue" );
+                }
+            } );
+            // (6b) scored over the tips ON SCREEN: collapsing a clade re-scores the profile for what is left
             SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            checkFollowsVisibleTips( ok );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {
@@ -310,6 +371,67 @@ public final class MsaTrackRenderTest {
             }
         }
         return n;
+    }
+
+    /**
+     * The profile describes what is on screen. Two clades whose first column differs (A,A vs C,C): with everything
+     * visible the column is a 2/2 split, and collapsing one clade must leave the other perfectly conserved. Without
+     * the recompute the track would keep describing sequences the user can no longer see.
+     */
+    private static void checkFollowsVisibleTips( final boolean[] ok ) {
+        try {
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode clade_a = new PhylogenyNode();
+            clade_a.setName( "cladeA" );
+            clade_a.addAsChild( alignedTip( "a1", "AKQL" ) );
+            clade_a.addAsChild( alignedTip( "a2", "AKQL" ) );
+            final PhylogenyNode clade_c = new PhylogenyNode();
+            clade_c.setName( "cladeC" );
+            clade_c.addAsChild( alignedTip( "c1", "CKQL" ) );
+            clade_c.addAsChild( alignedTip( "c2", "CKQL" ) );
+            root.addAsChild( clade_a );
+            root.addAsChild( clade_c );
+            final Phylogeny phy = new Phylogeny();
+            phy.setRoot( root );
+            phy.setRooted( true );
+            phy.externalNodesHaveChanged();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { phy }, new Configuration(), "msacons" ) );
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                // Pin the layout: collapse() pops a MODAL dialog in UNROOTED, and a modal opened inside
+                // invokeAndWait never returns -- the persisted display type is inherited on a standalone run.
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.getOptions().setShowMsa( true );
+                tp.getOptions().setShowMsaConservation( true );
+                tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.IDENTITY );
+                tp.setSize( 700, 460 );
+                mf[ 0 ].showWhole();
+                if ( Math.abs( tp.msaConservationScoreForTest( 0 ) - 0.5 ) > 1e-9 ) {
+                    fail( ok, "with all four tips visible column 1 is a 2/2 split (0.50), got "
+                            + tp.msaConservationScoreForTest( 0 ) );
+                }
+                PhylogenyNode target = null;
+                for( final PhylogenyNode n : tp.getPhylogeny().getNodes( "cladeC" ) ) {
+                    target = n;
+                }
+                tp.collapse( target );
+                mf[ 0 ].getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+                if ( Math.abs( tp.msaConservationScoreForTest( 0 ) - 1.0 ) > 1e-9 ) {
+                    fail( ok, "after collapsing the C clade only the A tips are on screen, so column 1 is fully "
+                            + "conserved (1.00) -- got " + tp.msaConservationScoreForTest( 0 ) );
+                }
+                if ( tp.msaConsensusForTest( 0 ) != 'A' ) {
+                    fail( ok, "...and its consensus is A, got " + tp.msaConsensusForTest( 0 ) );
+                }
+            } );
+            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            ok[ 0 ] = false;
+        }
     }
 
     private static Phylogeny alignedTree() {

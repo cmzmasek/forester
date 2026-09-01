@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.117";
+    final static String VERSION = "0.11.118";
     final static String PRG_DATE = "2026-09-01";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
@@ -85,6 +85,8 @@ public final class AptxConstants {
     final static int   MSA_COLUMN_WIDTH_DEFAULT         = 7;  // alignment cell width (px/residue); user-adjustable
     final static int   MSA_COLUMN_WIDTH_MIN             = 1;
     final static int   MSA_COLUMN_WIDTH_MAX             = 40;
+    final static int   MSA_CONSERVATION_BAR_HEIGHT_MIN  = 22; // the conservation bar area, at least this tall (px)
+    final static int   MSA_CONSERVATION_TOP_GAP          = 4;  // separates the conservation band from the last row
     // "Export at a fixed size" (ExportSizeSpec): DPI + width/height bounds and the default journal-figure size.
     final static int    EXPORT_SIZE_DPI_DEFAULT         = 300; // publication default
     final static int    EXPORT_SIZE_DPI_MIN             = 72;

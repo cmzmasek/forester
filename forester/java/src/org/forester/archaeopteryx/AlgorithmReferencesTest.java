@@ -114,6 +114,14 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] sequence-alignment display reference/citation is missing" );
             ok = false;
         }
+        if ( !text.contains( "Alignment conservation" ) || !text.contains( "Shannon entropy" )
+                || !text.contains( "Sequence logos: a new way to display consensus sequences" )
+                || !text.contains( "Scoring residue conservation" )
+                || !text.contains( "most common NON-gap residue" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] the alignment conservation/consensus measures must be "
+                    + "described and cited (Schneider & Stephens 1990, Valdar 2002)" );
+            ok = false;
+        }
         // the node-age bars/spindles must be described (incl. the honest "schematic, not raw posterior" caveat) + BEAST
         if ( !text.contains( "Node age bars / spindles" ) || !text.contains( "Highest Posterior Density" )
                 || !text.contains( "SCHEMATIC" ) || !text.contains( "BEAST 1.10" ) ) {

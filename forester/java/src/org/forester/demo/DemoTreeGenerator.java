@@ -1442,7 +1442,10 @@ public final class DemoTreeGenerator {
                 + "with Settings > Overlays > Sequence Alignment. HOVER A RESIDUE for its alignment column, its number "
                 + "within that sequence's own ungapped residues, its full name and physico-chemical class, and its "
                 + "Kyte-Doolittle hydropathy -- the column number is a property of the alignment, the residue number "
-                + "is the coordinate that maps back onto the real protein." );
+                + "is the coordinate that maps back onto the real protein. Under the alignment, the CONSERVATION "
+                + "TRACK shows a bar per column and the consensus residue beneath it, scored over the tips currently "
+                + "displayed: collapse a clade and the profile re-scores for what is left. Switch between consensus "
+                + "identity and information content under Settings > Overlays > Conservation measure." );
         phy.setRoot( clade( 0.0,
                 clade( 0.05,
                         alignedLeaf( "Human", 0.03, base ),

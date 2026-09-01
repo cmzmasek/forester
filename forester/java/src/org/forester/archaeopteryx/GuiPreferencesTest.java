@@ -138,12 +138,21 @@ public final class GuiPreferencesTest {
             src.setExportWidth( export_w );
             src.setExportHeight( export_h );
             src.setExportDpi( export_dpi );
+            // the alignment conservation track: a display preference, so it must survive a restart
+            src.setShowMsaConservation( false ); // default is true, so this is a real change
+            src.setMsaConservationMeasure( MsaConservation.Measure.INFORMATION ); // default is IDENTITY
             new GuiPreferences( file ).saveFrom( src );
             if ( !Files.exists( file ) ) {
                 return fail( "saveFrom did not write the settings file" );
             }
             final Options dst = Options.createDefaultInstance();
             new GuiPreferences( file ).applyTo( dst );
+            if ( dst.isShowMsaConservation() ) {
+                return fail( "show_msa_conservation did not round-trip" );
+            }
+            if ( dst.getMsaConservationMeasure() != MsaConservation.Measure.INFORMATION ) {
+                return fail( "msa_conservation_measure did not round-trip, got " + dst.getMsaConservationMeasure() );
+            }
             if ( dst.isShowTreeName() != tree_name ) {
                 return fail( "show_tree_name did not round-trip" );
             }

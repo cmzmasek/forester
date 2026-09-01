@@ -251,6 +251,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("MSA conservation measures: ");
+        if (org.forester.archaeopteryx.MsaConservationTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Figure spec (save/restore a figure): ");
         if (org.forester.archaeopteryx.FigureSpecTest.test()) {
             System.out.println("OK.");
