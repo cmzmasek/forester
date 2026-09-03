@@ -106,6 +106,8 @@ public final class MainFrameApplication extends MainFrame {
     private static final long serialVersionUID = -799735726778865234L;
     private static final boolean PREPROCESS_TREES = false;
     private final JFileChooser _open_filechooser;
+    /** File -> Open Recent: the persisted history of successfully opened files. */
+    private final RecentFiles _recent_files = new RecentFiles();
     private final JFileChooser _open_filechooser_for_species_tree;
     // Application-only print menu items
     private JMenuItem _collapse_below_threshold;
@@ -1243,6 +1245,149 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
+    /**
+     * Everything that happens once a file's trees have been parsed: open them in tabs, warn about suspect Newick,
+     * and make the load-time offers (ignored domains, extract labels, extract dates, treat as a time tree,
+     * internal names as confidence). Shared by the Open dialog and Open Recent so a tree behaves the same
+     * whichever way it was opened -- and the one place a successfully opened file is remembered.
+     */
+    private void afterPhylogeniesRead(final Phylogeny[] phys, final File file, final boolean nhx_or_nexus) {
+        boolean one_desc = false;
+        if (nhx_or_nexus) {
+            for (final Phylogeny phy : phys) {
+                if (getOptions().isInternalNumberAreConfidenceForNhParsing()) {
+                    PhylogenyMethods.transferInternalNodeNamesToConfidence(phy, "");
+                }
+                if (PhylogenyMethods.getMinimumDescendentsPerInternalNodes(phy) == 1) {
+                    one_desc = true;
+                    break;
+                }
+            }
+        }
+        if (PREPROCESS_TREES) {
+            preProcessTreesUponReading(phys);
+        }
+        AptxUtil.addPhylogeniesToTabs(phys, file.getName(), file.getAbsolutePath(), getConfiguration(),
+                getMainPanel());
+        _mainpanel.getControlPanel().showWhole();
+        // remember it only now: a file that could not be parsed is not somewhere the user wants to return to
+        _recent_files.add(file);
+        rebuildOpenRecentMenu();
+        if (nhx_or_nexus && one_desc) {
+            JOptionPane.showMessageDialog(this,
+                    "One or more trees contain (a) node(s) with one descendant, " + ForesterUtil.LINE_SEPARATOR
+                            + "possibly indicating illegal parentheses within node names.",
+                    "Warning: Possible Error in New Hampshire Formatted Data", JOptionPane.WARNING_MESSAGE);
+        }
+        // report BEFORE the offers: a dropped domain is about the file that was just read, so it belongs next to
+        // the read, not after two unrelated questions
+        reportIgnoredDomains(phys);
+        offerLabelExtraction(phys);
+        offerTipDateExtraction(); // before the ultrametric offer: extracting dates preempts it
+        offerTreatAsTimeTree(); // format-agnostic: offer for an ultrametric (undated) tree
+        if (nhx_or_nexus) {
+            offerInternalNamesAsConfidence(phys);
+        }
+    }
+
+    /**
+     * Rebuilds File &rarr; Open Recent from the persisted history.
+     * <p>
+     * Files that no longer exist are left OUT rather than shown and failing on click -- a recent-files menu is a
+     * shortcut, and offering a shortcut that cannot work is worse than a shorter list. They stay in the store, so
+     * a file on a volume that is merely unmounted comes back when the volume does.
+     */
+    void rebuildOpenRecentMenu() {
+        if (_open_recent_menu == null) {
+            return;
+        }
+        _open_recent_menu.removeAll();
+        int shown = 0;
+        for (final String path : _recent_files.load()) {
+            final File f = new File(path);
+            if (!f.isFile()) {
+                continue;
+            }
+            final JMenuItem item = new JMenuItem(f.getName());
+            item.setToolTipText(f.getAbsolutePath()); // the basenames repeat across directories; the path does not
+            item.addActionListener(e -> openTreeFile(f));
+            customizeJMenuItem(item);
+            _open_recent_menu.add(item);
+            shown++;
+        }
+        if (shown == 0) {
+            final JMenuItem empty = new JMenuItem("(none)");
+            empty.setEnabled(false);
+            customizeJMenuItem(empty);
+            _open_recent_menu.add(empty);
+        }
+        else {
+            _open_recent_menu.addSeparator();
+            final JMenuItem clear = new JMenuItem("Clear Menu");
+            clear.addActionListener(e -> {
+                _recent_files.clear();
+                rebuildOpenRecentMenu();
+            });
+            customizeJMenuItem(clear);
+            _open_recent_menu.add(clear);
+        }
+        _open_recent_menu.setEnabled(true);
+    }
+
+    /**
+     * Opens one tree file by path -- the File &rarr; Open Recent action.
+     * <p>
+     * Uses the same auto-detecting parser as the chooser's "All supported files" branch (a recent entry carries no
+     * chooser filter), and then goes through the SAME post-read handling, so a tree opened from the recent list
+     * gets the identical load-time offers -- extract labels, extract dates, treat as a time tree -- as one opened
+     * through the dialog.
+     */
+    void openTreeFile(final File file) {
+        if ((file == null) || !file.isFile()) {
+            JOptionPane.showMessageDialog(this, "File not found:\n" + file, "Cannot Open",
+                    JOptionPane.WARNING_MESSAGE);
+            rebuildOpenRecentMenu(); // it just vanished; stop offering it
+            return;
+        }
+        if (_mainpanel.getCurrentTreePanel() != null) {
+            _mainpanel.getCurrentTreePanel().setWaitCursor();
+        }
+        else {
+            _mainpanel.setWaitCursor();
+        }
+        Phylogeny[] phys = null;
+        boolean nhx_or_nexus = false;
+        try {
+            final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType(file,
+                    getConfiguration().isValidatePhyloXmlAgainstSchema());
+            if (parser instanceof NexusPhylogeniesParser nex) {
+                setSpecialOptionsForNexParser(nex);
+                nhx_or_nexus = true;
+            }
+            else if (parser instanceof NHXParser nhx) {
+                setSpecialOptionsForNhxParser(nhx);
+                nhx_or_nexus = true;
+            }
+            phys = PhylogenyMethods.readPhylogenies(parser, file);
+        }
+        catch (final Exception e) {
+            exceptionOccuredDuringOpenFile(e);
+            phys = null;
+        }
+        finally {
+            if (_mainpanel.getCurrentTreePanel() != null) {
+                _mainpanel.getCurrentTreePanel().setArrowCursor();
+            }
+            else {
+                _mainpanel.setArrowCursor();
+            }
+        }
+        if ((phys != null) && (phys.length > 0)) {
+            afterPhylogeniesRead(phys, file, nhx_or_nexus);
+        }
+        activateSaveAllIfNeeded();
+    }
+
     private void readPhylogeniesFromFile() {
         boolean exception = false;
         Phylogeny[] phys = null;
@@ -1335,45 +1480,7 @@ public final class MainFrameApplication extends MainFrame {
                         _mainpanel.setArrowCursor();
                     }
                     if (!exception && (phys.length > 0)) {
-                        boolean one_desc = false;
-                        if (nhx_or_nexus) {
-                            for (final Phylogeny phy : phys) {
-                                if (getOptions().isInternalNumberAreConfidenceForNhParsing()) {
-                                    PhylogenyMethods.transferInternalNodeNamesToConfidence(phy, "");
-                                }
-                                if (PhylogenyMethods.getMinimumDescendentsPerInternalNodes(phy) == 1) {
-                                    one_desc = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (PREPROCESS_TREES) {
-                            preProcessTreesUponReading(phys);
-                        }
-                        AptxUtil.addPhylogeniesToTabs(phys,
-                                file.getName(),
-                                file.getAbsolutePath(),
-                                getConfiguration(),
-                                getMainPanel());
-                        _mainpanel.getControlPanel().showWhole();
-                        if (nhx_or_nexus && one_desc) {
-                            JOptionPane
-                                    .showMessageDialog(this,
-                                            "One or more trees contain (a) node(s) with one descendant, "
-                                                    + ForesterUtil.LINE_SEPARATOR
-                                                    + "possibly indicating illegal parentheses within node names.",
-                                            "Warning: Possible Error in New Hampshire Formatted Data",
-                                            JOptionPane.WARNING_MESSAGE);
-                        }
-                        // report BEFORE the offers: a dropped domain is about the file that was just read,
-                        // so it belongs next to the read, not after two unrelated questions
-                        reportIgnoredDomains(phys);
-                        offerLabelExtraction(phys);
-                        offerTipDateExtraction(); // before the ultrametric offer: extracting dates preempts it
-                        offerTreatAsTimeTree(); // format-agnostic: offer for an ultrametric (undated) tree
-                        if (nhx_or_nexus) {
-                            offerInternalNamesAsConfidence(phys);
-                        }
+                        afterPhylogeniesRead(phys, file, nhx_or_nexus);
                     }
                 }
             }
@@ -1543,7 +1650,12 @@ public final class MainFrameApplication extends MainFrame {
     void buildFileMenu() {
         _file_jmenu = MainFrame.createMenu("File", getConfiguration());
         _file_jmenu.setToolTipText("Read, save, and export trees; close tabs or exit");
-        _file_jmenu.add(_open_item = new JMenuItem("Read Tree from File..."));
+        _file_jmenu.add(_open_item = new JMenuItem("Open..."));
+        _open_item.setToolTipText("Open a tree file (phyloXML, Newick/NHX, Nexus, Auspice JSON, ToL)");
+        _file_jmenu.add(_open_recent_menu = new JMenu("Open Recent"));
+        _open_recent_menu.setFont(MainFrame.menu_font); // a submenu does not inherit the item font (see CollapseMenuFontTest)
+        rebuildOpenRecentMenu();
+        _file_jmenu.addSeparator();
         _file_jmenu.add(buildDemoTreesSubmenu()); // pre-configured example trees, bundled in the jar (like Cytoscape)
         if (getConfiguration().isEditable()) {
             _file_jmenu.addSeparator();

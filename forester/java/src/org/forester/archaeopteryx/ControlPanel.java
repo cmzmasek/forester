@@ -243,6 +243,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     // tip-label font size (replaces the old "Font Size" menu); the slider is the user-chosen size
     private JLabel  _font_size_label;
     private JSlider _font_size_slider;
+    private JLabel  _node_size_label;
+    private JSlider _node_size_slider;
+    private boolean _node_slider_is_being_set;
     private boolean _font_slider_is_being_set; // guard so programmatic slider updates don't re-apply
     // "Display Data" checkboxes are shown only when the current tree actually carries the
     // corresponding data (so the panel is not a wall of toggles that silently do nothing). This
@@ -1018,6 +1021,17 @@ final class ControlPanel extends JPanel implements ActionListener {
         _font_size_slider.setBackground(getBackground());
         _font_size_slider.addChangeListener(e -> fontSizeSliderChanged());
         add(_font_size_slider);
+        // node-size slider, directly under the font one: node size is changed often enough to deserve a control
+        // rather than a trip into Settings, and it matches what Archaeopteryx.js offers.
+        add(_node_size_label = new JLabel(nodeSizeLabelText(AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT)));
+        customizeLabel(_node_size_label, getConfiguration());
+        _node_size_slider = new JSlider(NODE_SIZE_SLIDER_MIN, NODE_SIZE_SLIDER_MAX,
+                AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT);
+        _node_size_slider.setToolTipText("size of the node shapes (Settings has the same value, and a wider range)");
+        _node_size_slider.setPreferredSize(new Dimension(10, _node_size_slider.getPreferredSize().height));
+        _node_size_slider.setBackground(getBackground());
+        _node_size_slider.addChangeListener(e -> nodeSizeSliderChanged());
+        add(_node_size_slider);
         nextRowGap(SECTION_GAP);
         add(o_panel);
         addJButton(_order, o_panel);
@@ -1067,6 +1081,67 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private static String fontSizeLabelText(final int size) {
         return "Font size: " + size;
+    }
+
+    /** The everyday range. Settings offers 0..100 for the rare extreme; {@link #updateNodeSizeSlider} stretches
+     *  the slider to fit such a value rather than silently clamping it (and so changing it on the next touch). */
+    private static final int NODE_SIZE_SLIDER_MIN = 0;
+    private static final int NODE_SIZE_SLIDER_MAX = 20;
+
+    /** Applies the slider value as the default node-shape size (on release / discrete change). */
+    private void nodeSizeSliderChanged() {
+        if (_node_slider_is_being_set) {
+            return;
+        }
+        final int size = _node_size_slider.getValue();
+        _node_size_label.setText(nodeSizeLabelText(size)); // live feedback while dragging
+        if (_node_size_slider.getValueIsAdjusting()) {
+            return; // defer the (re)layout until the drag settles
+        }
+        getOptions().setDefaultNodeShapeSize((short) size);
+        // NOT a bare repaint: the node half-box offsets each tip label, so the label reach -- and with it the
+        // annotation columns, the alignment track and the scrollable width -- has to be recomputed.
+        displayedPhylogenyMightHaveChanged(true);
+    }
+
+    /** Syncs the node-size slider + label to the current Options value (Settings, Reset to Defaults, a new tab). */
+    void updateNodeSizeSlider() {
+        if ((_node_size_slider == null) || (getOptions() == null)) {
+            return;
+        }
+        final int size = Math.max(NODE_SIZE_SLIDER_MIN, getOptions().getDefaultNodeShapeSize());
+        // The guard has to cover setMaximum TOO, not just setValue: a JSlider fires stateChanged for a model
+        // change of any kind, so widening the range first would run the apply with the OLD value still in the
+        // slider and write that back over the size we were asked to display.
+        _node_slider_is_being_set = true;
+        try {
+            if (size > _node_size_slider.getMaximum()) {
+                _node_size_slider.setMaximum(size); // show a Settings-set extreme instead of lying about it
+            }
+            if (_node_size_slider.getValue() != size) {
+                _node_size_slider.setValue(size);
+            }
+        }
+        finally {
+            _node_slider_is_being_set = false;
+        }
+        _node_size_label.setText(nodeSizeLabelText(size));
+    }
+
+    private static String nodeSizeLabelText(final int size) {
+        return "Node size: " + size;
+    }
+
+    /** For tests: drive the node-size slider as a user would (fires the change listener). */
+    void setNodeSizeSliderValue(final int v) {
+        if (_node_size_slider != null) {
+            _node_size_slider.setValue(v);
+        }
+    }
+
+    /** For tests: the current node-size slider value (-1 if the slider is not built). */
+    int getNodeSizeSliderValue() {
+        return (_node_size_slider == null) ? -1 : _node_size_slider.getValue();
     }
 
     /** For tests: the current slider value (-1 if the slider is not built). */
@@ -1370,6 +1445,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _search_controls_adjusting = false;
         }
         updateCombineControlVisibility();
+        updateNodeSizeSlider(); // Reset to Defaults restored the node size: show it
     }
 
     /** Resets the "Color by" property dropdown to None (for Reset to Defaults). The per-tab coloring state is
@@ -1419,6 +1495,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             _mainpanel.getCurrentTreePanel().repaint();
             // _mainpanel.getCurrentTreePanel().setUpUrtFactor();
             updateFontSizeSlider(); // keep the slider in sync with keyboard/wheel nudges and the font dialog
+        updateNodeSizeSlider(); // ...and the node-size slider with Settings / Reset to Defaults
             // Safety net for the "k / N" navigator: a tree edit (prune/delete-subtree) can drop found nodes without
             // touching the found-set objects, so the setFoundNodes0/1 chokepoint would miss the shrunk count.
             updateSearchHitNavigation();

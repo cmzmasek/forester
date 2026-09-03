@@ -93,6 +93,32 @@ public final class FontSizeControlTest {
                     ok[ 0 ] = false;
                     System.out.println( "  slider did not apply the size: " + tfs.getUserFontSize() );
                 }
+                // ---- the NODE-SIZE slider, directly below: same shape, on Options.defaultNodeShapeSize ----
+                mf[ 0 ].getOptions().setDefaultNodeShapeSize( (short) 7 );
+                cp.updateNodeSizeSlider();
+                if ( cp.getNodeSizeSliderValue() != 7 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  node slider did not sync from Options: " + cp.getNodeSizeSliderValue() );
+                }
+                cp.setNodeSizeSliderValue( 12 );
+                if ( mf[ 0 ].getOptions().getDefaultNodeShapeSize() != 12 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  node slider did not apply the size: "
+                            + mf[ 0 ].getOptions().getDefaultNodeShapeSize() );
+                }
+                // A value set from Settings (range 0..100) beyond the slider's everyday range must be SHOWN, not
+                // silently clamped -- a clamped slider would misreport the size and change it on the next touch.
+                mf[ 0 ].getOptions().setDefaultNodeShapeSize( (short) 40 );
+                cp.updateNodeSizeSlider();
+                if ( cp.getNodeSizeSliderValue() != 40 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  node slider must stretch to show an out-of-range value, got "
+                            + cp.getNodeSizeSliderValue() );
+                }
+                if ( mf[ 0 ].getOptions().getDefaultNodeShapeSize() != 40 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  ...without changing it: " + mf[ 0 ].getOptions().getDefaultNodeShapeSize() );
+                }
                 ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
             } );
             return ok[ 0 ];

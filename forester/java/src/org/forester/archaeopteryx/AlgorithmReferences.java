@@ -174,7 +174,7 @@ final class AlgorithmReferences {
                         + "the single outlier being detected or by the many zero-length branches of a polytomy-heavy tree. "
                         + "This is a graphical convention (as offered by interactive viewers such as iTOL's \"cut long "
                         + "branches\"), not an inference algorithm; it changes only how the tree is drawn." ) );
-        refs.add( new Reference( "Auspice / Nextstrain JSON import (File → Read Tree from File → .json)",
+        refs.add( new Reference( "Auspice / Nextstrain JSON import (File → Open… → .json)",
                 "Reads an Auspice / Nextstrain v2 dataset (dataset.json) -- the interchange format for dated, "
                         + "annotated pathogen phylogenies -- into Archaeopteryx's native model: node dates (num_date) and "
                         + "their confidence intervals become the calendar time axis + node-age spindles, the cumulative "

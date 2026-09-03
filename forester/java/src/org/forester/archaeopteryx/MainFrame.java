@@ -250,6 +250,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _lineage_inference;
     // file menu:
     JMenuItem _open_item;
+    /** File -> Open Recent: rebuilt from the persisted history each time a file is opened. */
+    JMenu     _open_recent_menu;
     JMenuItem _save_item;
     JMenuItem _save_all_item;
     JMenuItem _close_item;

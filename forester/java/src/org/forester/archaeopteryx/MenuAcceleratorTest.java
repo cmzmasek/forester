@@ -62,7 +62,37 @@ public final class MenuAcceleratorTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final int sc = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-                    expect( ok, "Read Tree from File", frame._open_item, KeyStroke.getKeyStroke( KeyEvent.VK_O, sc ) );
+                    expect( ok, "Open...", frame._open_item, KeyStroke.getKeyStroke( KeyEvent.VK_O, sc ) );
+                    // File menu shape: Open... then Open Recent, then a divider before the Demo Trees submenu, so
+                    // the two ways of opening YOUR OWN file sit together and the bundled examples read as separate
+                    final javax.swing.JMenu file_menu = frame._file_jmenu;
+                    int open_at = -1, recent_at = -1, demo_at = -1, sep_between = -1;
+                    for( int i = 0; i < file_menu.getMenuComponentCount(); ++i ) {
+                        final java.awt.Component c = file_menu.getMenuComponent( i );
+                        if ( c instanceof javax.swing.JMenu m ) {
+                            if ( "Open Recent".equals( m.getText() ) ) {
+                                recent_at = i;
+                            }
+                            else if ( "Demo Trees".equals( m.getText() ) ) {
+                                demo_at = i;
+                            }
+                        }
+                        else if ( c == frame._open_item ) {
+                            open_at = i;
+                        }
+                        else if ( ( c instanceof javax.swing.JSeparator ) && ( recent_at >= 0 ) && ( demo_at < 0 ) ) {
+                            sep_between = i;
+                        }
+                    }
+                    if ( ( open_at < 0 ) || ( recent_at != ( open_at + 1 ) ) ) {
+                        fail( ok, "\"Open Recent\" must follow \"Open...\" (open=" + open_at + ", recent="
+                                + recent_at + ")" );
+                    }
+                    if ( ( demo_at < 0 ) || ( sep_between < 0 ) || !( ( recent_at < sep_between )
+                            && ( sep_between < demo_at ) ) ) {
+                        fail( ok, "a divider must separate \"Open Recent\" from \"Demo Trees\" (recent=" + recent_at
+                                + ", sep=" + sep_between + ", demo=" + demo_at + ")" );
+                    }
                     expect( ok, "Save Tree As", frame._save_item, KeyStroke.getKeyStroke( KeyEvent.VK_S, sc ) );
                     expect( ok, "Close Tab", frame._close_item, KeyStroke.getKeyStroke( KeyEvent.VK_W, sc ) );
                     expect( ok, "Copy Image", frame._copy_image_to_clipboard_item,
