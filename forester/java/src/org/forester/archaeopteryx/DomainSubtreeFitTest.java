@@ -56,7 +56,8 @@ public final class DomainSubtreeFitTest {
         }
         // break OFF (the reported case) AND break ON (breakCappedHeight also folds in the root branch, so the clip
         // must not resurface); plus a full-tree genuine root edge (the anchor double-count, which the stub can't cover)
-        return subtreeDomainsFitOk( false ) && subtreeDomainsFitOk( true ) && fullTreeRootEdgeOk();
+        return subtreeDomainsFitOk( false ) && subtreeDomainsFitOk( true ) && fullTreeRootEdgeOk()
+                && domainZoomGrowsTheViewOk();
     }
 
     /** Load the domain demo and give every tip a long label so the aligned domain column reaches the right edge. */
@@ -167,6 +168,66 @@ public final class DomainSubtreeFitTest {
 
     /** A FULL tree whose ROOT carries a genuine branch length (a root edge, drawn to scale) plus domains: the aligned
      *  column must still fit -- guards the domain-column double-count fix, which the subtree stub does NOT cover. */
+    /**
+     * The "+" domain zoom must GROW the scrollable view, not just the drawing.
+     * <p>
+     * Widening the domain track widens the label/track reservation, and that reservation IS the panel's width --
+     * so if the preferred size does not follow it, the domains simply extend past the right edge with nothing to
+     * scroll to. Reported by a user: "the size of the view does not get updated and i can not scroll along the
+     * domains". Drives the REAL "+" button, because that is the path the user takes.
+     */
+    private static boolean domainZoomGrowsTheViewOk() {
+        if ( GraphicsEnvironment.isHeadless() ) {
+            return true;
+        }
+        final boolean[] ok = { true };
+        try {
+            final Phylogeny phy = loadLongLabelledDomainTree();
+            if ( ( phy == null ) || phy.isEmpty() ) {
+                return fail( "could not load domain-architectures.xml" );
+            }
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { phy }, new Configuration(), "domzoom" ) );
+            SwingUtilities.invokeAndWait( () -> {
+                final MainPanel mp = mf[ 0 ].getMainPanel();
+                final ControlPanel cp = mp.getControlPanel();
+                final TreePanel tp = mp.getCurrentTreePanel();
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setSize( 900, 460 );
+                mf[ 0 ].showWhole();
+                AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                final double start_w = tp.domainStructureWidthForTest();
+                final int start_pref = tp.getPreferredSize().width;
+                for( int i = 1; i <= 4; ++i ) {
+                    cp.actionPerformed( new java.awt.event.ActionEvent( cp.zoomInDomainButtonForTest(), 0, "+" ) );
+                    AptxUtil.renderPhylogenyToImage( 900, 460, tp, tp.getOptions(), false, 1, false );
+                    final int pref_w = tp.getPreferredSize().width;
+                    if ( tp.alignedDomainColumnRightEdgeForTest() > ( pref_w + 1 ) ) {
+                        fail( ok, "after " + i + " domain zoom-in click(s) the domains reach "
+                                + Math.round( tp.alignedDomainColumnRightEdgeForTest() - pref_w )
+                                + "px past the scrollable width (" + pref_w + ") -- the view did not grow with them" );
+                        return;
+                    }
+                }
+                if ( tp.domainStructureWidthForTest() <= start_w ) {
+                    fail( ok, "precondition: the domain zoom did not widen the track at all" );
+                }
+                if ( tp.getPreferredSize().width <= start_pref ) {
+                    fail( ok, "the scrollable width must GROW with the domain track (" + start_pref + " -> "
+                            + tp.getPreferredSize().width + ")" );
+                }
+            } );
+            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+        return ok[ 0 ];
+    }
+
     private static boolean fullTreeRootEdgeOk() {
         try {
             final Phylogeny phy = loadLongLabelledDomainTree();

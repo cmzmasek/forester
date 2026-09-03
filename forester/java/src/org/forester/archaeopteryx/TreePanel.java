@@ -1051,6 +1051,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return alignedPhylogramDomainColumnX() + (float) (effectiveDomainStructureWidth() * 0.9);
     }
 
+    /** Test hook: the user's domain-track width (the "+"/"-" domain zoom). */
+    final double domainStructureWidthForTest() {
+        return _domain_structure_width;
+    }
+
     /** Test hook: the depth cache getMaxDistanceToRoot() (includes the root branch only when drawn to scale). */
     final double getMaxDistanceToRootForTest() {
         return getMaxDistanceToRoot();

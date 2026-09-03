@@ -1394,6 +1394,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             if (recalc_longest_ext_node_info) {
                 _mainpanel.getCurrentTreePanel().initNodeData();
                 _mainpanel.getCurrentTreePanel().calculateLongestExtNodeInfo();
+                // The label/track reach just changed, and that reach IS the panel's width -- so the scrollable
+                // extent has to follow it. Without this the content grows inside an unchanged canvas and simply
+                // runs off the right edge with nothing to scroll to (the "+" domain zoom widened the domain track
+                // and the view never grew). Idempotent: it derives the extent from the layout, not from the
+                // current preferred size, so it cannot drift the way feeding an extent back into
+                // calcParametersForPainting does.
+                _mainpanel.getCurrentTreePanel().resetPreferredSize();
             }
             updateDataCheckboxVisibility(recalc_longest_ext_node_info);
             if (getOptions().isShowOverview()) {
@@ -1503,6 +1510,11 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowDomainArchitectures() {
         return ((_show_domain_architectures != null) && _show_domain_architectures.isSelected());
+    }
+
+    /** Test hook: the "+" button that widens the domain track, so a test can drive the real click. */
+    JButton zoomInDomainButtonForTest() {
+        return _zoom_in_domain_structure;
     }
 
     /** Test hook: the widget behind a display option, so a test can drive a REAL user click (flip it, then fire
