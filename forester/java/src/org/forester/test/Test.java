@@ -9561,6 +9561,22 @@ public final class Test {
             if (!alignedSeqOf(p[0], "Homo_sapiens").equals("ACGT")) {
                 return false;
             }
+            // (13) a HEADERLESS file (no #NEXUS line) must still parse, alignment included -- strict on
+            // output (testNexusExportSpecCompliance), LENIENT on input (Postel's law). Pinned as a CONTRACT:
+            // Archaeopteryx.js's parser skips #-lines and tolerates a headerless file the same way, so the
+            // two implementations are aligned end to end; jebl behaves likewise. A future parser hardening
+            // that starts REQUIRING the header would break real-world files and this symmetry.
+            final StringBuffer hl = new StringBuffer();
+            hl.append("BEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS A B;\nEND;\n");
+            hl.append("BEGIN DATA;\n DIMENSIONS NTAX=2 NCHAR=4;\n FORMAT DATATYPE=DNA;\n MATRIX\n");
+            hl.append("  A ACGT\n  B ACGA\n ;\nEND;\n");
+            hl.append("BEGIN TREES;\n TREE t = (A,B);\nEND;\n");
+            parser.setSource(hl);
+            p = parser.parse();
+            if ((p.length != 1) || (p[0].getNumberOfExternalNodes() != 2) || (countAlignedTips(p[0]) != 2)) {
+                System.out.println("a headerless (no #NEXUS) file must parse, alignment included");
+                return false;
+            }
         }
         catch (final Exception e) {
             e.printStackTrace(System.out);
