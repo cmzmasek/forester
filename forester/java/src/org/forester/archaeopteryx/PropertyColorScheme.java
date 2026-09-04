@@ -156,6 +156,18 @@ final class PropertyColorScheme {
      */
     PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
                          final String palette_name, final Map<String, Color> memory, final int[] memory_next ) {
+        this( phylogeny, ref, overrides, palette_name, memory, memory_next, null );
+    }
+
+    /**
+     * @param forced_gradient non-null forces the mode -- TRUE gradient, FALSE categorical -- overriding the
+     *                        automatic numeric detection. The Color-by path always passes it (the three-band
+     *                        default plus the user's per-field {@code [colors]}/{@code [gradient]} choice);
+     *                        null keeps the plain detection (annotation columns, legacy callers).
+     */
+    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
+                         final String palette_name, final Map<String, Color> memory, final int[] memory_next,
+                         final Boolean forced_gradient ) {
         _ref = ref;
         _palette = paletteByName( palette_name );
         _truncate_at = truncationDelimiter( ref );
@@ -189,7 +201,8 @@ final class PropertyColorScheme {
         _tips_with_numeric_value = numeric;
         // Use a continuous gradient when the column is predominantly numeric (year / age / percent-identity /
         // ...); otherwise color by distinct categories. Decided from the visible values, not the ref name.
-        _gradient = shouldUseGradient( leaves, ref );
+        _gradient = ( forced_gradient != null ) ? forced_gradient.booleanValue()
+                : shouldUseGradient( leaves, ref );
         if ( _gradient ) {
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -361,12 +374,17 @@ final class PropertyColorScheme {
      * preserved -- this is what the legend shows.
      */
     private String displayLabel( final String v ) {
-        if ( _element_slot ) {
+        return foldLabel( v, _truncate_at, _element_slot );
+    }
+
+    /** The display form a raw value is grouped under -- the instance path and the candidate scorer share it. */
+    private static String foldLabel( final String v, final char truncate_at, final boolean element_slot ) {
+        if ( element_slot ) {
             return v; // element-slot values are used VERBATIM (no cut/fold/dictionary) -- the JS rule
         }
         String s = v;
-        if ( _truncate_at != 0 ) {
-            final int idx = s.indexOf( _truncate_at );
+        if ( truncate_at != 0 ) {
+            final int idx = s.indexOf( truncate_at );
             if ( idx >= 0 ) {
                 s = s.substring( 0, idx );
                 // the cut may have landed INSIDE a parenthetical ("Saimiri boliviensis (squirrel monkey;
@@ -554,6 +572,52 @@ final class PropertyColorScheme {
      * A few non-numeric sentinels ("n/a", "unknown") are tolerated -- they simply get no color -- while a
      * mostly-textual column with a stray number stays categorical.
      */
+    /** The numeric three-band system (JS parity), deciding the COLOR-BY default mode and switchability:
+     *  NOT_NUMERIC; SMALL (<= 10 distinct numbers -- numbers that few are usually codes, like HA/NA
+     *  subtypes: individual colors by default, switchable); MEDIUM (11..20: gradient by default,
+     *  switchable); LARGE (> 20: gradient, fixed). Only the Color-by path uses it -- the annotation-column
+     *  schemes keep the plain numeric default (a BAR/HEATMAP column must stay continuous regardless). */
+    enum ModeBand {
+        NOT_NUMERIC, SMALL, MEDIUM, LARGE;
+
+        boolean isSwitchable() {
+            return ( this == SMALL ) || ( this == MEDIUM );
+        }
+
+        boolean defaultsToGradient() {
+            return ( this == MEDIUM ) || ( this == LARGE );
+        }
+    }
+
+    static ModeBand colorModeBand( final List<PhylogenyNode> leaves, final String ref ) {
+        int total = 0;
+        int numeric = 0;
+        final Set<Double> distinct = new HashSet<Double>();
+        for( final PhylogenyNode node : leaves ) {
+            final String v = valueFor( node, ref );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                ++total;
+                final Double d = parseNumber( v );
+                if ( d != null ) {
+                    ++numeric;
+                    distinct.add( d );
+                }
+            }
+        }
+        if ( ( ( numeric * 2 ) <= total ) || ( distinct.size() < 2 ) ) {
+            return ModeBand.NOT_NUMERIC;
+        }
+        if ( distinct.size() <= 10 ) {
+            return ModeBand.SMALL;
+        }
+        return ( distinct.size() <= 20 ) ? ModeBand.MEDIUM : ModeBand.LARGE;
+    }
+
+    /** Whether the field would DEFAULT to a gradient in the Color-by band system (candidate tiering). */
+    private static boolean defaultsToGradient( final List<PhylogenyNode> leaves, final String ref ) {
+        return colorModeBand( leaves, ref ).defaultsToGradient();
+    }
+
     static boolean shouldUseGradient( final List<PhylogenyNode> leaves, final String ref ) {
         int total = 0;
         int numeric = 0;
@@ -777,11 +841,11 @@ final class PropertyColorScheme {
             }
         }
         final int leaves = phylogeny.getExternalNodes().size();
-        final List<String> refs = new ArrayList<String>();
+        final List<String> candidate_refs = new ArrayList<String>();
         // The ELEMENT SLOTS (taxonomy/sequence fields) are offered under the same candidacy rules as the
-        // properties, listed FIRST (they are the tree's built-in fields). A per-leaf-unique categorical slot
-        // (sequence names, species names on a species tree) is dropped exactly like a property would be --
-        // one color per tip is useless to color by, and identifier-like fields stay out (the JS rule too).
+        // properties. A per-leaf-unique categorical slot (sequence names, species names on a species tree)
+        // is dropped exactly like a property would be -- one color per tip is useless to color by, and
+        // identifier-like fields stay out (the JS rule too).
         for( final String slot : ELEMENT_SLOT_REFS ) {
             final Set<String> values = new HashSet<String>();
             int nonempty = 0;
@@ -801,7 +865,7 @@ final class PropertyColorScheme {
             }
             final boolean gradient = ( ( numeric * 2 ) > nonempty ) && ( numbers.size() >= 2 );
             if ( ( values.size() >= 2 ) && ( gradient || ( values.size() < leaves ) ) ) {
-                refs.add( slot );
+                candidate_refs.add( slot );
             }
         }
         for( final Map.Entry<String, Set<String>> e : ref_to_values.entrySet() ) {
@@ -815,10 +879,120 @@ final class PropertyColorScheme {
             // Drop per-leaf-unique CATEGORICAL columns (one color per tip is useless to color by); a numeric
             // column stays colorable even when every tip has a distinct value, because it renders as a gradient.
             if ( gradient || ( distinct < leaves ) ) {
-                refs.add( ref );
+                candidate_refs.add( ref );
             }
         }
+        // ORDER the candidates BEST FIRST (JS parity): tier (well-covered categorical, then well-covered
+        // gradient, then sparse), score = coverage x normalized entropy within a tier, ties by display label
+        // then ref. So a field that reads one value on 92% of its nodes ranks low even at full coverage, and
+        // -- deliberately unlike the JS, which REFUSES fields covering < 2/3 of the tips -- a sparse field is
+        // ranked LAST rather than hidden: desktop users hand-annotate subsets, and a field you added is a
+        // field you can color by.
+        final List<Object[]> scored = new ArrayList<Object[]>(); // { ref, tier, score }
+        for( final String ref : candidate_refs ) {
+            scored.add( new Object[] { ref, Integer.valueOf( candidateTier( phylogeny, ref, leaves ) ),
+                                       Double.valueOf( candidateScore( phylogeny, ref, leaves ) ) } );
+        }
+        Collections.sort( scored, new Comparator<Object[]>() {
+
+            @Override
+            public int compare( final Object[] a, final Object[] b ) {
+                final int by_tier = Integer.compare( (Integer) a[ 1 ], (Integer) b[ 1 ] );
+                if ( by_tier != 0 ) {
+                    return by_tier;
+                }
+                final int by_score = Double.compare( (Double) b[ 2 ], (Double) a[ 2 ] );
+                if ( by_score != 0 ) {
+                    return by_score;
+                }
+                final int by_label = String.CASE_INSENSITIVE_ORDER.compare( displayName( (String) a[ 0 ] ),
+                                                                            displayName( (String) b[ 0 ] ) );
+                return ( by_label != 0 ) ? by_label : ( (String) a[ 0 ] ).compareTo( (String) b[ 0 ] );
+            }
+        } );
+        final List<String> refs = new ArrayList<String>();
+        for( final Object[] row : scored ) {
+            refs.add( (String) row[ 0 ] );
+        }
         return refs;
+    }
+
+    /**
+     * The field to AUTO-COLOR a newly opened tree by (JS parity: "a tree opens already coloured by its most
+     * informative field"), or null when nothing qualifies: the top-ranked candidate, provided it is
+     * well-covered (a sparse field is offered in the menu but never chosen for you -- the JS rule for its
+     * wide/refused fields, applied here to the sparse tier).
+     */
+    static String autoColorCandidate( final Phylogeny phylogeny ) {
+        final List<String> refs = colorableRefs( phylogeny );
+        if ( refs.isEmpty() ) {
+            return null;
+        }
+        final String top = refs.get( 0 );
+        return ( candidateTier( phylogeny, top, phylogeny.getExternalNodes().size() ) < 2 ) ? top : null;
+    }
+
+    /** Minimum share of tips a field must cover to rank in the well-covered tiers (the JS refusal threshold,
+     *  used here for RANKING only). */
+    private static final double WELL_COVERED_FRACTION = 2.0 / 3.0;
+
+    /** 0 = well-covered categorical-by-default, 1 = well-covered gradient-by-default, 2 = sparse (< 2/3). */
+    private static int candidateTier( final Phylogeny phy, final String ref, final int leaves ) {
+        final int[] cov = coverageAndGroups( phy, ref )._counts;
+        if ( ( leaves > 0 ) && ( ( (double) cov[ 0 ] / leaves ) < WELL_COVERED_FRACTION ) ) {
+            return 2;
+        }
+        return defaultsToGradient( phy.getExternalNodes(), ref ) ? 1 : 0;
+    }
+
+    /**
+     * The JS ranking score: {@code (coverage / total) x (H / ln distinct)} where {@code H} is the Shannon
+     * entropy of the GROUPED value distribution -- coverage times how informatively the field splits the
+     * tree. Grouping runs first (the score is computed on legend groups, like the JS classifier's).
+     */
+    static double candidateScore( final Phylogeny phy, final String ref, final int leaves ) {
+        final GroupStats g = coverageAndGroups( phy, ref );
+        final int coverage = g._counts[ 0 ];
+        final int distinct = g._group_counts.size();
+        if ( ( coverage == 0 ) || ( distinct < 2 ) || ( leaves == 0 ) ) {
+            return 0;
+        }
+        double h = 0;
+        for( final int n : g._group_counts.values() ) {
+            final double pr = (double) n / coverage;
+            h -= pr * Math.log( pr );
+        }
+        return ( (double) coverage / leaves ) * ( h / Math.log( distinct ) );
+    }
+
+    private static final class GroupStats {
+        final int[]                _counts;       // [ tips with a (non-fold-empty) value ]
+        final Map<String, Integer> _group_counts; // group key -> tips in the group
+
+        GroupStats( final int[] counts, final Map<String, Integer> group_counts ) {
+            _counts = counts;
+            _group_counts = group_counts;
+        }
+    }
+
+    private static GroupStats coverageAndGroups( final Phylogeny phy, final String ref ) {
+        final char truncate_at = truncationDelimiter( ref );
+        final boolean element_slot = isElementSlot( ref );
+        final Map<String, Integer> groups = new HashMap<String, Integer>();
+        int covered = 0;
+        for( final PhylogenyNode node : phy.getExternalNodes() ) {
+            final String v = valueFor( node, ref );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                final String label = foldLabel( v, truncate_at, element_slot );
+                if ( !label.isEmpty() ) {
+                    covered++;
+                    final String key = element_slot ? label : label.toLowerCase( Locale.ROOT );
+                    final Integer n = groups.get( key );
+                    groups.put( key, ( n == null ) ? 1 : ( n + 1 ) );
+                }
+            }
+        }
+        return new GroupStats( new int[] { covered }, groups );
     }
 
     /**

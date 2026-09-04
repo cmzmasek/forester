@@ -836,6 +836,7 @@ public final class RadialNodeContentRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 try {
+                    frame.getMainPanel().getCurrentTreePanel().setColorByPropertyRef( null ); // establish this test's premise: no Color-by active (undo the load-time auto-color)
                     body.run( frame, frame.getMainPanel().getCurrentTreePanel(), frame.getOptions() );
                 }
                 catch ( final Throwable t ) {

@@ -104,6 +104,7 @@ public final class ResetToDefaultsTest {
         o.setBoldFoundLabels( true );
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
         o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
+        o.setAutoColorNewTrees( false ); // default is ON (JS-parity auto-color), so drive OFF
         o.setAbbreviateScientificTaxonNames( true );
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT (the DEFAULT new tabs get)
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
@@ -139,6 +140,7 @@ public final class ResetToDefaultsTest {
     /** Compares the persisted + display fields of a reset Options against a fresh default. */
     private static boolean sameDefaults( final Options o, final Options def ) {
         boolean ok = true;
+        ok &= eq( "autoColorNewTrees", o.isAutoColorNewTrees(), def.isAutoColorNewTrees() );
         ok &= eq( "showScale", o.isShowScale(), def.isShowScale() );
         ok &= eq( "showTreeName", o.isShowTreeName(), def.isShowTreeName() );
         ok &= eq( "antialiasExport", o.isAntialiasExport(), def.isAntialiasExport() );

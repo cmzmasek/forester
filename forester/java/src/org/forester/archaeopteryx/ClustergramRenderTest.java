@@ -71,6 +71,7 @@ public final class ClustergramRenderTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.setColorByPropertyRef( null ); // establish this test's premise: no Color-by active (undo the load-time auto-color)
                     final Options o = frame.getOptions();
                     o.setGraphicsExportWhiteBackground( true );
                     o.setShowTreeName( false ); // else the lower-left tree name is dark text below the columns too

@@ -1462,6 +1462,19 @@ public final class AptxUtil {
             }
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);
+            // AUTO-COLOR (JS parity: "a tree opens already coloured by its most informative field"): apply the
+            // top-ranked well-covered Color-by candidate to the freshly loaded tree. Only when nothing chose a
+            // color already -- a figure spec restored from the file is applied AFTER this and wins anyway, and
+            // a tab that carries a color keeps it. A sparse field is offered but never chosen for you.
+            if (cp.getOptions().isAutoColorNewTrees() && (cp.getMainPanel().getCurrentTreePanel() != null)
+                    && (cp.getMainPanel().getCurrentTreePanel().getPhylogeny() == t)
+                    && (cp.getMainPanel().getCurrentTreePanel().getColorByPropertyRef() == null)) {
+                final String best = PropertyColorScheme.autoColorCandidate(t);
+                if (best != null) {
+                    cp.getMainPanel().getCurrentTreePanel().setColorByPropertyRef(best);
+                    cp.populateColorByPropertyBox();
+                }
+            }
         }
     }
 

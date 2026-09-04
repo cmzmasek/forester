@@ -227,6 +227,13 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._show_mad_confidence_cbmi ) );
         add( c, cb( _mf._tip_labels_below_columns_cbmi ) );
         c.add( header( "Colors" ) );
+        final JCheckBox auto_color = new JCheckBox( "Auto-color a newly opened tree",
+                                                    _mf.getOptions().isAutoColorNewTrees() );
+        auto_color.setToolTipText( "When a tree is opened, color it right away by its most informative field "
+                + "(taxonomy, sequence, or property) -- like Archaeopteryx.js. A sparse field is offered in "
+                + "\"Color by\" but never chosen automatically. Turn off to open trees uncolored." );
+        auto_color.addActionListener( e -> _mf.getOptions().setAutoColorNewTrees( auto_color.isSelected() ) );
+        add( c, auto_color );
         add( c, cb( _mf._color_labels_same_as_parent_branch ) );
         add( c, labeled( "\"Color by\" palette:", paletteCombo() ) );
         c.add( header( "Found / Selected" ) );

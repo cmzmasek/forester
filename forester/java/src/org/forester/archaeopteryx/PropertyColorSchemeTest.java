@@ -53,7 +53,8 @@ public final class PropertyColorSchemeTest {
                 && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
                 && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
                 && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount()
-                && testColorIdentityMemory() && testSynonymDictionary() && testElementSlots();
+                && testColorIdentityMemory() && testSynonymDictionary() && testElementSlots()
+                && testCandidateOrdering() && testModeBands();
     }
 
     // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
@@ -757,6 +758,127 @@ public final class PropertyColorSchemeTest {
         q.setName( seq_name );
         n.getNodeData().setSequence( q );
         return n;
+    }
+
+    // ---- candidate ordering (JS parity): tiers, entropy score, sparse ranked LAST not refused ----
+    private static boolean testCandidateOrdering() {
+        // 12 tips; four fields of known character:
+        //   data:balanced  categorical, full coverage, 3 even groups   -> tier 0, HIGH score
+        //   data:skewed    categorical, full coverage, 11-vs-1 split   -> tier 0, LOW score
+        //   data:years     numeric, full coverage, 12 distinct         -> tier 1 (gradient default)
+        //   data:sparse    categorical, 3 of 12 tips                   -> tier 2 (sparse, ranked last)
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < 12; ++i ) {
+            final PhylogenyNode n = new PhylogenyNode();
+            n.setName( "t" + i );
+            final PropertiesList pl = new PropertiesList();
+            pl.addProperty( new Property( "data:balanced", "g" + ( i % 3 ), "", "xsd:string", AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:skewed", ( i == 0 ) ? "rare" : "common", "", "xsd:string",
+                                          AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:years", Integer.toString( 2000 + i ), "", "xsd:decimal",
+                                          AppliesTo.NODE ) );
+            if ( i < 3 ) {
+                pl.addProperty( new Property( "data:sparse", "s" + i % 2, "", "xsd:string", AppliesTo.NODE ) );
+            }
+            n.getNodeData().setProperties( pl );
+            root.addAsChild( n );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        final List<String> refs = PropertyColorScheme.colorableRefs( phy );
+        final int i_bal = refs.indexOf( "data:balanced" );
+        final int i_skew = refs.indexOf( "data:skewed" );
+        final int i_years = refs.indexOf( "data:years" );
+        final int i_sparse = refs.indexOf( "data:sparse" );
+        if ( ( i_bal < 0 ) || ( i_skew < 0 ) || ( i_years < 0 ) || ( i_sparse < 0 ) ) {
+            return fail( "all four fields should be OFFERED (sparse ranked, not refused): " + refs );
+        }
+        if ( !( ( i_bal < i_skew ) && ( i_skew < i_years ) && ( i_years < i_sparse ) ) ) {
+            return fail( "expected balanced < skewed < years < sparse, got " + refs );
+        }
+        // auto-color picks the top-ranked WELL-COVERED candidate...
+        if ( !"data:balanced".equals( PropertyColorScheme.autoColorCandidate( phy ) ) ) {
+            return fail( "auto-color should pick the top candidate, got "
+                    + PropertyColorScheme.autoColorCandidate( phy ) );
+        }
+        // ...and never a sparse field (offered in the menu but not chosen for you)
+        final Phylogeny sparse_only = new Phylogeny();
+        final PhylogenyNode r2 = new PhylogenyNode();
+        for( int i = 0; i < 12; ++i ) {
+            final PhylogenyNode n = new PhylogenyNode();
+            n.setName( "u" + i );
+            if ( i < 3 ) {
+                final PropertiesList pl = new PropertiesList();
+                pl.addProperty( new Property( "data:sparse", "s" + i % 2, "", "xsd:string", AppliesTo.NODE ) );
+                n.getNodeData().setProperties( pl );
+            }
+            r2.addAsChild( n );
+        }
+        sparse_only.setRoot( r2 );
+        sparse_only.externalNodesHaveChanged();
+        if ( PropertyColorScheme.autoColorCandidate( sparse_only ) != null ) {
+            return fail( "a sparse-only tree must not be auto-colored" );
+        }
+        return true;
+    }
+
+    // ---- the numeric three-band system + the forced-mode constructor ----
+    private static boolean testModeBands() {
+        final String ref = "repseq:n";
+        final Phylogeny five = numericTree( ref, 5, 3 );   // 5 distinct numbers over 15 tips
+        final Phylogeny fifteen = numericTree( ref, 15, 1 );
+        final Phylogeny thirty = numericTree( ref, 30, 1 );
+        if ( PropertyColorScheme.colorModeBand( five.getExternalNodes(), ref )
+                != PropertyColorScheme.ModeBand.SMALL ) {
+            return fail( "5 distinct numbers should band SMALL" );
+        }
+        if ( PropertyColorScheme.colorModeBand( fifteen.getExternalNodes(), ref )
+                != PropertyColorScheme.ModeBand.MEDIUM ) {
+            return fail( "15 distinct numbers should band MEDIUM" );
+        }
+        if ( PropertyColorScheme.colorModeBand( thirty.getExternalNodes(), ref )
+                != PropertyColorScheme.ModeBand.LARGE ) {
+            return fail( "30 distinct numbers should band LARGE" );
+        }
+        if ( PropertyColorScheme.colorModeBand( treeWith( ref, "cat", "dog" ).getExternalNodes(), ref )
+                != PropertyColorScheme.ModeBand.NOT_NUMERIC ) {
+            return fail( "a text field should band NOT_NUMERIC" );
+        }
+        if ( !PropertyColorScheme.ModeBand.SMALL.isSwitchable()
+                || !PropertyColorScheme.ModeBand.MEDIUM.isSwitchable()
+                || PropertyColorScheme.ModeBand.LARGE.isSwitchable()
+                || PropertyColorScheme.ModeBand.SMALL.defaultsToGradient()
+                || !PropertyColorScheme.ModeBand.MEDIUM.defaultsToGradient() ) {
+            return fail( "band switchability/defaults wrong" );
+        }
+        // the forced-mode constructor: the same numeric data as COLORS or as a GRADIENT
+        final PropertyColorScheme colors = new PropertyColorScheme( five, ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, null, null, Boolean.FALSE );
+        if ( colors.isGradient() || ( colors.getValueColors().size() != 5 ) ) {
+            return fail( "forced FALSE should color 5 distinct numbers individually" );
+        }
+        final PropertyColorScheme grad = new PropertyColorScheme( five, ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, null, null, Boolean.TRUE );
+        if ( !grad.isGradient() ) {
+            return fail( "forced TRUE should be a gradient" );
+        }
+        // the UN-forced default is unchanged (plain numeric detection -- annotation columns rely on it)
+        if ( !new PropertyColorScheme( five, ref ).isGradient() ) {
+            return fail( "the legacy (null-forced) default must stay the plain numeric detection" );
+        }
+        return true;
+    }
+
+    /** A tree with {@code distinct * per} tips carrying numeric values 0..distinct-1, each {@code per} times. */
+    private static Phylogeny numericTree( final String ref, final int distinct, final int per ) {
+        final List<String> vals = new ArrayList<String>();
+        for( int v = 0; v < distinct; ++v ) {
+            for( int k = 0; k < per; ++k ) {
+                vals.add( Integer.toString( v ) );
+            }
+        }
+        return treeWith( ref, vals.toArray( new String[ 0 ] ) );
     }
 
     // ---------------------------------------------------------------------------------------

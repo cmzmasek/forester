@@ -65,6 +65,11 @@ public final class LegendControlsToolTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                // AUTO-COLOR (JS parity): the tree opens already colored by its best well-covered candidate
+                if ( !"data:kind".equals( tp.getColorByPropertyRef() ) ) {
+                    fail( ok, "a new tree should open auto-colored by its best field, got "
+                            + tp.getColorByPropertyRef() );
+                }
                 tp.setColorByPropertyRef( "data:region" ); // 35 distinct categorical values
                 frame.showWhole();
                 render( tp );
@@ -206,7 +211,7 @@ public final class LegendControlsToolTest {
 
                 ( (JFrame) frame ).dispose();
             } );
-            return ok[ 0 ] && identityMemoryOk() && elementSlotUiOk();
+            return ok[ 0 ] && identityMemoryOk() && elementSlotUiOk() && modeChipOk() && autoColorOk();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -336,6 +341,136 @@ public final class LegendControlsToolTest {
             ( (JFrame) frame ).dispose();
         } );
         return ok[ 0 ];
+    }
+
+    /**
+     * The numeric three-band system through the real TreePanel + legend: a SMALL (5-distinct) numeric field
+     * defaults to individual colors with a [gradient] chip; the chip (via the real legend-click handler)
+     * flips it to a gradient with a [colors] chip; a LARGE field has no chip.
+     */
+    private static boolean modeChipOk() throws Exception {
+        final boolean[] ok = { true };
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < 25; ++i ) {
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName( "t" + i );
+            final PropertiesList pl = new PropertiesList();
+            pl.addProperty( new Property( "data:code", Integer.toString( i % 5 ), "", "xsd:decimal",
+                                          AppliesTo.NODE ) ); // 5 distinct numbers -> SMALL band
+            pl.addProperty( new Property( "data:wide", Integer.toString( i * 7 ), "", "xsd:decimal",
+                                          AppliesTo.NODE ) ); // 25 distinct numbers -> LARGE band (> 20)
+            leaf.getNodeData().setProperties( pl );
+            root.addAsChild( leaf );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        SwingUtilities.invokeAndWait(
+                () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(),
+                                                                    "modechip" ) );
+        SwingUtilities.invokeAndWait( () -> {
+            final MainFrame frame = mf[ 0 ];
+            final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+            tp.setColorByPropertyRef( "data:code" );
+            if ( tp.getPropertyColorScheme().isGradient() ) {
+                fail( ok, "a 5-distinct numeric field should DEFAULT to individual colors (SMALL band)" );
+            }
+            if ( tp.getPropertyColorScheme().getValueColors().size() != 5 ) {
+                fail( ok, "expected 5 individual number colors, got "
+                        + tp.getPropertyColorScheme().getValueColors().size() );
+            }
+            if ( !tp.isColorBySwitchable() ) {
+                fail( ok, "a SMALL-band field should be mode-switchable" );
+            }
+            render( tp );
+            final Rectangle chip = tp.legendModeToggleBoundsForTest();
+            if ( chip == null ) {
+                fail( ok, "the [gradient] chip should be drawn on a switchable colors-mode legend" );
+                ( (JFrame) frame ).dispose();
+                return;
+            }
+            // clicking the chip through the REAL legend-click handler flips to a gradient
+            clickCenter2( tp, chip );
+            if ( !tp.getPropertyColorScheme().isGradient() ) {
+                fail( ok, "clicking [gradient] should flip the field to a gradient" );
+            }
+            render( tp );
+            final Rectangle back = tp.legendModeToggleBoundsForTest();
+            if ( back == null ) {
+                fail( ok, "the gradient legend should carry the [colors] chip" );
+            }
+            else {
+                clickCenter2( tp, back );
+                if ( tp.getPropertyColorScheme().isGradient() ) {
+                    fail( ok, "clicking [colors] should flip back to individual colors" );
+                }
+            }
+            // a LARGE (30-distinct) numeric field: gradient, not switchable, no chip
+            tp.setColorByPropertyRef( "data:wide" );
+            if ( tp.isColorBySwitchable() ) {
+                fail( ok, "a >20-distinct numeric field must not be switchable" );
+            }
+            render( tp );
+            if ( tp.legendModeToggleBoundsForTest() != null ) {
+                fail( ok, "no mode chip on a non-switchable field" );
+            }
+            ( (JFrame) frame ).dispose();
+        } );
+        return ok[ 0 ];
+    }
+
+    /** Auto-color drives the real load hook: on, with a ref already chosen, and off. */
+    private static boolean autoColorOk() throws Exception {
+        final boolean[] ok = { true };
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < 8; ++i ) {
+            final PhylogenyNode leaf = gLeaf( "t" + i, "k" + ( i % 2 ) );
+            // a second, LOWER-ranked field (7-vs-1 skew -> low entropy), so "keep an already-chosen ref"
+            // is provable: choosing data:h and re-running the hook must NOT hand the tree back to data:g
+            leaf.getNodeData().getProperties().addProperty( new Property( "data:h",
+                    ( i == 0 ) ? "y" : "x", "", "xsd:string", AppliesTo.NODE ) );
+            root.addAsChild( leaf );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        SwingUtilities.invokeAndWait(
+                () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(),
+                                                                    "autocolor" ) );
+        SwingUtilities.invokeAndWait( () -> {
+            final MainFrame frame = mf[ 0 ];
+            final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+            // the load auto-colored by the one good field
+            if ( !"data:g".equals( tp.getColorByPropertyRef() ) ) {
+                fail( ok, "load should auto-color by data:g, got " + tp.getColorByPropertyRef() );
+            }
+            // re-running the hook must NOT clobber an existing choice -- even one that is NOT the best
+            // candidate (data:h ranks below data:g)
+            tp.setColorByPropertyRef( "data:h" );
+            AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings( phy,
+                    frame.getMainPanel().getControlPanel() );
+            if ( !"data:h".equals( tp.getColorByPropertyRef() ) ) {
+                fail( ok, "the hook must keep an already-chosen ref, got " + tp.getColorByPropertyRef() );
+            }
+            // with the option OFF the hook applies nothing
+            tp.setColorByPropertyRef( null );
+            frame.getOptions().setAutoColorNewTrees( false );
+            AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings( phy,
+                    frame.getMainPanel().getControlPanel() );
+            if ( tp.getColorByPropertyRef() != null ) {
+                fail( ok, "with auto-color OFF the hook must not color, got " + tp.getColorByPropertyRef() );
+            }
+            frame.getOptions().setAutoColorNewTrees( true );
+            ( (JFrame) frame ).dispose();
+        } );
+        return ok[ 0 ];
+    }
+
+    private static void clickCenter2( final TreePanel tp, final Rectangle r ) {
+        tp.handleLegendClick( new MouseEvent( tp, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 0,
+                                              r.x + ( r.width / 2 ), r.y + ( r.height / 2 ), 1, false ) );
     }
 
     private static PhylogenyNode gLeaf( final String name, final String group ) {

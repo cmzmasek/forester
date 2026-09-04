@@ -286,6 +286,8 @@ final public class Options {
     private boolean _show_fossil_range_bars;
     private boolean _show_zebra_stripes;
     private boolean _show_tip_images;
+    // auto-apply the best Color-by candidate to a newly opened tree (JS parity: "a tree opens already colored")
+    private boolean _auto_color_new_trees;
     private int     _tip_image_size;
     private boolean _show_msa;
     private int     _msa_column_width;
@@ -375,6 +377,7 @@ final public class Options {
         _show_fossil_range_bars = false;
         _show_zebra_stripes = false;
         _show_tip_images = false;
+        _auto_color_new_trees = true;
         _tip_image_size = AptxConstants.TIP_IMAGE_SIZE_DEFAULT;
         _show_msa = false;
         _msa_column_width = AptxConstants.MSA_COLUMN_WIDTH_DEFAULT;
@@ -770,6 +773,14 @@ final public class Options {
 
     final boolean isShowTipImages() {
         return _show_tip_images;
+    }
+
+    final boolean isAutoColorNewTrees() {
+        return _auto_color_new_trees;
+    }
+
+    final void setAutoColorNewTrees(final boolean auto_color_new_trees) {
+        _auto_color_new_trees = auto_color_new_trees;
     }
 
     final void setShowTipImages(final boolean show_tip_images) {

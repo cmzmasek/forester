@@ -65,6 +65,7 @@ public final class NextstrainBranchModeTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.setColorByPropertyRef( null ); // establish this test's premise: no Color-by active (undo the load-time auto-color)
                     final ControlPanel cp = frame.getMainPanel().getControlPanel();
                     if ( ( tp == null ) || ( cp == null ) ) {
                         fail( ok, "no tree panel / control panel" );

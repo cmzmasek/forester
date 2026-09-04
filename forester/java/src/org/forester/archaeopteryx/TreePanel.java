@@ -7269,6 +7269,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // _property_legend_bounds is where it was last drawn on screen (for hit-testing a drag).
     private Point               _legend_offset = null;
     private Rectangle           _property_legend_bounds = null;
+    // the [colors]/[gradient] mode-switch chip's clickable bounds (null when not drawn)
+    private Rectangle           _legend_mode_toggle_bounds = null;
     private int                 _legend_grab_dx = 0;
     private int                 _legend_grab_dy = 0;
     // A SECOND, independent legend for "Size by" (own draggable position + last-drawn bounds), so its size key can
@@ -7318,6 +7320,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // design -- a ramp's color is position in the view's range.
     private final Map<String, Map<String, Color>> _property_color_memory = new HashMap<>();
     private final Map<String, int[]>              _property_color_memory_next = new HashMap<>();
+    // Per-field [colors]/[gradient] choice for a SWITCHABLE numeric Color-by field (the three-band system:
+    // <= 10 distinct numbers default to individual colors, 11..20 to a gradient, both switchable via the
+    // legend chip; > 20 gradient only). TRUE = gradient, FALSE = colors; absent = the band's default.
+    private final Map<String, Boolean>            _color_mode_overrides = new HashMap<>();
+    // whether the CURRENT color-by field is mode-switchable (drives the legend's [colors]/[gradient] chip)
+    private boolean                               _color_by_switchable = false;
     // Layout of the legend's value rows (recorded when drawn) so a click can be mapped to a value.
     private java.util.List<String> _legend_row_labels   = new java.util.ArrayList<>();
     private int                 _legend_rows_top    = 0;
@@ -7596,6 +7604,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void handleLegendClick(final MouseEvent e) {
         // in-legend controls take precedence over the value rows and the reset gesture
+        if ((_legend_mode_toggle_bounds != null) && _legend_mode_toggle_bounds.contains(e.getX(), e.getY())) {
+            toggleColorByMode(); // [colors] <-> [gradient] on a switchable numeric field
+            return;
+        }
         if ((_legend_sort_toggle_bounds != null) && _legend_sort_toggle_bounds.contains(e.getX(), e.getY())) {
             _legend_sort_by_count = !_legend_sort_by_count; // toggle between "by count" and "A-Z"
             repaint();
@@ -7910,6 +7922,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void resetColorStateToDefaults() {
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _property_color_overrides.clear();
+        _color_mode_overrides.clear();
         clearPropertyColorMemory();
         setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
         setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null), clears the size legend pos
@@ -7954,9 +7967,39 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _property_color_memory.put(_color_by_property_ref, memory);
                 _property_color_memory_next.put(_color_by_property_ref, next);
             }
+            // the three-band default + the user's per-field [colors]/[gradient] choice decide the mode; the
+            // band is computed from the VISIBLE tips, so a subtree of a wide numeric field can become
+            // switchable colors (JS parity: bands are per view)
+            final PropertyColorScheme.ModeBand band = PropertyColorScheme.colorModeBand(
+                    PropertyColorScheme.visibleExternalNodes(_phylogeny), _color_by_property_ref);
+            _color_by_switchable = band.isSwitchable();
+            final Boolean chosen = _color_mode_overrides.get(_color_by_property_ref);
+            final Boolean forced = Boolean.valueOf(band.isSwitchable() && (chosen != null)
+                    ? chosen.booleanValue() : band.defaultsToGradient());
             _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref,
-                    _property_color_overrides.get(_color_by_property_ref), _color_palette_name, memory, next);
+                    _property_color_overrides.get(_color_by_property_ref), _color_palette_name, memory, next,
+                    forced);
         }
+    }
+
+    /** Test hook: the [colors]/[gradient] chip's clickable bounds from the last SCREEN legend draw. */
+    Rectangle legendModeToggleBoundsForTest() {
+        return _legend_mode_toggle_bounds;
+    }
+
+    /** Whether the current Color-by field's mode can be flipped colors <-> gradient (the legend chip). */
+    boolean isColorBySwitchable() {
+        return _color_by_switchable && (_property_color_scheme != null);
+    }
+
+    /** Flips a switchable Color-by field between individual colors and a gradient (the legend chip). */
+    void toggleColorByMode() {
+        if (!isColorBySwitchable() || (_color_by_property_ref == null)) {
+            return;
+        }
+        _color_mode_overrides.put(_color_by_property_ref, !_property_color_scheme.isGradient());
+        rebuildPropertyColorScheme();
+        repaint();
     }
 
     boolean isColorByProperty() {
@@ -8260,7 +8303,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_property_color_scheme.isGradient()) {
             drawPropertyColorGradientLegend(g, bounds, draggable,
                     "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef()),
-                    _property_color_scheme, _property_color_scheme.missingCount());
+                    _property_color_scheme, _property_color_scheme.missingCount(), isColorBySwitchable());
             return;
         }
         noteLegendSubject("prop:" + _property_color_scheme.getRef());
@@ -8269,7 +8312,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int more = _property_color_scheme.numberOfValues() - values.size();
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
         drawCategoricalLegend(g, bounds, draggable, title, values, counts, more,
-                _property_color_scheme.missingCount());
+                _property_color_scheme.missingCount(), isColorBySwitchable());
     }
 
     /** Draws the "Colorize Subtrees via Taxonomic Rank" legend (taxon -> color, with tip counts); draggable. */
@@ -8284,7 +8327,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Map<String, Color> values = orderedLegend(_rank_legend, _rank_legend_counts);
         drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, _rank_legend_counts,
-                _rank_legend.size() - values.size(), 0);
+                _rank_legend.size() - values.size(), 0, false);
     }
 
     /**
@@ -8364,6 +8407,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _legend_row_height = row_h;
             _legend_sort_toggle_bounds = null; // set below only when actually drawn
             _legend_more_bounds = null;
+            _legend_mode_toggle_bounds = null;
         }
         final Color fg = getTreeColorSet().getSequenceColor();
         int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, _rank_legend_title, fm, draggable, false);
@@ -8462,10 +8506,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * line so the figure still shows that categories were truncated. Shared by the property-color,
      * taxonomic-rank, and annotation-column legends. {@code counts} may be null (then rows show no count).
      */
-    /** @param missing tips with NO value for the field (draws the pinned-last dashed "no value" row; 0 = no row) */
+    /** @param missing tips with NO value for the field (draws the pinned-last dashed "no value" row; 0 = no row)
+     *  @param mode_chip draw the {@code [gradient]} mode-switch chip (a switchable numeric Color-by field
+     *                   currently in colors mode; screen-only, like the sort chip) */
     private void drawCategoricalLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
                                        final String title, final Map<String, Color> values,
-                                       final Map<String, Integer> counts, final int more, final int missing) {
+                                       final Map<String, Integer> counts, final int more, final int missing,
+                                       final boolean mode_chip) {
         final int shown = values.size();
         final int swatch = 10;
         final int gap = 5;
@@ -8483,9 +8530,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // than the window, and a control at the bottom of it cannot be reached (see clampLegendTop).
         final String expand_chip = draggable ? legendExpandChip(shown, more) : null;
         final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
+        final String mode_chip_text = (draggable && mode_chip) ? "[gradient]" : null; // flip to a gradient
         final String more_text = "… +" + more + " more";
         int text_w = fm.stringWidth(title) + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0)
-                + ((expand_chip != null) ? (gap + fm.stringWidth(expand_chip)) : 0);
+                + ((expand_chip != null) ? (gap + fm.stringWidth(expand_chip)) : 0)
+                + ((mode_chip_text != null) ? (gap + fm.stringWidth(mode_chip_text)) : 0);
         for (final String v : values.keySet()) {
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(legendRowText(v, counts, fm, max_text_px)));
         }
@@ -8532,6 +8581,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int chip_x = chip_right - chip_w;
             g.drawString(sort_chip, chip_x, baseline);
             _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            chip_right = chip_x - gap;
+        }
+        if (mode_chip_text != null) { // [gradient]: flip a switchable numeric field to its gradient mode
+            final int chip_w = fm.stringWidth(mode_chip_text);
+            final int chip_x = chip_right - chip_w;
+            g.drawString(mode_chip_text, chip_x, baseline);
+            _legend_mode_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
         }
         for (final Map.Entry<String, Color> e : values.entrySet()) {
             baseline += row_h;
@@ -8574,6 +8630,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void drawPropertyColorGradientLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
                                                  final String title, final PropertyColorScheme scheme,
                                                  final int missing) {
+        drawPropertyColorGradientLegend(g, bounds, draggable, title, scheme, missing, false);
+    }
+
+    /** @param mode_chip draw the {@code [colors]} mode-switch chip (a switchable numeric Color-by field
+     *                   currently in gradient mode; screen-only) */
+    private void drawPropertyColorGradientLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
+                                                 final String title, final PropertyColorScheme scheme,
+                                                 final int missing, final boolean mode_chip) {
         final int pad = 7;
         final int bar_w = 200;
         final int bar_h = 12;
@@ -8583,7 +8647,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final String max_lbl = scheme.getGradientMaxLabel();
         final int row_h = fm.getHeight() + 2;
         final String no_value_text = "no value (" + missing + ")";
-        final int content_w = Math.max(fm.stringWidth(title), bar_w);
+        final String mode_chip_text = (draggable && mode_chip) ? "[colors]" : null; // back to individual colors
+        final int content_w = Math.max(fm.stringWidth(title)
+                + ((mode_chip_text != null) ? (5 + fm.stringWidth(mode_chip_text)) : 0), bar_w);
         final int box_w = content_w + (2 * pad) + 4;
         final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad) + ((missing > 0) ? row_h : 0);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
@@ -8591,6 +8657,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int y = tl.y;
         if (draggable) {
             clearLegendRowControls(); // a gradient legend has no clickable value rows / sort / expand controls
+            _legend_mode_toggle_bounds = null;
         }
         // The legend is a fixed UI key, not tree data: draw its borders with a constant 1px stroke
         // rather than inheriting the branch stroke set by setupStroke(), which shrinks to sub-pixel
@@ -8600,6 +8667,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Stroke saved_stroke = g.getStroke();
         final Color fg = getTreeColorSet().getSequenceColor();
         final int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, title, fm, draggable, false);
+        if (mode_chip_text != null) { // [colors]: flip a switchable numeric field back to individual colors
+            g.setColor(fg);
+            final int chip_w = fm.stringWidth(mode_chip_text);
+            final int chip_x = (x + box_w) - pad - chip_w;
+            g.drawString(mode_chip_text, chip_x, baseline);
+            _legend_mode_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4,
+                    fm.getHeight() + 2);
+        }
         final int bar_x = x + pad;
         final int bar_y = baseline + 4;
         paintGradientBar(g, bar_x, bar_y, bar_w, bar_h + 1, t -> scheme.gradientColorAt(t));
@@ -9954,7 +10029,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Map<String, Integer> counts = scheme.getValueCounts();
             final Map<String, Color> values = orderedLegend(scheme.getValueColors(), counts);
             drawCategoricalLegend(g, bounds, draggable, title, values, counts,
-                    scheme.numberOfValues() - values.size(), scheme.missingCount());
+                    scheme.numberOfValues() - values.size(), scheme.missingCount(), false);
         }
     }
 
@@ -10016,7 +10091,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             values.put(label, colors.get(k)); // no per-series count -> null
         }
-        drawCategoricalLegend(g, bounds, draggable, title, values, null, 0, 0);
+        drawCategoricalLegend(g, bounds, draggable, title, values, null, 0, 0, false);
     }
 
     /** Total horizontal space the annotation columns occupy (0 when none), including the gaps around them.

@@ -140,6 +140,7 @@ public final class GuiPreferencesTest {
             src.setExportDpi( export_dpi );
             // the alignment conservation track: a display preference, so it must survive a restart
             src.setShowMsaConservation( false ); // default is true, so this is a real change
+            src.setAutoColorNewTrees( false ); // default is true (JS-parity auto-color), so a real change
             src.setMsaConservationMeasure( MsaConservation.Measure.INFORMATION ); // default is IDENTITY
             new GuiPreferences( file ).saveFrom( src );
             if ( !Files.exists( file ) ) {
@@ -149,6 +150,9 @@ public final class GuiPreferencesTest {
             new GuiPreferences( file ).applyTo( dst );
             if ( dst.isShowMsaConservation() ) {
                 return fail( "show_msa_conservation did not round-trip" );
+            }
+            if ( dst.isAutoColorNewTrees() ) {
+                return fail( "auto_color_new_trees did not round-trip" );
             }
             if ( dst.getMsaConservationMeasure() != MsaConservation.Measure.INFORMATION ) {
                 return fail( "msa_conservation_measure did not round-trip, got " + dst.getMsaConservationMeasure() );

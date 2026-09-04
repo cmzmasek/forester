@@ -83,6 +83,7 @@ public final class PropertySizeScaleTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.setColorByPropertyRef( null ); // establish this test's premise: no Color-by active (undo the load-time auto-color)
                     final int w = 700, h = 400;
                     tp.setSize( w, h ); // so getVisibleRect() (used by dragLegend) is (0,0,w,h)
                     final Rectangle bounds = new Rectangle( 0, 0, w, h );
@@ -361,6 +362,7 @@ public final class PropertySizeScaleTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.setColorByPropertyRef( null ); // establish this test's premise: no Color-by active (undo the load-time auto-color)
                     final Options o = frame.getOptions();
                     o.setAntialiasExport( false );
                     o.setGraphicsExportWhiteBackground( false );
@@ -451,6 +453,7 @@ public final class PropertySizeScaleTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.setColorByPropertyRef( null ); // establish this test's premise: no Color-by active (undo the load-time auto-color)
                     final int cyan = 0x00FFFF; // the size dots + legend ink are drawn in the SEQUENCE color
                     tp.getTreeColorSet().setColorforDefault( TreeColorSet.BACKGROUND, new Color( 255, 255, 255 ) );
                     tp.getTreeColorSet().setColorforDefault( TreeColorSet.SEQUENCE, new Color( cyan ) );
