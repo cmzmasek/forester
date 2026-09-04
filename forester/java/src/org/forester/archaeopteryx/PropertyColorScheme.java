@@ -128,13 +128,32 @@ final class PropertyColorScheme {
         this( phylogeny, ref, overrides, DEFAULT_PALETTE_NAME );
     }
 
+    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
+                         final String palette_name ) {
+        this( phylogeny, ref, overrides, palette_name, null, null );
+    }
+
     /**
      * @param overrides    optional user-assigned colors, keyed by group key (see {@link #getValueKeys()}),
      *                     that replace the automatic palette color for those values; may be null/empty.
      * @param palette_name the categorical palette to assign colors from (see {@link #paletteNames()}).
+     * @param memory       optional value-color IDENTITY memory (group key -> color), MUTATED: a value keeps its
+     *                     remembered color across view changes (subtree navigation, collapse, deletion), and a
+     *                     value met for the first time takes the next free palette slot and is remembered.
+     *                     JS-parity: in Archaeopteryx.js a value's color is an identity for the whole session, so
+     *                     diving into a subtree never recolors what stays visible -- without this, the
+     *                     frequency-sorted palette assignment RE-SPREADS on every rebuild and a subtree figure's
+     *                     colors stop matching the whole-tree figure of the same data. On the FIRST build the
+     *                     memory is empty, so assignment equals the plain frequency-indexed palette (unchanged
+     *                     first-view behavior). Gradient (numeric) mode deliberately ignores it: a ramp's color
+     *                     is position in the VIEW's range. Overrides win over the memory but are never stored in
+     *                     it, so clearing an override returns the remembered automatic color. Null = no memory
+     *                     (legacy per-view re-spread; annotation-column schemes still use this).
+     * @param memory_next  the memory's next-free-palette-slot counter ({@code int[1]}, MUTATED); required when
+     *                     {@code memory} is non-null.
      */
     PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
-                         final String palette_name ) {
+                         final String palette_name, final Map<String, Color> memory, final int[] memory_next ) {
         _ref = ref;
         _palette = paletteByName( palette_name );
         _truncate_at = truncationDelimiter( ref );
@@ -226,9 +245,19 @@ final class PropertyColorScheme {
             } );
             int i = 0;
             for( final String[] g : groups ) {
-                Color color = AptxUtil.qualitativeColor( _palette, i++ );
+                Color color;
+                if ( memory != null ) { // identity memory: keep a known value's color, remember a new one
+                    color = memory.get( g[ 1 ] );
+                    if ( color == null ) {
+                        color = AptxUtil.qualitativeColor( _palette, memory_next[ 0 ]++ );
+                        memory.put( g[ 1 ], color );
+                    }
+                }
+                else {
+                    color = AptxUtil.qualitativeColor( _palette, i++ );
+                }
                 if ( ( overrides != null ) && overrides.containsKey( g[ 1 ] ) ) {
-                    color = overrides.get( g[ 1 ] ); // user-assigned color for this value
+                    color = overrides.get( g[ 1 ] ); // user-assigned color for this value (never stored in memory)
                 }
                 _value_to_color.put( g[ 0 ], color ); // _value_to_color is now ordered most-frequent first
                 _key_to_color.put( g[ 1 ], color );

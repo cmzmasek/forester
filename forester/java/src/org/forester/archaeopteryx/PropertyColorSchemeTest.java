@@ -52,7 +52,8 @@ public final class PropertyColorSchemeTest {
                 && testHostQualifierGrouping() && testYearGradient() && testNumericGradientGeneralization()
                 && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
                 && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
-                && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount();
+                && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount()
+                && testColorIdentityMemory();
     }
 
     // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
@@ -576,6 +577,62 @@ public final class PropertyColorSchemeTest {
         if ( ( collapsed.visibleTipCount() != 2 ) || ( collapsed.missingCount() != 0 ) ) {
             return fail( "collapsed-away value-less tips must not count as missing, got "
                     + collapsed.missingCount() + " of " + collapsed.visibleTipCount() );
+        }
+        return true;
+    }
+
+    // ---- value-color IDENTITY memory (JS parity): colors survive view changes, new values extend ----
+    private static boolean testColorIdentityMemory() {
+        final String ref = "repseq:host";
+        final Map<String, Color> memory = new HashMap<String, Color>();
+        final int[] next = new int[ 1 ];
+        // view 1 (the "launch" view): frequency-ordered assignment, remembered
+        final PropertyColorScheme v1 = new PropertyColorScheme(
+                treeWith( ref, "cat", "cat", "cat", "dog", "dog", "bird" ), ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
+        final Color c_cat = v1.getValueColors().get( "cat" );
+        final Color c_dog = v1.getValueColors().get( "dog" );
+        final Color c_bird = v1.getValueColors().get( "bird" );
+        if ( ( c_cat == null ) || c_cat.equals( c_dog ) || c_dog.equals( c_bird ) || c_cat.equals( c_bird ) ) {
+            return fail( "launch view should assign three distinct colors" );
+        }
+        // view 2 = a "subtree" where the frequencies FLIP (bird now beats dog, cat gone): without memory the
+        // frequency-sorted palette re-spreads; with it, every surviving value keeps its color
+        final Phylogeny sub = treeWith( ref, "dog", "bird", "bird" );
+        final PropertyColorScheme legacy = new PropertyColorScheme( sub, ref ); // no memory = old behavior
+        if ( !c_cat.equals( legacy.getValueColors().get( "bird" ) ) ) {
+            return fail( "precondition lost its teeth: the legacy re-spread should hand bird cat's old color" );
+        }
+        final PropertyColorScheme v2 = new PropertyColorScheme( sub, ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
+        if ( !c_dog.equals( v2.getValueColors().get( "dog" ) )
+                || !c_bird.equals( v2.getValueColors().get( "bird" ) ) ) {
+            return fail( "a value must keep its color across a view change (dog/bird re-spread)" );
+        }
+        // view 3: a value met for the FIRST time takes the next free slot -- never a color already handed out
+        final PropertyColorScheme v3 = new PropertyColorScheme( treeWith( ref, "fish", "dog" ), ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
+        final Color c_fish = v3.getValueColors().get( "fish" );
+        if ( c_fish.equals( c_cat ) || c_fish.equals( c_dog ) || c_fish.equals( c_bird ) ) {
+            return fail( "a new value must take a FREE palette slot, not collide with a remembered one" );
+        }
+        final PropertyColorScheme v3b = new PropertyColorScheme( treeWith( ref, "fish", "dog" ), ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
+        if ( !c_fish.equals( v3b.getValueColors().get( "fish" ) ) ) {
+            return fail( "a newly-met value must be REMEMBERED too" );
+        }
+        // an override wins over the memory but is never stored in it
+        final Map<String, Color> ov = new HashMap<String, Color>();
+        ov.put( "dog", Color.MAGENTA );
+        final PropertyColorScheme with_ov = new PropertyColorScheme( sub, ref, ov,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
+        if ( !Color.MAGENTA.equals( with_ov.getValueColors().get( "dog" ) ) ) {
+            return fail( "an override must win over the identity memory" );
+        }
+        final PropertyColorScheme after_ov = new PropertyColorScheme( sub, ref, null,
+                PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
+        if ( !c_dog.equals( after_ov.getValueColors().get( "dog" ) ) ) {
+            return fail( "clearing an override must return the REMEMBERED automatic color, not the override" );
         }
         return true;
     }

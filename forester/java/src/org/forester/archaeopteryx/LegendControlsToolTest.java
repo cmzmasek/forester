@@ -26,6 +26,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -205,12 +206,82 @@ public final class LegendControlsToolTest {
 
                 ( (JFrame) frame ).dispose();
             } );
-            return ok[ 0 ];
+            return ok[ 0 ] && identityMemoryOk();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Value-color IDENTITY through the real TreePanel wiring (JS parity): colors survive a view change
+     * (collapse) instead of re-spreading; a palette switch and Reset to Defaults forget them.
+     */
+    private static boolean identityMemoryOk() throws Exception {
+        final boolean[] ok = { true };
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        // clade A holds 6 of the 7 "k0" tips; 5 loose "k1" tips. Collapsing A flips the visible frequency
+        // order (k0: 7 -> 1, k1 stays 5), which is exactly what made the legacy rebuild swap the colors.
+        final PhylogenyNode clade_a = new PhylogenyNode();
+        for( int i = 0; i < 6; ++i ) {
+            clade_a.addAsChild( gLeaf( "a" + i, "k0" ) );
+        }
+        final PhylogenyNode root = new PhylogenyNode();
+        root.addAsChild( clade_a );
+        root.addAsChild( gLeaf( "loose", "k0" ) );
+        for( int i = 0; i < 5; ++i ) {
+            root.addAsChild( gLeaf( "b" + i, "k1" ) );
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        SwingUtilities.invokeAndWait(
+                () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(),
+                                                                    "identity" ) );
+        SwingUtilities.invokeAndWait( () -> {
+            final MainFrame frame = mf[ 0 ];
+            final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+            tp.setColorByPropertyRef( "data:g" );
+            final Color c0 = tp.getPropertyColorScheme().getValueColors().get( "k0" );
+            final Color c1 = tp.getPropertyColorScheme().getValueColors().get( "k1" );
+            // collapse clade A -> the rebuild sees k1 as the most frequent visible value; the colors must
+            // NOT re-spread (legacy handed k1 the old k0 color here)
+            clade_a.setCollapse( true );
+            frame.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
+            final Map<String, Color> after = tp.getPropertyColorScheme().getValueColors();
+            if ( !c0.equals( after.get( "k0" ) ) || !c1.equals( after.get( "k1" ) ) ) {
+                fail( ok, "a view change must not recolor surviving values: k0 " + c0 + " -> " + after.get( "k0" )
+                        + ", k1 " + c1 + " -> " + after.get( "k1" ) );
+            }
+            // a palette switch invalidates the remembered identities (they belong to the old palette)
+            tp.setColorPaletteName( "Colorblind-friendly" );
+            final Color k1_cb = tp.getPropertyColorScheme().getValueColors().get( "k1" );
+            if ( c1.equals( k1_cb ) ) {
+                fail( ok, "switching the palette must re-assign from the NEW palette" );
+            }
+            // Reset to Defaults forgets the identities: re-choosing the ref assigns fresh, by the CURRENT
+            // view's frequencies -- so k1 (now most frequent) gets the default palette's FIRST color, which
+            // was k0's launch color
+            tp.resetColorStateToDefaults();
+            tp.setColorByPropertyRef( "data:g" );
+            final Color k1_fresh = tp.getPropertyColorScheme().getValueColors().get( "k1" );
+            if ( !c0.equals( k1_fresh ) ) {
+                fail( ok, "after Reset the memory must be forgotten (fresh frequency assignment), k1 got "
+                        + k1_fresh + " expected " + c0 );
+            }
+            ( (JFrame) frame ).dispose();
+        } );
+        return ok[ 0 ];
+    }
+
+    private static PhylogenyNode gLeaf( final String name, final String group ) {
+        final PhylogenyNode leaf = new PhylogenyNode();
+        leaf.setName( name );
+        final PropertiesList pl = new PropertiesList();
+        pl.addProperty( new Property( "data:g", group, "", "xsd:string", AppliesTo.NODE ) );
+        leaf.getNodeData().setProperties( pl );
+        return leaf;
     }
 
     private static void fail( final boolean[] ok, final String msg ) {

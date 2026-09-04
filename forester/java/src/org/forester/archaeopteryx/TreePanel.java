@@ -7310,6 +7310,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
     // overriding the automatic palette color, and kept across scheme rebuilds (navigation).
     private final Map<String, Map<String, Color>> _property_color_overrides = new HashMap<>();
+    // Value-color IDENTITY memory for "Color by" (JS parity): ref -> (group key -> color) + the next free
+    // palette slot per ref. A value keeps its color for the life of the TAB across subtree navigation,
+    // collapse and deletion (the scheme rebuild would otherwise RE-SPREAD the frequency-sorted palette, so a
+    // subtree figure's colors stopped matching the whole-tree figure). Cleared when the palette changes (the
+    // remembered colors belong to the old palette) and by Reset to Defaults. Numeric ramps ignore it by
+    // design -- a ramp's color is position in the view's range.
+    private final Map<String, Map<String, Color>> _property_color_memory = new HashMap<>();
+    private final Map<String, int[]>              _property_color_memory_next = new HashMap<>();
     // Layout of the legend's value rows (recorded when drawn) so a click can be mapped to a value.
     private java.util.List<String> _legend_row_labels   = new java.util.ArrayList<>();
     private int                 _legend_rows_top    = 0;
@@ -7902,6 +7910,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void resetColorStateToDefaults() {
         _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
         _property_color_overrides.clear();
+        clearPropertyColorMemory();
         setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
         setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null), clears the size legend pos
         setAncestralPieTrait( null ); // turns ancestral-state pies off, clears the pie legend pos
@@ -7915,9 +7924,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!ForesterUtil.isEmpty(name) && !name.equals(_color_palette_name)) {
             _color_palette_name = name;
             getOptions().setColorPaletteName(name);
+            clearPropertyColorMemory(); // the remembered identities belong to the OLD palette
             rebuildPropertyColorScheme();
             repaint();
         }
+    }
+
+    /** Forgets the value-color identity memory (palette switch / Reset): the next rebuild re-assigns fresh. */
+    private void clearPropertyColorMemory() {
+        _property_color_memory.clear();
+        _property_color_memory_next.clear();
     }
 
     /**
@@ -7930,8 +7946,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_color_by_property_ref == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
             _property_color_scheme = null;
         } else {
+            Map<String, Color> memory = _property_color_memory.get(_color_by_property_ref);
+            int[] next = _property_color_memory_next.get(_color_by_property_ref);
+            if (memory == null) {
+                memory = new HashMap<>();
+                next = new int[1];
+                _property_color_memory.put(_color_by_property_ref, memory);
+                _property_color_memory_next.put(_color_by_property_ref, next);
+            }
             _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref,
-                    _property_color_overrides.get(_color_by_property_ref), _color_palette_name);
+                    _property_color_overrides.get(_color_by_property_ref), _color_palette_name, memory, next);
         }
     }
 
