@@ -430,6 +430,12 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
     }
 
     public void writeNexusBinaryChractersBlock( final Writer w ) throws IOException {
+        // NOTE: the Dimensions command below writes NChar ONLY -- and must stay that way. Per the Nexus standard
+        // (Maddison et al. 1997), NTax in a CHARACTERS block's Dimensions is only legal alongside NEWTAXA (the
+        // taxa are defined by the TAXA block). Spec-strict readers (jebl, and through it AliView) throw on an
+        // NTax here and refuse the whole file; lenient parsers never notice, so the mistake only surfaces
+        // against exactly the tools one wants interoperability with. (A DATA block is different: there NEWTAXA
+        // is implied and NTax is fine -- see BasicMsa.writeToNexus.)
         //BEGIN CHARACTERS;
         // DIMENSIONS NCHAR=x;
         //BEGIN CHARSTATELABELS

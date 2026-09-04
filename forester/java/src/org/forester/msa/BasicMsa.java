@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.forester.io.parsers.nexus.NexusConstants;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.sequence.BasicSequence;
@@ -214,6 +215,14 @@ public class BasicMsa implements Msa {
                 type_str = "Standard";
             }
         }
+        // The "#NEXUS" header line is REQUIRED by the Nexus standard (Maddison et al. 1997) -- spec-strict
+        // readers (jebl, and through it AliView; PAUP; MrBayes) refuse a file without it, while lenient parsers
+        // never notice its absence. This method writes the WHOLE file for its callers (rid, msa_compactor), so
+        // the header belongs here. A DATA block is used (not CHARACTERS) deliberately: NTax in a CHARACTERS
+        // block's Dimensions is illegal without NEWTAXA, but in a DATA block NEWTAXA is implied, so
+        // "Dimensions NTax=... NChar=...;" is valid exactly as written.
+        w.write( NexusConstants.NEXUS );
+        w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "Begin Data;" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "   Dimensions NTax=" + getNumberOfSequences() );

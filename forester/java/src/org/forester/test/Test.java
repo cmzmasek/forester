@@ -43,6 +43,7 @@ import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.clade_analysis.CladeAnalysisTest;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
+import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.BinaryStates;
 import org.forester.go.TestGo;
@@ -58,6 +59,7 @@ import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
+import org.forester.io.parsers.nexus.NexusConstants;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.msa.BasicMsa;
@@ -1809,6 +1811,14 @@ public final class Test {
         }
         System.out.print("Nexus tree + alignment parsing: ");
         if (Test.testNexusTreeAndAlignment()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Nexus export spec compliance: ");
+        if (Test.testNexusExportSpecCompliance()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -9244,6 +9254,107 @@ public final class Test {
             return false;
         }
         return true;
+    }
+
+    // Spec-compliance of every Nexus WRITER (Maddison et al. 1997) -- pinned because the mistakes only
+    // surface against spec-STRICT readers (jebl, and through it AliView; PAUP; MrBayes), never against the
+    // lenient parsers used in-house. The two rules guarded here: (a) a Nexus file MUST begin with "#NEXUS";
+    // (b) NTax in a CHARACTERS block's Dimensions is illegal without NEWTAXA (the taxa come from the TAXA
+    // block) -- NTax belongs in the TAXA block, or in a DATA block, where NEWTAXA is implied. Rule (b) is
+    // exactly the bug found in Archaeopteryx.js's Nexus export (AliView refused its files); the writers here
+    // are clean, and this keeps them that way when an alignment-carrying Nexus export is added to Aptx.
+    private static boolean testNexusExportSpecCompliance() {
+        try {
+            // (1) the MSA writer (used by the rid + msa_compactor CLI tools): whole-file output, so it must
+            // carry the #NEXUS header, and it uses a DATA block (NTax legal there).
+            final List<MolecularSequence> seqs = new ArrayList<>();
+            seqs.add(BasicSequence.createDnaSequence("seq_1", "ACGTACGTAC"));
+            seqs.add(BasicSequence.createDnaSequence("seq_2", "ACGTACGTAA"));
+            final Msa msa = BasicMsa.createInstance(seqs);
+            final StringWriter msa_w = new StringWriter();
+            msa.write(msa_w, MSA_FORMAT.NEXUS);
+            final String msa_nexus = msa_w.toString();
+            if (!msa_nexus.startsWith(NexusConstants.NEXUS)) {
+                System.out.println("MSA Nexus output must begin with the #NEXUS header line");
+                return false;
+            }
+            if (!msa_nexus.contains("Begin Data;")) {
+                System.out.println("MSA Nexus output must use a Data block (NTax is legal only there)");
+                return false;
+            }
+            if (violatesCharactersBlockNTaxRule(msa_nexus)) {
+                System.out.println("MSA Nexus output carries NTax in a CHARACTERS block");
+                return false;
+            }
+            // (2) the binary-characters CHARACTERS block (evoinference/surfacing): NChar ONLY, never NTax.
+            final BasicCharacterStateMatrix<BinaryStates> m = new BasicCharacterStateMatrix<BinaryStates>(2, 2);
+            m.setIdentifier(0, "fish");
+            m.setIdentifier(1, "frog");
+            m.setCharacter(0, "bcl");
+            m.setCharacter(1, "tir");
+            m.setState(0, 0, BinaryStates.PRESENT);
+            m.setState(0, 1, BinaryStates.ABSENT);
+            m.setState(1, 0, BinaryStates.ABSENT);
+            m.setState(1, 1, BinaryStates.PRESENT);
+            final StringWriter chars_w = new StringWriter();
+            m.writeNexusBinaryChractersBlock(chars_w);
+            final String chars_block = chars_w.toString();
+            if (!chars_block.contains(NexusConstants.BEGIN_CHARACTERS)) {
+                System.out.println("expected a Characters block");
+                return false;
+            }
+            if (violatesCharactersBlockNTaxRule(chars_block)) {
+                System.out.println("the binary-characters CHARACTERS block must not carry NTax (illegal without NEWTAXA)");
+                return false;
+            }
+            // (3) the tree writer: header present, NTax confined to the TAXA block.
+            final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance()
+                    .create("((a:1,b:1):1,c:2);", new NHXParser())[0];
+            final String tree_nexus = new PhylogenyWriter()
+                    .toNexus(phy, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE).toString();
+            if (!tree_nexus.startsWith(NexusConstants.NEXUS)) {
+                System.out.println("tree Nexus output must begin with the #NEXUS header line");
+                return false;
+            }
+            final String lower = tree_nexus.toLowerCase();
+            final int taxa_start = lower.indexOf("begin taxa;");
+            final int taxa_end = lower.indexOf("end;", taxa_start);
+            final int ntax = lower.indexOf("ntax");
+            if ((taxa_start < 0) || (ntax < 0)) {
+                System.out.println("tree Nexus output must define its taxa (Taxa block with NTax)");
+                return false;
+            }
+            if ((ntax < taxa_start) || (ntax > taxa_end) || (lower.indexOf("ntax", ntax + 1) >= 0)) {
+                System.out.println("NTax must appear exactly once, inside the Taxa block");
+                return false;
+            }
+            return true;
+        } catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+    }
+
+    // True iff any CHARACTERS block in the given Nexus text carries an NTax without a NEWTAXA -- the
+    // spec-illegal combination that jebl (AliView) rejects. Case-insensitive; a DATA block is exempt.
+    private static boolean violatesCharactersBlockNTaxRule(final String nexus) {
+        final String lower = nexus.toLowerCase();
+        int from = 0;
+        while (true) {
+            final int begin = lower.indexOf("begin characters;", from);
+            if (begin < 0) {
+                return false;
+            }
+            int end = lower.indexOf("end;", begin);
+            if (end < 0) {
+                end = lower.length();
+            }
+            final String block = lower.substring(begin, end);
+            if (block.contains("ntax") && !block.contains("newtaxa")) {
+                return true;
+            }
+            from = end;
+        }
     }
 
     // A Nexus file that bundles a tree and a DATA/CHARACTERS sequence matrix: the matrix rows
