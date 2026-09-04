@@ -110,6 +110,10 @@ final class TanglegramColoring {
         // the main "Color by" list does (colouring by a one-value-per-tip column is just noise)
         final Set<String> numeric = new HashSet<>( PropertyColorScheme.numericRefs( tree ) );
         for( final String ref : PropertyColorScheme.colorableRefs( tree ) ) {
+            // the element slots (tax:code etc.) would DUPLICATE the native taxonomy fields above
+            if ( PropertyColorScheme.isElementSlot( ref ) ) {
+                continue;
+            }
             if ( !numeric.contains( ref ) ) {
                 fields.add( new Field( ref, Field.Kind.PROPERTY, ref ) );
             }

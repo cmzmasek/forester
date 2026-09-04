@@ -2500,6 +2500,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /** Repopulate the "Color by:" dropdown from the currently displayed tree's properties. */
+    /** Test hook: the "Color by" dropdown (its items are the raw refs; a renderer prettifies the display). */
+    JComboBox<String> colorByPropertyBoxForTest() {
+        return _color_by_property_cb;
+    }
+
     void populateColorByPropertyBox() {
         if (_color_by_property_cb == null) {
             return;

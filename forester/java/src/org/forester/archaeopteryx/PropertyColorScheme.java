@@ -114,6 +114,8 @@ final class PropertyColorScheme {
     // truncated before grouping: ':' for "country" (USA:CA == USA:IL), ';' for "host"
     // (Homo sapiens; male 35 == Homo sapiens; female old). 0 means keep the whole value.
     private final char               _truncate_at;
+    // whether _ref is a reserved element slot (taxonomy/sequence field): values verbatim, no grouping
+    private final boolean            _element_slot;
     // Coverage, for the legend's "no value" row (JS-parity: total - coverage, pinned last, dashed swatch):
     // how many visible tips the scheme was built over, and how many of those actually carry a value.
     private final int                _visible_tip_count;
@@ -157,6 +159,7 @@ final class PropertyColorScheme {
         _ref = ref;
         _palette = paletteByName( palette_name );
         _truncate_at = truncationDelimiter( ref );
+        _element_slot = isElementSlot( ref );
         _value_to_color = new LinkedHashMap<String, Color>();
         _key_to_color = new LinkedHashMap<String, Color>();
         _value_to_count = new LinkedHashMap<String, Integer>();
@@ -214,7 +217,7 @@ final class PropertyColorScheme {
                     if ( label.isEmpty() ) {
                         continue; // a value that folds to nothing (e.g. "_") forms no group (JS rule)
                     }
-                    final String key = label.toLowerCase( Locale.ROOT );
+                    final String key = _element_slot ? label : label.toLowerCase( Locale.ROOT );
                     Map<String, Integer> counts = key_to_label_counts.get( key );
                     if ( counts == null ) {
                         counts = new HashMap<String, Integer>();
@@ -233,7 +236,9 @@ final class PropertyColorScheme {
                     total += c;
                 }
                 key_to_total.put( e.getKey(), total );
-                groups.add( new String[] { representative( e.getValue() ), e.getKey() } );
+                // element-slot labels stay verbatim (one spelling per group by construction)
+                groups.add( new String[] { _element_slot ? e.getKey() : representative( e.getValue() ),
+                                           e.getKey() } );
             }
             // Most frequent first (ties broken alphabetically), so the most common values get the
             // most distinct palette colors and head the legend; palette cycling, when there are more
@@ -356,6 +361,9 @@ final class PropertyColorScheme {
      * preserved -- this is what the legend shows.
      */
     private String displayLabel( final String v ) {
+        if ( _element_slot ) {
+            return v; // element-slot values are used VERBATIM (no cut/fold/dictionary) -- the JS rule
+        }
         String s = v;
         if ( _truncate_at != 0 ) {
             final int idx = s.indexOf( _truncate_at );
@@ -453,9 +461,10 @@ final class PropertyColorScheme {
         return lookup;
     }
 
-    /** The normalized key a value is grouped/colored by: its display label, case-folded. */
+    /** The normalized key a value is grouped/colored by: its display label, case-folded -- except for an
+     *  element slot, whose values (hence keys) are verbatim (JS parity: "verbatim for element slots"). */
     private String groupKey( final String v ) {
-        return displayLabel( v ).toLowerCase( Locale.ROOT );
+        return _element_slot ? v : displayLabel( v ).toLowerCase( Locale.ROOT );
     }
 
     /** The most frequent spelling in a group (ties broken by code-point order, ascending), with its first
@@ -599,6 +608,25 @@ final class PropertyColorScheme {
         if ( ForesterUtil.isEmpty( ref ) ) {
             return ref;
         }
+        // the element slots carry the same display labels as the Archaeopteryx.js Color menu
+        if ( TAX_CODE_REF.equals( ref ) ) {
+            return "Taxonomy Code";
+        }
+        if ( TAX_SCI_NAME_REF.equals( ref ) ) {
+            return "Scientific Name";
+        }
+        if ( TAX_COMMON_NAME_REF.equals( ref ) ) {
+            return "Common Name";
+        }
+        if ( SEQ_NAME_REF.equals( ref ) ) {
+            return "Sequence Name";
+        }
+        if ( SEQ_SYMBOL_REF.equals( ref ) ) {
+            return "Sequence Symbol";
+        }
+        if ( SEQ_GENE_NAME_REF.equals( ref ) ) {
+            return "Gene Name";
+        }
         final int colon = ref.lastIndexOf( ':' );
         final String name = ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref;
         final StringBuilder sb = new StringBuilder( name.length() );
@@ -651,11 +679,62 @@ final class PropertyColorScheme {
     }
 
     static String valueFor( final PhylogenyNode node, final String ref ) {
+        if ( isElementSlot( ref ) ) { // reserved refs take precedence over a like-named property
+            return elementValue( node, ref );
+        }
         if ( ( node.getNodeData() == null ) || ( node.getNodeData().getProperties() == null ) ) {
             return null;
         }
         final List<Property> props = node.getNodeData().getProperties().getProperties( ref );
         return props.isEmpty() ? null : props.get( 0 ).getValue();
+    }
+
+    // ---- ELEMENT SLOTS (JS parity): the phyloXML taxonomy/sequence fields offered in "Color by" alongside
+    //      the properties, under the SAME reserved ids Archaeopteryx.js uses (VIS_ELEMENT_SLOTS in
+    //      forester.js), so a shared tree colors by the same fields in both viewers. Their values are used
+    //      VERBATIM -- no qualifier cut, no spelling fold, no synonym dictionary (a common name "swine" must
+    //      NOT become a "Pig" legend row when coloring by the taxonomy field itself; the JS rule). ----
+    static final String   TAX_CODE_REF        = "tax:code";
+    static final String   TAX_SCI_NAME_REF    = "tax:scientific_name";
+    static final String   TAX_COMMON_NAME_REF = "tax:common_name";
+    static final String   SEQ_NAME_REF        = "seq:name";
+    static final String   SEQ_SYMBOL_REF      = "seq:symbol";
+    static final String   SEQ_GENE_NAME_REF   = "seq:gene_name";
+    static final String[] ELEMENT_SLOT_REFS   = { TAX_CODE_REF, TAX_SCI_NAME_REF, TAX_COMMON_NAME_REF,
+                                                  SEQ_NAME_REF, SEQ_SYMBOL_REF, SEQ_GENE_NAME_REF };
+
+    /** Whether {@code ref} is one of the reserved element-slot ids above. */
+    static boolean isElementSlot( final String ref ) {
+        if ( ref == null ) {
+            return false;
+        }
+        for( final String r : ELEMENT_SLOT_REFS ) {
+            if ( r.equals( ref ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The node's value for an element slot (null when the element or the field is absent/empty). */
+    private static String elementValue( final PhylogenyNode node, final String ref ) {
+        if ( node.getNodeData() == null ) {
+            return null;
+        }
+        String v = null;
+        if ( ref.startsWith( "tax:" ) ) {
+            if ( node.getNodeData().isHasTaxonomy() ) {
+                final org.forester.phylogeny.data.Taxonomy t = node.getNodeData().getTaxonomy();
+                v = TAX_CODE_REF.equals( ref ) ? t.getTaxonomyCode()
+                        : ( TAX_SCI_NAME_REF.equals( ref ) ? t.getScientificName() : t.getCommonName() );
+            }
+        }
+        else if ( node.getNodeData().isHasSequence() ) {
+            final org.forester.phylogeny.data.Sequence q = node.getNodeData().getSequence();
+            v = SEQ_NAME_REF.equals( ref ) ? q.getName()
+                    : ( SEQ_SYMBOL_REF.equals( ref ) ? q.getSymbol() : q.getGeneName() );
+        }
+        return ForesterUtil.isEmpty( v ) ? null : v;
     }
 
     /**
@@ -699,6 +778,32 @@ final class PropertyColorScheme {
         }
         final int leaves = phylogeny.getExternalNodes().size();
         final List<String> refs = new ArrayList<String>();
+        // The ELEMENT SLOTS (taxonomy/sequence fields) are offered under the same candidacy rules as the
+        // properties, listed FIRST (they are the tree's built-in fields). A per-leaf-unique categorical slot
+        // (sequence names, species names on a species tree) is dropped exactly like a property would be --
+        // one color per tip is useless to color by, and identifier-like fields stay out (the JS rule too).
+        for( final String slot : ELEMENT_SLOT_REFS ) {
+            final Set<String> values = new HashSet<String>();
+            int nonempty = 0;
+            int numeric = 0;
+            final Set<Double> numbers = new HashSet<Double>();
+            for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
+                final String v = valueFor( node, slot );
+                if ( v != null ) {
+                    values.add( v );
+                    nonempty++;
+                    final Double d = parseNumber( v );
+                    if ( d != null ) {
+                        numeric++;
+                        numbers.add( d );
+                    }
+                }
+            }
+            final boolean gradient = ( ( numeric * 2 ) > nonempty ) && ( numbers.size() >= 2 );
+            if ( ( values.size() >= 2 ) && ( gradient || ( values.size() < leaves ) ) ) {
+                refs.add( slot );
+            }
+        }
         for( final Map.Entry<String, Set<String>> e : ref_to_values.entrySet() ) {
             final String ref = e.getKey();
             final int distinct = e.getValue().size();

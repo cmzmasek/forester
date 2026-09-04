@@ -53,7 +53,7 @@ public final class PropertyColorSchemeTest {
                 && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
                 && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
                 && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount()
-                && testColorIdentityMemory() && testSynonymDictionary();
+                && testColorIdentityMemory() && testSynonymDictionary() && testElementSlots();
     }
 
     // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
@@ -690,6 +690,73 @@ public final class PropertyColorSchemeTest {
                     + s4.getValueColors().keySet() + ", missing " + s4.missingCount() );
         }
         return true;
+    }
+
+    // ---- element slots (JS parity): taxonomy/sequence fields color-able under the JS's reserved ids,
+    //      values VERBATIM (no dictionary/fold), per-tip-unique slots refused like properties ----
+    private static boolean testElementSlots() {
+        // four tips: codes repeat (2x MOUSE, 2x CHICK); common names would be dictionary bait; sequence
+        // names are per-tip-unique (identifier-like -> must NOT be offered)
+        final Phylogeny phy = treeOf( internal( taxLeaf( "a", "MOUSE", "Mus musculus", "swine", "seqA" ),
+                                                taxLeaf( "b", "MOUSE", "Mus musculus", "swine", "seqB" ) ),
+                                      internal( taxLeaf( "c", "CHICK", "Gallus gallus", "chicken", "seqC" ),
+                                                taxLeaf( "d", "CHICK", "Gallus gallus", "chicken", "seqD" ) ) );
+        final PhylogenyNode any = phy.getFirstExternalNode();
+        if ( !"MOUSE".equals( PropertyColorScheme.valueFor( any, PropertyColorScheme.TAX_CODE_REF ) )
+                || !"Mus musculus".equals( PropertyColorScheme.valueFor( any, PropertyColorScheme.TAX_SCI_NAME_REF ) )
+                || !"swine".equals( PropertyColorScheme.valueFor( any, PropertyColorScheme.TAX_COMMON_NAME_REF ) )
+                || !"seqA".equals( PropertyColorScheme.valueFor( any, PropertyColorScheme.SEQ_NAME_REF ) ) ) {
+            return fail( "element-slot valueFor should read the taxonomy/sequence fields" );
+        }
+        if ( PropertyColorScheme.valueFor( any, PropertyColorScheme.SEQ_SYMBOL_REF ) != null ) {
+            return fail( "an absent sequence symbol should read null" );
+        }
+        final List<String> refs = PropertyColorScheme.colorableRefs( phy );
+        if ( !refs.contains( PropertyColorScheme.TAX_CODE_REF )
+                || !refs.contains( PropertyColorScheme.TAX_SCI_NAME_REF )
+                || !refs.contains( PropertyColorScheme.TAX_COMMON_NAME_REF ) ) {
+            return fail( "repeating taxonomy slots should be offered, got " + refs );
+        }
+        if ( refs.contains( PropertyColorScheme.SEQ_NAME_REF ) ) {
+            return fail( "a per-tip-unique sequence-name slot must NOT be offered (identifier-like)" );
+        }
+        // element values are used VERBATIM: the common name "swine" keeps its own row -- it must NOT fold
+        // to the dictionary's "Pig" when the field being colored IS the taxonomy common name
+        final PropertyColorScheme s = new PropertyColorScheme( phy, PropertyColorScheme.TAX_COMMON_NAME_REF );
+        if ( !s.getValueColors().containsKey( "swine" ) || s.getValueColors().containsKey( "Pig" ) ) {
+            return fail( "element-slot values must stay verbatim (no dictionary), got "
+                    + s.getValueColors().keySet() );
+        }
+        if ( s.missingCount() != 0 ) {
+            return fail( "all four tips carry a common name; missing should be 0, got " + s.missingCount() );
+        }
+        // ...and the JS display labels
+        if ( !"Taxonomy Code".equals( PropertyColorScheme.displayName( PropertyColorScheme.TAX_CODE_REF ) )
+                || !"Gene Name".equals( PropertyColorScheme.displayName( PropertyColorScheme.SEQ_GENE_NAME_REF ) ) ) {
+            return fail( "element slots should carry the JS Color-menu display labels" );
+        }
+        return true;
+    }
+
+    /** A leaf with taxonomy (code/sci/common) and a named sequence. */
+    private static PhylogenyNode taxLeaf( final String name, final String code, final String sci,
+                                          final String common, final String seq_name ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( name );
+        final org.forester.phylogeny.data.Taxonomy t = new org.forester.phylogeny.data.Taxonomy();
+        try {
+            t.setTaxonomyCode( code );
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        t.setScientificName( sci );
+        t.setCommonName( common );
+        n.getNodeData().setTaxonomy( t );
+        final org.forester.phylogeny.data.Sequence q = new org.forester.phylogeny.data.Sequence();
+        q.setName( seq_name );
+        n.getNodeData().setSequence( q );
+        return n;
     }
 
     // ---------------------------------------------------------------------------------------

@@ -206,7 +206,7 @@ public final class LegendControlsToolTest {
 
                 ( (JFrame) frame ).dispose();
             } );
-            return ok[ 0 ] && identityMemoryOk();
+            return ok[ 0 ] && identityMemoryOk() && elementSlotUiOk();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -269,6 +269,69 @@ public final class LegendControlsToolTest {
             if ( !c0.equals( k1_fresh ) ) {
                 fail( ok, "after Reset the memory must be forgotten (fresh frequency assignment), k1 got "
                         + k1_fresh + " expected " + c0 );
+            }
+            ( (JFrame) frame ).dispose();
+        } );
+        return ok[ 0 ];
+    }
+
+    /**
+     * Element slots through the real UI (JS parity): a tree with repeating taxonomy codes offers
+     * "tax:code" in the Color-by dropdown, the renderer shows the JS display label, and selecting it
+     * colors the tips (scheme built, verbatim values).
+     */
+    private static boolean elementSlotUiOk() throws Exception {
+        final boolean[] ok = { true };
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < 6; ++i ) {
+            final PhylogenyNode leaf = new PhylogenyNode();
+            leaf.setName( "t" + i );
+            final org.forester.phylogeny.data.Taxonomy t = new org.forester.phylogeny.data.Taxonomy();
+            try {
+                t.setTaxonomyCode( ( i % 2 == 0 ) ? "MOUSE" : "CHICK" );
+            }
+            catch ( final Exception e ) {
+                throw new RuntimeException( e );
+            }
+            leaf.getNodeData().setTaxonomy( t );
+            root.addAsChild( leaf );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        SwingUtilities.invokeAndWait(
+                () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(),
+                                                                    "slots" ) );
+        SwingUtilities.invokeAndWait( () -> {
+            final MainFrame frame = mf[ 0 ];
+            final ControlPanel cp = frame.getMainPanel().getControlPanel();
+            final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+            cp.populateColorByPropertyBox();
+            final javax.swing.JComboBox<String> box = cp.colorByPropertyBoxForTest();
+            boolean offered = false;
+            for( int i = 0; i < box.getItemCount(); ++i ) {
+                if ( PropertyColorScheme.TAX_CODE_REF.equals( box.getItemAt( i ) ) ) {
+                    offered = true;
+                }
+            }
+            if ( !offered ) {
+                fail( ok, "the Color-by dropdown should offer the taxonomy-code slot" );
+            }
+            // the renderer shows the JS Color-menu label, not the raw ref
+            final java.awt.Component c = box.getRenderer().getListCellRendererComponent( new javax.swing.JList<>(),
+                    PropertyColorScheme.TAX_CODE_REF, 0, false, false );
+            if ( !( c instanceof javax.swing.JLabel )
+                    || !"Taxonomy Code".equals( ( (javax.swing.JLabel) c ).getText() ) ) {
+                fail( ok, "the dropdown should display 'Taxonomy Code' for tax:code" );
+            }
+            // selecting it colors the tips: two verbatim groups, full coverage
+            tp.setColorByPropertyRef( PropertyColorScheme.TAX_CODE_REF );
+            final PropertyColorScheme s = tp.getPropertyColorScheme();
+            if ( ( s == null ) || ( s.getValueColors().size() != 2 )
+                    || !s.getValueColors().containsKey( "MOUSE" ) || ( s.missingCount() != 0 ) ) {
+                fail( ok, "coloring by tax:code should build a 2-group verbatim scheme, got "
+                        + ( ( s == null ) ? "null" : s.getValueColors().keySet().toString() ) );
             }
             ( (JFrame) frame ).dispose();
         } );
