@@ -269,6 +269,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node popup lifecycle (rollover popup never stranded): ");
+        if (org.forester.archaeopteryx.NodePopupLifecycleTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("MSA conservation measures: ");
         if (org.forester.archaeopteryx.MsaConservationTest.test()) {
             System.out.println("OK.");

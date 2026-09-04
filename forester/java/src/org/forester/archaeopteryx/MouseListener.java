@@ -131,6 +131,7 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
         if ( _treepanel.isOnAnyLegend( e ) ) {
             _treepanel.setCursor( TreePanel.MOVE_CURSOR ); // hint that the legend can be dragged
             _treepanel.clearHoverPreview(); // don't leave a select/deselect preview on the tree behind the legend
+            _treepanel.hideNodeDataPopup(); // ...nor the rollover popup (this early return skips its normal hide)
             return;
         }
         _treepanel.mouseMoved( e );
@@ -139,10 +140,17 @@ final class MouseListener extends MouseAdapter implements MouseMotionListener {
     @Override
     public void mouseExited( final MouseEvent e ) {
         _treepanel.clearHoverPreview(); // don't leave a hover preview when the pointer leaves the panel
+        // The rollover popup can be a heavyweight NATIVE window: leaving the canvas -- onto the control panel,
+        // the menus, the scrollbars, or out of the window entirely -- must take it down, or it stays floating
+        // on the desktop (no further mouse-move over the canvas will ever hide it).
+        _treepanel.hideNodeDataPopup();
     }
 
     @Override
     public void mousePressed( final MouseEvent e ) {
+        // a click is about to act (select / edit dialog / context menu): don't leave the rollover popup
+        // floating over whatever comes up
+        _treepanel.hideNodeDataPopup();
         _legend_moved = false; // a fresh gesture: no legend drag has happened yet
         if ( ( e.getModifiersEx() == InputEvent.BUTTON1_DOWN_MASK ) && _treepanel.isOnAnyLegend( e ) ) {
             _dragging_legend = true;

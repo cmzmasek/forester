@@ -34,8 +34,11 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
@@ -44,6 +47,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
@@ -373,6 +378,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private MainPanel _main_panel = null;
     private double _max_distance_to_root = -1;
     private Popup _node_desc_popup;
+    // The rollover popup can be a HEAVYWEIGHT native window, and no mouse event fires when the application
+    // window is deactivated, iconified, or dragged -- so the window itself must hide it (see addNotify()).
+    // These track the listeners so a re-parent detaches them from the old window.
+    private Window           _popup_hider_window;
+    private WindowAdapter    _popup_hider_window_listener;
+    private ComponentAdapter _popup_hider_component_listener;
     private int _node_frame_index = 0;
     private final NodeFrame[] _node_frames = new NodeFrame[TreePanel.MAX_NODE_FRAMES];
     private JPopupMenu _node_popup_menu = null;
@@ -622,6 +633,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     @Override
     final public void mouseWheelMoved(final MouseWheelEvent e) {
+        // the wheel scrolls/zooms the tree under a STATIONARY pointer (no mouse-move fires), so a showing
+        // rollover popup would go stale over the moving content -- take it down first
+        hideNodeDataPopup();
         final int notches = e.getWheelRotation();
         if (inOvVirtualRectangle(e)) {
             if (!isInOvRect()) {
@@ -1942,6 +1956,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void keyPressedCalls(final KeyEvent e) {
+        // keyboard scrolling/zooming moves the tree under a stationary pointer (and Esc should dismiss):
+        // any key press takes the rollover popup down
+        hideNodeDataPopup();
         // Keys carrying the platform menu-shortcut modifier (Cmd on macOS, Ctrl elsewhere) belong to the menu
         // accelerators (Save, Open, Close Tab, Copy Image, Undo/Redo, ...). This focused-canvas KeyListener must
         // NOT handle or consume them, or it would shadow the accelerator entirely (Swing runs a focused
@@ -6656,6 +6673,28 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _urt_factor_ov = urt_factor_ov;
     }
 
+    /**
+     * Hides the node-description rollover popup, unconditionally.
+     * <p>
+     * The popup can be a HEAVYWEIGHT window -- its own native window -- so every way of leaving the canvas must
+     * call this, or the popup stays floating on the desktop, even outside the application window. Callers: every
+     * mouse move (before a possible re-show), mouse exit, mouse press, the mouse wheel, any key press, the window
+     * being deactivated / iconified / moved / resized, and the panel being removed (tab or window closed).
+     * Deliberately NOT gated on the display option: switching the "Rollover" option off while a popup is showing
+     * must still take that popup down.
+     */
+    final void hideNodeDataPopup() {
+        if (_node_desc_popup != null) {
+            _node_desc_popup.hide();
+            _node_desc_popup = null;
+        }
+    }
+
+    /** Test hook: whether the node-description rollover popup is currently showing. */
+    final boolean isNodeDescPopupShowingForTest() {
+        return _node_desc_popup != null;
+    }
+
     final private void showNodeDataPopup(final MouseEvent e, final PhylogenyNode node) {
         try {
             if ((node.getName().length() > 0)
@@ -6865,8 +6904,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         _rollover_popup.setForeground(getTreeColorSet().getSequenceColor());
                     }
                     _rollover_popup.setText(_popup_buffer.toString());
+                    // Owner = this panel (NOT null): with an owner, the factory uses a LIGHTWEIGHT popup
+                    // whenever the popup fits inside the window -- and a lightweight popup lives in the window's
+                    // layered pane, so it structurally CANNOT be stranded on the desktop. Only a popup poking
+                    // past the window edge still needs a heavyweight native window (which the hide paths cover).
                     _node_desc_popup = PopupFactory.getSharedInstance()
-                            .getPopup(null,
+                            .getPopup(this,
                                     _rollover_popup,
                                     e.getLocationOnScreen().x + 10,
                                     e.getLocationOnScreen().y - (lines * 20));
@@ -10700,7 +10743,58 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     @Override
+    public void addNotify() {
+        super.addNotify();
+        // No mouse event fires when the application window is deactivated (Cmd-Tab / another window focused),
+        // iconified, or dragged/resized -- so without these listeners a rollover popup showing at that moment
+        // stays floating on the desktop, outside the window. The window itself must take it down.
+        final Window w = SwingUtilities.getWindowAncestor(this);
+        if ((w != null) && (w != _popup_hider_window)) {
+            detachPopupHiderListeners();
+            _popup_hider_window = w;
+            _popup_hider_window_listener = new WindowAdapter() {
+
+                @Override
+                public void windowDeactivated(final WindowEvent e) {
+                    hideNodeDataPopup();
+                }
+
+                @Override
+                public void windowIconified(final WindowEvent e) {
+                    hideNodeDataPopup();
+                }
+            };
+            _popup_hider_component_listener = new ComponentAdapter() {
+
+                @Override
+                public void componentMoved(final ComponentEvent e) {
+                    hideNodeDataPopup();
+                }
+
+                @Override
+                public void componentResized(final ComponentEvent e) {
+                    hideNodeDataPopup();
+                }
+            };
+            w.addWindowListener(_popup_hider_window_listener);
+            w.addComponentListener(_popup_hider_component_listener);
+        }
+    }
+
+    private void detachPopupHiderListeners() {
+        if (_popup_hider_window != null) {
+            _popup_hider_window.removeWindowListener(_popup_hider_window_listener);
+            _popup_hider_window.removeComponentListener(_popup_hider_component_listener);
+            _popup_hider_window = null;
+            _popup_hider_window_listener = null;
+            _popup_hider_component_listener = null;
+        }
+    }
+
+    @Override
     public void removeNotify() {
+        hideNodeDataPopup(); // closing the tab/window must not strand a popup on the desktop
+        detachPopupHiderListeners();
         if (_pulse_timer != null) {
             _pulse_timer.stop(); // stop animating once the tab/window is gone (no lingering repaints)
         }
@@ -13495,12 +13589,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void mouseMoved(final MouseEvent e) {
         requestFocusInWindow();
-        if (shows(DisplayOption.NODE_DATA_POPUP)) {
-            if (_node_desc_popup != null) {
-                _node_desc_popup.hide();
-                _node_desc_popup = null;
-            }
-        }
+        // Unconditional (not gated on the display option): a popup left showing when the option was switched
+        // off would otherwise never be hidden again. Re-shown further down when still over a node.
+        hideNodeDataPopup();
         if (getOptions().isShowOverview() && isOvOn()) {
             if (inOvVirtualRectangle(e)) {
                 if (!isInOvRect()) {
