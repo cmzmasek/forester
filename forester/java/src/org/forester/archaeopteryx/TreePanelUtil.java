@@ -2210,16 +2210,20 @@ public class TreePanelUtil {
     }
 
     private static void collectLadderizeState( final PhylogenyNode n, final boolean[] flags ) {
-        if ( n.getNumberOfDescendants() == 2 ) {
-            final int a = n.getChildNode1().getNumberOfExternalNodes();
-            final int b = n.getChildNode2().getNumberOfExternalNodes();
+        // Every ADJACENT child pair with unequal clade sizes is evidence -- over however many children the
+        // node has (a sorted sequence is exactly one whose adjacent pairs are all ordered), so polytomies
+        // participate in the direction detection just as the generalized ladderize now reorders them.
+        // Identical to the old logic for a 2-child node.
+        for ( int i = 0; i + 1 < n.getNumberOfDescendants(); i++ ) {
+            final int a = n.getChildNode( i ).getNumberOfExternalNodes();
+            final int b = n.getChildNode( i + 1 ).getNumberOfExternalNodes();
             if ( a != b ) {
                 flags[ 0 ] = true;
                 if ( a > b ) {
-                    flags[ 2 ] = false; // child1 larger -> not smaller-first
+                    flags[ 2 ] = false; // an earlier child larger -> not smaller-first
                 }
                 else {
-                    flags[ 1 ] = false; // child1 smaller -> not larger-first
+                    flags[ 1 ] = false; // an earlier child smaller -> not larger-first
                 }
             }
         }

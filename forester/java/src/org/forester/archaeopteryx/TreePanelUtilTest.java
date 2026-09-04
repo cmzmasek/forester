@@ -33,6 +33,7 @@ import java.util.SortedSet;
 import java.util.function.Function;
 
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Confidence;
@@ -73,7 +74,7 @@ public final class TreePanelUtilTest {
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
                 && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance()
-                && testLadderizeState() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
+                && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
     }
 
     private static boolean testScientificNameIsItalic() {
@@ -178,6 +179,99 @@ public final class TreePanelUtilTest {
         r3.addAsChild( new PhylogenyNode() );
         r3.addAsChild( new PhylogenyNode() );
         return TreePanelUtil.ladderizeStateOf( ladderPhy( r3 ).getRoot() ) == null;
+    }
+
+    // ---- ladderize on POLYTOMIES (bug found on the JS side, fixed in both viewers): the old code only
+    //      swapped a node with EXACTLY two children, so ladderize was a total no-op on any tree with real
+    //      polytomies (normal for Auspice/Nextstrain builds and TreeAnnotator trees) ----
+    private static boolean testLadderizePolytomy() {
+        // a 4-child polytomy with clade sizes {2, 1, 3, 1}; the two singletons are named to check tie order
+        final Phylogeny phy = ladderPhy( polytomyRoot() );
+        PhylogenyMethods.orderAppearance( phy.getRoot(), true, false,
+                                          PhylogenyMethods.DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        int[] sizes = childSizes( phy.getRoot() );
+        if ( ( sizes[ 0 ] != 3 ) || ( sizes[ 1 ] != 2 ) || ( sizes[ 2 ] != 1 ) || ( sizes[ 3 ] != 1 ) ) {
+            return fail( "larger-first ladderize should sort a polytomy 3,2,1,1 -- got " + java.util.Arrays
+                    .toString( sizes ) );
+        }
+        // stable: the equal-sized singletons keep their original relative order (s1 before s2)
+        if ( !"s1".equals( phy.getRoot().getChildNode( 2 ).getName() )
+                || !"s2".equals( phy.getRoot().getChildNode( 3 ).getName() ) ) {
+            return fail( "equal-sized children must keep their relative order (stable sort)" );
+        }
+        // pressing again is a no-op (already ordered)
+        final String before = firstTipNames( phy );
+        PhylogenyMethods.orderAppearance( phy.getRoot(), true, false,
+                                          PhylogenyMethods.DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        if ( !before.equals( firstTipNames( phy ) ) ) {
+            return fail( "re-ladderizing an ordered polytomy must change nothing" );
+        }
+        // ...and the state detector now recognizes the ladderized polytomy
+        if ( !Boolean.TRUE.equals( TreePanelUtil.ladderizeStateOf( phy.getRoot() ) ) ) {
+            return fail( "ladderizeStateOf should read a larger-first polytomy as TRUE" );
+        }
+        // the other direction
+        PhylogenyMethods.orderAppearance( phy.getRoot(), false, false,
+                                          PhylogenyMethods.DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        sizes = childSizes( phy.getRoot() );
+        if ( ( sizes[ 0 ] != 1 ) || ( sizes[ 1 ] != 1 ) || ( sizes[ 2 ] != 2 ) || ( sizes[ 3 ] != 3 ) ) {
+            return fail( "smaller-first ladderize should sort a polytomy 1,1,2,3 -- got " + java.util.Arrays
+                    .toString( sizes ) );
+        }
+        if ( !Boolean.FALSE.equals( TreePanelUtil.ladderizeStateOf( phy.getRoot() ) ) ) {
+            return fail( "ladderizeStateOf should read a smaller-first polytomy as FALSE" );
+        }
+        // 2-child behavior unchanged: still swaps, both directions
+        final PhylogenyNode two = new PhylogenyNode();
+        final PhylogenyNode big = new PhylogenyNode();
+        big.addAsChild( new PhylogenyNode() );
+        big.addAsChild( new PhylogenyNode() );
+        two.addAsChild( new PhylogenyNode() );
+        two.addAsChild( big );
+        final Phylogeny p2 = ladderPhy( two );
+        PhylogenyMethods.orderAppearance( p2.getRoot(), true, false,
+                                          PhylogenyMethods.DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        if ( p2.getRoot().getChildNode( 0 ).getNumberOfExternalNodes() != 2 ) {
+            return fail( "2-child ladderize should still swap (larger first)" );
+        }
+        return true;
+    }
+
+    /** Root with 4 children of clade sizes {2, 1, 3, 1}; the singletons named s1/s2 in that order. */
+    private static PhylogenyNode polytomyRoot() {
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode two = new PhylogenyNode();
+        two.addAsChild( new PhylogenyNode() );
+        two.addAsChild( new PhylogenyNode() );
+        root.addAsChild( two );
+        final PhylogenyNode s1 = new PhylogenyNode();
+        s1.setName( "s1" );
+        root.addAsChild( s1 );
+        final PhylogenyNode three = new PhylogenyNode();
+        three.addAsChild( new PhylogenyNode() );
+        three.addAsChild( new PhylogenyNode() );
+        three.addAsChild( new PhylogenyNode() );
+        root.addAsChild( three );
+        final PhylogenyNode s2 = new PhylogenyNode();
+        s2.setName( "s2" );
+        root.addAsChild( s2 );
+        return root;
+    }
+
+    private static int[] childSizes( final PhylogenyNode n ) {
+        final int[] sizes = new int[ n.getNumberOfDescendants() ];
+        for( int i = 0; i < sizes.length; ++i ) {
+            sizes[ i ] = n.getChildNode( i ).getNumberOfExternalNodes();
+        }
+        return sizes;
+    }
+
+    private static String firstTipNames( final Phylogeny phy ) {
+        final StringBuilder sb = new StringBuilder();
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            sb.append( tip.getId() ).append( ',' );
+        }
+        return sb.toString();
     }
 
     private static Phylogeny ladderPhy( final PhylogenyNode root ) {

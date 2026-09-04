@@ -1190,15 +1190,33 @@ public class PhylogenyMethods {
         if (n.isExternal()) {
             return;
         } else {
-            if ((n.getNumberOfDescendants() == 2)
-                    && (n.getChildNode1().getNumberOfExternalNodes() != n.getChildNode2().getNumberOfExternalNodes())
-                    && ((n.getChildNode1().getNumberOfExternalNodes() < n.getChildNode2()
-                    .getNumberOfExternalNodes()) == order)) {
-                final PhylogenyNode temp = n.getChildNode1();
-                n.setChild1(n.getChildNode2());
-                n.setChild2(temp);
-                _order_changed = true;
-            } else if (order_ext_alphabetically) {
+            // Ladderize by clade size over HOWEVER many children the node has -- not only exactly two. The old
+            // 2-child-only swap silently no-op'd on any polytomy, which is normal for phylodynamic data (an
+            // Auspice/Nextstrain build, a TreeAnnotator tree with unresolved nodes). A STABLE sort, so children
+            // of equal size keep their existing relative order and an already-ordered node is untouched.
+            // order = true puts the LARGER clade first (drawn first), false the smaller -- exactly the
+            // direction the old 2-child swap implemented. (Fix mirrored in Archaeopteryx.js forester.ladderize.)
+            boolean sorted_children = false;
+            if (n.getNumberOfDescendants() >= 2) {
+                final java.util.List<PhylogenyNode> original = new java.util.ArrayList<>(n.getDescendants());
+                final java.util.List<PhylogenyNode> sorted = new java.util.ArrayList<>(original);
+                sorted.sort((x, y) -> order
+                        ? Integer.compare(y.getNumberOfExternalNodes(), x.getNumberOfExternalNodes())
+                        : Integer.compare(x.getNumberOfExternalNodes(), y.getNumberOfExternalNodes()));
+                for (int i = 0; i < sorted.size(); ++i) {
+                    if (sorted.get(i) != original.get(i)) {
+                        sorted_children = true;
+                        break;
+                    }
+                }
+                if (sorted_children) {
+                    for (int i = 0; i < sorted.size(); ++i) {
+                        n.setChildNode(i, sorted.get(i));
+                    }
+                    _order_changed = true;
+                }
+            }
+            if (!sorted_children && order_ext_alphabetically) {
                 boolean all_ext = true;
                 for (final PhylogenyNode i : n.getDescendants()) {
                     if (!i.isExternal()) {
