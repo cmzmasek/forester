@@ -351,18 +351,25 @@ public final class DemoTreeGenerator {
                 hostYear( "A/chicken/Jiangsu/2017", "Avian", 2017 ),
                 hostYear( "A/swine/Shandong/2018", "Swine", 2018 ),
                 hostYear( "A/Cambodia/2021", "Human", 2021 ),
-                hostYear( "A/duck/Vietnam/2024", "Avian", 2024 ) };
-        final PhylogenyNode root = clade( 0, clade( 0.06, tips[ 0 ], tips[ 1 ], tips[ 4 ] ),
-                                          clade( 0.05, clade( 0.03, tips[ 2 ], tips[ 3 ], tips[ 6 ] ),
+                hostYear( "A/duck/Vietnam/2024", "Avian", 2024 ),
+                // environmental samples with NO host annotation: the legend's dashed "no value" row counts them
+                hostYear( "A/environment/Hunan/2016", null, 2016 ),
+                hostYear( "A/environment/Fujian/2019", null, 2019 ) };
+        final PhylogenyNode root = clade( 0, clade( 0.06, tips[ 0 ], tips[ 1 ], tips[ 4 ], tips[ 10 ] ),
+                                          clade( 0.05, clade( 0.03, tips[ 2 ], tips[ 3 ], tips[ 6 ], tips[ 11 ] ),
                                                  clade( 0.04, tips[ 5 ], tips[ 7 ], tips[ 8 ], tips[ 9 ] ) ) );
         return tree( root, "Color by property (demo)",
-                     "Synthetic influenza-surveillance tree. Each tip has a categorical 'host' and a numeric 'year'. "
-                             + "Try Color by: host (a distinct color per host) or Color by: year (a numeric gradient)." );
+                     "Synthetic influenza-surveillance tree. Each tip has a categorical 'host' and a numeric 'year'; "
+                             + "two environmental samples carry no host. Try Color by: host (a distinct color per "
+                             + "host; the legend's dashed 'no value' row counts the host-less tips) or Color by: "
+                             + "year (a numeric gradient)." );
     }
 
     private static PhylogenyNode hostYear( final String name, final String host, final int year ) {
         final PhylogenyNode n = leaf( name );
-        cat( n, "data:host", host );
+        if ( host != null ) { // null = no host annotation at all (feeds the legend's "no value" row)
+            cat( n, "data:host", host );
+        }
         num( n, "data:year", Integer.toString( year ) );
         return n;
     }

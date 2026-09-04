@@ -114,6 +114,11 @@ final class PropertyColorScheme {
     // truncated before grouping: ':' for "country" (USA:CA == USA:IL), ';' for "host"
     // (Homo sapiens; male 35 == Homo sapiens; female old). 0 means keep the whole value.
     private final char               _truncate_at;
+    // Coverage, for the legend's "no value" row (JS-parity: total - coverage, pinned last, dashed swatch):
+    // how many visible tips the scheme was built over, and how many of those actually carry a value.
+    private final int                _visible_tip_count;
+    private final int                _tips_with_nonempty_value;
+    private final int                _tips_with_numeric_value;
 
     PropertyColorScheme( final Phylogeny phylogeny, final String ref ) {
         this( phylogeny, ref, null, DEFAULT_PALETTE_NAME );
@@ -141,6 +146,25 @@ final class PropertyColorScheme {
         // excluded), so the colors and legend track the displayed (sub)tree as the user
         // navigates into subtrees, collapses clades, or deletes nodes.
         final List<PhylogenyNode> leaves = visibleExternalNodes( phylogeny );
+        // Coverage counts for the "no value" legend row. BOTH the non-empty and the numeric count are kept,
+        // because what "has a value" means depends on the mode -- and the mode can still change after
+        // construction (setSharedRange forces a matrix column continuous): categorically, any non-empty value
+        // draws a mark; under a gradient, only a PARSEABLE number does (an "n/a" tip draws nothing, so it
+        // counts as missing -- the row must agree with what the tree actually shows).
+        int nonempty = 0;
+        int numeric = 0;
+        for( final PhylogenyNode node : leaves ) {
+            final String v = valueFor( node, ref );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                nonempty++;
+                if ( parseNumber( v ) != null ) {
+                    numeric++;
+                }
+            }
+        }
+        _visible_tip_count = leaves.size();
+        _tips_with_nonempty_value = nonempty;
+        _tips_with_numeric_value = numeric;
         // Use a continuous gradient when the column is predominantly numeric (year / age / percent-identity /
         // ...); otherwise color by distinct categories. Decided from the visible values, not the ref name.
         _gradient = shouldUseGradient( leaves, ref );
@@ -229,6 +253,21 @@ final class PropertyColorScheme {
 
     int numberOfValues() {
         return _value_to_color.size();
+    }
+
+    /** Number of visible external nodes the scheme was built over (tips hidden under a collapse excluded). */
+    int visibleTipCount() {
+        return _visible_tip_count;
+    }
+
+    /**
+     * How many of the visible tips draw NO mark under this scheme -- the count behind the legend's
+     * "no value" row. Defined as "would {@link #colorFor} return null": categorically, tips whose value is
+     * empty/absent; under a gradient, also tips whose value does not parse as a number (they draw nothing,
+     * so a row claiming they were covered would lie).
+     */
+    int missingCount() {
+        return _visible_tip_count - ( _gradient ? _tips_with_numeric_value : _tips_with_nonempty_value );
     }
 
     /** The color for this node's value of the property, or {@code null} if it has none. */

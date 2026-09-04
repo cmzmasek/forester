@@ -52,7 +52,7 @@ public final class PropertyColorSchemeTest {
                 && testHostQualifierGrouping() && testYearGradient() && testNumericGradientGeneralization()
                 && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
                 && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
-                && testPalettes() && testOrderLegendEntriesEdges();
+                && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount();
     }
 
     // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
@@ -539,6 +539,43 @@ public final class PropertyColorSchemeTest {
         if ( !eq( "2000", collapsed.getGradientMinLabel(), "year min after collapse" )
                 || !eq( "2010", collapsed.getGradientMaxLabel(), "year max after collapse" ) ) {
             return false;
+        }
+        return true;
+    }
+
+    // ---- the "no value" legend row's count: visible tips that draw NO mark under the scheme ----
+    private static boolean testMissingCount() {
+        // categorical: two of five tips carry no host at all -> missing 2
+        final Phylogeny phy = treeWith( "repseq:host", "cat", "dog", "cat", null, null );
+        final PropertyColorScheme cat = new PropertyColorScheme( phy, "repseq:host" );
+        if ( ( cat.visibleTipCount() != 5 ) || ( cat.missingCount() != 2 ) ) {
+            return fail( "categorical: expected 5 visible / 2 missing, got " + cat.visibleTipCount() + " / "
+                    + cat.missingCount() );
+        }
+        // full coverage -> 0 (the row must not appear)
+        final PropertyColorScheme full = new PropertyColorScheme( treeWith( "repseq:host", "cat", "dog" ),
+                                                                  "repseq:host" );
+        if ( full.missingCount() != 0 ) {
+            return fail( "full coverage must count 0 missing, got " + full.missingCount() );
+        }
+        // gradient: an UNPARSEABLE value ("n/a") draws no mark, so it counts as missing too -- the row must
+        // agree with what the tree shows, not with mere value presence
+        final PropertyColorScheme grad = new PropertyColorScheme(
+                treeWith( "repseq:year", "2001", "2005", "2010", "n/a", null ), "repseq:year" );
+        if ( !grad.isGradient() || ( grad.missingCount() != 2 ) ) {
+            return fail( "gradient: expected 2 missing (one n/a + one absent), got " + grad.missingCount() );
+        }
+        // collapsed-away tips are not counted either way: the row describes the DISPLAYED tree
+        final PhylogenyNode hidden = internal( leaf( "b1", "repseq:host", null ),
+                                               leaf( "b2", "repseq:host", null ) );
+        final Phylogeny phy2 = treeOf( internal( leaf( "a1", "repseq:host", "cat" ),
+                                                 leaf( "a2", "repseq:host", "dog" ) ),
+                                       hidden );
+        hidden.setCollapse( true );
+        final PropertyColorScheme collapsed = new PropertyColorScheme( phy2, "repseq:host" );
+        if ( ( collapsed.visibleTipCount() != 2 ) || ( collapsed.missingCount() != 0 ) ) {
+            return fail( "collapsed-away value-less tips must not count as missing, got "
+                    + collapsed.missingCount() + " of " + collapsed.visibleTipCount() );
         }
         return true;
     }

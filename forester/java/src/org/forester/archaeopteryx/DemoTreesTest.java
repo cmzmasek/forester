@@ -84,6 +84,7 @@ public final class DemoTreesTest {
         // color-by: a categorical property (palette) AND a numeric one (gradient)
         ok &= hasCategoricalRef( "color-by-property.xml", "data:host" );
         ok &= hasNumericRef( "color-by-property.xml", "data:year" );
+        ok &= hasHostlessTip( "color-by-property.xml" ); // feeds the legend's dashed "no value" row
         // annotation columns: categorical + numeric + text properties
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:host" );
         ok &= hasNumericRef( "annotation-columns.xml", "data:viral_load" );
@@ -955,6 +956,20 @@ public final class DemoTreesTest {
                     + "chooser offers it for the LABEL anyway" );
         }
         return true;
+    }
+
+    /** The color-by demo must keep at least one tip WITHOUT a host, so the legend's "no value" row shows. */
+    private static boolean hasHostlessTip( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final PhylogenyNode leaf : phy.getExternalNodes() ) {
+            if ( PropertyColorScheme.valueFor( leaf, "data:host" ) == null ) {
+                return true;
+            }
+        }
+        return note( file_name + " must keep a host-less tip (demos the legend's 'no value' row)" );
     }
 
     private static boolean hasCategoricalRef( final String file_name, final String ref ) {

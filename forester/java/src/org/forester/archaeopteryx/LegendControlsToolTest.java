@@ -144,6 +144,65 @@ public final class LegendControlsToolTest {
                     }
                 }
 
+                // ---- the "no value" row (JS parity): partial coverage adds one pinned-last dashed row ----
+                // data:kind (full coverage) vs data:patchy (same 4 distinct values/labels, 15 tips without a
+                // value): the ONLY structural difference is the extra "no value" row, so the legend must be
+                // exactly one row taller -- and carry visibly more ink (the dashed circle + "no value (15)"),
+                // in the EXPORT rendering too (the row is informative, like "+N more", so exports keep it).
+                tp.setColorByPropertyRef( "data:kind" );
+                render( tp );
+                final int h_full = tp.getPropertyLegendBounds().height;
+                final int export_full = legendPixels( tp, false );
+                tp.setColorByPropertyRef( "data:patchy" );
+                render( tp );
+                final int h_missing = tp.getPropertyLegendBounds().height;
+                final int delta = h_missing - h_full;
+                if ( ( delta < 8 ) || ( delta > 40 ) ) {
+                    fail( ok, "partial coverage must add exactly one 'no value' row: height " + h_full + " -> "
+                            + h_missing );
+                }
+                // the ROW ITSELF must carry ink (dashed circle + text): scan the bottom row band of the
+                // on-screen legend -- a sabotage that keeps the box tall but draws a BLANK row fails here
+                final Rectangle plb = tp.getPropertyLegendBounds();
+                final int band_ink = inkIn( tp, true, plb.x + 4, plb.y + plb.height - 22,
+                                            plb.width - 8, 18 );
+                if ( band_ink < 30 ) {
+                    fail( ok, "the 'no value' row band is blank (ink " + band_ink + ")" );
+                }
+                // exports keep the row (informative, like "+N more"): the row's ~250px of ink dwarfs the
+                // title/box-size noise between the two refs, so demand a wide margin
+                if ( legendPixels( tp, false ) < ( export_full + 150 ) ) {
+                    fail( ok, "the export legend must keep the 'no value' row's ink" );
+                }
+                // the row is INERT: sweeping every y inside the legend reaches the 4 value labels and
+                // nothing else -- no y resolves to a clickable "no value" entry
+                final Rectangle lb = tp.getPropertyLegendBounds();
+                final java.util.Set<String> hit = new java.util.HashSet<>();
+                for( int yy = lb.y; yy < ( lb.y + lb.height ); ++yy ) {
+                    final String v = tp.legendValueAt( new MouseEvent( tp, MouseEvent.MOUSE_CLICKED,
+                                                                       System.currentTimeMillis(), 0,
+                                                                       lb.x + ( lb.width / 2 ), yy, 1, false ) );
+                    if ( v != null ) {
+                        hit.add( v );
+                    }
+                }
+                if ( hit.size() != 4 ) {
+                    fail( ok, "expected the 4 value rows clickable, got " + hit );
+                }
+                if ( hit.contains( "no value" ) ) {
+                    fail( ok, "the 'no value' row must be inert, not a clickable value" );
+                }
+                // gradient twin: data:allnum (full) vs data:num (5 tips absent) -> one extra row there too
+                tp.setColorByPropertyRef( "data:allnum" );
+                render( tp );
+                final int gh_full = tp.getPropertyLegendBounds().height;
+                tp.setColorByPropertyRef( "data:num" );
+                render( tp );
+                final int gdelta = tp.getPropertyLegendBounds().height - gh_full;
+                if ( ( gdelta < 8 ) || ( gdelta > 40 ) ) {
+                    fail( ok, "a partially-covered GRADIENT legend must add the 'no value' row: delta " + gdelta );
+                }
+
                 ( (JFrame) frame ).dispose();
             } );
             return ok[ 0 ];
@@ -167,6 +226,27 @@ public final class LegendControlsToolTest {
         final int cy = r.y + ( r.height / 2 );
         tp.handleLegendClick( new MouseEvent( tp, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 0, cx, cy, 1,
                                               false ) );
+    }
+
+    /** Non-white pixel count inside a sub-rectangle of the legend rendering (screen or export mode). */
+    private static int inkIn( final TreePanel tp, final boolean draggable, final int rx, final int ry,
+                              final int rw, final int rh ) {
+        final int w = 700, h = 500;
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        tp.drawLegendForTest( g, new Rectangle( 0, 0, w, h ), draggable );
+        g.dispose();
+        int n = 0;
+        for( int x = Math.max( 0, rx ); x < Math.min( w, rx + rw ); ++x ) {
+            for( int y = Math.max( 0, ry ); y < Math.min( h, ry + rh ); ++y ) {
+                if ( ( img.getRGB( x, y ) & 0x00FFFFFF ) != 0x00FFFFFF ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     /** Non-white pixel count of the legend alone, drawn on-screen (draggable) or in static-export mode. */
@@ -212,6 +292,15 @@ public final class LegendControlsToolTest {
             pl.addProperty( new Property( "data:region", String.format( "v%02d", i ), "", "xsd:string",
                                           AppliesTo.NODE ) );
             pl.addProperty( new Property( "data:kind", "k" + ( i % 4 ), "", "xsd:string", AppliesTo.NODE ) );
+            if ( i < 20 ) { // partial coverage: 15 tips carry NO value -> the legend's "no value" row
+                pl.addProperty( new Property( "data:patchy", "k" + ( i % 4 ), "", "xsd:string", AppliesTo.NODE ) );
+            }
+            if ( i < 30 ) { // numeric, partial coverage (5 absent) -> the gradient legend's "no value" row
+                pl.addProperty( new Property( "data:num", Integer.toString( i ), "", "xsd:decimal",
+                                              AppliesTo.NODE ) );
+            }
+            pl.addProperty( new Property( "data:allnum", Integer.toString( i ), "", "xsd:decimal",
+                                          AppliesTo.NODE ) );
             leaf.getNodeData().setProperties( pl );
             root.addAsChild( leaf );
         }

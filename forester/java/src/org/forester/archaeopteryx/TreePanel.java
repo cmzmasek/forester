@@ -8109,6 +8109,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Default number of categorical-legend rows shown before "+N more"; the user can expand (show all) or
     // collapse from the legend itself (see _legend_max_entries / the clickable footer).
     private static final int DEFAULT_LEGEND_MAX_ENTRIES = 20;
+    // The "no value" legend row's swatch: a DASHED, unfilled circle -- a circle because the tree's Color-by
+    // mark is a dot (drawPropertyColorDot), so the dashed empty circle literally reads "these tips carry no
+    // dot"; dashed 2-2 to match the Archaeopteryx.js legend's no-value swatch.
+    private static final Stroke NO_VALUE_SWATCH_STROKE = new BasicStroke(1f, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER, 10f, new float[] { 2f, 2f }, 0f);
     private static final int LEGEND_SHOW_ALL = Integer.MAX_VALUE;
     // The legend is a fixed key, not tree data, so keep it readable even when node-label fonts are
     // set very small: use the small tree font but never below this floor.
@@ -8231,7 +8236,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_property_color_scheme.isGradient()) {
             drawPropertyColorGradientLegend(g, bounds, draggable,
                     "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef()),
-                    _property_color_scheme);
+                    _property_color_scheme, _property_color_scheme.missingCount());
             return;
         }
         noteLegendSubject("prop:" + _property_color_scheme.getRef());
@@ -8239,7 +8244,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Map<String, Color> values = orderedLegend(_property_color_scheme.getValueColors(), counts);
         final int more = _property_color_scheme.numberOfValues() - values.size();
         final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
-        drawCategoricalLegend(g, bounds, draggable, title, values, counts, more);
+        drawCategoricalLegend(g, bounds, draggable, title, values, counts, more,
+                _property_color_scheme.missingCount());
     }
 
     /** Draws the "Colorize Subtrees via Taxonomic Rank" legend (taxon -> color, with tip counts); draggable. */
@@ -8254,7 +8260,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Map<String, Color> values = orderedLegend(_rank_legend, _rank_legend_counts);
         drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, _rank_legend_counts,
-                _rank_legend.size() - values.size());
+                _rank_legend.size() - values.size(), 0);
     }
 
     /**
@@ -8432,9 +8438,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * line so the figure still shows that categories were truncated. Shared by the property-color,
      * taxonomic-rank, and annotation-column legends. {@code counts} may be null (then rows show no count).
      */
+    /** @param missing tips with NO value for the field (draws the pinned-last dashed "no value" row; 0 = no row) */
     private void drawCategoricalLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
                                        final String title, final Map<String, Color> values,
-                                       final Map<String, Integer> counts, final int more) {
+                                       final Map<String, Integer> counts, final int more, final int missing) {
         final int shown = values.size();
         final int swatch = 10;
         final int gap = 5;
@@ -8463,8 +8470,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // a few extra px on the right so the longest value clears the border even
         // when PDF font metrics run slightly wider than AWT's stringWidth().
+        // "no value" row (JS parity): total - coverage, pinned LAST (below even the "+N more" line, so the
+        // expand cap can never truncate it), with a count like every other row. Informative, so it is drawn
+        // in exports too (like "+N more"); it is NOT in _legend_row_labels, so a click on it is inert.
+        final String no_value_text = "no value (" + missing + ")";
+        if (missing > 0) {
+            text_w = Math.max(text_w, swatch + gap + fm.stringWidth(no_value_text));
+        }
         final int box_w = text_w + (2 * pad) + 4;
-        final int box_h = ((1 + shown + (more_footer ? 1 : 0)) * row_h) + (2 * pad);
+        final int box_h = ((1 + shown + (more_footer ? 1 : 0) + ((missing > 0) ? 1 : 0)) * row_h) + (2 * pad);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
         final int y = clampLegendTop(bounds, tl.y, row_h, pad);
@@ -8506,7 +8520,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             baseline += row_h;
             g.drawString(more_text, x + pad, baseline);
         }
+        if (missing > 0) {
+            baseline += row_h;
+            drawNoValueRow(g, fm, x + pad, baseline, swatch, gap, no_value_text);
+        }
         g.setStroke(saved_stroke);
+    }
+
+    /** The pinned-last "no value" legend row: a dashed unfilled circle + "no value (N)". Shared by the
+     *  categorical and gradient legends so the two rows cannot drift apart. Ink is already the legend fg. */
+    private void drawNoValueRow(final Graphics2D g, final FontMetrics fm, final int x, final int baseline,
+                                final int swatch, final int gap, final String text) {
+        final Stroke saved = g.getStroke();
+        g.setStroke(NO_VALUE_SWATCH_STROKE);
+        g.drawOval(x, baseline - fm.getAscent() + ((fm.getAscent() - swatch) / 2) + 1, swatch - 1, swatch - 1);
+        g.setStroke(saved);
+        g.drawString(text, x + swatch + gap, baseline);
     }
 
     /** A legend row: the (clipped) value label followed by its count, e.g. {@code "USA (42)"}. */
@@ -8516,9 +8545,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return clipToWidth(value, fm, max_px) + ((count != null) ? (" (" + count + ")") : "");
     }
 
-    /** Draws a gradient bar legend (low value to high value) for a continuous property. */
+    /** Draws a gradient bar legend (low value to high value) for a continuous property.
+     *  @param missing tips with NO (numeric) value -- draws the dashed "no value" row beneath the bar; 0 = none */
     private void drawPropertyColorGradientLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable,
-                                                 final String title, final PropertyColorScheme scheme) {
+                                                 final String title, final PropertyColorScheme scheme,
+                                                 final int missing) {
         final int pad = 7;
         final int bar_w = 200;
         final int bar_h = 12;
@@ -8526,9 +8557,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final FontMetrics fm = g.getFontMetrics();
         final String min_lbl = scheme.getGradientMinLabel();
         final String max_lbl = scheme.getGradientMaxLabel();
+        final int row_h = fm.getHeight() + 2;
+        final String no_value_text = "no value (" + missing + ")";
         final int content_w = Math.max(fm.stringWidth(title), bar_w);
         final int box_w = content_w + (2 * pad) + 4;
-        final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad);
+        final int box_h = (2 * fm.getHeight()) + bar_h + 6 + (2 * pad) + ((missing > 0) ? row_h : 0);
         final Point tl = legendTopLeft(bounds, box_w, box_h);
         final int x = tl.x;
         final int y = tl.y;
@@ -8551,6 +8584,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int label_baseline = bar_y + bar_h + fm.getAscent() + 2;
         g.drawString(min_lbl, bar_x, label_baseline);
         g.drawString(max_lbl, (bar_x + bar_w) - fm.stringWidth(max_lbl), label_baseline);
+        if (missing > 0) { // tips with no parseable number draw NO mark; say so, like the categorical legend
+            drawNoValueRow(g, fm, bar_x, label_baseline + row_h, 10, 5, no_value_text);
+        }
         g.setStroke(saved_stroke);
     }
 
@@ -9886,12 +9922,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // color gradient
             drawAnnotationBarLegend(g, bounds, draggable, title, scheme);
         } else if (scheme.isGradient()) {
-            drawPropertyColorGradientLegend(g, bounds, draggable, title, scheme);
+            // a MATRIX legend describes the whole matrix but holds ONE column's scheme, whose per-column
+            // missing count would misrepresent it -> no "no value" row there
+            drawPropertyColorGradientLegend(g, bounds, draggable, title, scheme,
+                    is_matrix ? 0 : scheme.missingCount());
         } else {
             final Map<String, Integer> counts = scheme.getValueCounts();
             final Map<String, Color> values = orderedLegend(scheme.getValueColors(), counts);
             drawCategoricalLegend(g, bounds, draggable, title, values, counts,
-                    scheme.numberOfValues() - values.size());
+                    scheme.numberOfValues() - values.size(), scheme.missingCount());
         }
     }
 
@@ -9953,7 +9992,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             values.put(label, colors.get(k)); // no per-series count -> null
         }
-        drawCategoricalLegend(g, bounds, draggable, title, values, null, 0);
+        drawCategoricalLegend(g, bounds, draggable, title, values, null, 0, 0);
     }
 
     /** Total horizontal space the annotation columns occupy (0 when none), including the gaps around them.

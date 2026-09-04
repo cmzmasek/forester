@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Color by property (demo)</name>
-  <description>Synthetic influenza-surveillance tree. Each tip has a categorical &apos;host&apos; and a numeric &apos;year&apos;. Try Color by: host (a distinct color per host) or Color by: year (a numeric gradient).</description>
+  <description>Synthetic influenza-surveillance tree. Each tip has a categorical &apos;host&apos; and a numeric &apos;year&apos;; two environmental samples carry no host. Try Color by: host (a distinct color per host; the legend&apos;s dashed &apos;no value&apos; row counts the host-less tips) or Color by: year (a numeric gradient).</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -24,6 +24,11 @@
         <branch_length>0.02</branch_length>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Equine</property>
         <property ref="data:year" datatype="xsd:decimal" applies_to="node">2011</property>
+      </clade>
+      <clade>
+        <name>A/environment/Hunan/2016</name>
+        <branch_length>0.02</branch_length>
+        <property ref="data:year" datatype="xsd:decimal" applies_to="node">2016</property>
       </clade>
     </clade>
     <clade>
@@ -47,6 +52,11 @@
           <branch_length>0.02</branch_length>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
           <property ref="data:year" datatype="xsd:decimal" applies_to="node">2017</property>
+        </clade>
+        <clade>
+          <name>A/environment/Fujian/2019</name>
+          <branch_length>0.02</branch_length>
+          <property ref="data:year" datatype="xsd:decimal" applies_to="node">2019</property>
         </clade>
       </clade>
       <clade>
