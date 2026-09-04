@@ -243,20 +243,20 @@ public final class LegendControlsToolTest {
             final MainFrame frame = mf[ 0 ];
             final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
             tp.setColorByPropertyRef( "data:g" );
-            final Color c0 = tp.getPropertyColorScheme().getValueColors().get( "k0" );
-            final Color c1 = tp.getPropertyColorScheme().getValueColors().get( "k1" );
+            final Color c0 = tp.getPropertyColorScheme().getValueColors().get( "K0" );
+            final Color c1 = tp.getPropertyColorScheme().getValueColors().get( "K1" );
             // collapse clade A -> the rebuild sees k1 as the most frequent visible value; the colors must
             // NOT re-spread (legacy handed k1 the old k0 color here)
             clade_a.setCollapse( true );
             frame.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
             final Map<String, Color> after = tp.getPropertyColorScheme().getValueColors();
-            if ( !c0.equals( after.get( "k0" ) ) || !c1.equals( after.get( "k1" ) ) ) {
-                fail( ok, "a view change must not recolor surviving values: k0 " + c0 + " -> " + after.get( "k0" )
-                        + ", k1 " + c1 + " -> " + after.get( "k1" ) );
+            if ( !c0.equals( after.get( "K0" ) ) || !c1.equals( after.get( "K1" ) ) ) {
+                fail( ok, "a view change must not recolor surviving values: K0 " + c0 + " -> " + after.get( "K0" )
+                        + ", k1 " + c1 + " -> " + after.get( "K1" ) );
             }
             // a palette switch invalidates the remembered identities (they belong to the old palette)
             tp.setColorPaletteName( "Colorblind-friendly" );
-            final Color k1_cb = tp.getPropertyColorScheme().getValueColors().get( "k1" );
+            final Color k1_cb = tp.getPropertyColorScheme().getValueColors().get( "K1" );
             if ( c1.equals( k1_cb ) ) {
                 fail( ok, "switching the palette must re-assign from the NEW palette" );
             }
@@ -265,7 +265,7 @@ public final class LegendControlsToolTest {
             // was k0's launch color
             tp.resetColorStateToDefaults();
             tp.setColorByPropertyRef( "data:g" );
-            final Color k1_fresh = tp.getPropertyColorScheme().getValueColors().get( "k1" );
+            final Color k1_fresh = tp.getPropertyColorScheme().getValueColors().get( "K1" );
             if ( !c0.equals( k1_fresh ) ) {
                 fail( ok, "after Reset the memory must be forgotten (fresh frequency assignment), k1 got "
                         + k1_fresh + " expected " + c0 );

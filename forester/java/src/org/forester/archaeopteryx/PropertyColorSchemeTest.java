@@ -53,7 +53,7 @@ public final class PropertyColorSchemeTest {
                 && testColorableRefs() && testAbsentAndEmpty() && testCollapseExcludesHiddenLeaves()
                 && testCollapseRescalesGradient() && testFrequencyColorsAndLegend() && testColorOverrides()
                 && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount()
-                && testColorIdentityMemory();
+                && testColorIdentityMemory() && testSynonymDictionary();
     }
 
     // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
@@ -162,7 +162,7 @@ public final class PropertyColorSchemeTest {
         // i (x25 most frequent, x00 least) -- the reverse of alphabetical order.
         final List<String> vals = new ArrayList<String>();
         for( int i = 0; i <= 25; ++i ) {
-            final String name = String.format( "x%02d", i );
+            final String name = String.format( "X%02d", i );
             for( int c = 0; c <= i; ++c ) {
                 vals.add( name );
             }
@@ -180,7 +180,7 @@ public final class PropertyColorSchemeTest {
             return fail( "legend should hold 20 entries, got " + keys.size() );
         }
         for( int k = 0; k < 20; ++k ) {
-            final String expected = String.format( "x%02d", k + 6 ); // x06..x25, in alphabetical order
+            final String expected = String.format( "X%02d", k + 6 ); // x06..x25, in alphabetical order
             if ( !expected.equals( keys.get( k ) ) ) {
                 return fail( "legend entry " + k + " expected " + expected + " got " + keys.get( k ) );
             }
@@ -189,7 +189,7 @@ public final class PropertyColorSchemeTest {
         final List<String> by_count = new ArrayList<String>(
                 TreePanel.orderLegendEntries( s.getValueColors(), s.getValueCounts(), 20, true ).keySet() );
         for( int k = 0; k < 20; ++k ) {
-            final String expected = String.format( "x%02d", 25 - k ); // x25 down to x06
+            final String expected = String.format( "X%02d", 25 - k ); // x25 down to x06
             if ( !expected.equals( by_count.get( k ) ) ) {
                 return fail( "by-count legend entry " + k + " expected " + expected + " got " + by_count.get( k ) );
             }
@@ -197,7 +197,7 @@ public final class PropertyColorSchemeTest {
         // the 24 most frequent values (x02..x25) must all have distinct colors (no palette cycling)
         final Set<Color> colors = new HashSet<Color>();
         for( int k = 2; k <= 25; ++k ) {
-            colors.add( colorForValue( s, phy, ref, String.format( "x%02d", k ) ) );
+            colors.add( colorForValue( s, phy, ref, String.format( "X%02d", k ) ) );
         }
         if ( colors.size() != 24 ) {
             return fail( "the 24 most frequent values should have 24 distinct colors, got " + colors.size() );
@@ -208,7 +208,7 @@ public final class PropertyColorSchemeTest {
             return fail( "expected 26 per-value counts, got " + ct.size() );
         }
         for( int k = 0; k <= 25; ++k ) {
-            final String name = String.format( "x%02d", k );
+            final String name = String.format( "X%02d", k );
             if ( ( ct.get( name ) == null ) || ( ct.get( name ).intValue() != ( k + 1 ) ) ) {
                 return fail( "count for " + name + " expected " + ( k + 1 ) + " got " + ct.get( name ) );
             }
@@ -249,41 +249,42 @@ public final class PropertyColorSchemeTest {
     // ---- categorical grouping: case / whitespace / underscore variants share a color ----
     private static boolean testCategoricalGrouping() {
         final String ref = "repseq:host";
-        // "Mouse" x3, "mouse" x1, "mus_musculus" x1, "Mus musculus" x2, "rat" x1
-        final Phylogeny phy = treeWith( ref, "Mouse", "Mouse", "Mouse", "mouse", "mus_musculus", "Mus musculus",
-                                        "Mus musculus", "rat" );
+        // dictionary-NEUTRAL values (fox/wolf are not synonyms of anything), so this tests the pure
+        // spelling fold in isolation: "Fox" x3, "fox" x1, "red_fox" x1, "Red fox" x2, "wolf" x1
+        final Phylogeny phy = treeWith( ref, "Fox", "Fox", "Fox", "fox", "red_fox", "Red fox",
+                                        "Red fox", "wolf" );
         final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
         if ( s.isGradient() ) {
             return fail( "host should not be a gradient" );
         }
-        // three groups: {Mouse, mouse}, {mus_musculus, Mus musculus}, {rat}
+        // three groups: {Fox, fox}, {red_fox, Red fox}, {wolf}
         if ( s.getValueColors().size() != 3 ) {
             return fail( "host groups expected 3, got " + s.getValueColors().size() );
         }
         // trivial variants -> same color
-        if ( !sameColor( s, phy, ref, "Mouse", "mouse" ) ) {
-            return fail( "Mouse/mouse should share a color" );
+        if ( !sameColor( s, phy, ref, "Fox", "fox" ) ) {
+            return fail( "Fox/fox should share a color" );
         }
-        if ( !sameColor( s, phy, ref, "mus_musculus", "Mus musculus" ) ) {
-            return fail( "mus_musculus/Mus musculus should share a color" );
+        if ( !sameColor( s, phy, ref, "red_fox", "Red fox" ) ) {
+            return fail( "red_fox/Red fox should share a color" );
         }
-        // semantically equal but lexically different -> intentionally NOT merged
-        if ( sameColor( s, phy, ref, "Mouse", "rat" ) ) {
-            return fail( "Mouse/rat must NOT be merged (out of scope)" );
+        // different values -> NOT merged (and never by substring: "Fox" is not "Red fox")
+        if ( sameColor( s, phy, ref, "Fox", "wolf" ) ) {
+            return fail( "Fox/wolf must NOT be merged" );
         }
-        if ( sameColor( s, phy, ref, "Mouse", "mus_musculus" ) ) {
-            return fail( "Mouse/mus_musculus must NOT be merged" );
+        if ( sameColor( s, phy, ref, "Fox", "red_fox" ) ) {
+            return fail( "Fox/red_fox must NOT be merged (no substring matching)" );
         }
-        // legend shows the most frequent spelling per group
+        // legend shows the most frequent spelling per group, first character uppercased
         final Map<String, Color> legend = s.getValueColors();
-        if ( !legend.containsKey( "Mouse" ) || legend.containsKey( "mouse" ) ) {
-            return fail( "legend should show 'Mouse' (most frequent), not 'mouse'" );
+        if ( !legend.containsKey( "Fox" ) || legend.containsKey( "fox" ) ) {
+            return fail( "legend should show 'Fox' (most frequent), not 'fox'" );
         }
-        if ( !legend.containsKey( "Mus musculus" ) || legend.containsKey( "mus_musculus" ) ) {
-            return fail( "legend should show 'Mus musculus' (most frequent), not 'mus_musculus'" );
+        if ( !legend.containsKey( "Red fox" ) || legend.containsKey( "red_fox" ) ) {
+            return fail( "legend should show 'Red fox' (most frequent), not 'red_fox'" );
         }
-        if ( !legend.containsKey( "rat" ) ) {
-            return fail( "legend should contain 'rat'" );
+        if ( !legend.containsKey( "Wolf" ) || legend.containsKey( "wolf" ) ) {
+            return fail( "a lowercase-only group's legend label gets its first char uppercased: 'Wolf'" );
         }
         return true;
     }
@@ -331,7 +332,7 @@ public final class PropertyColorSchemeTest {
             return fail( "dog/fish should keep distinct automatic colors" );
         }
         // getValueKeys maps a representative label to its (stable) group key
-        if ( !"cat".equals( s.getValueKeys().get( "cat" ) ) ) {
+        if ( !"cat".equals( s.getValueKeys().get( "Cat" ) ) ) {
             return fail( "getValueKeys should map 'cat' -> 'cat'" );
         }
         // without overrides, cat is automatic again
@@ -341,7 +342,7 @@ public final class PropertyColorSchemeTest {
         return true;
     }
 
-    // ---- the one deliberate synonym fold: human/Human/humans -> Homo sapiens ----
+    // ---- the synonym dictionary folds human/Homo sapiens/h. sapiens into the canonical "Human" ----
     private static boolean testHumanSynonym() {
         final String ref = "repseq:host";
         final Phylogeny phy = treeWith( ref, "Human", "human", "Homo sapiens", "homo_sapiens", "man" );
@@ -351,20 +352,20 @@ public final class PropertyColorSchemeTest {
             return fail( "human synonym: expected 2 groups, got " + s.getValueColors().size() );
         }
         if ( !sameColor( s, phy, ref, "Human", "Homo sapiens" ) || !sameColor( s, phy, ref, "human", "homo_sapiens" ) ) {
-            return fail( "human/Human should fold into Homo sapiens" );
+            return fail( "human/Homo sapiens variants should fold into one group" );
         }
         if ( sameColor( s, phy, ref, "Human", "man" ) ) {
-            return fail( "'man' must NOT fold into Homo sapiens (only 'human' is special-cased)" );
+            return fail( "'man' must NOT fold into Human (whole-value dictionary, no fuzziness)" );
         }
-        // the legend shows the canonical "Homo sapiens", not "Human"/"human"
+        // the legend shows the CANONICAL COMMON NAME "Human" (the JS-parity convention), never the variants
         final Map<String, Color> legend = s.getValueColors();
-        if ( !legend.containsKey( "Homo sapiens" ) || legend.containsKey( "Human" ) || legend.containsKey( "human" ) ) {
-            return fail( "legend should show 'Homo sapiens', not 'Human'/'human'" );
+        if ( !legend.containsKey( "Human" ) || legend.containsKey( "Homo sapiens" ) || legend.containsKey( "human" ) ) {
+            return fail( "legend should show the canonical 'Human', got " + legend.keySet() );
         }
         // the merged group counts all four folded/variant leaves
-        final Integer count = s.getValueCounts().get( "Homo sapiens" );
+        final Integer count = s.getValueCounts().get( "Human" );
         if ( ( count == null ) || ( count.intValue() != 4 ) ) {
-            return fail( "Homo sapiens count should be 4, got " + count );
+            return fail( "Human count should be 4, got " + count );
         }
         return true;
     }
@@ -401,9 +402,9 @@ public final class PropertyColorSchemeTest {
         final Phylogeny phy = treeWith( ref, "Homo sapiens; male 35", "Homo sapiens; female old", "Homo sapiens",
                                         "homo_sapiens; juvenile", "Mus musculus; female", "Gallus gallus" );
         final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
-        // three groups: {the four Homo sapiens}, {Mus musculus}, {Gallus gallus}
+        // three groups, shown under their canonical common names: {Human x4}, {Mouse}, {Chicken}
         if ( s.getValueColors().size() != 3 ) {
-            return fail( "host groups expected 3 (Homo sapiens, Mus musculus, Gallus gallus), got "
+            return fail( "host groups expected 3 (Human, Mouse, Chicken), got "
                     + s.getValueColors().size() );
         }
         // same base host with different qualifiers -- and underscore/case variants -- share a color
@@ -422,8 +423,9 @@ public final class PropertyColorSchemeTest {
                 return fail( "host legend label should not contain ';' -> " + label );
             }
         }
-        if ( !s.getValueColors().containsKey( "Homo sapiens" ) ) {
-            return fail( "host legend should show 'Homo sapiens' (most frequent spelling)" );
+        if ( !s.getValueColors().containsKey( "Human" ) || !s.getValueColors().containsKey( "Mouse" )
+                || !s.getValueColors().containsKey( "Chicken" ) ) {
+            return fail( "host legend should show the canonical names, got " + s.getValueColors().keySet() );
         }
         return true;
     }
@@ -506,11 +508,11 @@ public final class PropertyColorSchemeTest {
             return fail( "expected 2 host groups after collapsing a clade, got " + collapsed.getValueColors().size() );
         }
         final Map<String, Color> legend = collapsed.getValueColors();
-        if ( !legend.containsKey( "cat" ) || !legend.containsKey( "dog" ) ) {
-            return fail( "visible leaves (cat, dog) should remain in the legend" );
+        if ( !legend.containsKey( "Cat" ) || !legend.containsKey( "Dog" ) ) {
+            return fail( "visible leaves (Cat, Dog) should remain in the legend" );
         }
-        if ( legend.containsKey( "fish" ) || legend.containsKey( "bird" ) ) {
-            return fail( "collapsed-away leaves (fish, bird) should be gone from the legend" );
+        if ( legend.containsKey( "Fish" ) || legend.containsKey( "Bird" ) ) {
+            return fail( "collapsed-away leaves (Fish, Bird) should be gone from the legend" );
         }
         // a hidden leaf gets no color
         if ( colorForValue( collapsed, phy, ref, "fish" ) != null ) {
@@ -590,9 +592,9 @@ public final class PropertyColorSchemeTest {
         final PropertyColorScheme v1 = new PropertyColorScheme(
                 treeWith( ref, "cat", "cat", "cat", "dog", "dog", "bird" ), ref, null,
                 PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
-        final Color c_cat = v1.getValueColors().get( "cat" );
-        final Color c_dog = v1.getValueColors().get( "dog" );
-        final Color c_bird = v1.getValueColors().get( "bird" );
+        final Color c_cat = v1.getValueColors().get( "Cat" );
+        final Color c_dog = v1.getValueColors().get( "Dog" );
+        final Color c_bird = v1.getValueColors().get( "Bird" );
         if ( ( c_cat == null ) || c_cat.equals( c_dog ) || c_dog.equals( c_bird ) || c_cat.equals( c_bird ) ) {
             return fail( "launch view should assign three distinct colors" );
         }
@@ -600,25 +602,25 @@ public final class PropertyColorSchemeTest {
         // frequency-sorted palette re-spreads; with it, every surviving value keeps its color
         final Phylogeny sub = treeWith( ref, "dog", "bird", "bird" );
         final PropertyColorScheme legacy = new PropertyColorScheme( sub, ref ); // no memory = old behavior
-        if ( !c_cat.equals( legacy.getValueColors().get( "bird" ) ) ) {
+        if ( !c_cat.equals( legacy.getValueColors().get( "Bird" ) ) ) {
             return fail( "precondition lost its teeth: the legacy re-spread should hand bird cat's old color" );
         }
         final PropertyColorScheme v2 = new PropertyColorScheme( sub, ref, null,
                 PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
-        if ( !c_dog.equals( v2.getValueColors().get( "dog" ) )
-                || !c_bird.equals( v2.getValueColors().get( "bird" ) ) ) {
+        if ( !c_dog.equals( v2.getValueColors().get( "Dog" ) )
+                || !c_bird.equals( v2.getValueColors().get( "Bird" ) ) ) {
             return fail( "a value must keep its color across a view change (dog/bird re-spread)" );
         }
         // view 3: a value met for the FIRST time takes the next free slot -- never a color already handed out
         final PropertyColorScheme v3 = new PropertyColorScheme( treeWith( ref, "fish", "dog" ), ref, null,
                 PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
-        final Color c_fish = v3.getValueColors().get( "fish" );
+        final Color c_fish = v3.getValueColors().get( "Fish" );
         if ( c_fish.equals( c_cat ) || c_fish.equals( c_dog ) || c_fish.equals( c_bird ) ) {
             return fail( "a new value must take a FREE palette slot, not collide with a remembered one" );
         }
         final PropertyColorScheme v3b = new PropertyColorScheme( treeWith( ref, "fish", "dog" ), ref, null,
                 PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
-        if ( !c_fish.equals( v3b.getValueColors().get( "fish" ) ) ) {
+        if ( !c_fish.equals( v3b.getValueColors().get( "Fish" ) ) ) {
             return fail( "a newly-met value must be REMEMBERED too" );
         }
         // an override wins over the memory but is never stored in it
@@ -626,13 +628,66 @@ public final class PropertyColorSchemeTest {
         ov.put( "dog", Color.MAGENTA );
         final PropertyColorScheme with_ov = new PropertyColorScheme( sub, ref, ov,
                 PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
-        if ( !Color.MAGENTA.equals( with_ov.getValueColors().get( "dog" ) ) ) {
+        if ( !Color.MAGENTA.equals( with_ov.getValueColors().get( "Dog" ) ) ) {
             return fail( "an override must win over the identity memory" );
         }
         final PropertyColorScheme after_ov = new PropertyColorScheme( sub, ref, null,
                 PropertyColorScheme.DEFAULT_PALETTE_NAME, memory, next );
-        if ( !c_dog.equals( after_ov.getValueColors().get( "dog" ) ) ) {
+        if ( !c_dog.equals( after_ov.getValueColors().get( "Dog" ) ) ) {
             return fail( "clearing an override must return the REMEMBERED automatic color, not the override" );
+        }
+        return true;
+    }
+
+    // ---- the synonym dictionary + parenthesis repair: the CROSS-IMPLEMENTATION CONTRACT with
+    //      Archaeopteryx.js (VIS_SYNONYMS in forester.js) -- cases lifted from its spec ----
+    private static boolean testSynonymDictionary() {
+        final String ref = "repseq:host";
+        // dictionary folds, across naming styles: common name, scientific, abbreviated scientific
+        final Phylogeny phy = treeWith( ref, "swine", "Sus scrofa", "porcine", "equine", "Bos taurus (cattle)",
+                                        "broiler chicken", "gallus_gallus", "ferret badger", "42-day-old pig" );
+        final PropertyColorScheme s = new PropertyColorScheme( phy, ref );
+        if ( !sameColor( s, phy, ref, "swine", "Sus scrofa" ) || !sameColor( s, phy, ref, "swine", "porcine" ) ) {
+            return fail( "swine/Sus scrofa/porcine should all fold to Pig" );
+        }
+        final Map<String, Color> legend = s.getValueColors();
+        if ( !legend.containsKey( "Pig" ) || !legend.containsKey( "Horse" ) || !legend.containsKey( "Chicken" ) ) {
+            return fail( "expected canonical Pig/Horse/Chicken rows, got " + legend.keySet() );
+        }
+        // a miss with a trailing parenthetical is retried once with it stripped: "Bos taurus (cattle)" -> Cow
+        if ( !legend.containsKey( "Cow" ) ) {
+            return fail( "'Bos taurus (cattle)' should fold to Cow via the trailing-parenthetical retry" );
+        }
+        // WHOLE-VALUE only, never substring: these keep their own groups
+        if ( sameColor( s, phy, ref, "ferret badger", "42-day-old pig" )
+                || legend.containsKey( "Ferret" ) && !legend.containsKey( "Ferret badger" ) ) {
+            return fail( "'ferret badger' must NOT fold to Ferret (no substring matching)" );
+        }
+        if ( !legend.containsKey( "Ferret badger" ) || !legend.containsKey( "42-day-old pig" ) ) {
+            return fail( "non-dictionary values keep their own (uppercased) rows, got " + legend.keySet() );
+        }
+        // the qualifier cut can land inside a parenthetical; repair trims back to before the unmatched '('
+        final Phylogeny phy2 = treeWith( ref, "Saimiri boliviensis (squirrel monkey; voucher: SBB04)",
+                                         "Saimiri boliviensis" );
+        final PropertyColorScheme s2 = new PropertyColorScheme( phy2, ref );
+        if ( s2.getValueColors().size() != 1 ) {
+            return fail( "parenthesis repair should merge the vouchered spelling: got "
+                    + s2.getValueColors().keySet() );
+        }
+        if ( !s2.getValueColors().containsKey( "Saimiri boliviensis" ) ) {
+            return fail( "repaired label should read 'Saimiri boliviensis', got " + s2.getValueColors().keySet() );
+        }
+        // a dictionary MISS keeps its trailing parenthetical in the DISPLAY (only the lookup strips it)
+        final PropertyColorScheme s3 = new PropertyColorScheme( treeWith( ref, "red fox (wild)" ), ref );
+        if ( !s3.getValueColors().containsKey( "Red fox (wild)" ) ) {
+            return fail( "a dictionary miss keeps its parenthetical in the display, got "
+                    + s3.getValueColors().keySet() );
+        }
+        // a value that folds to NOTHING ("_") forms no group -- and counts as missing (it draws no mark)
+        final PropertyColorScheme s4 = new PropertyColorScheme( treeWith( ref, "_", "cat" ), ref );
+        if ( ( s4.getValueColors().size() != 1 ) || ( s4.missingCount() != 1 ) ) {
+            return fail( "a fold-to-empty value must form no group and count as missing: groups "
+                    + s4.getValueColors().keySet() + ", missing " + s4.missingCount() );
         }
         return true;
     }

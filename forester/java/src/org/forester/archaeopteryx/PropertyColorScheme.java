@@ -174,7 +174,7 @@ final class PropertyColorScheme {
         int numeric = 0;
         for( final PhylogenyNode node : leaves ) {
             final String v = valueFor( node, ref );
-            if ( !ForesterUtil.isEmpty( v ) ) {
+            if ( !ForesterUtil.isEmpty( v ) && !displayLabel( v ).isEmpty() ) { // fold-to-empty draws no mark
                 nonempty++;
                 if ( parseNumber( v ) != null ) {
                     numeric++;
@@ -211,6 +211,9 @@ final class PropertyColorScheme {
                 final String v = valueFor( node, ref );
                 if ( !ForesterUtil.isEmpty( v ) ) {
                     final String label = displayLabel( v );
+                    if ( label.isEmpty() ) {
+                        continue; // a value that folds to nothing (e.g. "_") forms no group (JS rule)
+                    }
                     final String key = label.toLowerCase( Locale.ROOT );
                     Map<String, Integer> counts = key_to_label_counts.get( key );
                     if ( counts == null ) {
@@ -358,24 +361,96 @@ final class PropertyColorScheme {
             final int idx = s.indexOf( _truncate_at );
             if ( idx >= 0 ) {
                 s = s.substring( 0, idx );
+                // the cut may have landed INSIDE a parenthetical ("Saimiri boliviensis (squirrel monkey;
+                // voucher: X)" cut at ';' leaves an unclosed '(' ): trim back to before the first unmatched '('
+                int first_unmatched = -1;
+                int depth = 0;
+                for( int i = 0; i < s.length(); ++i ) {
+                    final char c = s.charAt( i );
+                    if ( c == '(' ) {
+                        if ( depth == 0 ) {
+                            first_unmatched = i;
+                        }
+                        depth++;
+                    }
+                    else if ( ( c == ')' ) && ( depth > 0 ) ) {
+                        depth--;
+                        if ( depth == 0 ) {
+                            first_unmatched = -1;
+                        }
+                    }
+                }
+                if ( ( depth > 0 ) && ( first_unmatched >= 0 ) ) {
+                    s = s.substring( 0, first_unmatched );
+                }
             }
         }
         s = s.trim().replace( '_', ' ' );
-        s = s.replaceAll( "\\s+", " " );
+        // fold runs of whitespace, then trim AGAIN: replacing underscores can create leading/trailing
+        // space ("_cat_" -> " cat "), and "_" alone must fold to EMPTY so it is dropped. (The JS spec says
+        // exactly this -- "a value that becomes empty is dropped" -- though its code misses the final trim;
+        // flagged to the JS side rather than copying the wart.)
+        s = s.replaceAll( "\\s+", " " ).trim();
         return canonicalSynonym( s );
     }
 
     /**
-     * Folds a tiny set of unambiguous synonyms to a canonical name so they share a color/legend
-     * entry. Deliberately minimal -- this is not general metadata normalization; currently only the
-     * common-name "human"/"humans" is folded into the scientific name "Homo sapiens".
+     * Folds a short list of unambiguous common-animal synonyms to a canonical common name (so e.g.
+     * {@code swine}/{@code porcine}/{@code Sus scrofa} share one color and one "Pig" legend row). Matching is
+     * WHOLE-VALUE only, never substring -- "ferret badger" and "42-day-old pig" keep their own groups. A miss
+     * whose value ends in a parenthetical is retried once with that one trailing {@code (...)} removed
+     * ("Bos taurus (cattle)" -> "Cow"); the display form of a miss keeps the parenthetical.
+     * <p>
+     * CROSS-IMPLEMENTATION CONTRACT: this is Archaeopteryx.js's {@code VIS_SYNONYMS} (forester.js), verbatim,
+     * so the two viewers group and label a shared tree identically -- extend BOTH or NEITHER. This is
+     * deliberately display grouping, not data cleaning: spelling plus a short unambiguous dictionary, nothing
+     * semantic beyond it; raw values are untouched everywhere else (search, exports, the node dialog).
      */
     private static String canonicalSynonym( final String label ) {
         final String lower = label.toLowerCase( Locale.ROOT );
-        if ( lower.equals( "human" ) || lower.equals( "humans" ) ) {
-            return "Homo sapiens";
+        String hit = SYNONYM_LOOKUP.get( lower );
+        if ( hit == null ) {
+            final String stripped = lower.replaceAll( "\\s*\\([^()]*\\)\\s*$", "" );
+            if ( !stripped.equals( lower ) && !stripped.isEmpty() ) {
+                hit = SYNONYM_LOOKUP.get( stripped );
+            }
         }
-        return label;
+        return ( hit != null ) ? hit : label;
+    }
+
+    // lowercase synonym (and lowercase canonical) -> canonical display name; see canonicalSynonym
+    private static final Map<String, String> SYNONYM_LOOKUP = buildSynonymLookup();
+
+    private static Map<String, String> buildSynonymLookup() {
+        final String[][] table = {
+            { "Human", "humans", "homo sapiens", "h. sapiens" },
+            { "Cow", "bovine", "calf", "cattle", "bull", "heifer", "bos taurus", "b. taurus" },
+            { "Chicken", "broiler chicken", "broiler", "hen", "rooster", "gallus gallus", "g. gallus",
+              "gallus gallus domesticus" },
+            { "Mouse", "house mouse", "murine", "mus musculus", "m. musculus" },
+            { "Rat", "brown rat", "norway rat", "black rat", "rattus norvegicus", "r. norvegicus",
+              "rattus rattus" },
+            { "Ferret", "domestic ferret", "mustela putorius furo", "mustela furo", "m. putorius furo" },
+            { "Guinea pig", "cavy", "domestic guinea pig", "cavia porcellus", "c. porcellus" },
+            { "Rhesus monkey", "rhesus macaque", "macaca mulatta", "m. mulatta" },
+            { "Rabbit", "european rabbit", "oryctolagus cuniculus", "o. cuniculus" },
+            { "Dog", "canine", "canis familiaris", "canis lupus familiaris", "c. familiaris" },
+            { "Cat", "feline", "domestic cat", "felis catus", "f. catus", "felis silvestris catus" },
+            { "Duck", "mallard", "mallard duck", "domestic duck", "anas platyrhynchos", "a. platyrhynchos" },
+            { "Pig", "swine", "porcine", "hog", "piglet", "sus scrofa", "s. scrofa", "sus scrofa domesticus" },
+            { "Horse", "equine", "mare", "stallion", "equus caballus", "e. caballus" },
+            { "Sheep", "ovine", "lamb", "ewe", "ovis aries", "o. aries" },
+            { "Goat", "caprine", "capra hircus", "c. hircus" },
+            { "Camel", "dromedary", "bactrian camel", "camelus dromedarius", "camelus bactrianus",
+              "c. dromedarius" } };
+        final Map<String, String> lookup = new LinkedHashMap<String, String>();
+        for( final String[] row : table ) {
+            lookup.put( row[ 0 ].toLowerCase( Locale.ROOT ), row[ 0 ] ); // a canonical matches itself
+            for( int i = 1; i < row.length; ++i ) {
+                lookup.put( row[ i ], row[ 0 ] );
+            }
+        }
+        return lookup;
     }
 
     /** The normalized key a value is grouped/colored by: its display label, case-folded. */
@@ -383,7 +458,9 @@ final class PropertyColorScheme {
         return displayLabel( v ).toLowerCase( Locale.ROOT );
     }
 
-    /** The most frequent spelling in a group (ties broken alphabetically). */
+    /** The most frequent spelling in a group (ties broken by code-point order, ascending), with its first
+     *  character uppercased -- so a legend of raw lowercase values still reads cleanly ("cat" -> "Cat").
+     *  A dictionary hit's group holds only the canonical name, which already starts uppercase (JS parity). */
     private static String representative( final Map<String, Integer> label_counts ) {
         String best = null;
         int best_count = -1;
@@ -393,6 +470,9 @@ final class PropertyColorScheme {
                 best = e.getKey();
                 best_count = n;
             }
+        }
+        if ( ( best != null ) && !best.isEmpty() && Character.isLowerCase( best.charAt( 0 ) ) ) {
+            best = Character.toUpperCase( best.charAt( 0 ) ) + best.substring( 1 );
         }
         return best;
     }
