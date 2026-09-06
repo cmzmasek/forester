@@ -261,6 +261,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node hover card: ");
+        if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Update check: ");
+        if (org.forester.archaeopteryx.UpdateCheckTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Click-to order: ");
         if (org.forester.archaeopteryx.ClickToOrderTest.test()) {
             System.out.println("OK.");

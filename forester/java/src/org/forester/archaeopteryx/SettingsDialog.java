@@ -96,6 +96,7 @@ final class SettingsDialog extends JDialog {
         tabs.addTab( "Graphics Export", scroll( exportTab() ) );
         tabs.addTab( "File Reading", scroll( readTab() ) );
         tabs.addTab( "File Saving", scroll( saveTab() ) );
+        tabs.addTab( "Application", scroll( applicationTab() ) );
         _cache_tab_index = tabs.getTabCount();
         tabs.addTab( "Taxonomy Cache", scroll( cacheTab() ) );
         // the cache stats are read from disk; refresh them each time the tab is brought to the front
@@ -542,6 +543,14 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._replace_underscores_cbmi ) );
         add( c, cb( _mf._parse_beast_style_extended_nexus_tags_cbmi ) );
         add( c, cb( _mf._allow_errors_in_distance_to_parent_cbmi ) );
+        return c;
+    }
+
+    /** Application-level behaviour that is not about any one tree: for now, the launch-time update check. */
+    private JPanel applicationTab() {
+        final JPanel c = column();
+        c.add( header( "Updates" ) );
+        add( c, cb( _mf._check_for_updates_cbmi ) );
         return c;
     }
 

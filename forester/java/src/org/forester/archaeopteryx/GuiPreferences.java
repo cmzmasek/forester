@@ -94,6 +94,8 @@ final class GuiPreferences {
             boolPref( "bold_found_labels", Options::isBoldFoundLabels, Options::setBoldFoundLabels ),
             boolPref( "dim_non_matches", Options::isDimNonMatches, Options::setDimNonMatches ),
             boolPref( "pulse_found_nodes", Options::isPulseFoundNodes, Options::setPulseFoundNodes ),
+            boolPref( "check_for_updates_at_launch", Options::isCheckForUpdatesAtLaunch,
+                      Options::setCheckForUpdatesAtLaunch ),
             boolPref( "show_overview", Options::isShowOverview, Options::setShowOverview ),
             boolPref( "abbreviate_scientific_names", Options::isAbbreviateScientificTaxonNames,
                       Options::setAbbreviateScientificTaxonNames ),

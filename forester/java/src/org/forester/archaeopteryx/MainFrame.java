@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Container;
 import java.awt.Font;
+import java.net.URI;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -200,6 +201,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_BOLD_FOUND_LABELS_TIP = "Render the labels of found/selected nodes in bold, so search hits stand out. Works on screen and in exports.";
     static final String DISPLAY_DIM_NON_MATCHES_LABEL = "Dim Non-Matches";
     static final String DISPLAY_DIM_NON_MATCHES_TIP = "While a search or selection is active, fade non-matching labels toward the background so the hits stand out. Works on screen and in exports.";
+    static final String CHECK_FOR_UPDATES_LABEL = "Check for Updates at Launch";
+    static final String CHECK_FOR_UPDATES_TIP = "Once, a moment after launch, ask the Archaeopteryx home page whether a newer release exists; if so, a line appears in the Help menu. Nothing is sent but the request, and any failure (no network, ...) is silent.";
     static final String DISPLAY_PULSE_FOUND_NODES_LABEL = "Pulse Found Nodes";
     static final String DISPLAY_PULSE_FOUND_NODES_TIP = "Draw a gently pulsing halo around found/selected nodes to draw the eye (a static glow in exports; not in black-and-white; rectangular layouts only).";
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
@@ -325,6 +328,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _bold_found_labels_cbmi;
     JCheckBoxMenuItem _dim_non_matches_cbmi;
     JCheckBoxMenuItem _pulse_found_nodes_cbmi;
+    JCheckBoxMenuItem _check_for_updates_cbmi;
+    /** The Help menu's "Update available" line; null until a newer release is known (see showUpdateAvailable). */
+    JMenuItem _update_available_item;
     JCheckBoxMenuItem _show_overview_cbmi;
     JCheckBoxMenuItem _abbreviate_scientific_names;
     JCheckBoxMenuItem _use_italic_scientific_names_cbmi;
@@ -611,6 +617,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _pulse_found_nodes_cbmi) {
             updateOptions(getOptions());
+        } else if (o == _check_for_updates_cbmi) {
+            updateOptions(getOptions());
+        } else if (o == _update_available_item) {
+            openReleasesPage();
         } else if (o == _show_confidence_stddev_cbmi) {
             updateOptions(getOptions());
         } else if (o == _show_mad_confidence_cbmi) {
@@ -1207,6 +1217,49 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add(_error_indicator_menu);
         _jmenubar.revalidate();
         _jmenubar.repaint();
+    }
+
+    /** The text of the Help menu's update line. Pure. */
+    static String updateAvailableLabel(final String version) {
+        return "Update available: " + AptxConstants.PRG_NAME + " " + version;
+    }
+
+    /**
+     * A newer official release exists: put a line at the top of the Help menu that says so and opens the releases
+     * page. Called on the EDT by {@link UpdateCheck}; idempotent (a repeat just refreshes the text).
+     */
+    void showUpdateAvailable(final String version) {
+        if ((_help_jmenu == null) || (version == null)) {
+            return;
+        }
+        if (_update_available_item == null) {
+            _update_available_item = new JMenuItem();
+            _update_available_item.setToolTipText("A newer release of " + AptxConstants.PRG_NAME
+                    + " is on the home page. Opens the releases page in your browser.");
+            _update_available_item.setFont(_update_available_item.getFont().deriveFont(Font.BOLD));
+            final Color accent = UIManager.getColor("Component.accentColor");
+            _update_available_item.setForeground((accent != null) ? accent : new Color(0x26, 0x75, 0xBF));
+            _update_available_item.addActionListener(this);
+            _help_jmenu.insert(_update_available_item, 0);
+            _help_jmenu.insertSeparator(1);
+        }
+        _update_available_item.setText(updateAvailableLabel(version));
+    }
+
+    /** Starts the silent launch-time update check, if the setting allows it (see {@link UpdateCheck}). */
+    void startUpdateCheckIfEnabled() {
+        if ((getOptions() != null) && getOptions().isCheckForUpdatesAtLaunch()) {
+            UpdateCheck.startAtLaunch(AptxConstants.VERSION, this::showUpdateAvailable);
+        }
+    }
+
+    private void openReleasesPage() {
+        try {
+            AptxUtil.launchWebBrowser(new URI(UpdateCheck.RELEASES_PAGE), AptxConstants.PRG_NAME);
+        } catch (final Exception e) {
+            JOptionPane.showMessageDialog(this, "Could not open " + UpdateCheck.RELEASES_PAGE + ":\n" + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     void buildHelpMenu() {
@@ -3284,6 +3337,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setBoldFoundLabels((_bold_found_labels_cbmi != null) && _bold_found_labels_cbmi.isSelected());
         options.setDimNonMatches((_dim_non_matches_cbmi != null) && _dim_non_matches_cbmi.isSelected());
         options.setPulseFoundNodes((_pulse_found_nodes_cbmi != null) && _pulse_found_nodes_cbmi.isSelected());
+        if (_check_for_updates_cbmi != null) {
+            options.setCheckForUpdatesAtLaunch(_check_for_updates_cbmi.isSelected());
+        }
         if ((_show_scale_cbmi != null) && _show_scale_cbmi.isEnabled()) {
             options.setShowScale(_show_scale_cbmi.isSelected());
         }
@@ -3385,6 +3441,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_bold_found_labels_cbmi, options.isBoldFoundLabels());
         setSelected(_dim_non_matches_cbmi, options.isDimNonMatches());
         setSelected(_pulse_found_nodes_cbmi, options.isPulseFoundNodes());
+        setSelected(_check_for_updates_cbmi, options.isCheckForUpdatesAtLaunch());
         setSelected(_show_scale_cbmi, options.isShowScale());
         setSelected(_show_tree_name_cbmi, options.isShowTreeName());
         setSelected(_show_overview_cbmi, options.isShowOverview());

@@ -94,9 +94,10 @@ public final class SettingsDialogTest {
                 dlg.pack();
                 final List<JTabbedPane> tabs = new ArrayList<>();
                 collect( dlg.getContentPane(), JTabbedPane.class, tabs );
-                // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays", and the
-                // former "Search" tab (its one clumsy colorize-all-found setting) was removed entirely -> 8 tabs
-                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 8 ) ) {
+                // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays", the
+                // former "Search" tab (its one clumsy colorize-all-found setting) was removed entirely, and an
+                // "Application" tab (the launch-time update check) was added -> 9 tabs
+                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 9 ) ) {
                     ok[ 0 ] = TestFail.here();
                 }
                 else {
@@ -107,7 +108,8 @@ public final class SettingsDialogTest {
                     // the three split tabs are present, the retired combined "Display" and standalone "Search" tabs
                     // are gone, and the persistent-taxonomy-cache tab (with its on/off checkbox) is still there
                     if ( !titles.contains( "Layout" ) || !titles.contains( "Labels & Colors" )
-                            || !titles.contains( "Overlays" ) || titles.contains( "Display" )
+                            || !titles.contains( "Overlays" ) || !titles.contains( "Application" )
+                            || titles.contains( "Display" )
                             || titles.contains( "Search" ) || !titles.contains( "Taxonomy Cache" )
                             || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
                         ok[ 0 ] = TestFail.here();

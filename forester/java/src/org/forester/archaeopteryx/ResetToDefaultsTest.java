@@ -104,6 +104,7 @@ public final class ResetToDefaultsTest {
         o.setBoldFoundLabels( true );
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
         o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
+        o.setCheckForUpdatesAtLaunch( false ); // default ON
         o.setAutoColorNewTrees( false ); // default is ON (JS-parity auto-color), so drive OFF
         o.setAbbreviateScientificTaxonNames( true );
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT (the DEFAULT new tabs get)
@@ -177,6 +178,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "boldFoundLabels", o.isBoldFoundLabels(), def.isBoldFoundLabels() );
         ok &= eq( "dimNonMatches", o.isDimNonMatches(), def.isDimNonMatches() );
         ok &= eq( "pulseFoundNodes", o.isPulseFoundNodes(), def.isPulseFoundNodes() );
+        ok &= eq( "checkForUpdatesAtLaunch", o.isCheckForUpdatesAtLaunch(), def.isCheckForUpdatesAtLaunch() );
+        ok &= eq( "checkForUpdatesAtLaunch default ON", def.isCheckForUpdatesAtLaunch(), true );
         // pin the shipped defaults so an accidental revert to OFF is caught (the reset comparison above only checks
         // reset == fresh-default, which would still pass if BOTH flipped)
         ok &= eq( "dimNonMatches default ON", def.isDimNonMatches(), true );
@@ -244,6 +247,7 @@ public final class ResetToDefaultsTest {
                           frame._tip_labels_below_columns_cbmi,
                           frame._reverse_tip_order_cbmi,
                           frame._bold_found_labels_cbmi, frame._dim_non_matches_cbmi, frame._pulse_found_nodes_cbmi,
+                          frame._check_for_updates_cbmi,
                           frame._show_scale_cbmi, frame._show_tree_name_cbmi,
                           frame._show_overview_cbmi, frame._show_confidence_stddev_cbmi, frame._show_mad_confidence_cbmi,
                           frame._antialias_export_cbmi, frame._export_black_and_white_cbmi,

@@ -299,6 +299,7 @@ final public class Options {
     private boolean _bold_found_labels;
     private boolean _dim_non_matches;
     private boolean _pulse_found_nodes;
+    private boolean _check_for_updates_at_launch;
     private boolean _show_tree_name;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
     private boolean _parse_beast_style_extended_nexus_tags;
@@ -391,6 +392,7 @@ final public class Options {
         _bold_found_labels = false;
         _dim_non_matches = true;   // on by default: fade non-matching labels/numbers so search hits stand out
         _pulse_found_nodes = true; // on by default: a gentle halo pulse around found/selected nodes
+        _check_for_updates_at_launch = true; // one silent request for the latest release, a moment after launch
         _show_tree_name = true; // show the tree's name in the lower-left of the canvas by default
         _antialias_export = true;
         _graphics_export_visible_only = false;
@@ -877,6 +879,15 @@ final public class Options {
 
     final boolean isPulseFoundNodes() {
         return _pulse_found_nodes;
+    }
+
+    /** Whether to ask the Archaeopteryx home page (once, silently) for a newer release at launch. */
+    final boolean isCheckForUpdatesAtLaunch() {
+        return _check_for_updates_at_launch;
+    }
+
+    final void setCheckForUpdatesAtLaunch( final boolean check ) {
+        _check_for_updates_at_launch = check;
     }
 
     final void setPulseFoundNodes(final boolean pulse_found_nodes) {

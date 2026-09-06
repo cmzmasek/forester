@@ -1798,6 +1798,8 @@ public final class MainFrameApplication extends MainFrame {
         _dim_non_matches_cbmi.setToolTipText(MainFrame.DISPLAY_DIM_NON_MATCHES_TIP);
         _pulse_found_nodes_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_PULSE_FOUND_NODES_LABEL);
         _pulse_found_nodes_cbmi.setToolTipText(MainFrame.DISPLAY_PULSE_FOUND_NODES_TIP);
+        _check_for_updates_cbmi = new JCheckBoxMenuItem(MainFrame.CHECK_FOR_UPDATES_LABEL);
+        _check_for_updates_cbmi.setToolTipText(MainFrame.CHECK_FOR_UPDATES_TIP);
         _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_INT);
         _internal_labels_above_branch_rbmi = new JRadioButtonMenuItem(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_LABEL);
         _internal_labels_above_branch_rbmi.setToolTipText(MainFrame.INTERNAL_LABELS_ABOVE_BRANCH_TIP);
@@ -1874,6 +1876,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_bold_found_labels_cbmi, getOptions().isBoldFoundLabels());
         customizeCheckBoxMenuItem(_dim_non_matches_cbmi, getOptions().isDimNonMatches());
         customizeCheckBoxMenuItem(_pulse_found_nodes_cbmi, getOptions().isPulseFoundNodes());
+        customizeCheckBoxMenuItem(_check_for_updates_cbmi, getOptions().isCheckForUpdatesAtLaunch());
         customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
         customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
                 getOptions().isShowAbbreviatedLabelsForCollapsedNodes());
@@ -2102,7 +2105,11 @@ public final class MainFrameApplication extends MainFrame {
                                            final Configuration config,
                                            final String title,
                                            final File current_dir) {
-        return new MainFrameApplication(phys, config, title, current_dir);
+        final MainFrameApplication mf = new MainFrameApplication(phys, config, title, current_dir);
+        if (_launched_as_standalone_application) {
+            mf.startUpdateCheckIfEnabled(); // the real app only: never from a test or an embedding program
+        }
+        return mf;
     }
 
     static MainFrame createInstance(final Phylogeny[] phys, final Configuration config, final String title) {

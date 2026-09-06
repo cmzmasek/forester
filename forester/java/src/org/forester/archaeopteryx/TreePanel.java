@@ -86,8 +86,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -228,8 +226,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static double OVERVIEW_FOUND_NODE_BOX_SIZE = 2;
     private final static double OVERVIEW_FOUND_NODE_BOX_SIZE_HALF = 1;
     private static final float PI = (float) (Math.PI);
-    final private static Font POPUP_FONT = new Font(Configuration
-            .getDefaultFontFamilyName(), Font.PLAIN, 12);
     private static final float ROUNDED_D = 8;
     private final static long serialVersionUID = -978349745916505029L;
     private static final BasicStroke STROKE_0025 = new BasicStroke(0.025f);
@@ -377,7 +373,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private PhylogenyNode _ext_node_with_longest_txt_info = null;
     private MainPanel _main_panel = null;
     private double _max_distance_to_root = -1;
-    private Popup _node_desc_popup;
+    /** The node hover card (null = none): canvas state painted as the last overlay -- never a popup window. */
+    private NodeHoverCard _hover_card;
+    private PhylogenyNode _hover_card_node;
+    private int _hover_card_x;
+    private int _hover_card_y;
+    private long _hover_card_shown_at;
+    private javax.swing.Timer _hover_card_fade;
     // The rollover popup can be a HEAVYWEIGHT native window, and no mouse event fires when the application
     // window is deactivated, iconified, or dragged -- so the window itself must hide it (see addNotify()).
     // These track the listeners so a re-parent detaches them from the old window.
@@ -404,7 +406,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final boolean _phy_has_branch_lengths;
     private Phylogeny _phylogeny = null;
     private final Path2D.Float _polygon = new Path2D.Float();
-    private final StringBuffer _popup_buffer = new StringBuffer();
+
     private final Rectangle2D _rectangle = new Rectangle2D.Float();
     private final Path2D.Float _diamond = new Path2D.Float();
     // "Time tree" badge state: the expensive DATED detection is cached per tree; a user-confirmed ULTRAMETRIC tree
@@ -439,7 +441,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean   _nextstrain_applicable     = false;
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
             RenderingHints.VALUE_RENDER_DEFAULT);
-    private JTextArea _rollover_popup;
+
     private PhylogenyNode _root;
     private final StringBuilder _sb = new StringBuilder();
     // Set transiently by AptxUtil around a PNG export so paintPhylogeny leaves the background unfilled
@@ -1719,8 +1721,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void init() {
         _color_chooser = new JColorChooser();
-        _rollover_popup = new JTextArea();
-        _rollover_popup.setFont(POPUP_FONT);
         resetNodeIdToDistToLeafMap();
         setTextAntialias();
         setTreeFile(null);
@@ -6674,251 +6674,89 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * Hides the node-description rollover popup, unconditionally.
+     * Hides the node hover card, unconditionally.
      * <p>
-     * The popup can be a HEAVYWEIGHT window -- its own native window -- so every way of leaving the canvas must
-     * call this, or the popup stays floating on the desktop, even outside the application window. Callers: every
-     * mouse move (before a possible re-show), mouse exit, mouse press, the mouse wheel, any key press, the window
-     * being deactivated / iconified / moved / resized, and the panel being removed (tab or window closed).
-     * Deliberately NOT gated on the display option: switching the "Rollover" option off while a popup is showing
-     * must still take that popup down.
+     * The card is canvas state, not a window: it exists only while this panel paints it, so it can never be
+     * stranded on the desktop the way the old popup window was. Every way of leaving a node still calls this so the
+     * card goes the moment its reason is gone: a mouse move that ends off a node, mouse exit, mouse press, the mouse
+     * wheel, any key press, the window being deactivated / iconified / moved / resized, and the panel being removed
+     * (tab or window closed). Deliberately NOT gated on the display option: switching the "Rollover" option off
+     * while a card is showing must still take that card down. Hiding is instant -- there is no fade-out, by design.
      */
     final void hideNodeDataPopup() {
-        if (_node_desc_popup != null) {
-            _node_desc_popup.hide();
-            _node_desc_popup = null;
+        if (_hover_card != null) {
+            _hover_card = null;
+            _hover_card_node = null;
+            stopHoverCardFade();
+            repaint();
         }
     }
 
-    /** Test hook: whether the node-description rollover popup is currently showing. */
+    /** Test hook: whether the node hover card is currently showing. */
     final boolean isNodeDescPopupShowingForTest() {
-        return _node_desc_popup != null;
+        return _hover_card != null;
     }
 
+    /** Test hook: the hover card's current placement on the canvas (null when none). */
+    final Rectangle hoverCardBoundsForTest() {
+        return (_hover_card == null) ? null : _hover_card.placement(_hover_card_x, _hover_card_y, getVisibleRect());
+    }
+
+    /**
+     * Shows the hover card for {@code node} at the pointer -- or keeps the one already showing for that node (a
+     * card is anchored where the node was first hovered and rebuilt only when the hovered node changes, so gliding
+     * across one node costs no repaint). A node with nothing to say gets no card.
+     */
     final private void showNodeDataPopup(final MouseEvent e, final PhylogenyNode node) {
-        try {
-            if ((node.getName().length() > 0)
-                    || (node.getNodeData().isHasTaxonomy()
-                    && !TreePanelUtil.isTaxonomyEmpty(node.getNodeData().getTaxonomy()))
-                    || (node.getNodeData().isHasSequence()
-                    && !TreePanelUtil.isSequenceEmpty(node.getNodeData().getSequence()))
-                    || (node.getNodeData().isHasDate()) || (node.getNodeData().isHasDistribution())
-                    || node.getBranchData().isHasConfidences()) {
-                _popup_buffer.setLength(0);
-                short lines = 0;
-                if (node.getName().length() > 0) {
-                    lines++;
-                    _popup_buffer.append(node.getName());
-                }
-                if (node.getNodeData().isHasTaxonomy()
-                        && !TreePanelUtil.isTaxonomyEmpty(node.getNodeData().getTaxonomy())) {
-                    lines++;
-                    boolean enc_data = false;
-                    final Taxonomy tax = node.getNodeData().getTaxonomy();
-                    if (_popup_buffer.length() > 0) {
-                        _popup_buffer.append("\n");
-                    }
-                    if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-                        _popup_buffer.append("[");
-                        _popup_buffer.append(tax.getTaxonomyCode());
-                        _popup_buffer.append("]");
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(tax.getScientificName())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" ");
-                        }
-                        _popup_buffer.append(tax.getScientificName());
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(tax.getCommonName())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" (");
-                        } else {
-                            _popup_buffer.append("(");
-                        }
-                        _popup_buffer.append(tax.getCommonName());
-                        _popup_buffer.append(")");
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(tax.getAuthority())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" (");
-                        } else {
-                            _popup_buffer.append("(");
-                        }
-                        _popup_buffer.append(tax.getAuthority());
-                        _popup_buffer.append(")");
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(tax.getRank())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" [");
-                        } else {
-                            _popup_buffer.append("[");
-                        }
-                        _popup_buffer.append(tax.getRank());
-                        _popup_buffer.append("]");
-                        enc_data = true;
-                    }
-                    if (tax.getSynonyms().size() > 0) {
-                        if (enc_data) {
-                            _popup_buffer.append(" ");
-                        }
-                        _popup_buffer.append("[");
-                        int counter = 1;
-                        for (final String syn : tax.getSynonyms()) {
-                            if (!ForesterUtil.isEmpty(syn)) {
-                                enc_data = true;
-                                _popup_buffer.append(syn);
-                                if (counter < tax.getSynonyms().size()) {
-                                    _popup_buffer.append(", ");
-                                }
-                            }
-                            counter++;
-                        }
-                        _popup_buffer.append("]");
-                    }
-                    if (!enc_data) {
-                        if ((tax.getIdentifier() != null)
-                                && !ForesterUtil.isEmpty(tax.getIdentifier().getValue())) {
-                            if (!ForesterUtil.isEmpty(tax.getIdentifier().getProvider())) {
-                                _popup_buffer.append("[");
-                                _popup_buffer.append(tax.getIdentifier().getProvider());
-                                _popup_buffer.append("] ");
-                            }
-                            _popup_buffer.append(tax.getIdentifier().getValue());
-                        }
-                    }
-                }
-                if (node.getNodeData().isHasSequence()
-                        && !TreePanelUtil.isSequenceEmpty(node.getNodeData().getSequence())) {
-                    lines++;
-                    boolean enc_data = false;
-                    if (_popup_buffer.length() > 0) {
-                        _popup_buffer.append("\n");
-                    }
-                    final Sequence seq = node.getNodeData().getSequence();
-                    if (seq.getAccession() != null) {
-                        _popup_buffer.append("[");
-                        if (!ForesterUtil.isEmpty(seq.getAccession().getSource())) {
-                            _popup_buffer.append(seq.getAccession().getSource());
-                            _popup_buffer.append(":");
-                        }
-                        _popup_buffer.append(seq.getAccession().getValue());
-                        _popup_buffer.append("]");
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(seq.getSymbol())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" [");
-                        } else {
-                            _popup_buffer.append("[");
-                        }
-                        _popup_buffer.append(seq.getSymbol());
-                        _popup_buffer.append("]");
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(seq.getGeneName())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" [");
-                        } else {
-                            _popup_buffer.append("[");
-                        }
-                        _popup_buffer.append(seq.getGeneName());
-                        _popup_buffer.append("]");
-                        enc_data = true;
-                    }
-                    if (!ForesterUtil.isEmpty(seq.getName())) {
-                        if (enc_data) {
-                            _popup_buffer.append(" ");
-                        }
-                        _popup_buffer.append(seq.getName());
-                    }
-                }
-                if (node.getNodeData().isHasDate()) {
-                    lines++;
-                    if (_popup_buffer.length() > 0) {
-                        _popup_buffer.append("\n");
-                    }
-                    _popup_buffer.append(node.getNodeData().getDate().asSimpleText());
-                }
-                if (node.getNodeData().isHasDistribution()) {
-                    lines++;
-                    if (_popup_buffer.length() > 0) {
-                        _popup_buffer.append("\n");
-                    }
-                    _popup_buffer.append(node.getNodeData().getDistribution().asSimpleText());
-                }
-                if (node.getBranchData().isHasConfidences()) {
-                    final List<Confidence> confs = node.getBranchData().getConfidences();
-                    for (final Confidence confidence : confs) {
-                        if (!Double.isFinite(confidence.getValue())) {
-                            continue; // skip non-finite (NaN/Infinity) confidence values
-                        }
-                        lines++;
-                        if (_popup_buffer.length() > 0) {
-                            _popup_buffer.append("\n");
-                        }
-                        if (!ForesterUtil.isEmpty(confidence.getType())) {
-                            _popup_buffer.append("[");
-                            _popup_buffer.append(confidence.getType());
-                            _popup_buffer.append("] ");
-                        }
-                        _popup_buffer.append(FORMATTER_CONFIDENCE.format(ForesterUtil
-                                .round(confidence.getValue(),
-                                        getOptions().getNumberOfDigitsAfterCommaForConfidenceValues())));
-                        if ((confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE)
-                                && Double.isFinite(confidence.getStandardDeviation())) {
-                            _popup_buffer.append(" (sd=");
-                            _popup_buffer.append(FORMATTER_CONFIDENCE.format(ForesterUtil
-                                    .round(confidence.getStandardDeviation(),
-                                            getOptions().getNumberOfDigitsAfterCommaForConfidenceValues())));
-                            _popup_buffer.append(")");
-                        }
-                    }
-                }
-                if (node.getNodeData().isHasProperties()) {
-                    // hide internal aptx:* metadata (e.g. the persisted Re-import annotation profile on the root)
-                    final StringBuffer props = TreePanelUtil
-                            .userVisiblePropertiesText(node.getNodeData().getProperties());
-                    if (props.length() > 0) {
-                        if (_popup_buffer.length() > 0) {
-                            _popup_buffer.append("\n");
-                        }
-                        _popup_buffer.append(props);
-                    }
-                }
-                if (_popup_buffer.length() > 0) {
-                    // the rollover popup is a canvas overlay, so always match the tree color set
-                    // (keeps it consistent with the canvas in both light and dark themes)
-                    _rollover_popup.setBorder(BorderFactory.createLineBorder(getTreeColorSet().getBranchColor()));
-                    _rollover_popup.setBackground(getTreeColorSet().getBackgroundColor());
-                    if (isInFoundNodes0(node) && !isInFoundNodes1(node)) {
-                        _rollover_popup.setForeground(getTreeColorSet().getFoundColor0());
-                    } else if (!isInFoundNodes0(node) && isInFoundNodes1(node)) {
-                        _rollover_popup.setForeground(getTreeColorSet().getFoundColor1());
-                    } else if (isInFoundNodes0(node) && isInFoundNodes1(node)) {
-                        _rollover_popup.setForeground(getTreeColorSet().getFoundColor0and1());
-                    } else {
-                        _rollover_popup.setForeground(getTreeColorSet().getSequenceColor());
-                    }
-                    _rollover_popup.setText(_popup_buffer.toString());
-                    // Owner = this panel (NOT null): with an owner, the factory uses a LIGHTWEIGHT popup
-                    // whenever the popup fits inside the window -- and a lightweight popup lives in the window's
-                    // layered pane, so it structurally CANNOT be stranded on the desktop. Only a popup poking
-                    // past the window edge still needs a heavyweight native window (which the hide paths cover).
-                    _node_desc_popup = PopupFactory.getSharedInstance()
-                            .getPopup(this,
-                                    _rollover_popup,
-                                    e.getLocationOnScreen().x + 10,
-                                    e.getLocationOnScreen().y - (lines * 20));
-                    _node_desc_popup.show();
-                }
-            }
-        } catch (final Exception ex) {
-            // Do nothing.
+        if ((_hover_card != null) && (_hover_card_node == node)) {
+            return;
         }
+        final java.util.List<NodeHoverText.Row> rows = NodeHoverText.rows(node);
+        if (rows.isEmpty()) {
+            hideNodeDataPopup();
+            return;
+        }
+        final Font base = UIManager.getFont("Label.font");
+        _hover_card = new NodeHoverCard(rows, (base != null) ? base : getFont(), this::getFontMetrics,
+                NodeHoverCard.isDarkTheme());
+        _hover_card_node = node;
+        _hover_card_x = e.getX();
+        _hover_card_y = e.getY();
+        _hover_card_shown_at = System.currentTimeMillis();
+        startHoverCardFade();
+        repaint();
+    }
+
+    /** The fade-in: repaint at ~60 Hz until the card is fully opaque, then stop. Hiding is always instant. */
+    private void startHoverCardFade() {
+        if (_hover_card_fade == null) {
+            _hover_card_fade = new javax.swing.Timer(16, ev -> {
+                if ((_hover_card == null)
+                        || (System.currentTimeMillis() - _hover_card_shown_at >= NodeHoverCard.FADE_IN_MS)) {
+                    stopHoverCardFade();
+                }
+                repaint();
+            });
+            _hover_card_fade.setRepeats(true);
+        }
+        _hover_card_fade.restart();
+    }
+
+    private void stopHoverCardFade() {
+        if (_hover_card_fade != null) {
+            _hover_card_fade.stop();
+        }
+    }
+
+    /** Paints the hover card as the very last overlay (screen only, viewport-fixed, every layout). */
+    private void paintHoverCard(final Graphics2D g) {
+        if (_hover_card == null) {
+            return;
+        }
+        final Rectangle r = _hover_card.placement(_hover_card_x, _hover_card_y, getVisibleRect());
+        final float alpha = Math.min(1f,
+                (System.currentTimeMillis() - _hover_card_shown_at) / (float) NodeHoverCard.FADE_IN_MS);
+        _hover_card.paint(g, r.x, r.y, alpha);
     }
 
     final void showNodeEditFrame(final PhylogenyNode n) { // package-visible so a test can open one the way the UI does
@@ -10926,7 +10764,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     @Override
     public void removeNotify() {
-        hideNodeDataPopup(); // closing the tab/window must not strand a popup on the desktop
+        hideNodeDataPopup(); // closing the tab/window: drop the card and its fade timer
         detachPopupHiderListeners();
         if (_pulse_timer != null) {
             _pulse_timer.stop(); // stop animating once the tab/window is gone (no lingering repaints)
@@ -13722,9 +13560,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void mouseMoved(final MouseEvent e) {
         requestFocusInWindow();
-        // Unconditional (not gated on the display option): a popup left showing when the option was switched
-        // off would otherwise never be hidden again. Re-shown further down when still over a node.
-        hideNodeDataPopup();
+        boolean card_wanted = false; // set only on the one path that shows the hover card
         if (getOptions().isShowOverview() && isOvOn()) {
             if (inOvVirtualRectangle(e)) {
                 if (!isInOvRect()) {
@@ -13761,6 +13597,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     setCursor(HAND_CURSOR);
                     if (shows(DisplayOption.NODE_DATA_POPUP)) {
                         showNodeDataPopup(e, node);
+                        card_wanted = true;
                     }
                 }
                 // The focus glow marks the node under the pointer in EVERY mode -- the cursor says "clickable",
@@ -13773,6 +13610,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 applyHover(branch, true);
                 setCursor((branch != null) ? HAND_CURSOR : ARROW_CURSOR);
             }
+        }
+        if (!card_wanted) {
+            // Unconditional (not gated on the display option): a card left showing when the option was switched
+            // off, or when the pointer moved off the node, would otherwise never be hidden again.
+            hideNodeDataPopup();
         }
     }
 
@@ -14558,6 +14400,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // hit halo was drawn (rectangular OR radial), stops it when none was (option off / no hit).
         if (!to_pdf && !to_graphics_file) {
             updatePulseTimer();
+            paintHoverCard(g); // the node hover card: last, over everything, screen only, every layout
         }
     }
 
