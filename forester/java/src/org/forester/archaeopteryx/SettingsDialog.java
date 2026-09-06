@@ -23,6 +23,7 @@ package org.forester.archaeopteryx;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.util.Locale;
@@ -76,6 +77,7 @@ final class SettingsDialog extends JDialog {
     private JLabel            _cache_size_label;
     private JLabel            _cache_status_label;
     private int               _cache_tab_index = -1;
+    private JTabbedPane       _tabs;
     private JLabel            _current_font_label; // "Fonts, Nodes and Branches" tab
     // per-tab controls (tree style, "Color by" palette, Time Axis) reflect the CURRENT tab; on a tab switch a
     // left-open modeless dialog re-seeds them via these reseeders, under a guard that suppresses their own listeners
@@ -88,14 +90,14 @@ final class SettingsDialog extends JDialog {
         super( mf, "Settings", false );
         _mf = mf;
         final JTabbedPane tabs = new JTabbedPane();
+        _tabs = tabs;
         // the former single "Display" tab had grown too long, so it is split into three focused tabs
         tabs.addTab( "Layout", scroll( layoutTab() ) );
         tabs.addTab( "Labels & Colors", scroll( labelsColorsTab() ) );
         tabs.addTab( "Overlays", scroll( overlaysTab() ) );
         tabs.addTab( "Fonts, Nodes and Branches", scroll( nodesTab() ) );
         tabs.addTab( "Graphics Export", scroll( exportTab() ) );
-        tabs.addTab( "File Reading", scroll( readTab() ) );
-        tabs.addTab( "File Saving", scroll( saveTab() ) );
+        tabs.addTab( "Files", scroll( filesTab() ) ); // reading + saving, once two tabs (the bar wrapped onto two rows)
         tabs.addTab( "Application", scroll( applicationTab() ) );
         _cache_tab_index = tabs.getTabCount();
         tabs.addTab( "Taxonomy Cache", scroll( cacheTab() ) );
@@ -122,13 +124,35 @@ final class SettingsDialog extends JDialog {
         add( south, BorderLayout.SOUTH );
         pack();
         // pack() sizes to the (narrow) tab CONTENT, which wraps the tab-header row onto two rows and feels cramped;
-        // widen the default so all tabs sit on a single row with room to spare (never shrink a naturally-wider pack).
-        // The minimum WIDTH keeps it from being dragged back into the wrapped, cramped state; height stays free
-        // (each tab already scrolls).
-        final int min_width = Math.max( 900, getWidth() );
+        // widen the default so all tabs sit on a SINGLE row with room to spare, MEASURED (a fixed 900 px wrapped again
+        // at the user's larger UI font once the ninth tab arrived) but never shrinking a naturally-wider pack. The
+        // minimum WIDTH keeps it from being dragged back into the wrapped state; height stays free (each tab scrolls).
+        final int packed_width = getWidth(); // BEFORE measuring: singleRowWidth resizes the dialog to measure
+        final int min_width = Math.max( Math.max( 900, singleRowWidth( tabs ) ), packed_width );
         setSize( min_width, getHeight() );
         setMinimumSize( new Dimension( min_width, 300 ) );
         setLocationRelativeTo( mf );
+    }
+
+    /** The dialog width at which every tab title sits on ONE row (the tab run measured wide, plus a margin). */
+    private int singleRowWidth( final JTabbedPane tabs ) {
+        final int h = getHeight();
+        setSize( 4000, h ); // lay the tabs out with unlimited room, so they form one run to measure
+        validate();
+        int right = 0;
+        for ( int i = 0; i < tabs.getTabCount(); ++i ) {
+            final Rectangle r = tabs.getBoundsAt( i );
+            if ( r != null ) {
+                right = Math.max( right, r.x + r.width );
+            }
+        }
+        final int chrome = getWidth() - tabs.getWidth(); // dialog border/insets around the tab pane
+        return ( right > 0 ) ? right + chrome + 24 : 0;
+    }
+
+    /** For tests: whether the tab titles currently fit on one row. */
+    boolean tabsOnOneRowForTest() {
+        return ( _tabs != null ) && ( _tabs.getTabRunCount() == 1 );
     }
 
     /** Re-seed the per-tab controls (tree style, "Color by" palette, Time Axis type + grid/ages) from the now-current
@@ -536,13 +560,18 @@ final class SettingsDialog extends JDialog {
         }
     }
 
-    private JPanel readTab() {
+    /** How tree files are read and written: the former "File Reading" and "File Saving" tabs as two sections. */
+    private JPanel filesTab() {
         final JPanel c = column();
         c.add( header( "Newick / NHX / Nexus Reading" ) );
         add( c, cb( _mf._internal_number_are_confidence_for_nh_parsing_cbmi ) );
         add( c, cb( _mf._replace_underscores_cbmi ) );
         add( c, cb( _mf._parse_beast_style_extended_nexus_tags_cbmi ) );
         add( c, cb( _mf._allow_errors_in_distance_to_parent_cbmi ) );
+        c.add( header( "Newick / Nexus Saving" ) );
+        c.add( new JLabel( "Write confidence values as:" ) );
+        add( c, cb( _mf._use_brackets_for_conf_in_nh_export_cbmi ) );
+        add( c, cb( _mf._use_internal_names_for_conf_in_nh_export_cbmi ) );
         return c;
     }
 
@@ -551,15 +580,6 @@ final class SettingsDialog extends JDialog {
         final JPanel c = column();
         c.add( header( "Updates" ) );
         add( c, cb( _mf._check_for_updates_cbmi ) );
-        return c;
-    }
-
-    private JPanel saveTab() {
-        final JPanel c = column();
-        c.add( header( "Newick / Nexus Saving" ) );
-        c.add( new JLabel( "Write confidence values as:" ) );
-        add( c, cb( _mf._use_brackets_for_conf_in_nh_export_cbmi ) );
-        add( c, cb( _mf._use_internal_names_for_conf_in_nh_export_cbmi ) );
         return c;
     }
 

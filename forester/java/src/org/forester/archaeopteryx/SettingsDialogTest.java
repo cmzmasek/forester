@@ -91,13 +91,41 @@ public final class SettingsDialogTest {
                     ok[ 0 ] = TestFail.here();
                 }
                 final SettingsDialog dlg = new SettingsDialog( mf[ 0 ] );
+                if ( !dlg.tabsOnOneRowForTest() ) {
+                    System.out.println( "  [SettingsDialogTest] the tab titles must fit on ONE row as opened" );
+                    ok[ 0 ] = TestFail.here();
+                }
+                final java.awt.Rectangle usable = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                        .getMaximumWindowBounds();
+                if ( dlg.getWidth() > usable.width ) { // the one-row measurement must not leak its probe width
+                    System.out.println( "  [SettingsDialogTest] dialog wider than the screen: " + dlg.getWidth() );
+                    ok[ 0 ] = TestFail.here();
+                }
+                // ...and still at a UI font a good deal larger than the default (the user's display), which is
+                // where a fixed default width wrapped the bar onto two rows once the ninth tab arrived
+                final javax.swing.plaf.FontUIResource big = new javax.swing.plaf.FontUIResource(
+                        javax.swing.UIManager.getFont( "TabbedPane.font" ).deriveFont( 19f ) );
+                final Object old_font = javax.swing.UIManager.get( "TabbedPane.font" );
+                javax.swing.UIManager.put( "TabbedPane.font", big );
+                try {
+                    final SettingsDialog large = new SettingsDialog( mf[ 0 ] );
+                    if ( !large.tabsOnOneRowForTest() ) {
+                        System.out.println( "  [SettingsDialogTest] the tab titles must fit on one row at a large font too" );
+                        ok[ 0 ] = TestFail.here();
+                    }
+                    large.dispose();
+                }
+                finally {
+                    javax.swing.UIManager.put( "TabbedPane.font", old_font );
+                }
                 dlg.pack();
                 final List<JTabbedPane> tabs = new ArrayList<>();
                 collect( dlg.getContentPane(), JTabbedPane.class, tabs );
                 // the former single "Display" tab was split into "Layout" / "Labels & Colors" / "Overlays", the
-                // former "Search" tab (its one clumsy colorize-all-found setting) was removed entirely, and an
-                // "Application" tab (the launch-time update check) was added -> 9 tabs
-                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 9 ) ) {
+                // former "Search" tab (its one clumsy colorize-all-found setting) was removed entirely, an
+                // "Application" tab (the launch-time update check) was added, and "File Reading" + "File Saving"
+                // were fused into "Files" (the ninth tab wrapped the tab bar onto two rows) -> 8 tabs
+                if ( tabs.isEmpty() || ( tabs.get( 0 ).getTabCount() != 8 ) ) {
                     ok[ 0 ] = TestFail.here();
                 }
                 else {
@@ -109,7 +137,8 @@ public final class SettingsDialogTest {
                     // are gone, and the persistent-taxonomy-cache tab (with its on/off checkbox) is still there
                     if ( !titles.contains( "Layout" ) || !titles.contains( "Labels & Colors" )
                             || !titles.contains( "Overlays" ) || !titles.contains( "Application" )
-                            || titles.contains( "Display" )
+                            || !titles.contains( "Files" ) || titles.contains( "File Reading" )
+                            || titles.contains( "File Saving" ) || titles.contains( "Display" )
                             || titles.contains( "Search" ) || !titles.contains( "Taxonomy Cache" )
                             || ( findCheckBox( dlg.getContentPane(), "Use persistent cache" ) == null ) ) {
                         ok[ 0 ] = TestFail.here();
