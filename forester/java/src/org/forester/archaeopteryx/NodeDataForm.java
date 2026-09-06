@@ -114,6 +114,8 @@ final class NodeDataForm extends JPanel {
     private static final int  MOL_SEQ_ROWS     = 3;
     /** The preferred width a read-only value reports (it stretches to the row anyway). */
     private static final int  VIEW_VALUE_WIDTH = 120;
+    /** The header title's size relative to the body font. */
+    static final float        TITLE_SCALE      = 1.15f;
 
     private final PhylogenyNode                 _node;
     private final TreePanel                     _tree_panel;
@@ -454,8 +456,8 @@ final class NodeDataForm extends JPanel {
         final JPanel header = new JPanel( new BorderLayout( 0, 2 ) );
         header.setBorder( BorderFactory.createEmptyBorder( 12, 14, 8, 14 ) );
         final JLabel title = new JLabel( nodeLabel( _node ) );
-        title.putClientProperty( "FlatLaf.styleClass", "h2" );
-        title.setFont( title.getFont().deriveFont( Font.BOLD, title.getFont().getSize2D() * 1.35f ) );
+        // a heading, not a banner: bold and only slightly larger than the body text (user feedback 2026-09-06)
+        title.setFont( title.getFont().deriveFont( Font.BOLD, title.getFont().getSize2D() * TITLE_SCALE ) );
         final JLabel subtitle = new JLabel( headerSubtitle( _node ) );
         subtitle.setForeground( mutedColor() );
         header.add( title, BorderLayout.NORTH );
