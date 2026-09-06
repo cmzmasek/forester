@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Node Data Editor (demo)</name>
+  <description>Every kind of node data the editor handles, on a small BRCA1 ortholog tree: taxonomy, two sequences on the human tip, confidences, a dated node with a speciation event, a distribution, a reference, and typed properties. Set &quot;Click on Node to: Edit Node Data&quot; and click a node. Schematic sequences (truncated), not real data.</description>
+  <clade>
+    <name>BRCA1 orthologs</name>
+    <branch_length>0.0</branch_length>
+    <events>
+      <speciations>1</speciations>
+    </events>
+    <date unit="mya">
+      <desc>primate-rodent split</desc>
+      <value>90</value>
+      <minimum>85</minimum>
+      <maximum>97</maximum>
+    </date>
+    <reference doi="10.1126/science.7545954">
+      <desc>Miki Y et al. (1994) A strong candidate for the breast and ovarian cancer susceptibility gene BRCA1. Science 266:66-71</desc>
+    </reference>
+    <clade>
+      <name>Catarrhini</name>
+      <branch_length>0.05</branch_length>
+      <confidence type="bootstrap">98</confidence>
+      <confidence type="probability">0.99</confidence>
+      <taxonomy>
+        <scientific_name>Catarrhini</scientific_name>
+        <rank>infraorder</rank>
+      </taxonomy>
+      <date unit="mya">
+        <desc>primate crown</desc>
+        <value>29</value>
+        <minimum>25</minimum>
+        <maximum>34</maximum>
+      </date>
+      <clade>
+        <name>Hominini</name>
+        <branch_length>0.03</branch_length>
+        <confidence type="bootstrap">100</confidence>
+        <clade>
+          <name>BRCA1_HUMAN</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <id provider="ncbi">9606</id>
+            <code>HUMAN</code>
+            <scientific_name>Homo sapiens</scientific_name>
+            <common_name>human</common_name>
+            <synonym>man</synonym>
+            <rank>species</rank>
+            <uri>https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606</uri>
+          </taxonomy>
+          <sequence type="protein">
+            <symbol>BRCA1</symbol>
+            <accession source="UniProt">P38398</accession>
+            <name>BRCA1_HUMAN</name>
+            <gene_name>BRCA1</gene_name>
+            <mol_seq is_aligned="false">MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ</mol_seq>
+            <uri>https://www.uniprot.org/uniprotkb/P38398</uri>
+          </sequence>
+          <sequence type="rna">
+            <accession source="RefSeq">NM_007294</accession>
+            <name>BRCA1 mRNA</name>
+            <location>chr17:43044295-43125483</location>
+          </sequence>
+          <distribution>
+            <desc>San Francisco sample site</desc>
+            <point geodetic_datum="WGS84" alt_unit="m">
+              <lat>37.77</lat>
+              <long>-122.42</long>
+              <alt>16</alt>
+            </point>
+          </distribution>
+          <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">12.4</property>
+          <property ref="data:tissue" datatype="xsd:string" applies_to="node">breast</property>
+        </clade>
+        <clade>
+          <name>BRCA1_PANTR</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <id provider="ncbi">9598</id>
+            <code>PANTR</code>
+            <scientific_name>Pan troglodytes</scientific_name>
+            <common_name>chimpanzee</common_name>
+            <rank>species</rank>
+          </taxonomy>
+          <sequence type="protein">
+            <symbol>BRCA1</symbol>
+            <accession source="UniProt">Q9GKK8</accession>
+            <name>BRCA1_PANTR</name>
+            <gene_name>BRCA1</gene_name>
+            <mol_seq is_aligned="false">MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ</mol_seq>
+            <uri>https://www.uniprot.org/uniprotkb/Q9GKK8</uri>
+          </sequence>
+          <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">9.8</property>
+          <property ref="data:tissue" datatype="xsd:string" applies_to="node">breast</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>BRCA1_MACMU</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">9544</id>
+          <code>MACMU</code>
+          <scientific_name>Macaca mulatta</scientific_name>
+          <common_name>rhesus macaque</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <sequence type="protein">
+          <symbol>BRCA1</symbol>
+          <accession source="UniProt">Q6J6I8</accession>
+          <name>BRCA1_MACMU</name>
+          <gene_name>BRCA1</gene_name>
+          <mol_seq is_aligned="false">MDLSAVRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ</mol_seq>
+          <uri>https://www.uniprot.org/uniprotkb/Q6J6I8</uri>
+        </sequence>
+        <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">7.1</property>
+      </clade>
+    </clade>
+    <clade>
+      <name>Murinae</name>
+      <branch_length>0.06</branch_length>
+      <confidence type="bootstrap">100</confidence>
+      <clade>
+        <name>BRCA1_MOUSE</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">10090</id>
+          <code>MOUSE</code>
+          <scientific_name>Mus musculus</scientific_name>
+          <common_name>house mouse</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <sequence type="protein">
+          <symbol>BRCA1</symbol>
+          <accession source="UniProt">P48754</accession>
+          <name>BRCA1_MOUSE</name>
+          <gene_name>BRCA1</gene_name>
+          <mol_seq is_aligned="false">MDLSAVRIQEVQNVLHAMQKILECPICLELIKEPVSTQCDHIFCKFCMLKLLNQKKGPSQCPLCKNEITKRSLQ</mol_seq>
+          <uri>https://www.uniprot.org/uniprotkb/P48754</uri>
+        </sequence>
+        <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">15.2</property>
+        <property ref="data:tissue" datatype="xsd:string" applies_to="node">mammary gland</property>
+      </clade>
+      <clade>
+        <name>BRCA1_RAT</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">10116</id>
+          <code>RAT</code>
+          <scientific_name>Rattus norvegicus</scientific_name>
+          <common_name>brown rat</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <sequence type="protein">
+          <symbol>BRCA1</symbol>
+          <accession source="UniProt">O54952</accession>
+          <name>BRCA1_RAT</name>
+          <gene_name>BRCA1</gene_name>
+          <mol_seq is_aligned="false">MDLSAVRIQEVQNVLHAMQKILECPICLELIKEPVSTQCDHIFCKFCMLKLLNQKKGPSQCPLCKNEITKRSLQ</mol_seq>
+          <uri>https://www.uniprot.org/uniprotkb/O54952</uri>
+        </sequence>
+        <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">13.9</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

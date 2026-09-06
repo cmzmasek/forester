@@ -42,7 +42,7 @@ public class Distribution implements PhylogenyData {
     }
 
     public Distribution( final String desc, final List<Point> points ) {
-        _desc = null;
+        _desc = desc;
         _points = points;
         _polygons = null;
     }

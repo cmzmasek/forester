@@ -30,14 +30,11 @@ import java.util.TreeSet;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JTree;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.SequenceAndTaxonomyDataObtainer;
@@ -455,12 +452,11 @@ public final class UndoRedoToolTest {
     }
 
     /**
-     * A node-data edit is undoable as ONE step, and merely OPENING the editor is not an edit.
-     * <p>
-     * That second half is why this was deferred for so long: {@code NodeEditPanel.writeBack} commits fields on
-     * every selection change and again on close, with no change detection, so a checkpoint taken when the editor
-     * opens would push a no-op undo -- and wipe the redo stack -- for someone who only opened a node to read it.
-     * The checkpoint is instead taken on the first write that FOLLOWS a committed cell edit.
+     * A node-data edit is undoable as ONE step, and merely OPENING the editor is not an edit: nothing reaches the
+     * tree until "Write to Tree", which checkpoints right before writing. A Write that changes nothing is a no-op
+     * (no undo entry), a real one is exactly one "Edit Node Data" step, and an undo closes the editor (its node
+     * belongs to the replaced tree). A theme switch (updateComponentTreeUI over the open window) must not break any
+     * of this.
      */
     private static boolean nodeEditUndo() {
         try {
@@ -493,6 +489,9 @@ public final class UndoRedoToolTest {
                     fail( ok, "the editor should be open and tracked by the panel" );
                     return;
                 }
+                if ( !nf[ 0 ].isEditable() ) {
+                    fail( ok, "showNodeEditFrame must open the window in EDIT mode" );
+                }
                 // opening alone must leave the history completely untouched
                 if ( !"Collapse Clade".equals( tp.undoLabel() ) ) {
                     fail( ok, "merely opening the node editor must not push an undo entry, got '"
@@ -501,70 +500,51 @@ public final class UndoRedoToolTest {
                 if ( !tp.canRedo() ) {
                     fail( ok, "merely opening the node editor must not touch the history at all" );
                 }
+                // ...and neither must a Write that changes nothing
+                if ( nf[ 0 ].isDirty() ) {
+                    fail( ok, "a freshly opened editor must not be dirty" );
+                }
+                if ( !nf[ 0 ].writeNow() ) {
+                    fail( ok, "a no-change Write should succeed (as a no-op)" );
+                }
+                if ( "Edit Node Data".equals( tp.undoLabel() ) || !tp.canRedo() ) {
+                    fail( ok, "a Write with nothing changed must not push an undo entry or clear redo" );
+                }
             } );
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
-                final JTree jt = findJTree( nf[ 0 ] );
-                if ( jt == null ) {
-                    fail( ok, "the node editor should contain a JTree" );
-                    return;
-                }
-                for( int i = 0; i < jt.getRowCount(); ++i ) {
-                    jt.expandRow( i ); // the editable value rows sit under collapsed category rows
-                }
-                // INSPECTING: clicking through rows fires writeBack on every selection change. Those write-backs
-                // must not be mistaken for edits and must not cost the user an undo step. (They do still call
-                // setEdited(true), which clears REDO -- pre-existing, and deliberately left alone: gating the
-                // write on the edit flag would risk dropping a real edit if the flag were ever wrong.)
-                jt.setSelectionRow( 2 );
-                jt.setSelectionRow( 3 );
-                if ( "Edit Node Data".equals( tp.undoLabel() ) ) {
-                    fail( ok, "clicking through the node editor without editing must not push an undo entry" );
-                }
+                final NodeDataForm form = nf[ 0 ].getForm();
                 final String before = tp.getPhylogeny().getFirstExternalNode().getName();
-                TreePath name_row = null;
-                for( int i = 0; i < jt.getRowCount(); ++i ) {
-                    if ( before.equals( jt.getPathForRow( i ).getLastPathComponent().toString() ) ) {
-                        name_row = jt.getPathForRow( i );
-                        break;
-                    }
+                // Typing into a field is NOT a write: the tree stays as it was until the button is pressed.
+                form.setTextForTest( NodeDataDraft.NAME, "RENAMED" );
+                if ( !nf[ 0 ].isDirty() ) {
+                    fail( ok, "editing the name must make the editor dirty" );
                 }
-                if ( name_row == null ) {
-                    fail( ok, "could not find the editor row holding the node name" );
-                    return;
+                if ( !before.equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
+                    fail( ok, "typing must not reach the tree before Write" );
                 }
-                // A BARE CLICK is not an edit. editingStopped fires even when nothing was typed -- and this panel
-                // opens the inline editor by itself for any empty field -- so opening and closing the editor
-                // without changing the text must not count, or reading a node would cost an undo step.
-                jt.setSelectionPath( name_row );
-                jt.startEditingAtPath( name_row );
-                jt.stopEditing();
-                jt.setSelectionRow( 0 );
                 if ( "Edit Node Data".equals( tp.undoLabel() ) ) {
-                    fail( ok, "opening and closing a cell editor WITHOUT changing the text is not an edit" );
+                    fail( ok, "the checkpoint belongs on the WRITE, not on the edit itself" );
                 }
-                jt.setSelectionPath( name_row );
-                jt.startEditingAtPath( name_row );
-                // Type into the editor the way a user does: the inline editor is a JTextField inside the tree
-                // while editing. Setting the text and stopping the edit is what makes the COMMITTED value differ
-                // from the one the edit started at -- which is exactly what the panel watches for.
-                final javax.swing.JTextField field = findTextField( jt );
-                if ( field == null ) {
-                    fail( ok, "the node editor should use an inline text field" );
-                    return;
+                if ( !nf[ 0 ].writeNow() ) {
+                    fail( ok, "a valid edit should write" );
                 }
-                field.setText( "RENAMED" );
-                jt.stopEditing();
-                if ( "Edit Node Data".equals( tp.undoLabel() ) ) {
-                    fail( ok, "the checkpoint belongs on the WRITE, not on the cell edit itself" );
-                }
-                jt.setSelectionRow( 0 ); // moving off the row is what commits the field to the phylogeny
                 if ( !"RENAMED".equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
-                    fail( ok, "precondition: the edit should have reached the tree, got "
+                    fail( ok, "the edit should have reached the tree, got "
                             + tp.getPhylogeny().getFirstExternalNode().getName() );
+                }
+                if ( nf[ 0 ].isDirty() ) {
+                    fail( ok, "after a Write the editor must be clean again" );
                 }
                 if ( !tp.canUndo() || !"Edit Node Data".equals( tp.undoLabel() ) ) {
                     fail( ok, "a node-data edit should checkpoint 'Edit Node Data', got '" + tp.undoLabel() + "'" );
+                }
+                if ( !tp.isEdited() ) {
+                    fail( ok, "a Write must mark the tree edited (dirty file)" );
+                }
+                final String desc = tp.getPhylogeny().getDescription();
+                if ( ( desc == null ) || !desc.contains( "Manually edited the node data (Basic)" ) ) {
+                    fail( ok, "a Write must append a provenance sentence, got: " + desc );
                 }
                 tp.undo();
                 if ( !before.equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
@@ -577,9 +557,8 @@ public final class UndoRedoToolTest {
                     fail( ok, "undo must close the open node editor -- its node belongs to the replaced tree" );
                 }
             } );
-            // A THEME SWITCH must not turn the editor read-only. setDarkMode runs updateComponentTreeUI over every
-            // open window, which reinstalls the tree UI and SWAPS IN A NEW CELL EDITOR; a change-watcher bound only
-            // at construction would stop firing from then on.
+            // A THEME SWITCH must not break the editor: setDarkMode runs updateComponentTreeUI over every open
+            // window; the form's widgets are plain components bound by document listeners, which survive that.
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
                 final PhylogenyNode n2 = tp.getPhylogeny().getFirstExternalNode();
@@ -590,37 +569,12 @@ public final class UndoRedoToolTest {
                     return;
                 }
                 SwingUtilities.updateComponentTreeUI( nf[ 0 ] ); // what a light/dark switch does to this window
-                final JTree jt = findJTree( nf[ 0 ] );
-                if ( jt == null ) {
-                    fail( ok, "the node editor should still contain a JTree after a UI refresh" );
-                    return;
+                nf[ 0 ].getForm().setTextForTest( NodeDataDraft.NAME, "AFTER_THEME_SWITCH" );
+                if ( !nf[ 0 ].isDirty() ) {
+                    fail( ok, "a theme switch must not stop the editor noticing edits" );
                 }
-                for( int i = 0; i < jt.getRowCount(); ++i ) {
-                    jt.expandRow( i );
-                }
-                final String before2 = n2.getName();
-                TreePath row = null;
-                for( int i = 0; i < jt.getRowCount(); ++i ) {
-                    if ( before2.equals( jt.getPathForRow( i ).getLastPathComponent().toString() ) ) {
-                        row = jt.getPathForRow( i );
-                        break;
-                    }
-                }
-                if ( row == null ) {
-                    fail( ok, "could not find the name row after the UI refresh" );
-                    return;
-                }
-                jt.setSelectionPath( row );
-                jt.startEditingAtPath( row );
-                final javax.swing.JTextField field2 = findTextField( jt );
-                if ( field2 == null ) {
-                    fail( ok, "no inline text field after the UI refresh" );
-                    return;
-                }
-                field2.setText( "AFTER_THEME_SWITCH" );
-                jt.stopEditing();
-                jt.setSelectionRow( 0 );
-                if ( !"AFTER_THEME_SWITCH".equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
+                if ( !nf[ 0 ].writeNow()
+                        || !"AFTER_THEME_SWITCH".equals( tp.getPhylogeny().getFirstExternalNode().getName() ) ) {
                     fail( ok, "a theme switch must not stop the node editor writing edits through, name is "
                             + tp.getPhylogeny().getFirstExternalNode().getName() );
                 }
@@ -645,36 +599,6 @@ public final class UndoRedoToolTest {
         for( final java.awt.Window w : java.awt.Window.getWindows() ) {
             if ( ( w instanceof NodeFrame ) && w.isDisplayable() ) {
                 return (NodeFrame) w;
-            }
-        }
-        return null;
-    }
-
-    private static javax.swing.JTextField findTextField( final java.awt.Container c ) {
-        for( final java.awt.Component k : c.getComponents() ) {
-            if ( k instanceof javax.swing.JTextField ) {
-                return (javax.swing.JTextField) k;
-            }
-            if ( k instanceof java.awt.Container ) {
-                final javax.swing.JTextField f = findTextField( (java.awt.Container) k );
-                if ( f != null ) {
-                    return f;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static JTree findJTree( final java.awt.Container c ) {
-        for( final java.awt.Component k : c.getComponents() ) {
-            if ( k instanceof JTree ) {
-                return (JTree) k;
-            }
-            if ( k instanceof java.awt.Container ) {
-                final JTree t = findJTree( (java.awt.Container) k );
-                if ( t != null ) {
-                    return t;
-                }
             }
         }
         return null;

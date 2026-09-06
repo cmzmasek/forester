@@ -44,6 +44,16 @@ import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import java.awt.Color;
 import java.awt.Font;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Date;
+import org.forester.phylogeny.data.Distribution;
+import org.forester.phylogeny.data.Event;
+import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.Point;
+import org.forester.phylogeny.data.Reference;
+import org.forester.phylogeny.data.Uri;
+import java.math.BigDecimal;
+import java.net.URI;
 
 /**
  * Regenerates the synthetic demo trees under {@code forester/demo/}. Each tree is named after the feature it
@@ -100,6 +110,7 @@ public final class DemoTreeGenerator {
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
+        write( dir, "node-data-editor.xml", nodeDataEditorTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
@@ -313,6 +324,99 @@ public final class DemoTreeGenerator {
                              + "then click a node -> \"Node Style\", or select/search nodes and use Tools -> \"Node "
                              + "Style for Selected Nodes...\", to change the font (style/size/colour) and node mark "
                              + "(shape/fill/size/colour)." );
+    }
+
+
+    // ----- "Node data editor": a small gene-family tree whose nodes carry one of EVERYTHING the editor handles --
+    //       taxonomy (with id / code / rank / synonym / URI), TWO sequences on one tip (protein + mRNA), branch
+    //       confidences, a dated internal node with duplication/speciation events, a distribution with a point,
+    //       a literature reference, and typed properties. Click on Node -> "Edit Node Data" on the human tip.
+    private static Phylogeny nodeDataEditorTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode human = geneTip( "BRCA1_HUMAN", "Homo sapiens", "HUMAN", "9606", "human", "species",
+                                             "P38398", "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ" );
+        human.getNodeData().getTaxonomy().getSynonyms().add( "man" );
+        human.getNodeData().getTaxonomy().addUri( uri( "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606" ) );
+        final Sequence mrna = new Sequence();
+        mrna.setName( "BRCA1 mRNA" );
+        mrna.setType( "rna" );
+        mrna.setAccession( new Accession( "NM_007294", "RefSeq" ) );
+        mrna.setLocation( "chr17:43044295-43125483" );
+        human.getNodeData().addSequence( mrna ); // a SECOND sequence on the same tip
+        final List<Point> pts = new ArrayList<>();
+        pts.add( new Point( "WGS84", new BigDecimal( "37.77" ), new BigDecimal( "-122.42" ), new BigDecimal( "16" ),
+                            "m" ) );
+        human.getNodeData().setDistribution( new Distribution( "San Francisco sample site", pts ) );
+        num( human, "data:expression_tpm", "12.4" );
+        cat( human, "data:tissue", "breast" );
+        final PhylogenyNode chimp = geneTip( "BRCA1_PANTR", "Pan troglodytes", "PANTR", "9598", "chimpanzee",
+                                             "species", "Q9GKK8", "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ" );
+        num( chimp, "data:expression_tpm", "9.8" );
+        cat( chimp, "data:tissue", "breast" );
+        final PhylogenyNode macaque = geneTip( "BRCA1_MACMU", "Macaca mulatta", "MACMU", "9544", "rhesus macaque",
+                                               "species", "Q6J6I8", "MDLSAVRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ" );
+        num( macaque, "data:expression_tpm", "7.1" );
+        final PhylogenyNode mouse = geneTip( "BRCA1_MOUSE", "Mus musculus", "MOUSE", "10090", "house mouse",
+                                             "species", "P48754", "MDLSAVRIQEVQNVLHAMQKILECPICLELIKEPVSTQCDHIFCKFCMLKLLNQKKGPSQCPLCKNEITKRSLQ" );
+        num( mouse, "data:expression_tpm", "15.2" );
+        cat( mouse, "data:tissue", "mammary gland" );
+        final PhylogenyNode rat = geneTip( "BRCA1_RAT", "Rattus norvegicus", "RAT", "10116", "brown rat", "species",
+                                           "O54952", "MDLSAVRIQEVQNVLHAMQKILECPICLELIKEPVSTQCDHIFCKFCMLKLLNQKKGPSQCPLCKNEITKRSLQ" );
+        num( rat, "data:expression_tpm", "13.9" );
+        final PhylogenyNode apes = clade( 0.03, human, chimp );
+        apes.setName( "Hominini" );
+        apes.getBranchData().addConfidence( new Confidence( 100, "bootstrap" ) );
+        final PhylogenyNode primates = clade( 0.05, apes, macaque );
+        primates.setName( "Catarrhini" );
+        primates.getBranchData().addConfidence( new Confidence( 98, "bootstrap" ) );
+        primates.getBranchData().addConfidence( new Confidence( 0.99, "probability" ) );
+        primates.getNodeData().setDate( new Date( "primate crown", new BigDecimal( "29" ), new BigDecimal( "25" ),
+                                                  new BigDecimal( "34" ), "mya" ) );
+        final Taxonomy primate_tax = new Taxonomy();
+        primate_tax.setScientificName( "Catarrhini" );
+        primate_tax.setRank( "infraorder" );
+        primates.getNodeData().addTaxonomy( primate_tax );
+        final PhylogenyNode rodents = clade( 0.06, mouse, rat );
+        rodents.setName( "Murinae" );
+        rodents.getBranchData().addConfidence( new Confidence( 100, "bootstrap" ) );
+        final PhylogenyNode root = clade( 0, primates, rodents );
+        root.setName( "BRCA1 orthologs" );
+        root.getNodeData().setEvent( new Event( 0, 1, 0 ) );
+        root.getNodeData().setDate( new Date( "primate-rodent split", new BigDecimal( "90" ), new BigDecimal( "85" ),
+                                              new BigDecimal( "97" ), "mya" ) );
+        root.getNodeData().setReference( new Reference( "Miki Y et al. (1994) A strong candidate for the breast and "
+                + "ovarian cancer susceptibility gene BRCA1. Science 266:66-71", "10.1126/science.7545954" ) );
+        return tree( root, "Node Data Editor (demo)",
+                     "Every kind of node data the editor handles, on a small BRCA1 ortholog tree: taxonomy, two "
+                             + "sequences on the human tip, confidences, a dated node with a speciation event, a "
+                             + "distribution, a reference, and typed properties. Set \"Click on Node to: Edit Node "
+                             + "Data\" and click a node. Schematic sequences (truncated), not real data." );
+    }
+
+    private static PhylogenyNode geneTip( final String name, final String species, final String code, final String tax_id,
+                                          final String common_name, final String rank, final String accession,
+                                          final String mol_seq ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( species );
+        t.setTaxonomyCode( code );
+        t.setIdentifier( new Identifier( tax_id, "ncbi" ) );
+        t.setCommonName( common_name );
+        t.setRank( rank );
+        n.getNodeData().addTaxonomy( t );
+        final Sequence s = new Sequence();
+        s.setName( name );
+        s.setSymbol( "BRCA1" );
+        s.setGeneName( "BRCA1" );
+        s.setType( "protein" );
+        s.setAccession( new Accession( accession, "UniProt" ) );
+        s.setMolecularSequence( mol_seq );
+        s.addUri( uri( "https://www.uniprot.org/uniprotkb/" + accession ) );
+        n.getNodeData().addSequence( s );
+        return n;
+    }
+
+    private static Uri uri( final String s ) {
+        return new Uri( URI.create( s ) );
     }
 
     private static PhylogenyNode styledLeaf( final String name, final int font_style, final int font_size,

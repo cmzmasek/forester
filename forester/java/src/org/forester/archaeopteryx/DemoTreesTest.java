@@ -182,6 +182,12 @@ public final class DemoTreesTest {
         ok &= hasNodeVisualStyle( "node-visual-styles.xml", 3 );
         ok &= hasNodeShape( "node-visual-styles.xml", NodeVisualData.NodeShape.DIAMOND ); // round-trips the diamond
 
+        // node data editor: one of everything the editor handles -- a tip with TWO sequences, properties, a
+        // distribution, and a dated internal node with an event -- and every node reads into the editor's draft
+        // model without a validation problem
+        ok &= hasAtLeastTips( "node-data-editor.xml", 5 );
+        ok &= nodeDataEditorDemoOk( "node-data-editor.xml" );
+
         // infer ancestor taxonomies: six real-species tips (rank 'species'), NO taxonomy on the internal nodes,
         // ready for Analysis > Infer Ancestor Taxonomies (which resolves the tips online and fills the internals)
         ok &= hasAtLeastTips( "infer-ancestor-taxonomies.xml", 6 );
@@ -519,6 +525,45 @@ public final class DemoTreesTest {
         }
         if ( len < 10 ) {
             return note( file_name + " alignment must have at least 10 columns" );
+        }
+        return true;
+    }
+
+    /** The node-data-editor demo has the shape the editor exists for, and reads cleanly into its draft model. */
+    private static boolean nodeDataEditorDemoOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        boolean two_sequences = false, properties = false, distribution = false, dated_event = false;
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            final org.forester.phylogeny.data.NodeData nd = n.getNodeData();
+            two_sequences |= nd.isHasSequence() && ( nd.getSequences().size() >= 2 );
+            properties |= nd.isHasProperties();
+            distribution |= nd.isHasDistribution() && ( nd.getDistribution().getPoints() != null )
+                    && !nd.getDistribution().getPoints().isEmpty();
+            dated_event |= !n.isExternal() && nd.isHasEvent() && nd.isHasDate();
+            final NodeDataDraft d = NodeDataDraft.from( n );
+            final java.util.List<NodeDataDraft.Problem> ps = d.validate( !n.isExternal() );
+            if ( !ps.isEmpty() ) {
+                return note( file_name + ": node " + n.getName() + " does not validate in the editor: " + ps.get( 0 ) );
+            }
+            if ( !d.copy().writeTo( n, d ).isEmpty() ) {
+                return note( file_name + ": an unchanged draft of " + n.getName() + " must write nothing" );
+            }
+        }
+        if ( !two_sequences ) {
+            return note( file_name + " needs a tip carrying TWO sequences" );
+        }
+        if ( !properties ) {
+            return note( file_name + " needs properties" );
+        }
+        if ( !distribution ) {
+            return note( file_name + " needs a distribution with a point" );
+        }
+        if ( !dated_event ) {
+            return note( file_name + " needs a dated internal node with an event" );
         }
         return true;
     }

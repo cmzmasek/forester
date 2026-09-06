@@ -237,8 +237,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        System.out.print("Node edit panel: ");
-        if (org.forester.archaeopteryx.NodeEditPanelTest.test()) {
+        System.out.print("Node data draft: ");
+        if (org.forester.archaeopteryx.NodeDataDraftTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Node data form: ");
+        if (org.forester.archaeopteryx.NodeDataFormTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Node frame: ");
+        if (org.forester.archaeopteryx.NodeFrameTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

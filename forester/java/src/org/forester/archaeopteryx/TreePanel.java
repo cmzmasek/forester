@@ -939,7 +939,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Compute + cache the break cap AND the resulting capped tree height, by tree identity (both depend only on the
-     *  tree's branch-length distribution). NOTE: keyed by tree IDENTITY, so an in-place branch-length edit (NodeEditPanel,
+     *  tree's branch-length distribution). NOTE: keyed by tree IDENTITY, so an in-place branch-length edit (NodeDataForm,
      *  which mutates _phylogeny without replacing it) leaves this stale until the tree object is swapped (nav / undo /
      *  paste) -- the same accepted cache-invalidation class as {@link #maxNodeDateValue()} and the color-by caches. */
     private void ensureBreakCap() {
@@ -6922,24 +6922,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void showNodeEditFrame(final PhylogenyNode n) { // package-visible so a test can open one the way the UI does
-        if (_node_frame_index < TreePanel.MAX_NODE_FRAMES) {
-            // Node-data edits ARE undoable ("Edit Node Data"), but the checkpoint is NOT taken here: writeBack
-            // commits fields on every selection change and on close, so a checkpoint on mere open would push a
-            // no-op undo -- and clear the redo stack -- for someone who only inspects a node. NodeEditPanel
-            // instead snapshots on the first write that FOLLOWS a committed cell edit, so one editor visit is
-            // exactly one undo step, and a visit that changes nothing leaves the history untouched.
-            // pop up edit box for single node
-            _node_frames[_node_frame_index] = new NodeFrame(n, _phylogeny, this, _node_frame_index, "");
-            _node_frame_index++;
-        } else {
-            JOptionPane.showMessageDialog(this, "too many node windows are open");
-        }
+        // Node-data edits ARE undoable ("Edit Node Data"), but the checkpoint is NOT taken here: nothing reaches
+        // the tree until the editor's "Write to Tree", which checkpoints right before it writes -- so one Write is
+        // exactly one undo step, and opening a node just to look at it leaves the history untouched.
+        openNodeFrame(n, NodeDataForm.Mode.EDIT);
     }
 
     final private void showNodeFrame(final PhylogenyNode n) {
+        openNodeFrame(n, NodeDataForm.Mode.VIEW);
+    }
+
+    private void openNodeFrame(final PhylogenyNode n, final NodeDataForm.Mode mode) {
         if (_node_frame_index < TreePanel.MAX_NODE_FRAMES) {
-            // pop up edit box for single node
-            _node_frames[_node_frame_index] = new NodeFrame(n, _phylogeny, this, _node_frame_index);
+            _node_frames[_node_frame_index] = new NodeFrame(n, this, _node_frame_index, mode);
             _node_frame_index++;
         } else {
             JOptionPane.showMessageDialog(this, "too many node windows are open");
@@ -14599,10 +14594,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _node_frame_index;
     }
 
+    /** For tests: whether {@code frame} is one of the node windows this panel currently tracks. */
+    boolean isNodeFrameTrackedForTest(final NodeFrame frame) {
+        for (int j = 0; j < _node_frame_index; ++j) {
+            if (_node_frames[j] == frame) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void closeAllNodeFrames() {
         // Disposed and cleared DIRECTLY rather than through NodeFrame.close(), which calls back into
-        // removeEditNodeFrame and compacts the array underneath the loop (its stored _index is not updated by the
-        // compaction, so a callback-driven loop can close a frame twice).
+        // removeEditNodeFrame and compacts the array underneath this loop. (Unsaved edits in an open editor are
+        // discarded here: the tree they were made against is being replaced.)
         for (int i = 0; i < _node_frames.length; ++i) {
             if (_node_frames[i] != null) {
                 _node_frames[i].dispose();
@@ -14612,15 +14617,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _node_frame_index = 0;
     }
 
-    final void removeEditNodeFrame(final int i) {
-        _node_frame_index--;
-        _node_frames[i] = null;
-        if (i < _node_frame_index) {
-            for (int j = 0; j < (_node_frame_index - 1); j++) {
-                _node_frames[j] = _node_frames[j + 1];
+    /** Releases a closed node window's slot (found by IDENTITY -- the array is compacted on every close, so a
+     *  slot index remembered at open time goes stale) and closes the gap. */
+    final void removeEditNodeFrame(final NodeFrame frame) {
+        int i = -1;
+        for (int j = 0; j < _node_frame_index; ++j) {
+            if (_node_frames[j] == frame) {
+                i = j;
+                break;
             }
-            _node_frames[_node_frame_index] = null;
         }
+        if (i < 0) {
+            return; // already released (e.g. closed by an undo)
+        }
+        for (int j = i; j < (_node_frame_index - 1); ++j) {
+            _node_frames[j] = _node_frames[j + 1];
+        }
+        _node_frames[--_node_frame_index] = null;
     }
 
     final void reRoot(final PhylogenyNode node) {

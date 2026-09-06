@@ -333,7 +333,8 @@ public class NodeData implements PhylogenyData {
         _distributions.set( index, distribution );
     }
 
-    private void setDistributions( final List<Distribution> distributions ) {
+    /** Replaces the whole list; null removes the element altogether (so the node no longer "has" it). */
+    public void setDistributions( final List<Distribution> distributions ) {
         _distributions = distributions;
     }
 
@@ -368,7 +369,8 @@ public class NodeData implements PhylogenyData {
         }
     }
 
-    private void setReferences( final List<Reference> references ) {
+    /** Replaces the whole list; null removes the element altogether (so the node no longer "has" it). */
+    public void setReferences( final List<Reference> references ) {
         _references = references;
     }
 
@@ -395,11 +397,13 @@ public class NodeData implements PhylogenyData {
         }
     }
 
-    private void setSequences( final List<Sequence> sequences ) {
+    /** Replaces the whole list; null removes the element altogether (so the node no longer "has" it). */
+    public void setSequences( final List<Sequence> sequences ) {
         _sequences = sequences;
     }
 
-    private void setTaxonomies( final List<Taxonomy> taxonomies ) {
+    /** Replaces the whole list; null removes the element altogether (so the node no longer "has" it). */
+    public void setTaxonomies( final List<Taxonomy> taxonomies ) {
         _taxonomies = taxonomies;
     }
 
