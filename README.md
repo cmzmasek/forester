@@ -16,6 +16,7 @@ for phylogenetic trees.
 >
 > - **Home page & downloads → <https://cmzmasek.github.io/archaeopteryx/>**
 > - **Documentation & releases → <https://github.com/cmzmasek/archaeopteryx>**
+> - **Online version (Archaeopteryx.js, runs in the browser) → <https://cmzmasek.github.io/archaeopteryx-js/>**
 >
 > Native installers (macOS `.dmg`, Windows `.msi`, Linux `.deb`) bundle a Java
 > runtime, so there is nothing else to install. The Archaeopteryx **source code**
