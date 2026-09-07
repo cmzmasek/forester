@@ -23,17 +23,12 @@ package org.forester.archaeopteryx;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +43,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -60,16 +54,13 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
+
+import static org.forester.archaeopteryx.FormWidgets.*;
 
 import org.forester.archaeopteryx.NodeDataDraft.ConfidenceDraft;
 import org.forester.archaeopteryx.NodeDataDraft.Problem;
@@ -102,7 +93,7 @@ import org.forester.util.TaxonomyUtil;
  * The window chrome (buttons, status line, close confirmation) lives in {@link NodeFrame}; this panel is a plain
  * {@code JPanel} so its logic runs headless in tests.
  */
-final class NodeDataForm extends JPanel {
+final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     enum Mode {
         VIEW,
@@ -110,12 +101,7 @@ final class NodeDataForm extends JPanel {
     }
 
     private static final long serialVersionUID = 1L;
-    private static final int  SECTION_INDENT   = 18;
     private static final int  MOL_SEQ_ROWS     = 3;
-    /** The preferred width a read-only value reports (it stretches to the row anyway). */
-    private static final int  VIEW_VALUE_WIDTH = 120;
-    /** The header title's size relative to the body font. */
-    static final float        TITLE_SCALE      = 1.15f;
 
     private final PhylogenyNode                 _node;
     private final TreePanel                     _tree_panel;
@@ -142,27 +128,6 @@ final class NodeDataForm extends JPanel {
     private List<Problem>                       _current_problems;
     private final DocumentListener              _doc_listener   = onChange( this::fireChanged );
 
-    /** A document listener that runs {@code r} on every kind of change. */
-    private static DocumentListener onChange( final Runnable r ) {
-        return new DocumentListener() {
-
-            @Override
-            public void insertUpdate( final DocumentEvent e ) {
-                r.run();
-            }
-
-            @Override
-            public void removeUpdate( final DocumentEvent e ) {
-                r.run();
-            }
-
-            @Override
-            public void changedUpdate( final DocumentEvent e ) {
-                r.run();
-            }
-        };
-    }
-
     NodeDataForm( final PhylogenyNode node, final TreePanel tree_panel, final Mode mode ) {
         super( new BorderLayout() );
         _node = node;
@@ -171,15 +136,10 @@ final class NodeDataForm extends JPanel {
         _internal = !node.isExternal();
         _baseline = NodeDataDraft.from( node );
         _label_width = getFontMetrics( getFont() ).stringWidth( "Scientific name" ) + 12;
-        add( buildHeader(), BorderLayout.NORTH );
-        final JPanel page = new ScrollablePage();
-        page.setLayout( new BoxLayout( page, BoxLayout.Y_AXIS ) );
-        page.setBorder( BorderFactory.createEmptyBorder( 4, 14, 10, 14 ) );
+        add( new Header( nodeLabel( _node ), headerSubtitle( _node ) ), BorderLayout.NORTH );
+        final JPanel page = newPage();
         buildSections( page, _baseline );
-        _scroll = new JScrollPane( page );
-        _scroll.setBorder( BorderFactory.createEmptyBorder() );
-        _scroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-        _scroll.getVerticalScrollBar().setUnitIncrement( 16 );
+        _scroll = pageScroller( page );
         add( _scroll, BorderLayout.CENTER );
         _building = false;
         applyProblems( problems() );
@@ -192,7 +152,13 @@ final class NodeDataForm extends JPanel {
     }
 
     // ------------------------------------------------------------------ public-ish API (used by NodeFrame + tests)
-    boolean isEditable() {
+    @Override
+    public JComponent component() {
+        return this;
+    }
+
+    @Override
+    public boolean isEditable() {
         return _mode == Mode.EDIT;
     }
 
@@ -202,7 +168,8 @@ final class NodeDataForm extends JPanel {
     }
 
     /** Notified whenever a value changes (so dirtiness / validity may have changed). */
-    void addChangeListener( final Runnable r ) {
+    @Override
+    public void addChangeListener( final Runnable r ) {
         _change_listeners.add( r );
     }
 
@@ -263,12 +230,14 @@ final class NodeDataForm extends JPanel {
         return d;
     }
 
-    boolean isDirty() {
+    @Override
+    public boolean isDirty() {
         return isEditable() && !collect().equals( _baseline );
     }
 
     /** Every current validation problem (empty = writable); cached with the draft. Always empty in VIEW mode. */
-    List<Problem> problems() {
+    @Override
+    public List<Problem> problems() {
         if ( !isEditable() ) {
             return java.util.Collections.emptyList();
         }
@@ -284,7 +253,8 @@ final class NodeDataForm extends JPanel {
      * {@link NodeDataDraft#writeTo}), a provenance sentence on the tree, then the tree panel is refreshed. A draft
      * with no changes is a no-op that still returns true; an invalid one returns false and touches nothing.
      */
-    boolean write() {
+    @Override
+    public boolean write() {
         if ( !isEditable() ) {
             return false;
         }
@@ -452,24 +422,11 @@ final class NodeDataForm extends JPanel {
     }
 
     // ------------------------------------------------------------------ building
-    private JComponent buildHeader() {
-        final JPanel header = new JPanel( new BorderLayout( 0, 2 ) );
-        header.setBorder( BorderFactory.createEmptyBorder( 12, 14, 8, 14 ) );
-        final JLabel title = new JLabel( nodeLabel( _node ) );
-        // a heading, not a banner: bold and only slightly larger than the body text (user feedback 2026-09-06)
-        title.setFont( title.getFont().deriveFont( Font.BOLD, title.getFont().getSize2D() * TITLE_SCALE ) );
-        final JLabel subtitle = new JLabel( headerSubtitle( _node ) );
-        subtitle.setForeground( mutedColor() );
-        header.add( title, BorderLayout.NORTH );
-        header.add( subtitle, BorderLayout.CENTER );
-        return header;
-    }
-
     private void buildSections( final JPanel page, final NodeDataDraft d ) {
         final NodeData nd = _node.getNodeData();
         // -- Basic --
         {
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addText( g, "Name", NodeDataDraft.NAME, d.name, null );
             addText( g, "Branch length", NodeDataDraft.BRANCH_LENGTH, d.branchLength,
                      _node.isRoot() ? "none (root)" : null, "Width", NodeDataDraft.BRANCH_WIDTH, d.branchWidth, "1" );
@@ -484,7 +441,7 @@ final class NodeDataForm extends JPanel {
                 holder.setOpaque( false );
                 holder.add( _confidence_list, BorderLayout.CENTER );
                 if ( isEditable() ) {
-                    holder.add( addButton( "+ Add confidence", () -> addConfidenceRow( new ConfidenceDraft(), true ) ),
+                    holder.add( linkButton( "+ Add confidence", () -> addConfidenceRow( new ConfidenceDraft(), true ) ),
                                 BorderLayout.SOUTH );
                 }
                 g.row( "Confidence", holder, true );
@@ -509,7 +466,7 @@ final class NodeDataForm extends JPanel {
         }
         // -- Taxonomy --
         {
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addText( g, "Scientific name", NodeDataDraft.TAX_SCI_NAME, d.taxSciName, "e.g. Homo sapiens" );
             addText( g, "Code", NodeDataDraft.TAX_CODE, d.taxCode, "e.g. HUMAN", "Rank", NodeDataDraft.TAX_RANK,
                      d.taxRank, rankChoices(), true );
@@ -538,7 +495,7 @@ final class NodeDataForm extends JPanel {
             holder.setOpaque( false );
             holder.add( _sequence_list, BorderLayout.CENTER );
             if ( isEditable() ) {
-                holder.add( addButton( "+ Add sequence", () -> addSequenceCard( new SequenceDraft(), true ) ),
+                holder.add( linkButton( "+ Add sequence", () -> addSequenceCard( new SequenceDraft(), true ) ),
                             BorderLayout.SOUTH );
             }
             if ( isEditable() || !d.sequences.isEmpty() ) {
@@ -547,7 +504,7 @@ final class NodeDataForm extends JPanel {
         }
         // -- Events (internal nodes only) --
         if ( _internal ) {
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addText( g, "Duplications", NodeDataDraft.EV_DUPLICATIONS, d.duplications, "0" );
             addText( g, "Speciations", NodeDataDraft.EV_SPECIATIONS, d.speciations, "0" );
             addText( g, "Gene losses", NodeDataDraft.EV_GENE_LOSSES, d.geneLosses, "0" );
@@ -569,7 +526,7 @@ final class NodeDataForm extends JPanel {
         }
         // -- Date --
         {
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addText( g, "Value", NodeDataDraft.DATE_VALUE, d.dateValue, null, "Unit", NodeDataDraft.DATE_UNIT,
                      d.dateUnit, "e.g. mya" );
             addText( g, "Min", NodeDataDraft.DATE_MIN, d.dateMin, null, "Max", NodeDataDraft.DATE_MAX, d.dateMax,
@@ -581,7 +538,7 @@ final class NodeDataForm extends JPanel {
         }
         // -- Distribution --
         {
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addText( g, "Description", NodeDataDraft.DIST_DESC, d.distDesc, "e.g. Pacific Northwest" );
             addText( g, "Latitude", NodeDataDraft.DIST_LAT, d.distLat, "-90 to 90", "Longitude",
                      NodeDataDraft.DIST_LONG, d.distLong, "-180 to 180" );
@@ -594,7 +551,7 @@ final class NodeDataForm extends JPanel {
         }
         // -- Reference --
         {
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addText( g, "DOI", NodeDataDraft.REF_DOI, d.refDoi, "e.g. 10.1093/bioinformatics/btq243" );
             addText( g, "Description", NodeDataDraft.REF_DESC, d.refDesc, null );
             if ( isEditable() || d.hasReference() ) {
@@ -604,7 +561,7 @@ final class NodeDataForm extends JPanel {
         // -- Binary characters (view only) --
         if ( !isEditable() && nd.isHasBinaryCharacters() ) {
             final BinaryCharacters bc = nd.getBinaryCharacters();
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             viewRow( g, "Present", bc.getPresentCount() + "  " + bc.getPresentCharactersAsStringBuffer() );
             viewRow( g, "Gained", bc.getGainedCount() + "  " + bc.getGainedCharactersAsStringBuffer() );
             viewRow( g, "Lost", bc.getLostCount() + "  " + bc.getLostCharactersAsStringBuffer() );
@@ -662,7 +619,7 @@ final class NodeDataForm extends JPanel {
             if ( isEditable() ) {
                 final JPanel buttons = new JPanel( new FlowLayout( FlowLayout.LEFT, 4, 0 ) );
                 buttons.setOpaque( false );
-                buttons.add( addButton( "+ Add property", () -> {
+                buttons.add( linkButton( "+ Add property", () -> {
                     _property_model.add( new PropertyDraft() );
                     final int row = _property_model.getRowCount() - 1;
                     _property_table.setRowSelectionInterval( row, row );
@@ -672,7 +629,7 @@ final class NodeDataForm extends JPanel {
                         ed.requestFocusInWindow();
                     }
                 } ) );
-                _remove_property_button = addButton( "− Remove property", () -> {
+                _remove_property_button = linkButton( "− Remove property", () -> {
                     final int row = _property_table.getSelectedRow();
                     if ( row >= 0 ) {
                         commitTableEdits();
@@ -822,82 +779,6 @@ final class NodeDataForm extends JPanel {
         ta.getDocument().addDocumentListener( _doc_listener );
         register( key, ta );
         return areaScrollPane( ta, monospace );
-    }
-
-    /** An editable single-line field: placeholder hint, and a click puts the caret where you click (no select-all). */
-    private static JTextField editField( final String value, final String placeholder ) {
-        final JTextField tf = new JTextField( value, 10 ); // a column count: the TEXT must not size the grid
-        if ( placeholder != null ) {
-            tf.putClientProperty( "JTextField.placeholderText", placeholder );
-        }
-        tf.putClientProperty( "JTextField.selectAllOnFocusPolicy", "never" );
-        return tf;
-    }
-
-    /** A read-only value that still looks like text (selectable, copyable), not like a disabled field. */
-    private static JComponent viewValue( final String value, final boolean multiline ) {
-        final JTextComponent tc;
-        if ( multiline ) {
-            final JTextArea ta = new JTextArea( value ) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public Dimension getPreferredSize() {
-                    // the HEIGHT follows the wrapped text at the current width; the WIDTH must never be the text's
-                    // (a wrapped area reports its last laid-out width, which would ratchet the grid wider than the
-                    // window -- and GridBagLayout answers an over-wide grid by collapsing every row to its minimum)
-                    final Dimension d = super.getPreferredSize();
-                    return new Dimension( VIEW_VALUE_WIDTH, d.height );
-                }
-            };
-            ta.setLineWrap( true );
-            ta.setWrapStyleWord( true );
-            tc = ta;
-        }
-        else {
-            tc = new JTextField( value ) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public Dimension getPreferredSize() {
-                    final Dimension d = super.getPreferredSize();
-                    return new Dimension( Math.min( d.width, VIEW_VALUE_WIDTH ), d.height );
-                }
-            };
-        }
-        tc.setFocusable( false ); // read-only: no caret, no focus ring; the value is display, not input
-        tc.setEditable( false );
-        tc.setOpaque( false );
-        tc.setBorder( BorderFactory.createEmptyBorder( 2, 0, 2, 0 ) );
-        tc.setForeground( UIManager.getColor( "Label.foreground" ) );
-        if ( tc.getCaret() instanceof DefaultCaret ) {
-            // a read-only value must never scroll the page to itself (a long mol seq would open the window scrolled)
-            ( (DefaultCaret) tc.getCaret() ).setUpdatePolicy( DefaultCaret.NEVER_UPDATE );
-        }
-        tc.setCaretPosition( 0 );
-        return tc;
-    }
-
-    private JButton addButton( final String text, final Runnable action ) {
-        final JButton b = new JButton( text );
-        b.putClientProperty( "JButton.buttonType", "toolBarButton" );
-        b.setHorizontalAlignment( SwingConstants.LEFT );
-        b.setFocusable( false );
-        b.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-        b.addActionListener( e -> action.run() );
-        return b;
-    }
-
-    private JButton removeButton( final String tooltip, final Runnable action ) {
-        final JButton b = new JButton( "×" );
-        b.putClientProperty( "JButton.buttonType", "toolBarButton" );
-        b.setToolTipText( tooltip );
-        b.setFocusable( false );
-        b.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-        b.addActionListener( e -> action.run() );
-        return b;
     }
 
     // ---- confidences ----
@@ -1083,7 +964,7 @@ final class NodeDataForm extends JPanel {
                           BorderLayout.EAST );
             }
             add( head, BorderLayout.NORTH );
-            final Grid g = new Grid();
+            final Grid g = new Grid( _label_width );
             addCardText( g, "Name", NodeDataDraft.SEQ_NAME, s.name, null, "Symbol", NodeDataDraft.SEQ_SYMBOL,
                          s.symbol, "e.g. BRCA1" );
             if ( isEditable() ) {
@@ -1453,183 +1334,6 @@ final class NodeDataForm extends JPanel {
         }
     }
 
-    // ---- collapsible section ----
-    private final class Section extends JPanel {
-
-        private static final long serialVersionUID = 1L;
-        private final JComponent  _body;
-        private final JButton     _header;
-        private final JLabel      _detail;
-        private boolean           _expanded;
-
-        Section( final String title, final String detail, final JComponent body, final boolean expanded ) {
-            super( new BorderLayout() );
-            setOpaque( false );
-            setAlignmentX( LEFT_ALIGNMENT );
-            _body = body;
-            _expanded = expanded;
-            _header = new JButton( title );
-            _header.putClientProperty( "JButton.buttonType", "toolBarButton" );
-            _header.setHorizontalAlignment( SwingConstants.LEFT );
-            _header.setFont( _header.getFont().deriveFont( Font.BOLD ) );
-            _header.setFocusable( false );
-            _header.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-            _header.addActionListener( e -> toggle() );
-            _detail = new JLabel( ( detail == null ) ? "" : detail );
-            _detail.setForeground( mutedColor() );
-            final JPanel head = new JPanel( new BorderLayout( 6, 0 ) );
-            head.setOpaque( false );
-            head.add( _header, BorderLayout.WEST );
-            head.add( _detail, BorderLayout.CENTER );
-            head.setBorder( BorderFactory.createCompoundBorder( BorderFactory
-                    .createMatteBorder( 1, 0, 0, 0, borderColor() ), BorderFactory.createEmptyBorder( 4, 0, 4, 0 ) ) );
-            head.addMouseListener( new MouseAdapter() {
-
-                @Override
-                public void mouseClicked( final MouseEvent e ) {
-                    toggle();
-                }
-            } );
-            head.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-            add( head, BorderLayout.NORTH );
-            final JPanel body_wrap = new JPanel( new BorderLayout() );
-            body_wrap.setOpaque( false );
-            body_wrap.setBorder( BorderFactory.createEmptyBorder( 2, SECTION_INDENT, 10, 0 ) );
-            body_wrap.add( body, BorderLayout.CENTER );
-            add( body_wrap, BorderLayout.CENTER );
-            body_wrap.setVisible( expanded );
-            updateIcon();
-        }
-
-        boolean isExpanded() {
-            return _expanded;
-        }
-
-        void toggle() {
-            _expanded = !_expanded;
-            ( (JComponent) getComponent( 1 ) ).setVisible( _expanded );
-            updateIcon();
-            revalidatePage();
-        }
-
-        void setDetail( final String detail ) {
-            _detail.setText( ( detail == null ) ? "" : detail );
-        }
-
-        private void updateIcon() {
-            final Icon icon = UIManager.getIcon( _expanded ? "Tree.expandedIcon" : "Tree.collapsedIcon" );
-            _header.setIcon( icon );
-            if ( icon == null ) {
-                _header.setText( ( _expanded ? "▾ " : "▸ " ) + _header.getText().replaceFirst( "^[▾▸] ", "" ) );
-            }
-        }
-
-        @Override
-        public Dimension getMaximumSize() {
-            final Dimension d = super.getPreferredSize();
-            return new Dimension( Integer.MAX_VALUE, d.height );
-        }
-    }
-
-    // ---- the label/field grid used inside every section ----
-    private final class Grid extends JPanel {
-
-        private static final long serialVersionUID = 1L;
-        private int               _row             = 0;
-
-        Grid() {
-            super( new GridBagLayout() );
-            setOpaque( false );
-        }
-
-        void row( final String label, final JComponent field, final boolean top_aligned ) {
-            row( makeLabel( label ), field, top_aligned );
-        }
-
-        void row( final JComponent label, final JComponent field, final boolean top_aligned ) {
-            final GridBagConstraints c = base( top_aligned );
-            c.gridx = 0;
-            c.weightx = 0;
-            add( label, c );
-            c.gridx = 1;
-            c.gridwidth = 3;
-            c.weightx = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.insets = new Insets( 3, 0, 3, 0 );
-            add( field, c );
-            _row++;
-        }
-
-        void row( final String label, final JComponent field, final String label2, final JComponent field2 ) {
-            final GridBagConstraints c = base( false );
-            c.gridx = 0;
-            c.weightx = 0;
-            add( makeLabel( label ), c );
-            c.gridx = 1;
-            c.weightx = 0.6;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.insets = new Insets( 3, 0, 3, 0 );
-            add( field, c );
-            c.gridx = 2;
-            c.weightx = 0;
-            c.fill = GridBagConstraints.NONE;
-            c.insets = new Insets( 3, 14, 3, 8 );
-            final JLabel l2 = new JLabel( label2 );
-            add( l2, c );
-            c.gridx = 3;
-            c.weightx = 0.4;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.insets = new Insets( 3, 0, 3, 0 );
-            add( field2, c );
-            _row++;
-        }
-
-        private GridBagConstraints base( final boolean top_aligned ) {
-            final GridBagConstraints c = new GridBagConstraints();
-            c.gridy = _row;
-            c.insets = new Insets( 3, 0, 3, 8 );
-            c.anchor = top_aligned ? GridBagConstraints.NORTHWEST : GridBagConstraints.WEST;
-            return c;
-        }
-
-        private JLabel makeLabel( final String text ) {
-            final JLabel l = new JLabel( text );
-            final Dimension d = l.getPreferredSize();
-            l.setPreferredSize( new Dimension( Math.max( _label_width, d.width ), d.height ) );
-            return l;
-        }
-    }
-
-    /** The scrolling page: tracks the viewport WIDTH (so nothing scrolls sideways) but not the height. */
-    private static final class ScrollablePage extends JPanel implements Scrollable {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public Dimension getPreferredScrollableViewportSize() {
-            return getPreferredSize();
-        }
-
-        @Override
-        public int getScrollableUnitIncrement( final Rectangle r, final int o, final int d ) {
-            return 16;
-        }
-
-        @Override
-        public int getScrollableBlockIncrement( final Rectangle r, final int o, final int d ) {
-            return Math.max( 16, r.height - 16 );
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            return true;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight() {
-            return false;
-        }
-    }
 
     // ------------------------------------------------------------------ plumbing
     private void register( final String key, final JComponent c ) {
@@ -1775,63 +1479,6 @@ final class NodeDataForm extends JPanel {
         }
         tp.setEdited( true );
         tp.repaint();
-    }
-
-    /** The small scrolling box around a multi-line field: its height is fixed by the area's row count (so a long
-     *  value scrolls inside it), it hands the mouse wheel to the page when it cannot scroll itself, and it keeps
-     *  that height even if the surrounding grid falls back to minimum sizes. */
-    private static JScrollPane areaScrollPane( final JTextArea ta, final boolean wrap ) {
-        final JScrollPane sp = new JScrollPane( ta );
-        sp.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
-        sp.setHorizontalScrollBarPolicy( wrap ? JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-                : JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
-        final Dimension pref = sp.getPreferredSize();
-        sp.setMinimumSize( new Dimension( 60, pref.height ) );
-        forwardWheelWhenIdle( sp );
-        return sp;
-    }
-
-    /** A nested text-area scroll pane hands the wheel to the page when it cannot scroll further itself. */
-    private static void forwardWheelWhenIdle( final JScrollPane inner ) {
-        inner.addMouseWheelListener( e -> {
-            final javax.swing.JScrollBar bar = inner.getVerticalScrollBar();
-            final boolean can_scroll = bar.isVisible()
-                    && ( ( e.getWheelRotation() < 0 ) ? ( bar.getValue() > bar.getMinimum() )
-                            : ( bar.getValue() + bar.getVisibleAmount() < bar.getMaximum() ) );
-            if ( !can_scroll ) {
-                final Component parent = inner.getParent();
-                if ( parent != null ) {
-                    final MouseWheelEvent copy = new MouseWheelEvent( parent, e.getID(), e.getWhen(),
-                            e.getModifiersEx(), e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(),
-                            e.getScrollType(), e.getScrollAmount(), e.getWheelRotation() );
-                    parent.dispatchEvent( copy );
-                    e.consume();
-                }
-            }
-        } );
-    }
-
-    private static Color mutedColor() {
-        final Color c = UIManager.getColor( "Label.disabledForeground" );
-        return ( c != null ) ? c : Color.GRAY;
-    }
-
-    private static Color borderColor() {
-        final Color c = UIManager.getColor( "Component.borderColor" );
-        return ( c != null ) ? c : Color.LIGHT_GRAY;
-    }
-
-    /** Error TEXT colour (FlatLaf's action red reads on both themes; the border red is too dim on dark). */
-    private static Color errorColor() {
-        Color c = UIManager.getColor( "Actions.Red" );
-        if ( c == null ) {
-            c = UIManager.getColor( "Component.error.focusedBorderColor" );
-        }
-        return ( c != null ) ? c : new Color( 0xD0342C );
-    }
-
-    private static Font monoFont( final Font base ) {
-        return new Font( Font.MONOSPACED, Font.PLAIN, base.getSize() );
     }
 
     private static List<String> nonEmpty( final List<String> in ) {

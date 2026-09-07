@@ -388,6 +388,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private ComponentAdapter _popup_hider_component_listener;
     private int _node_frame_index = 0;
     private final NodeFrame[] _node_frames = new NodeFrame[TreePanel.MAX_NODE_FRAMES];
+    /** The per-tab Tree Properties window, or null while closed (see openTreePropertiesFrame). */
+    private TreePropertiesFrame _tree_properties_frame;
+    /** The per-tab "Tree as Text" window, or null while closed (see openTreeTextFrame). */
+    private TreeTextFrame _tree_text_frame;
     private JPopupMenu _node_popup_menu = null;
     private JMenuItem _node_popup_menu_items[] = null;
     private PhylogenyNode[] _nodes_in_preorder = null;
@@ -742,6 +746,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     public final void setEdited(final boolean edited) {
         _edited = edited;
+        markTreeWindowsStale(); // the Tree Properties / Tree as Text windows show the tree: let them re-read it
         // Undo/redo safety net: any edit made outside of an undo/redo restore invalidates the redo history
         // (it no longer describes a reachable future). Checkpointed ops already clear redo via checkpoint();
         // this also covers mutations that were NOT checkpointed, so a later Redo can never install a tree
@@ -14425,6 +14430,89 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         _node_frame_index = 0;
+        closeTreeWindows();
+    }
+
+    // ---- the per-tab tree windows (Tree Properties, Tree as Text) --------------------------------------------
+
+    /**
+     * Opens the Tree Properties window for this tab, or brings the open one forward (re-reading the tree). Returns
+     * false without opening anything when there is no tree, or while a transient sub-tree is displayed (edits to
+     * it would be discarded on returning to the whole tree; the caller steers the user back).
+     */
+    final boolean openTreePropertiesFrame() {
+        if ((_phylogeny == null) || _phylogeny.isEmpty() || isCurrentTreeIsSubtree()) {
+            return false;
+        }
+        if (_tree_properties_frame != null) {
+            _tree_properties_frame.rebindNow();
+            _tree_properties_frame.toFront();
+            _tree_properties_frame.requestFocus();
+            return true;
+        }
+        _tree_properties_frame = new TreePropertiesFrame(this);
+        return true;
+    }
+
+    /** Opens the "Tree as Text" window on {@code format}, or switches the open one to it and brings it forward. */
+    final void openTreeTextFrame(final TreeText.Format format) {
+        if ((_phylogeny == null) || _phylogeny.isEmpty()) {
+            return;
+        }
+        if (_tree_text_frame != null) {
+            if (_tree_text_frame.isStaleForTest()) {
+                _tree_text_frame.refreshNow();
+            }
+            _tree_text_frame.show(format);
+            return;
+        }
+        _tree_text_frame = new TreeTextFrame(this, format);
+    }
+
+    /** Callback from the window: it closed itself. */
+    final void treePropertiesFrameClosed(final TreePropertiesFrame f) {
+        if (_tree_properties_frame == f) {
+            _tree_properties_frame = null;
+        }
+    }
+
+    /** Callback from the window: it closed itself. */
+    final void treeTextFrameClosed(final TreeTextFrame f) {
+        if (_tree_text_frame == f) {
+            _tree_text_frame = null;
+        }
+    }
+
+    /** The tree changed or was replaced: the open tree windows re-read it (coalesced, see the frames). */
+    private void markTreeWindowsStale() {
+        if (_tree_properties_frame != null) {
+            _tree_properties_frame.markStale();
+        }
+        if (_tree_text_frame != null) {
+            _tree_text_frame.markStale();
+        }
+    }
+
+    /** Closes the tree windows unconditionally (the tab is going away). */
+    private void closeTreeWindows() {
+        if (_tree_properties_frame != null) {
+            final TreePropertiesFrame f = _tree_properties_frame;
+            _tree_properties_frame = null;
+            f.dispose();
+        }
+        if (_tree_text_frame != null) {
+            final TreeTextFrame f = _tree_text_frame;
+            _tree_text_frame = null;
+            f.dispose();
+        }
+    }
+
+    TreePropertiesFrame treePropertiesFrameForTest() {
+        return _tree_properties_frame;
+    }
+
+    TreeTextFrame treeTextFrameForTest() {
+        return _tree_text_frame;
     }
 
     /**
@@ -15175,6 +15263,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             superTreeOneLevel();
         }
         _main_panel.getControlPanel().showWhole();
+        markTreeWindowsStale(); // the displayed tree changed (the "Tree as Text" window shows what is displayed)
         repaint();
     }
 
@@ -15199,6 +15288,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         getMainPanel().getControlPanel().search1();
         getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
         updateSubSuperTreeButton();
+        markTreeWindowsStale(); // back on the whole tree (or a larger sub-tree)
     }
 
     /**

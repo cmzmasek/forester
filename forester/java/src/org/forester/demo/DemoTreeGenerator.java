@@ -111,6 +111,7 @@ public final class DemoTreeGenerator {
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
+        write( dir, "tree-properties.xml", treePropertiesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
@@ -390,6 +391,79 @@ public final class DemoTreeGenerator {
                              + "sequences on the human tip, confidences, a dated node with a speciation event, a "
                              + "distribution, a reference, and typed properties. Set \"Click on Node to: Edit Node "
                              + "Data\" and click a node. Schematic sequences (truncated), not real data." );
+    }
+
+    // ---- tree properties (View > Tree Properties, Cmd-I): every section of the window has something to show ----
+    //      tree-level identifier / type / branch-length unit, TWO kinds of support values, a polytomy and a
+    //      zero-length branch (branch-length sanity), and mixed annotation coverage (some tips with taxonomy and
+    //      sequences, some without; dates on internal nodes; properties on a subset; a duplication event).
+    private static Phylogeny treePropertiesTree() throws PhyloXmlDataFormatException {
+        final String seq = "MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVVHSLAKWKRQTLGQHDFSAGEGLYTHMKALRPDEDRLSPLHSVYVDQWDWERVMGDGERQFSTLKSTVEAIWAGIKATEAAVSEEFGLAPFLPDQIHFVHSQELLSRYPDLDAKGRERAIAKDLGAVFLVGIGGKLSDGHRHDVRAPDYDDWSTPSELGHAGLNGDILVWNPVLEDAFELSSMGIRVDADTLKHQLALTGDEDRLELEWHQALLRGEMPQTIGGGIGQSRLTMLLLQLPHIGQVQCGVWPAAVRESVPSLL";
+        final PhylogenyNode human = geneTip( "MYH7_HUMAN", "Homo sapiens", "HUMAN", "9606", "human", "species",
+                                             "P12883", seq.substring( 0, 60 ) );
+        num( human, "data:expression_tpm", "48.2" );
+        cat( human, "data:tissue", "heart" );
+        final PhylogenyNode chimp = geneTip( "MYH7_PANTR", "Pan troglodytes", "PANTR", "9598", "chimpanzee",
+                                             "species", "H2QIM6", seq.substring( 0, 60 ) );
+        num( chimp, "data:expression_tpm", "44.9" );
+        final PhylogenyNode mouse = geneTip( "MYH7_MOUSE", "Mus musculus", "MOUSE", "10090", "house mouse",
+                                             "species", "Q91Z83", seq.substring( 0, 60 ) );
+        num( mouse, "data:expression_tpm", "51.0" );
+        cat( mouse, "data:tissue", "heart" );
+        // three tips with only a name (no taxonomy, no sequence): the coverage section shows the gap
+        final PhylogenyNode chicken = leaf( "MYH7_CHICK" );
+        final PhylogenyNode frog = leaf( "MYH7_XENLA" );
+        final PhylogenyNode zebrafish = leaf( "myh7_zebrafish" );
+        zebrafish.setDistanceToParent( 0 ); // a zero-length branch
+        // a taxonomy-only tip, a distribution on one tip
+        final PhylogenyNode coelacanth = leaf( "MYH7_LATCH" );
+        final Taxonomy lat = new Taxonomy();
+        lat.setScientificName( "Latimeria chalumnae" );
+        lat.setTaxonomyCode( "LATCH" );
+        lat.setIdentifier( new Identifier( "7897", "ncbi" ) );
+        lat.setRank( "species" );
+        coelacanth.getNodeData().addTaxonomy( lat );
+        final List<Point> pts = new ArrayList<>();
+        pts.add( new Point( "WGS84", new BigDecimal( "-29.87" ), new BigDecimal( "31.03" ), null, null ) );
+        coelacanth.getNodeData().setDistribution( new Distribution( "Comoros / KwaZulu-Natal", pts ) );
+        // a paralog pair under a duplication
+        final PhylogenyNode human_b = geneTip( "MYH6_HUMAN", "Homo sapiens", "HUMAN", "9606", "human", "species",
+                                               "P13533", seq.substring( 10, 70 ) );
+        final PhylogenyNode mouse_b = geneTip( "MYH6_MOUSE", "Mus musculus", "MOUSE", "10090", "house mouse",
+                                               "species", "Q02566", seq.substring( 10, 70 ) );
+        final PhylogenyNode apes = support( clade( 0.03, human, chimp ), 100, 1.0 );
+        apes.setName( "Hominini" );
+        final PhylogenyNode myh7_mammals = support( clade( 0.05, apes, mouse ), 97, 0.99 );
+        myh7_mammals.getNodeData().setDate( new Date( "eutherian crown", new BigDecimal( "90" ), null, null, "mya" ) );
+        final PhylogenyNode myh7_tetrapods = support( clade( 0.06, myh7_mammals, chicken, frog ), 72, 0.81 ); // polytomy
+        myh7_tetrapods.setName( "Tetrapoda" );
+        myh7_tetrapods.getNodeData().setDate( new Date( "tetrapod crown", new BigDecimal( "350" ), null, null, "mya" ) );
+        final PhylogenyNode myh7 = support( clade( 0.08, myh7_tetrapods, coelacanth, zebrafish ), 88, 0.93 );
+        myh7.setName( "MYH7" );
+        final PhylogenyNode myh6 = support( clade( 0.11, human_b, mouse_b ), 100, 1.0 );
+        myh6.setName( "MYH6" );
+        final PhylogenyNode root = clade( 0, myh7, myh6 );
+        root.setName( "MYH6/MYH7" );
+        root.getNodeData().setEvent( new Event( 1, 0, 0 ) ); // the gene duplication
+        final Phylogeny phy = tree( root, "Myosin heavy chain MYH6/MYH7 (demo)",
+                                    "A small myosin heavy-chain gene family: MYH7 orthologs in seven vertebrates and "
+                                            + "the MYH6 paralog pair under a duplication. Made for View > Tree "
+                                            + "Properties (Cmd-I): every section has something to say -- tree-level "
+                                            + "identifier, type and branch-length unit (editable), two kinds of "
+                                            + "support values, a polytomy and a zero-length branch, and a coverage "
+                                            + "map of which tips carry taxonomy, sequences, dates, a distribution "
+                                            + "and properties. Schematic sequences, not real data." );
+        phy.setIdentifier( new Identifier( "demo:myh6-myh7", "archaeopteryx" ) );
+        phy.setType( "gene tree" );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
+    }
+
+    /** Adds a bootstrap and a posterior-probability confidence to the branch above {@code n}. */
+    private static PhylogenyNode support( final PhylogenyNode n, final double bootstrap, final double probability ) {
+        n.getBranchData().addConfidence( new Confidence( bootstrap, "bootstrap" ) );
+        n.getBranchData().addConfidence( new Confidence( probability, "probability" ) );
+        return n;
     }
 
     private static PhylogenyNode geneTip( final String name, final String species, final String code, final String tax_id,

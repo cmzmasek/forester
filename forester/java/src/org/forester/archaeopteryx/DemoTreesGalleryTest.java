@@ -71,8 +71,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 22 ) {
-                return fail( "the demo catalog should have 22 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 23 ) {
+                return fail( "the demo catalog should have 23 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -224,6 +224,16 @@ public final class DemoTreesGalleryTest {
         else if ( label.startsWith( "Annotation Columns" ) ) {
             if ( !tp.hasAnnotationColumns() ) {
                 fail( ok, "the annotation-columns demo must have annotation columns" );
+            }
+        }
+        else if ( label.startsWith( "Tree Properties" ) ) {
+            final TreePropertiesFrame f = tp.treePropertiesFrameForTest();
+            if ( ( f == null ) || !f.isDisplayable() ) {
+                fail( ok, "the tree-properties demo must open the Tree Properties window" );
+            }
+            else if ( !f.getForm().hasSectionForTest( "Support values (bootstrap)" )
+                    || !f.getForm().hasSectionForTest( TreeFacts.COVERAGE ) ) {
+                fail( ok, "the tree-properties demo must show support and coverage sections" );
             }
         }
         else if ( label.startsWith( "Alignment" ) ) {

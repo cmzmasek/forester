@@ -269,6 +269,54 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tree properties draft: ");
+        if (org.forester.archaeopteryx.TreePropertiesDraftTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree facts: ");
+        if (org.forester.archaeopteryx.TreeFactsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree text: ");
+        if (org.forester.archaeopteryx.TreeTextTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Form widgets: ");
+        if (org.forester.archaeopteryx.FormWidgetsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree properties form: ");
+        if (org.forester.archaeopteryx.TreePropertiesFormTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree windows: ");
+        if (org.forester.archaeopteryx.TreeWindowsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Update check: ");
         if (org.forester.archaeopteryx.UpdateCheckTest.test()) {
             System.out.println("OK.");
@@ -946,7 +994,7 @@ public final class Test {
             failed++;
         }
         System.out.print("Tree info (name/description) edit: ");
-        if (org.forester.archaeopteryx.TreeInfoEditTest.test()) {
+        if (org.forester.archaeopteryx.TreePropertiesEditTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

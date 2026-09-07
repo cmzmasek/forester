@@ -234,6 +234,8 @@ public class MainPanel extends JPanel implements ComponentListener {
     void closeCurrentPane() {
         final int index = getCurrentTabIndex();
         if ((index >= 0) && (getTabbedPane().getTabCount() > 0)) {
+            // the tab's windows (node data, Tree Properties, Tree as Text) show a tree that is going away
+            getTreePanels().get(index).removeAllEditNodeJFrames();
             getTabbedPane().remove(index);
             getTreePanels().remove(index);
             _treegraphic_scroll_panes.remove(index);
@@ -330,8 +332,8 @@ public class MainPanel extends JPanel implements ComponentListener {
             }
         });
         // A tab's title IS the tree name (save writes it back onto the tree). Double-clicking a tab opens the
-        // editor for that name and the tree description; the tab right-click menu offers the same item (see
-        // MainFrameApplication.createTabPopupMenu).
+        // Tree Properties window (name, description, metadata, statistics); the tab right-click menu offers the
+        // same item (see MainFrameApplication.createTabPopupMenu).
         _tabbed_pane.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -340,7 +342,7 @@ public class MainPanel extends JPanel implements ComponentListener {
                     final int i = _tabbed_pane.indexAtLocation(e.getX(), e.getY());
                     if ((i >= 0) && (_mainframe != null)) {
                         _tabbed_pane.setSelectedIndex(i);
-                        _mainframe.showTreeInfoDialog();
+                        _mainframe.showTreeProperties();
                     }
                 }
             }
@@ -359,6 +361,20 @@ public class MainPanel extends JPanel implements ComponentListener {
         if (selected >= 0) {
             getTabbedPane().setTitleAt(selected, title);
         }
+    }
+
+    /**
+     * Re-derives the tab label of {@code tp}'s tab from its tree ({@link #tabTitleFor}: name, else identifier, else
+     * the file's base name, else "[n]"). Used after a rename in the Tree Properties window -- which may belong to
+     * a tab that is not the selected one -- and after an undo/redo restore.
+     */
+    void syncTabTitle(final TreePanel tp) {
+        final int i = _treepanels.indexOf(tp);
+        if ((i < 0) || (i >= getTabbedPane().getTabCount()) || (tp.getPhylogeny() == null)) {
+            return;
+        }
+        final String fallback = (tp.getTreeFile() != null) ? tp.getTreeFile().getName() : null;
+        getTabbedPane().setTitleAt(i, tabTitleFor(tp.getPhylogeny(), fallback, i + 1));
     }
 
     /**

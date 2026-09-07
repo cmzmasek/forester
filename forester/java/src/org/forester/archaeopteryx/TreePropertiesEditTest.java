@@ -31,18 +31,19 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
 /**
- * Integration test with teeth for {@link TreeInfoDialog#apply}: renaming a tree and setting its description
- * must (1) trim and store both fields, (2) rename the current tab to match the name so the two cannot drift,
- * (3) mark the panel edited, (4) be undoable -- undo restoring BOTH the old name and old description (they
- * ride along on {@link Phylogeny#copy()}), and (5) be a strict no-op when the (trimmed) values are unchanged,
- * pushing no undo checkpoint. Headless-guarded (needs FlatLaf via {@code createInstance}); run standalone or
- * in the non-headless suite.
+ * Integration test with teeth for editing a tree's name and description through {@link TreePropertiesForm}:
+ * writing must (1) normalize and store both fields, (2) rename the tree's tab to match the name so the two cannot
+ * drift, (3) mark the panel edited, (4) be undoable -- undo restoring BOTH the old name and old description (they
+ * ride along on {@link Phylogeny#copy()}) and re-syncing the tab, (5) be a strict no-op when the normalized
+ * values are unchanged, pushing no undo checkpoint, (6) refuse to blank the name of a named tree (a validation
+ * problem, nothing written), and (7) not open at all while a sub-tree is displayed. Headless-guarded (needs
+ * FlatLaf via {@code createInstance}); run standalone or in the non-headless suite.
  */
-public final class TreeInfoEditTest {
+public final class TreePropertiesEditTest {
 
     public static void main( final String[] args ) {
         final boolean ok = test();
-        System.out.println( "TreeInfoEdit: " + ( ok ? "OK." : "FAILED." ) );
+        System.out.println( "TreePropertiesEdit: " + ( ok ? "OK." : "FAILED." ) );
         System.exit( ok ? 0 : 1 );
     }
 
@@ -51,6 +52,20 @@ public final class TreeInfoEditTest {
             return true; // GUI integration test; needs a display toolkit
         }
         return mainScenario() && emptyNameUndoScenario();
+    }
+
+    /**
+     * Types {@code name}/{@code desc} into a fresh form over {@code tp}'s tree and writes. Returns true iff a
+     * change was written; false when nothing changed OR the write was refused (a validation problem).
+     */
+    static boolean apply( final TreePanel tp, final String name, final String desc ) {
+        final TreePropertiesForm form = new TreePropertiesForm( tp );
+        form.setTextForTest( TreePropertiesDraft.NAME, name );
+        form.setTextForTest( TreePropertiesDraft.DESCRIPTION, desc );
+        if ( form.collect().changedFields( form.baseline() ).isEmpty() ) {
+            return false;
+        }
+        return form.write();
     }
 
     /** A named tree: rename/undo/redo, whitespace collapse, description preservation, blank-name and sub-tree guards. */
@@ -71,7 +86,7 @@ public final class TreeInfoEditTest {
                     // (5) unchanged values (description just whitespace -> trims to the existing "") is a no-op:
                     // no change reported, and crucially no undo checkpoint pushed.
                     final boolean could_undo_before = tp.canUndo();
-                    if ( TreeInfoDialog.apply( mf[ 0 ], tp, "orig", "   " ) ) {
+                    if ( apply( tp, "orig", "   " ) ) {
                         fail( ok, "unchanged apply should report no change" );
                     }
                     if ( tp.canUndo() != could_undo_before ) {
@@ -79,7 +94,7 @@ public final class TreeInfoEditTest {
                     }
 
                     // (1)+(2)+(3) real edit: values are trimmed and stored, tab renamed, panel edited.
-                    if ( !TreeInfoDialog.apply( mf[ 0 ], tp, "  renamed  ", "  a helpful description  " ) ) {
+                    if ( !apply( tp, "  renamed  ", "  a helpful description  " ) ) {
                         fail( ok, "a real change should report changed" );
                     }
                     final Phylogeny phy = tp.getPhylogeny();
@@ -127,9 +142,9 @@ public final class TreeInfoEditTest {
                     }
                     mf[ 0 ].undo(); // back to "orig" for the following steps
 
-                    // (5) the name is whitespace-cleaned on apply: internal runs (incl. a tab) collapse to single
+                    // (5) the name is whitespace-cleaned on write: internal runs (incl. a tab) collapse to single
                     // spaces, since it is a one-line label -- both on the tree and on the tab title.
-                    if ( !TreeInfoDialog.apply( mf[ 0 ], tp, "  multi   word\tname  ", "" ) ) {
+                    if ( !apply( tp, "  multi   word\tname  ", "" ) ) {
                         fail( ok, "a whitespace-collapsing rename should report changed" );
                     }
                     if ( !"multi word name".equals( tp.getPhylogeny().getName() ) ) {
@@ -145,7 +160,7 @@ public final class TreeInfoEditTest {
                     // (5b) UNLIKE the name, the description is only end-trimmed -- internal runs and newlines are
                     // preserved (it is multi-line free text), so collapsing would be a regression.
                     final String multiline = "para one\n\n  indented   two";
-                    if ( !TreeInfoDialog.apply( mf[ 0 ], tp, "orig", "  " + multiline + "  " ) ) {
+                    if ( !apply( tp, "orig", "  " + multiline + "  " ) ) {
                         fail( ok, "setting a multi-line description should report changed" );
                     }
                     if ( !multiline.equals( tp.getPhylogeny().getDescription() ) ) {
@@ -153,35 +168,77 @@ public final class TreeInfoEditTest {
                                 + tp.getPhylogeny().getDescription() + "\"" );
                     }
 
-                    // (6) a blank/whitespace name is not a rename: the existing name and tab title are kept (not
-                    // blanked); only the description changes.
-                    if ( !TreeInfoDialog.apply( mf[ 0 ], tp, "   ", "desc only" ) ) {
-                        fail( ok, "a description-only change (blank name) should report changed" );
+                    // (6) blanking the name of a NAMED tree is a validation problem: the write is refused, the
+                    // field is outlined, and NOTHING is written (not even the changed description) -- the user
+                    // sees why in the status line instead of the name silently surviving.
+                    final boolean could_undo_blank = tp.canUndo();
+                    final TreePropertiesForm blank = new TreePropertiesForm( tp );
+                    blank.setTextForTest( TreePropertiesDraft.NAME, "   " );
+                    blank.setTextForTest( TreePropertiesDraft.DESCRIPTION, "desc only" );
+                    if ( blank.problems().isEmpty() || !blank.isOutlinedForTest( TreePropertiesDraft.NAME ) ) {
+                        fail( ok, "a blank name on a named tree should be a (marked) validation problem" );
+                    }
+                    if ( blank.write() ) {
+                        fail( ok, "a blank name must be refused" );
                     }
                     if ( !"orig".equals( tp.getPhylogeny().getName() ) ) {
-                        fail( ok, "a blank name must keep the existing name, got \"" + tp.getPhylogeny().getName()
-                                + "\"" );
+                        fail( ok, "a refused write must keep the name, got \"" + tp.getPhylogeny().getName() + "\"" );
                     }
-                    if ( !"orig".equals( mp.getTabbedPane().getTitleAt( sel ) ) ) {
-                        fail( ok, "a blank name must not blank the tab title, got \""
-                                + mp.getTabbedPane().getTitleAt( sel ) + "\"" );
+                    if ( !multiline.equals( tp.getPhylogeny().getDescription() ) ) {
+                        fail( ok, "a refused write must not touch the description either" );
                     }
-                    if ( !"desc only".equals( tp.getPhylogeny().getDescription() ) ) {
-                        fail( ok, "description should still update on a blank-name edit, got \""
+                    if ( tp.canUndo() != could_undo_blank ) {
+                        fail( ok, "a refused write must not push an undo checkpoint" );
+                    }
+                    // fixing the name makes the same form writable, and then only the description changes
+                    blank.setTextForTest( TreePropertiesDraft.NAME, "orig" );
+                    if ( !blank.problems().isEmpty() || blank.isOutlinedForTest( TreePropertiesDraft.NAME ) ) {
+                        fail( ok, "restoring the name should clear the problem and the outline" );
+                    }
+                    if ( !blank.write() || !"desc only".equals( tp.getPhylogeny().getDescription() ) ) {
+                        fail( ok, "the corrected form should write the description, got \""
                                 + tp.getPhylogeny().getDescription() + "\"" );
                     }
-
-                    // (6b) a blank name with an UNCHANGED description is a pure no-op: no change, no checkpoint.
-                    final boolean could_undo_noop = tp.canUndo();
-                    if ( TreeInfoDialog.apply( mf[ 0 ], tp, "  ", "desc only" ) ) {
-                        fail( ok, "blank name + unchanged description should report no change" );
-                    }
-                    if ( tp.canUndo() != could_undo_noop ) {
-                        fail( ok, "a blank-name no-op must not push an undo checkpoint" );
+                    if ( blank.isDirty() ) {
+                        fail( ok, "a form is clean right after its write" );
                     }
 
-                    // (7) editing is refused while a SUB-TREE is displayed (the edit would be discarded on
-                    // returning to the whole tree), so apply() is a no-op and the sub-tree name is untouched.
+                    // (6b) the identifier: a provider without a value is refused; value + provider round-trip.
+                    final TreePropertiesForm ident = new TreePropertiesForm( tp );
+                    ident.setTextForTest( TreePropertiesDraft.ID_PROVIDER, "treebase" );
+                    if ( ident.problems().isEmpty() || ident.write() ) {
+                        fail( ok, "an identifier provider without a value must be refused" );
+                    }
+                    ident.setTextForTest( TreePropertiesDraft.ID_VALUE, " TB2:Tr1234 " );
+                    ident.setTextForTest( TreePropertiesDraft.TYPE, "gene tree" );
+                    ident.setTextForTest( TreePropertiesDraft.DISTANCE_UNIT, "substitutions/site" );
+                    if ( !ident.write() ) {
+                        fail( ok, "identifier + type + unit should write" );
+                    }
+                    if ( ( tp.getPhylogeny().getIdentifier() == null )
+                            || !"TB2:Tr1234".equals( tp.getPhylogeny().getIdentifier().getValue() )
+                            || !"treebase".equals( tp.getPhylogeny().getIdentifier().getProvider() )
+                            || !"gene tree".equals( tp.getPhylogeny().getType() )
+                            || !"substitutions/site".equals( tp.getPhylogeny().getDistanceUnit() ) ) {
+                        fail( ok, "identifier/type/unit should be stored trimmed, got " + tp.getPhylogeny()
+                                .getIdentifier() + " / " + tp.getPhylogeny().getType() + " / "
+                                + tp.getPhylogeny().getDistanceUnit() );
+                    }
+                    mf[ 0 ].undo();
+                    if ( tp.getPhylogeny().getIdentifier() != null ) {
+                        fail( ok, "undo should drop the identifier again" );
+                    }
+                    mf[ 0 ].redo();
+                    // blanking the identifier value removes it entirely (no empty Identifier object survives)
+                    final TreePropertiesForm clear = new TreePropertiesForm( tp );
+                    clear.setTextForTest( TreePropertiesDraft.ID_VALUE, "" );
+                    clear.setTextForTest( TreePropertiesDraft.ID_PROVIDER, "" );
+                    if ( !clear.write() || ( tp.getPhylogeny().getIdentifier() != null ) ) {
+                        fail( ok, "blanking the identifier should remove it, got " + tp.getPhylogeny().getIdentifier() );
+                    }
+
+                    // (7) the window does not open while a SUB-TREE is displayed (the edit would be discarded on
+                    // returning to the whole tree).
                     final PhylogenyNode inner = innerNode( tp.getPhylogeny() );
                     if ( inner == null ) {
                         fail( ok, "test tree should have an internal non-root node to form a sub-tree" );
@@ -191,11 +248,8 @@ public final class TreeInfoEditTest {
                         if ( !tp.isCurrentTreeIsSubtree() ) {
                             fail( ok, "sub-tree navigation should have entered sub-tree mode" );
                         }
-                        if ( TreeInfoDialog.apply( mf[ 0 ], tp, "shouldNotStick", "nope" ) ) {
-                            fail( ok, "apply must be a no-op while a sub-tree is displayed" );
-                        }
-                        if ( "shouldNotStick".equals( tp.getPhylogeny().getName() ) ) {
-                            fail( ok, "a refused sub-tree edit must not change the displayed tree's name" );
+                        if ( tp.openTreePropertiesFrame() || ( tp.treePropertiesFrameForTest() != null ) ) {
+                            fail( ok, "the Tree Properties window must not open while a sub-tree is displayed" );
                         }
                     }
                 }
@@ -218,7 +272,8 @@ public final class TreeInfoEditTest {
     /**
      * A previously-UNNAMED tree (tab titled from its file): naming it and then undoing must NOT leave the undone
      * name on the tab, because the save-time backfill would otherwise persist that name -- undo would be defeated
-     * on disk. The tab must revert to the original file-derived placeholder.
+     * on disk. The tab must revert to the original file-derived placeholder. (An unnamed tree may also stay
+     * unnamed: a blank name is only refused when the tree HAD one.)
      */
     private static boolean emptyNameUndoScenario() {
         try {
@@ -239,7 +294,17 @@ public final class TreeInfoEditTest {
                     if ( ForesterUtil.isEmpty( placeholder ) ) {
                         fail( ok, "an unnamed tree's tab should still have a non-empty placeholder title" );
                     }
-                    if ( !TreeInfoDialog.apply( mf[ 0 ], tp, "Primates", "" ) ) {
+                    // an unnamed tree with a blank name typed is simply unchanged (no problem, no write)
+                    final TreePropertiesForm unnamed = new TreePropertiesForm( tp );
+                    unnamed.setTextForTest( TreePropertiesDraft.NAME, "  " );
+                    if ( !unnamed.problems().isEmpty() || unnamed.isDirty() ) {
+                        fail( ok, "a blank name on an unnamed tree is neither a problem nor a change" );
+                    }
+                    if ( !TreePropertiesForm.UNTITLED.equals( unnamed.titleText() ) ) {
+                        fail( ok, "an unnamed tree is titled \"" + TreePropertiesForm.UNTITLED + "\", got \""
+                                + unnamed.titleText() + "\"" );
+                    }
+                    if ( !apply( tp, "Primates", "" ) ) {
                         fail( ok, "naming a previously-unnamed tree should report changed" );
                     }
                     if ( !"Primates".equals( mp.getTabbedPane().getTitleAt( sel ) ) ) {
@@ -274,13 +339,13 @@ public final class TreeInfoEditTest {
     }
 
     private static void fail( final boolean[] ok, final String msg ) {
-        System.out.println( "  [TreeInfoEditTest] " + msg );
+        System.out.println( "  [TreePropertiesEditTest] " + msg );
         ok[ 0 ] = false;
     }
 
     // root -> ( X, inner( A, B ) ); the tree carries a name so the rename/undo assertions have a known start,
     // and the internal non-root node `inner` lets the test navigate into a sub-tree
-    private static Phylogeny threeLevel( final String name ) {
+    static Phylogeny threeLevel( final String name ) {
         final PhylogenyNode root = new PhylogenyNode();
         final PhylogenyNode x = new PhylogenyNode();
         x.setName( "X" );
@@ -326,6 +391,6 @@ public final class TreeInfoEditTest {
         return null;
     }
 
-    private TreeInfoEditTest() {
+    private TreePropertiesEditTest() {
     }
 }

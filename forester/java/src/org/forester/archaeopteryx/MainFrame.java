@@ -39,12 +39,10 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.NoSuchElementException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -232,8 +230,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
     static final String USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
-    static final String SHOW_BASIC_TREE_INFORMATION_LABEL = "Basic Tree Information";
-    static final String EDIT_TREE_INFO_LABEL = "Edit Tree Name and Description...";
+    static final String TREE_PROPERTIES_LABEL = "Tree Properties…";
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
     static final String OBTAIN_SEQUENCE_AND_TAXONOMIC_INFORMATION = "Fetch Sequence & Taxonomic Data";
     JMenuBar _jmenubar;
@@ -370,8 +367,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _view_as_NH_item;
     JMenuItem _view_as_XML_item;
     JMenuItem _view_as_nexus_item;
-    JMenuItem _display_basic_information_item;
-    JMenuItem _edit_tree_info_item;
+    JMenuItem _tree_properties_item;
     JMenuItem _fit_to_window_item;
     JMenuItem _clustergram_item;
     JMenuItem _find_next_hit_item;
@@ -402,7 +398,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     private Timer         _process_anim_timer;
     MainPanel _mainpanel;
     Container _contentpane;
-    final LinkedList<TextFrame> _textframes = new LinkedList<>();
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
@@ -513,18 +508,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             deleteSelectedNodes(false);
-        } else if (o == _edit_tree_info_item) {
-            showTreeInfoDialog();
-        } else if (o == _display_basic_information_item) {
-            if (getCurrentTreePanel() != null) {
-                displayBasicInformation(getCurrentTreePanel().getTreeFile());
-            }
+        } else if (o == _tree_properties_item) {
+            showTreeProperties();
         } else if (o == _view_as_NH_item) {
-            viewAsNH();
+            viewAsText(TreeText.Format.NEWICK);
         } else if (o == _view_as_XML_item) {
-            viewAsXML();
+            viewAsText(TreeText.Format.PHYLOXML);
         } else if (o == _view_as_nexus_item) {
-            viewAsNexus();
+            viewAsText(TreeText.Format.NEXUS);
         } else if (o == _fit_to_window_item) {
             showWhole();
         } else if (o == _clustergram_item) {
@@ -815,11 +806,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     public ProcessPool getProcessPool() {
         return _process_pool;
-    }
-
-    public void showTextFrame(final String s, final String title) {
-        checkTextFrames();
-        _textframes.addLast(TextFrame.instantiate(s, title, _textframes));
     }
 
     public void showWhole() {
@@ -1316,13 +1302,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildViewMenu() {
         _view_jmenu = createMenu("View", getConfiguration());
-        _view_jmenu.setToolTipText("Show tree information, or the tree as phyloXML, Newick, or Nexus");
-        _view_jmenu.add(_edit_tree_info_item = new JMenuItem(EDIT_TREE_INFO_LABEL));
-        _view_jmenu.add(_display_basic_information_item = new JMenuItem(SHOW_BASIC_TREE_INFORMATION_LABEL));
+        _view_jmenu.setToolTipText("Tree properties and statistics, or the tree as phyloXML, Newick, or Nexus text");
+        _view_jmenu.add(_tree_properties_item = new JMenuItem(TREE_PROPERTIES_LABEL));
+        _tree_properties_item.setToolTipText("<html>Name, description and metadata of the tree (editable), plus "
+                + "its statistics: file, structure, branch lengths, support values, annotation coverage, time "
+                + "axis.<br><i>Also: double-click the tree's tab.</i></html>");
+        _tree_properties_item.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_I, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _view_jmenu.addSeparator();
         _view_jmenu.add(_view_as_XML_item = new JMenuItem("as phyloXML"));
         _view_jmenu.add(_view_as_NH_item = new JMenuItem("as Newick"));
         _view_jmenu.add(_view_as_nexus_item = new JMenuItem("as Nexus"));
+        _view_as_XML_item.setToolTipText("The tree as phyloXML text, in a window with find, copy and save");
+        _view_as_NH_item.setToolTipText("The tree as Newick text (support values as set under Settings > Files)");
+        _view_as_nexus_item.setToolTipText("The tree as a Nexus file's text");
         _view_jmenu.addSeparator();
         _view_jmenu.add(_fit_to_window_item = new JMenuItem("Fit to Window"));
         _fit_to_window_item.setToolTipText("Zoom the tree to fit the window (also HOME / ESC)");
@@ -1343,8 +1336,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _find_prev_hit_item.setToolTipText("Center the previous search hit in the view");
         _find_prev_hit_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | InputEvent.SHIFT_DOWN_MASK));
-        customizeJMenuItem(_edit_tree_info_item);
-        customizeJMenuItem(_display_basic_information_item);
+        customizeJMenuItem(_tree_properties_item);
         customizeJMenuItem(_view_as_NH_item);
         customizeJMenuItem(_view_as_XML_item);
         customizeJMenuItem(_view_as_nexus_item);
@@ -1355,22 +1347,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add(_view_jmenu);
     }
 
-    void checkTextFrames() {
-        if (_textframes.size() > 5) {
-            try {
-                if (_textframes.getFirst() != null) {
-                    _textframes.getFirst().removeMe();
-                } else {
-                    _textframes.removeFirst();
-                }
-            } catch (final NoSuchElementException e) {
-                // Ignore.
-            }
-        }
-    }
-
     void close() {
-        removeAllTextFrames();
         if (_mainpanel != null) {
             _mainpanel.terminate();
         }
@@ -2553,19 +2530,30 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    /** Opens the small modal editor for the current tree's name and description (View menu / tab menu). */
-    void showTreeInfoDialog() {
-        TreeInfoDialog.showFor(this);
+    /**
+     * Opens (or brings forward) the current tab's Tree Properties window: the tree's editable name, description and
+     * metadata over its statistics (View menu, Cmd-I, tab double-click, tab menu). A transient sub-tree view is
+     * steered back to the whole tree first, since edits to it would be discarded on return.
+     */
+    void showTreeProperties() {
+        final TreePanel tp = getCurrentTreePanel();
+        if ((tp == null) || (tp.getPhylogeny() == null) || tp.getPhylogeny().isEmpty()) {
+            return;
+        }
+        if (!tp.openTreePropertiesFrame() && tp.isCurrentTreeIsSubtree()) {
+            JOptionPane.showMessageDialog(this,
+                    "Return to the whole tree (\"Return to super-tree\") to view and edit its properties.",
+                    "Sub-tree displayed", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
-    void displayBasicInformation(final File treefile) {
-        if ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty()) {
-            String title = "Basic Information";
-            if (!ForesterUtil.isEmpty(_mainpanel.getCurrentPhylogeny().getName())) {
-                title = title + " for \"" + _mainpanel.getCurrentPhylogeny().getName() + "\"";
-            }
-            showTextFrame(AptxUtil.createBasicInformation(_mainpanel.getCurrentPhylogeny(), treefile), title);
+    /** Opens (or brings forward) the current tab's "Tree as Text" window on {@code format}. */
+    void viewAsText(final TreeText.Format format) {
+        final TreePanel tp = getCurrentTreePanel();
+        if ((tp == null) || (tp.getPhylogeny() == null) || tp.getPhylogeny().isEmpty()) {
+            return;
         }
+        tp.openTreeTextFrame(format);
     }
 
     void exceptionOccuredDuringOpenFile(final Exception e) {
@@ -3033,15 +3021,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (_mainpanel.getCurrentTreePanel() != null) {
             _mainpanel.getCurrentTreePanel().madRoot();
         }
-    }
-
-    void removeAllTextFrames() {
-        for (final TextFrame tf : _textframes) {
-            if (tf != null) {
-                tf.close();
-            }
-        }
-        _textframes.clear();
     }
 
     void resetSearch() {
@@ -3565,39 +3544,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void updateTypeCheckboxes(final Options options, final Object o) {
         setTypeMenuToAllUnselected();
         ((JCheckBoxMenuItem) o).setSelected(true);
-    }
-
-    void viewAsNexus() {
-        if ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty()) {
-            String title = "Nexus";
-            if (!ForesterUtil.isEmpty(_mainpanel.getCurrentPhylogeny().getName())) {
-                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
-            }
-            showTextFrame(_mainpanel.getCurrentPhylogeny().toNexus(getOptions().getNhConversionSupportValueStyle()),
-                    title);
-        }
-    }
-
-    void viewAsNH() {
-        if ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty()) {
-            String title = "New Hampshire";
-            if (!ForesterUtil.isEmpty(_mainpanel.getCurrentPhylogeny().getName())) {
-                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
-            }
-            showTextFrame(_mainpanel.getCurrentPhylogeny().toNewHampshire(getOptions()
-                            .getNhConversionSupportValueStyle()),
-                    title);
-        }
-    }
-
-    void viewAsXML() {
-        if ((_mainpanel.getCurrentPhylogeny() != null) && !_mainpanel.getCurrentPhylogeny().isEmpty()) {
-            String title = "phyloXML";
-            if (!ForesterUtil.isEmpty(_mainpanel.getCurrentPhylogeny().getName())) {
-                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
-            }
-            showTextFrame(_mainpanel.getCurrentPhylogeny().toPhyloXML(0), title);
-        }
     }
 
     /**

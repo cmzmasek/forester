@@ -67,11 +67,11 @@ public final class TabContextMenuTest {
                     if ( tabs.getTabCount() != 2 ) {
                         ok[ 0 ] = TestFail.here();
                     }
-                    // the right-click popup for tab 0 is exactly: "Edit Tree Name and Description...", a separator,
+                    // the right-click popup for tab 0 is exactly: "Tree Properties…", a separator,
                     // then "Close Tab" -- pin the count, types and order so a stray/duplicate item is caught
                     final JPopupMenu popup = ( (MainFrameApplication) mf[ 0 ] ).createTabPopupMenu( 0 );
                     if ( ( popup.getComponentCount() != 3 ) || !( popup.getComponent( 0 ) instanceof JMenuItem )
-                            || !MainFrame.EDIT_TREE_INFO_LABEL
+                            || !MainFrame.TREE_PROPERTIES_LABEL
                                     .equals( ( (JMenuItem) popup.getComponent( 0 ) ).getText() )
                             || !( popup.getComponent( 1 ) instanceof javax.swing.JSeparator )
                             || !( popup.getComponent( 2 ) instanceof JMenuItem )

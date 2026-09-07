@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="substitutions/site" type="gene tree" rerootable="true">
+  <name>Myosin heavy chain MYH6/MYH7 (demo)</name>
+  <id provider="archaeopteryx">demo:myh6-myh7</id>
+  <description>A small myosin heavy-chain gene family: MYH7 orthologs in seven vertebrates and the MYH6 paralog pair under a duplication. Made for View &gt; Tree Properties (Cmd-I): every section has something to say -- tree-level identifier, type and branch-length unit (editable), two kinds of support values, a polytomy and a zero-length branch, and a coverage map of which tips carry taxonomy, sequences, dates, a distribution and properties. Schematic sequences, not real data.</description>
+  <clade>
+    <name>MYH6/MYH7</name>
+    <branch_length>0.0</branch_length>
+    <events>
+      <duplications>1</duplications>
+    </events>
+    <clade>
+      <name>MYH7</name>
+      <branch_length>0.08</branch_length>
+      <confidence type="bootstrap">88</confidence>
+      <confidence type="probability">0.93</confidence>
+      <clade>
+        <name>Tetrapoda</name>
+        <branch_length>0.06</branch_length>
+        <confidence type="bootstrap">72</confidence>
+        <confidence type="probability">0.81</confidence>
+        <date unit="mya">
+          <desc>tetrapod crown</desc>
+          <value>350</value>
+        </date>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <confidence type="bootstrap">97</confidence>
+          <confidence type="probability">0.99</confidence>
+          <date unit="mya">
+            <desc>eutherian crown</desc>
+            <value>90</value>
+          </date>
+          <clade>
+            <name>Hominini</name>
+            <branch_length>0.03</branch_length>
+            <confidence type="bootstrap">100</confidence>
+            <confidence type="probability">1</confidence>
+            <clade>
+              <name>MYH7_HUMAN</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <id provider="ncbi">9606</id>
+                <code>HUMAN</code>
+                <scientific_name>Homo sapiens</scientific_name>
+                <common_name>human</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence type="protein">
+                <symbol>BRCA1</symbol>
+                <accession source="UniProt">P12883</accession>
+                <name>MYH7_HUMAN</name>
+                <gene_name>BRCA1</gene_name>
+                <mol_seq is_aligned="false">MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVK</mol_seq>
+                <uri>https://www.uniprot.org/uniprotkb/P12883</uri>
+              </sequence>
+              <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">48.2</property>
+              <property ref="data:tissue" datatype="xsd:string" applies_to="node">heart</property>
+            </clade>
+            <clade>
+              <name>MYH7_PANTR</name>
+              <branch_length>0.02</branch_length>
+              <taxonomy>
+                <id provider="ncbi">9598</id>
+                <code>PANTR</code>
+                <scientific_name>Pan troglodytes</scientific_name>
+                <common_name>chimpanzee</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence type="protein">
+                <symbol>BRCA1</symbol>
+                <accession source="UniProt">H2QIM6</accession>
+                <name>MYH7_PANTR</name>
+                <gene_name>BRCA1</gene_name>
+                <mol_seq is_aligned="false">MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVK</mol_seq>
+                <uri>https://www.uniprot.org/uniprotkb/H2QIM6</uri>
+              </sequence>
+              <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">44.9</property>
+            </clade>
+          </clade>
+          <clade>
+            <name>MYH7_MOUSE</name>
+            <branch_length>0.02</branch_length>
+            <taxonomy>
+              <id provider="ncbi">10090</id>
+              <code>MOUSE</code>
+              <scientific_name>Mus musculus</scientific_name>
+              <common_name>house mouse</common_name>
+              <rank>species</rank>
+            </taxonomy>
+            <sequence type="protein">
+              <symbol>BRCA1</symbol>
+              <accession source="UniProt">Q91Z83</accession>
+              <name>MYH7_MOUSE</name>
+              <gene_name>BRCA1</gene_name>
+              <mol_seq is_aligned="false">MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVK</mol_seq>
+              <uri>https://www.uniprot.org/uniprotkb/Q91Z83</uri>
+            </sequence>
+            <property ref="data:expression_tpm" datatype="xsd:decimal" applies_to="node">51.0</property>
+            <property ref="data:tissue" datatype="xsd:string" applies_to="node">heart</property>
+          </clade>
+        </clade>
+        <clade>
+          <name>MYH7_CHICK</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>MYH7_XENLA</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <name>MYH7_LATCH</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">7897</id>
+          <code>LATCH</code>
+          <scientific_name>Latimeria chalumnae</scientific_name>
+          <rank>species</rank>
+        </taxonomy>
+        <distribution>
+          <desc>Comoros / KwaZulu-Natal</desc>
+          <point geodetic_datum="WGS84">
+            <lat>-29.87</lat>
+            <long>31.03</long>
+          </point>
+        </distribution>
+      </clade>
+      <clade>
+        <name>myh7_zebrafish</name>
+        <branch_length>0.0</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <name>MYH6</name>
+      <branch_length>0.11</branch_length>
+      <confidence type="bootstrap">100</confidence>
+      <confidence type="probability">1</confidence>
+      <clade>
+        <name>MYH6_HUMAN</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">9606</id>
+          <code>HUMAN</code>
+          <scientific_name>Homo sapiens</scientific_name>
+          <common_name>human</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <sequence type="protein">
+          <symbol>BRCA1</symbol>
+          <accession source="UniProt">P13533</accession>
+          <name>MYH6_HUMAN</name>
+          <gene_name>BRCA1</gene_name>
+          <mol_seq is_aligned="false">QISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVV</mol_seq>
+          <uri>https://www.uniprot.org/uniprotkb/P13533</uri>
+        </sequence>
+      </clade>
+      <clade>
+        <name>MYH6_MOUSE</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">10090</id>
+          <code>MOUSE</code>
+          <scientific_name>Mus musculus</scientific_name>
+          <common_name>house mouse</common_name>
+          <rank>species</rank>
+        </taxonomy>
+        <sequence type="protein">
+          <symbol>BRCA1</symbol>
+          <accession source="UniProt">Q02566</accession>
+          <name>MYH6_MOUSE</name>
+          <gene_name>BRCA1</gene_name>
+          <mol_seq is_aligned="false">QISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVV</mol_seq>
+          <uri>https://www.uniprot.org/uniprotkb/Q02566</uri>
+        </sequence>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

@@ -84,8 +84,14 @@ final class KeyboardShortcuts {
                 new Shortcut( CMD + "W", "Close the current tab" ),
                 new Shortcut( CMD + SHIFT + "C", "Copy the tree image to the clipboard" ),
                 new Shortcut( CMD + "0", "Fit the tree to the window" ),
+                new Shortcut( CMD + "I", "Tree Properties (name, description, statistics)" ),
+                new Shortcut( CMD + "G  /  " + CMD + SHIFT + "G", "Next / previous search hit" ),
                 new Shortcut( CMD + "Z  /  " + CMD + SHIFT + "Z", "Undo / redo" ),
                 new Shortcut( CMD + "N", "New tree (when editing)" ) ) ) );
+        groups.add( new ShortcutGroup( "Data windows (node data, Tree Properties, Tree as Text)", List.of(
+                new Shortcut( "Esc  /  " + CMD + "W", "Close the window (asks first when there are unwritten edits)" ),
+                new Shortcut( CMD + "↩", "Write the edits to the tree" ),
+                new Shortcut( CMD + "F", "Find in the text (Tree as Text); ↩ / " + SHIFT + "↩ step through the hits" ) ) ) );
         return groups;
     }
 

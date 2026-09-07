@@ -199,6 +199,15 @@ final class DemoTrees {
                                  openTree( mf, "node-hpd-bars.xml" );
                                  nodeAgeSpindles( mf );
                              } ) );
+        demos.add( new Demo( "Tree Properties",
+                             "A small myosin gene family whose Tree Properties window (View menu, Cmd-I) has something "
+                                     + "in every section: the editable name, description, identifier, type and "
+                                     + "branch-length unit; then file, structure, branch-length and support-value "
+                                     + "statistics with histograms, and a coverage map of what the tips carry.",
+                             mf -> {
+                                 openTree( mf, "tree-properties.xml" );
+                                 mf.showTreeProperties();
+                             } ) );
         demos.add( new Demo( "Break Long Branches",
                              "A distant, fast-evolving outgroup on a huge branch is drawn shortened with a break mark, so "
                                      + "the informative ingroup reclaims the width; the bootstrap support values stay "

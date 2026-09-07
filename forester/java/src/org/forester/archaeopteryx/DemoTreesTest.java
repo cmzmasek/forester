@@ -188,6 +188,11 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "node-data-editor.xml", 5 );
         ok &= nodeDataEditorDemoOk( "node-data-editor.xml" );
 
+        // tree properties (View > Tree Properties): tree-level identifier / type / unit, two kinds of support
+        // values, a polytomy and a zero-length branch, and mixed annotation coverage -- every section has content
+        ok &= hasAtLeastTips( "tree-properties.xml", 8 );
+        ok &= treePropertiesDemoOk( "tree-properties.xml" );
+
         // infer ancestor taxonomies: six real-species tips (rank 'species'), NO taxonomy on the internal nodes,
         // ready for Analysis > Infer Ancestor Taxonomies (which resolves the tips online and fills the internals)
         ok &= hasAtLeastTips( "infer-ancestor-taxonomies.xml", 6 );
@@ -525,6 +530,55 @@ public final class DemoTreesTest {
         }
         if ( len < 10 ) {
             return note( file_name + " alignment must have at least 10 columns" );
+        }
+        return true;
+    }
+
+    /** The tree-properties demo lights up every section of the Tree Properties window. */
+    private static boolean treePropertiesDemoOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final TreePropertiesDraft d = TreePropertiesDraft.from( phy );
+        if ( d.name.isEmpty() || d.description.isEmpty() || d.idValue.isEmpty() || d.idProvider.isEmpty()
+                || d.type.isEmpty() || d.distanceUnit.isEmpty() ) {
+            return note( file_name + " needs every tree-level field set (name, description, id + provider, type, unit): " + d );
+        }
+        final java.util.List<TreeFacts.Group> groups = TreeFacts.compute( phy, null, false, null );
+        final java.util.Set<String> titles = new java.util.HashSet<>();
+        for( final TreeFacts.Group g : groups ) {
+            titles.add( g.title );
+        }
+        for( final String want : new String[] { TreeFacts.STRUCTURE, TreeFacts.BRANCH_LENGTHS,
+                "Support values (bootstrap)", "Support values (probability)", TreeFacts.COVERAGE } ) {
+            if ( !titles.contains( want ) ) {
+                return note( file_name + " must produce the \"" + want + "\" section, got " + titles );
+            }
+        }
+        TreeFacts.Group structure = null, lengths = null, coverage = null;
+        for( final TreeFacts.Group g : groups ) {
+            if ( g.title.equals( TreeFacts.STRUCTURE ) ) {
+                structure = g;
+            }
+            else if ( g.title.equals( TreeFacts.BRANCH_LENGTHS ) ) {
+                lengths = g;
+            }
+            else if ( g.title.equals( TreeFacts.COVERAGE ) ) {
+                coverage = g;
+            }
+        }
+        if ( "fully binary".equals( structure.value( "Branching" ) ) ) {
+            return note( file_name + " needs a polytomy" );
+        }
+        if ( lengths.value( "Zero-length" ) == null ) {
+            return note( file_name + " needs a zero-length branch" );
+        }
+        if ( ( coverage.value( "Events" ) == null ) || ( coverage.value( "Distributions" ) == null )
+                || !coverage.value( "Dates" ).contains( "internal" ) || coverage.value( "Taxonomy" ).startsWith( "0 " )
+                || coverage.value( "Taxonomy" ).contains( "100%" ) ) {
+            return note( file_name + " needs mixed coverage: an event, a distribution, internal dates, and SOME "
+                    + "(not all) tips with taxonomy; got " + coverage.facts );
         }
         return true;
     }
