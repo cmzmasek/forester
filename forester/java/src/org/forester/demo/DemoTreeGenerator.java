@@ -94,6 +94,7 @@ public final class DemoTreeGenerator {
         write( dir, "date-in-labels.xml", dateInLabelsTree() );
         write( dir, "node-hpd-bars.xml", hpdBarsTree() );
         write( dir, "dinosaur-time-tree.xml", dinosaurTimeTree() );
+        write( dir, "late-cretaceous-stages.xml", lateCretaceousTree() );
         write( dir, "fossil-range-bars.xml", fossilRangeTree() );
         write( dir, "ammonite-time-tree.xml", ammoniteTimeTree() );
         write( dir, "tree-of-life-deep-time.xml", deepTimeTree() );
@@ -1328,6 +1329,37 @@ public final class DemoTreeGenerator {
                                             + "birds) are at 0 Ma so the axis reaches the present; the extinct taxa "
                                             + "sit at their ages (Late Jurassic / Late Cretaceous). Schematic, not a "
                                             + "rigorous phylogeny." );
+        phy.setDistanceUnit( "My" );
+        return phy;
+    }
+
+    // ----- "Stage-level geologic axis": a fossil-only Late Cretaceous dinosaur tree. Nothing in it reaches the
+    //       present, so the window it spans (66 - 100 Ma) sits inside ONE Series, the Late Cretaceous -- which is
+    //       what makes the axis drop a rank and band Epoch over STAGE (Maastrichtian, Campanian, Santonian,
+    //       Coniacian, Turonian, Cenomanian) instead of showing two enormous Cretaceous blocks.
+    private static Phylogeny lateCretaceousTree() {
+        final PhylogenyNode ankylosaurus = datedTip( "Ankylosaurus", 66 );        // Maastrichtian
+        final PhylogenyNode triceratops = datedTip( "Triceratops", 66 );          // Maastrichtian
+        final PhylogenyNode parasaurolophus = datedTip( "Parasaurolophus", 73 );  // Campanian
+        final PhylogenyNode tyrannosaurus = datedTip( "Tyrannosaurus", 66 );      // Maastrichtian
+        final PhylogenyNode velociraptor = datedTip( "Velociraptor", 71 );        // Campanian
+        final PhylogenyNode carcharodontosaurus = datedTip( "Carcharodontosaurus", 94 ); // Cenomanian
+        final PhylogenyNode spinosaurus = datedTip( "Spinosaurus", 94 );          // Cenomanian
+        final PhylogenyNode coelurosauria = datedNode( "Coelurosauria", 90, tyrannosaurus, velociraptor );
+        final PhylogenyNode avetheropoda = datedNode( "Avetheropoda", 96, carcharodontosaurus, coelurosauria );
+        final PhylogenyNode theropoda = datedNode( "Theropoda", 98, spinosaurus, avetheropoda );
+        final PhylogenyNode ornithopoda = datedNode( "Ornithopoda + Ceratopsia", 92, parasaurolophus, triceratops );
+        final PhylogenyNode ornithischia = datedNode( "Ornithischia", 96, ankylosaurus, ornithopoda );
+        final PhylogenyNode root = datedNode( "Dinosauria", 100, ornithischia, theropoda );
+        setTimeBranchLengths( root, 100 );
+        final Phylogeny phy = tree( root, "Late Cretaceous dinosaurs (demo)",
+                                    "A schematic, time-calibrated tree of Late Cretaceous dinosaurs (ages in Ma). "
+                                            + "Every taxon is extinct, so the tree spans only 66 - 100 Ma -- one "
+                                            + "Series -- and the geologic axis (Settings > Overlays > Time axis: "
+                                            + "Geologic) drops a rank and bands the Late Cretaceous over its STAGES: "
+                                            + "Maastrichtian, Campanian, Santonian, Coniacian, Turonian, Cenomanian. "
+                                            + "A deeper tree such as dinosaur-time-tree.xml gets Period over Epoch "
+                                            + "instead. Schematic, not a rigorous phylogeny." );
         phy.setDistanceUnit( "My" );
         return phy;
     }

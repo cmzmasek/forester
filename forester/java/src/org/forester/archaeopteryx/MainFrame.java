@@ -200,7 +200,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_DIM_NON_MATCHES_LABEL = "Dim Non-Matches";
     static final String DISPLAY_DIM_NON_MATCHES_TIP = "While a search or selection is active, fade non-matching labels toward the background so the hits stand out. Works on screen and in exports.";
     static final String CHECK_FOR_UPDATES_LABEL = "Check for Updates at Launch";
-    static final String CHECK_FOR_UPDATES_TIP = "Once, a moment after launch, ask the Archaeopteryx home page whether a newer release exists; if so, a line appears in the Help menu. Nothing is sent but the request, and any failure (no network, ...) is silent.";
+    static final String CHECK_FOR_UPDATES_TIP = "Off by default. When on, Archaeopteryx reads the public GitHub releases page of its own repository once, a moment after launch, and adds a quiet line to the Help menu if a newer version is out. Archaeopteryx has no server: nothing about you, your trees or your machine is sent anywhere, and any failure is silent.";
     static final String DISPLAY_PULSE_FOUND_NODES_LABEL = "Pulse Found Nodes";
     static final String DISPLAY_PULSE_FOUND_NODES_TIP = "Draw a gently pulsing halo around found/selected nodes to draw the eye (a static glow in exports; not in black-and-white; rectangular layouts only).";
     static final String NON_LINED_UP_CLADOGRAMS_LABEL = "Non-Lined Up Cladogram";
@@ -1205,9 +1205,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.repaint();
     }
 
-    /** The text of the Help menu's update line. Pure. */
+    /**
+     * The text of the Help menu's update line. Deliberately SHORT: the line is inserted into the Help menu long
+     * after the menu was built, and the old label ("Update available: Archaeopteryx x.y.z", in bold) was half as
+     * wide again as the whole rest of the menu -- so it forced the popup wider than everything around it, which is
+     * where the reported clipping came from. Keeping it narrower than the menu's own items means nothing has to
+     * re-measure and nothing can be cut off. ("Archaeopteryx" is redundant inside Archaeopteryx's Help menu
+     * anyway.) Pure.
+     */
     static String updateAvailableLabel(final String version) {
-        return "Update available: " + AptxConstants.PRG_NAME + " " + version;
+        return "New version available: " + version;
     }
 
     /**
@@ -1219,13 +1226,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         if (_update_available_item == null) {
-            _update_available_item = new JMenuItem();
-            _update_available_item.setToolTipText("A newer release of " + AptxConstants.PRG_NAME
-                    + " is on the home page. Opens the releases page in your browser.");
-            _update_available_item.setFont(_update_available_item.getFont().deriveFont(Font.BOLD));
-            final Color accent = UIManager.getColor("Component.accentColor");
-            _update_available_item.setForeground((accent != null) ? accent : new Color(0x26, 0x75, 0xBF));
-            _update_available_item.addActionListener(this);
+            // A quiet line, in the menu's OWN font and colour: the user asked to be told, not to be nagged.
+            // customizeJMenuItem is what sets that font -- an item added without it falls back to a larger
+            // FlatLaf default (the same trap as the Collapse-Branches submenu), which is both loud and wide.
+            _update_available_item = customizeJMenuItem(new JMenuItem());
+            _update_available_item.setToolTipText("Opens the public releases page in your browser.");
             _help_jmenu.insert(_update_available_item, 0);
             _help_jmenu.insertSeparator(1);
         }

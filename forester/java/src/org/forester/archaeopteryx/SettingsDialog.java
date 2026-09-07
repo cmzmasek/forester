@@ -579,7 +579,21 @@ final class SettingsDialog extends JDialog {
     private JPanel applicationTab() {
         final JPanel c = column();
         c.add( header( "Updates" ) );
+        final JLabel intro = new JLabel( "<html><b>Archaeopteryx has no server, and never will.</b> It does not"
+                + " phone home, and it collects nothing.<br>The check below is the only thing that ever reaches"
+                + " the network on its own: it reads the public GitHub<br>releases page of the Archaeopteryx"
+                + " repository and compares the version number with this one.<br>Nothing about you, your trees or"
+                + " your machine is sent, and any failure is silent. It is off unless<br>you turn it on."
+                + "</html>" );
+        intro.setAlignmentX( Component.LEFT_ALIGNMENT );
+        c.add( intro );
+        c.add( Box.createVerticalStrut( 8 ) );
         add( c, cb( _mf._check_for_updates_cbmi ) );
+        c.add( Box.createVerticalStrut( 4 ) );
+        final JLabel where = new JLabel( UpdateCheck.RELEASES_PAGE );
+        where.setAlignmentX( Component.LEFT_ALIGNMENT );
+        where.setForeground( FormWidgets.mutedColor() );
+        c.add( where );
         return c;
     }
 

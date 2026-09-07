@@ -35,10 +35,15 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.util.ForesterUtil;
 
 /**
- * What the hover card says about a node: the same list, in the same order and wording, as the Archaeopteryx.js
- * tooltip (so the two viewers read alike) -- name, distance to parent, date, depth, confidences, then one
- * headed block per taxonomy / sequence / events, the distribution, the user-visible properties, and for an
- * internal node the number of tips below it. A {@link Row} with a null value is a section heading. Pure.
+ * What the hover card says about a node, in the same wording as the Archaeopteryx.js tooltip (so the two viewers
+ * read alike): first the facts about the node itself -- name, distance to parent, date, distribution, depth and,
+ * for an internal node, the tips below it -- then the branch confidences, then one HEADED block per taxonomy /
+ * sequence / events / properties. A {@link Row} with a null value is a section heading.
+ * <p>
+ * Every row either stands in that leading block or under a heading, and that is the point of the order: a row
+ * printed after a headed section is read as part of it, so a stray "Distribution" or "Tips below" trailing the
+ * SEQUENCE block looked like a sequence field, and the properties -- headed by nothing -- looked like more of
+ * whatever came before them. Pure.
  */
 final class NodeHoverText {
 
@@ -91,7 +96,13 @@ final class NodeHoverText {
                 rows.add( Row.line( "Date", date ) );
             }
         }
+        if ( nd.isHasDistribution() && !ForesterUtil.isEmpty( nd.getDistribution().getDesc() ) ) {
+            rows.add( Row.line( "Distribution", nd.getDistribution().getDesc() ) );
+        }
         rows.add( Row.line( "Depth", String.valueOf( n.calculateDepth() ) ) );
+        if ( !n.isExternal() ) {
+            rows.add( Row.line( "Tips below", String.valueOf( countTips( n ) ) ) );
+        }
         if ( n.getBranchData().isHasConfidences() ) {
             for( final Confidence c : n.getBranchData().getConfidences() ) {
                 if ( c.getValue() == Confidence.CONFIDENCE_DEFAULT_VALUE ) {
@@ -148,9 +159,6 @@ final class NodeHoverText {
                 }
             }
         }
-        if ( nd.isHasDistribution() && !ForesterUtil.isEmpty( nd.getDistribution().getDesc() ) ) {
-            rows.add( Row.line( "Distribution", nd.getDistribution().getDesc() ) );
-        }
         if ( nd.isHasEvent() ) {
             final Event ev = nd.getEvent();
             final int at = rows.size();
@@ -172,6 +180,7 @@ final class NodeHoverText {
             }
         }
         if ( nd.isHasProperties() ) {
+            final int at = rows.size();
             for( final Property p : nd.getProperties().getProperties() ) {
                 if ( TreePanelUtil.isInternalPropertyRef( p.getRef() ) || TreePanelUtil.isVisualStylePropertyRef( p.getRef() )
                         || ForesterUtil.isEmpty( p.getValue() ) ) {
@@ -184,9 +193,9 @@ final class NodeHoverText {
                 rows.add( Row.line( ref, ForesterUtil.isEmpty( p.getUnit() ) ? p.getValue()
                         : p.getValue() + " " + p.getUnit() ) );
             }
-        }
-        if ( !n.isExternal() ) {
-            rows.add( Row.line( "Tips below", String.valueOf( countTips( n ) ) ) );
+            if ( rows.size() > at ) {
+                rows.add( at, Row.heading( "Properties" ) );
+            }
         }
         // a card that would only say "Depth: n" (a bare unnamed node) is noise: show nothing
         if ( ( rows.size() == 1 ) && "Depth".equals( rows.get( 0 ).key ) ) {

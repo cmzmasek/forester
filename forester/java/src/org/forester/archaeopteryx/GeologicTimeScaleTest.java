@@ -37,7 +37,8 @@ public final class GeologicTimeScaleTest {
     public static boolean test() {
         try {
             return countsOk() && contiguousOk( Rank.EON ) && contiguousOk( Rank.ERA ) && contiguousOk( Rank.PERIOD )
-                    && contiguousOk( Rank.EPOCH ) && lookupOk() && overlapOk() && bandRanksOk();
+                    && contiguousOk( Rank.EPOCH ) && contiguousOk( Rank.AGE ) && lookupOk() && overlapOk()
+                    && bandRanksOk() && stagesOk();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -50,6 +51,9 @@ public final class GeologicTimeScaleTest {
         ck( GeologicTimeScale.intervals( Rank.ERA ).size() == 10, "10 eras" );
         ck( GeologicTimeScale.intervals( Rank.PERIOD ).size() == 22, "22 periods" );
         ck( GeologicTimeScale.intervals( Rank.EPOCH ).size() == 34, "34 epochs" );
+        // 101 ratified Phanerozoic stages, PLUS the Pridoli, which is a Series with no stages of its own and so
+        // stands in the stage row for its own span (as it does on the ICS chart) -- without it the band has a hole
+        ck( GeologicTimeScale.intervals( Rank.AGE ).size() == 102, "101 stages + the undivided Pridoli" );
         return true;
     }
 
@@ -69,10 +73,53 @@ public final class GeologicTimeScaleTest {
         ck( GeologicTimeScale.coverageMa( Rank.EPOCH ) >= 538.0, "epochs cover to the base of the Phanerozoic" );
         ck( GeologicTimeScale.coverageMa( Rank.PERIOD ) >= 2500.0, "periods cover into the Paleoproterozoic" );
         ck( GeologicTimeScale.coverageMa( Rank.ERA ) >= 4031.0, "eras cover the whole Archean" );
+        // ... and it also adapts DOWNWARD: a window inside one or two Series is banded Epoch over Stage, because
+        // Period/Epoch would give it two enormous blocks and no scale at all
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 66, 100 ), new Rank[] { Rank.EPOCH, Rank.AGE } ),
+            "a 66-100 Ma window (the Late Cretaceous alone) bands Epoch over Stage" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 0, 2 ), new Rank[] { Rank.EPOCH, Rank.AGE } ),
+            "a 0-2 Ma window (Holocene + Pleistocene) bands Epoch over Stage" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 0, 30 ), new Rank[] { Rank.PERIOD, Rank.EPOCH } ),
+            "a 0-30 Ma window spans more than two Series, so it stays Period over Epoch" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 0, 250 ), new Rank[] { Rank.PERIOD, Rank.EPOCH } ),
+            "the dinosaur demo (0-250 Ma) is unchanged" );
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 0, 50 ), new Rank[] { Rank.PERIOD, Rank.EPOCH } ),
+            "the lagomorph demo (0-50 Ma) is unchanged" );
+        // a narrow window with NO stage data under it must not reach for stages
+        ck( java.util.Arrays.equals( GeologicTimeScale.bandRanks( 700, 800 ), new Rank[] { Rank.ERA, Rank.PERIOD } ),
+            "a narrow PRECAMBRIAN window has no stages, so it stays Era over Period" );
+        ck( GeologicTimeScale.coverageMa( Rank.AGE ) >= 538.0, "stages cover the whole Phanerozoic" );
         // deep-time lookups
         ck( "Archean".equals( named( GeologicTimeScale.at( Rank.EON, 3000 ) ) ), "3000 Ma is in the Archean eon" );
         ck( "Mesoarchean".equals( named( GeologicTimeScale.at( Rank.ERA, 3000 ) ) ), "3000 Ma is the Mesoarchean era" );
         ck( "Proterozoic".equals( named( GeologicTimeScale.at( Rank.EON, 1000 ) ) ), "1000 Ma is the Proterozoic eon" );
+        return true;
+    }
+
+    /** The stage band: spot values against the official ICS chart, and the Pridoli filling the one Series that
+     *  has no stages. A transposed boundary here would be invisible on screen and wrong in a caption. */
+    private static boolean stagesOk() {
+        ck( "Meghalayan".equals( named( GeologicTimeScale.at( Rank.AGE, 0 ) ) ), "0 Ma is the Meghalayan" );
+        ck( "Chibanian".equals( named( GeologicTimeScale.at( Rank.AGE, 0.5 ) ) ), "0.5 Ma is the Chibanian" );
+        ck( "Messinian".equals( named( GeologicTimeScale.at( Rank.AGE, 6 ) ) ), "6 Ma is the Messinian" );
+        ck( "Maastrichtian".equals( named( GeologicTimeScale.at( Rank.AGE, 70 ) ) ), "70 Ma is the Maastrichtian" );
+        // the Solnhofen (Archaeopteryx) beds sit right at the Kimmeridgian/Tithonian boundary, which the current
+        // ICS chart puts at 149.2 Ma -- so 150 Ma is still Kimmeridgian and 148 Ma is Tithonian
+        ck( "Tithonian".equals( named( GeologicTimeScale.at( Rank.AGE, 148 ) ) ), "148 Ma is the Tithonian" );
+        ck( "Kimmeridgian".equals( named( GeologicTimeScale.at( Rank.AGE, 150 ) ) ), "150 Ma is the Kimmeridgian" );
+        ck( "Pridoli".equals( named( GeologicTimeScale.at( Rank.AGE, 421 ) ) ),
+            "the Pridoli has no stages of its own and stands in the stage row" );
+        ck( "Fortunian".equals( named( GeologicTimeScale.at( Rank.AGE, 535 ) ) ), "535 Ma is the Fortunian" );
+        ck( GeologicTimeScale.at( Rank.AGE, 600 ) == null, "there are no Precambrian stages" );
+        // a stage is inside its Series and its System
+        for ( final Interval st : GeologicTimeScale.intervals( Rank.AGE ) ) {
+            final double mid = ( st.youngMa() + st.oldMa() ) / 2;
+            final Interval series = GeologicTimeScale.at( Rank.EPOCH, mid );
+            ck( series != null, st.name() + " must sit inside a Series" );
+            ck( ( series.youngMa() <= ( st.youngMa() + 1e-6 ) ) && ( series.oldMa() >= ( st.oldMa() - 1e-6 ) ),
+                st.name() + " (" + st.youngMa() + "-" + st.oldMa() + ") must be contained in its Series "
+                        + series.name() + " (" + series.youngMa() + "-" + series.oldMa() + ")" );
+        }
         return true;
     }
 

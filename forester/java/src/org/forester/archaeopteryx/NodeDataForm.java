@@ -103,11 +103,15 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
     private static final long serialVersionUID = 1L;
     private static final int  MOL_SEQ_ROWS     = 3;
 
-    private final PhylogenyNode                 _node;
+    /** The node read from / written to; an undo or redo re-points this at the same node of the restored tree. */
+    private PhylogenyNode                       _node;
     private final TreePanel                     _tree_panel;
     private final Mode                          _mode;
-    private final boolean                       _internal;
+    private boolean                             _internal;
     private NodeDataDraft                       _baseline;
+    private final Header                        _header;
+    /** True while the node is not in the tree (an undo removed it): nothing can be written, see {@link #notice()}. */
+    private boolean                             _detached;
     private final Map<String, JComponent>       _fields         = new HashMap<>();
     private final Map<String, Section>          _sections       = new LinkedHashMap<>();
     private final List<ConfidenceRow>           _confidence_rows = new ArrayList<>();
@@ -136,7 +140,8 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         _internal = !node.isExternal();
         _baseline = NodeDataDraft.from( node );
         _label_width = getFontMetrics( getFont() ).stringWidth( "Scientific name" ) + 12;
-        add( new Header( nodeLabel( _node ), headerSubtitle( _node ) ), BorderLayout.NORTH );
+        _header = new Header( nodeLabel( _node ), headerSubtitle( _node ) );
+        add( _header, BorderLayout.NORTH );
         final JPanel page = newPage();
         buildSections( page, _baseline );
         _scroll = pageScroller( page );
@@ -165,6 +170,112 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
     /** The draft this form last read from / wrote to the node (what dirtiness is measured against). */
     NodeDataDraft baseline() {
         return _baseline;
+    }
+
+    /** The node this form reads from and writes to (after a {@link #rebind rebind}: the restored tree's node). */
+    PhylogenyNode node() {
+        return _node;
+    }
+
+    /**
+     * Re-attaches the form to {@code restored} -- the same node (by id) in the tree an undo or redo just installed.
+     * Unwritten edits are KEPT and from now on measured against the restored node; a clean form is simply reloaded
+     * from it. Each sequence card is re-bound to the restored node's sequence at the same position (so a Write
+     * still mutates that object in place); a card beyond the restored sequences becomes an addition. The widgets
+     * are kept when the node's kind (tip / internal) is unchanged; otherwise the page is rebuilt from the current
+     * values, since the sections differ. Sections keep their expanded state and the page its scroll position.
+     */
+    void rebind( final PhylogenyNode restored ) {
+        _detached = false; // FIRST: a detached form reports "not dirty", but its unwritten edits are still there
+        final boolean was_dirty = isDirty();
+        final boolean kind_changed = ( _internal != !restored.isExternal() );
+        final NodeDataDraft edits = was_dirty ? collect().copy() : null;
+        _node = restored;
+        _internal = !restored.isExternal();
+        _baseline = NodeDataDraft.from( restored );
+        _header.setTitle( nodeLabel( restored ) );
+        _header.setSubtitle( headerSubtitle( restored ) );
+        final List<Sequence> seqs = restored.getNodeData().isHasSequence() ? restored.getNodeData().getSequences()
+                : java.util.Collections.emptyList();
+        if ( was_dirty && !kind_changed ) {
+            for( int i = 0; i < _sequence_cards.size(); ++i ) {
+                _sequence_cards.get( i ).bindOrigin( ( i < seqs.size() ) ? seqs.get( i ) : null );
+            }
+        }
+        else {
+            final NodeDataDraft d = ( edits != null ) ? edits : _baseline;
+            for( int i = 0; i < d.sequences.size(); ++i ) {
+                d.sequences.get( i ).origin = ( i < seqs.size() ) ? seqs.get( i ) : null;
+            }
+            rebuildPage( d );
+        }
+        fireChanged();
+    }
+
+    /** Re-derives the header (label + the "internal node · n tips · depth" line) from the node as it now is. */
+    void refreshHeader() {
+        _detached = false;
+        _header.setTitle( nodeLabel( _node ) );
+        _header.setSubtitle( headerSubtitle( _node ) );
+        fireChanged();
+    }
+
+    /**
+     * The node is gone from the tree (an undo or redo removed it): the window stays, so nothing typed is lost
+     * unseen, but it can no longer write, is not dirty, and says why ({@link #notice()}). A later
+     * {@link #rebind rebind} (a redo that brings the node back) re-attaches it.
+     */
+    void markDetached() {
+        _detached = true;
+        fireChanged();
+    }
+
+    @Override
+    public String notice() {
+        if ( !_detached ) {
+            return null;
+        }
+        return isEditable() ? "Node no longer in the tree (undone): nothing can be written."
+                : "Node no longer in the tree (undone).";
+    }
+
+    /** Rebuilds the page from {@code d}, keeping each section's expanded state and the scroll position. */
+    private void rebuildPage( final NodeDataDraft d ) {
+        final Map<String, Boolean> expanded = new HashMap<>();
+        for( final Map.Entry<String, Section> e : _sections.entrySet() ) {
+            expanded.put( e.getKey(), e.getValue().isExpanded() );
+        }
+        final java.awt.Point view = _scroll.getViewport().getViewPosition();
+        _building = true;
+        try {
+            remove( _scroll );
+            _fields.clear();
+            _sections.clear();
+            _confidence_rows.clear();
+            _sequence_cards.clear();
+            _outlined.clear();
+            _bad_property_cells.clear();
+            _confidence_list = null;
+            _sequence_list = null;
+            _property_model = null;
+            _property_table = null;
+            _remove_property_button = null;
+            final JPanel page = newPage();
+            buildSections( page, d );
+            _scroll = pageScroller( page );
+            add( _scroll, BorderLayout.CENTER );
+            for( final Map.Entry<String, Section> e : _sections.entrySet() ) {
+                final Boolean x = expanded.get( e.getKey() );
+                if ( x != null ) {
+                    e.getValue().setExpanded( x );
+                }
+            }
+        }
+        finally {
+            _building = false;
+        }
+        revalidatePage();
+        SwingUtilities.invokeLater( () -> _scroll.getViewport().setViewPosition( view ) );
     }
 
     /** Notified whenever a value changes (so dirtiness / validity may have changed). */
@@ -232,13 +343,13 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     @Override
     public boolean isDirty() {
-        return isEditable() && !collect().equals( _baseline );
+        return isEditable() && !_detached && !collect().equals( _baseline );
     }
 
     /** Every current validation problem (empty = writable); cached with the draft. Always empty in VIEW mode. */
     @Override
     public List<Problem> problems() {
-        if ( !isEditable() ) {
+        if ( !isEditable() || _detached ) {
             return java.util.Collections.emptyList();
         }
         collect();
@@ -255,7 +366,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
      */
     @Override
     public boolean write() {
-        if ( !isEditable() ) {
+        if ( !isEditable() || _detached ) {
             return false;
         }
         final NodeDataDraft draft = collect();
@@ -419,6 +530,10 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     JScrollPane scrollPaneForTest() {
         return _scroll;
+    }
+
+    String headerTitleForTest() {
+        return _header.getTitle();
     }
 
     // ------------------------------------------------------------------ building

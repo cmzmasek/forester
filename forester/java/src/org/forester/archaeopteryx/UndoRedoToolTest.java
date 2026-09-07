@@ -454,9 +454,9 @@ public final class UndoRedoToolTest {
     /**
      * A node-data edit is undoable as ONE step, and merely OPENING the editor is not an edit: nothing reaches the
      * tree until "Write to Tree", which checkpoints right before writing. A Write that changes nothing is a no-op
-     * (no undo entry), a real one is exactly one "Edit Node Data" step, and an undo closes the editor (its node
-     * belongs to the replaced tree). A theme switch (updateComponentTreeUI over the open window) must not break any
-     * of this.
+     * (no undo entry), a real one is exactly one "Edit Node Data" step, and an undo leaves the editor OPEN, now bound
+     * to the restored tree's node (the full rebind behaviour is NodeWindowRebindTest's). A theme switch
+     * (updateComponentTreeUI over the open window) must not break any of this.
      */
     private static boolean nodeEditUndo() {
         try {
@@ -551,21 +551,21 @@ public final class UndoRedoToolTest {
                     fail( ok, "undo should restore the old node name, got "
                             + tp.getPhylogeny().getFirstExternalNode().getName() );
                 }
-                // An undo installs a DIFFERENT tree, so an editor left open would be editing a node detached from
-                // the one on screen -- the edits would vanish silently while still marking the file dirty.
-                if ( ( tp.openNodeFrameCountForTest() != 0 ) || nf[ 0 ].isDisplayable() ) {
-                    fail( ok, "undo must close the open node editor -- its node belongs to the replaced tree" );
+                // An undo installs a DIFFERENT tree: the editor stays open and re-attaches to the restored tree's
+                // node (it used to be closed, which silently dropped anything typed but not yet written).
+                if ( ( tp.openNodeFrameCountForTest() != 1 ) || !nf[ 0 ].isDisplayable() ) {
+                    fail( ok, "undo must leave the open node editor open, rebound to the restored tree" );
+                }
+                else if ( nf[ 0 ].getForm().node() != tp.getPhylogeny().getFirstExternalNode() ) {
+                    fail( ok, "after an undo the editor must hold the RESTORED tree's node, not the replaced one" );
                 }
             } );
             // A THEME SWITCH must not break the editor: setDarkMode runs updateComponentTreeUI over every open
             // window; the form's widgets are plain components bound by document listeners, which survive that.
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
-                final PhylogenyNode n2 = tp.getPhylogeny().getFirstExternalNode();
-                tp.showNodeEditFrame( n2 );
-                nf[ 0 ] = openNodeFrame();
                 if ( nf[ 0 ] == null ) {
-                    fail( ok, "the editor should have reopened" );
+                    fail( ok, "the editor should still be open" );
                     return;
                 }
                 SwingUtilities.updateComponentTreeUI( nf[ 0 ] ); // what a light/dark switch does to this window

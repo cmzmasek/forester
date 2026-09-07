@@ -165,7 +165,7 @@ public final class UpdateCheckTest {
     }
 
     private static boolean helpMenuLine() throws Exception {
-        boolean ok = eq( "label", "Update available: Archaeopteryx 0.11.140", MainFrame.updateAvailableLabel( "0.11.140" ) );
+        boolean ok = eq( "label", "New version available: 0.11.140", MainFrame.updateAvailableLabel( "0.11.140" ) );
         if ( GraphicsEnvironment.isHeadless() ) {
             return ok;
         }
@@ -180,6 +180,14 @@ public final class UpdateCheckTest {
         final boolean[] okk = { ok };
         SwingUtilities.invokeAndWait( () -> {
             final MainFrame f = mf[ 0 ];
+            // OPT-IN: a fresh window must start with the check switched OFF
+            if ( f.getOptions().isCheckForUpdatesAtLaunch() || f._check_for_updates_cbmi.isSelected() ) {
+                okk[ 0 ] = false;
+                System.out.println( "  [UpdateCheckTest] the update check must be OFF by default (opt-in)" );
+            }
+            // How wide the Help menu is on its own, BEFORE the notice line is added.
+            final javax.swing.JPopupMenu popup = f._help_jmenu.getPopupMenu();
+            final int menu_w_without_notice = popup.getPreferredSize().width;
             final int before = f._help_jmenu.getItemCount();
             if ( f._update_available_item != null ) {
                 okk[ 0 ] = false;
@@ -191,7 +199,7 @@ public final class UpdateCheckTest {
                 okk[ 0 ] = false;
                 System.out.println( "  [UpdateCheckTest] the update line must be the FIRST Help item" );
             }
-            else if ( !"Update available: Archaeopteryx 0.11.140".equals( item.getText() ) ) {
+            else if ( !"New version available: 0.11.140".equals( item.getText() ) ) {
                 okk[ 0 ] = false;
                 System.out.println( "  [UpdateCheckTest] wrong text: " + item.getText() );
             }
@@ -199,9 +207,33 @@ public final class UpdateCheckTest {
                 okk[ 0 ] = false;
                 System.out.println( "  [UpdateCheckTest] expected one line + one separator added" );
             }
+            // quiet: the menu's own font and colour, no bold, no accent
+            final JMenuItem plain = f._help_jmenu.getItem( 2 );
+            if ( ( item != null ) && ( plain != null ) ) {
+                if ( item.getFont().isBold() && !plain.getFont().isBold() ) {
+                    okk[ 0 ] = false;
+                    System.out.println( "  [UpdateCheckTest] the update line must not be bold" );
+                }
+                if ( !plain.getForeground().equals( item.getForeground() ) ) {
+                    okk[ 0 ] = false;
+                    System.out.println( "  [UpdateCheckTest] the update line must not be coloured: "
+                            + item.getForeground() );
+                }
+            }
+            // The reported problem was that the notice was CUT OFF the first time the menu was shown. It is
+            // inserted into a menu that was built long before, so the safe property -- and the one that makes it
+            // independent of when and how the popup re-measures itself -- is that the line does not need the
+            // menu to get any wider than it already is. The old label ("Update available: Archaeopteryx x.y.z",
+            // bold) was ~50% wider than the entire rest of the Help menu; this one fits inside it.
+            if ( item.getPreferredSize().width > menu_w_without_notice ) {
+                okk[ 0 ] = false;
+                System.out.println( "  [UpdateCheckTest] the update line (" + item.getPreferredSize().width
+                        + " px) must fit the Help menu's own width (" + menu_w_without_notice
+                        + " px), or it can be clipped: " + item.getText() );
+            }
             f.showUpdateAvailable( "0.11.141" ); // a repeat refreshes, never duplicates
             if ( ( f._help_jmenu.getItemCount() != before + 2 )
-                    || !"Update available: Archaeopteryx 0.11.141".equals( f._update_available_item.getText() ) ) {
+                    || !"New version available: 0.11.141".equals( f._update_available_item.getText() ) ) {
                 okk[ 0 ] = false;
                 System.out.println( "  [UpdateCheckTest] a second notice must refresh the same line" );
             }

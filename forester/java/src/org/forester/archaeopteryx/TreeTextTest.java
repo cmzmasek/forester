@@ -192,10 +192,14 @@ public final class TreeTextTest {
         boolean ok = true;
         ok &= kindAt( spans, t, "#NEXUS", Kind.KEYWORD );
         ok &= kindAt( spans, t, "Begin Taxa", Kind.KEYWORD );
-        ok &= kindAt( spans, t, "Taxa;", null ); // the block name is data
+        // the block name is part of the statement that opens the block, so it is tinted with it (it used to be
+        // left plain, which made "Begin Taxa;" read as half markup, half data)
+        ok &= kindAt( spans, t, "Taxa;", Kind.KEYWORD );
+        ok &= kindAt( spans, t, "Trees;", Kind.KEYWORD );
         ok &= kindAt( spans, t, "Dimensions", Kind.KEYWORD );
-        ok &= kindAt( spans, t, "NTax=2", null );
+        ok &= kindAt( spans, t, "NTax=2", Kind.ATTRIBUTE ); // a setting name, like an XML attribute
         ok &= kindAt( spans, t, "=2", Kind.MARKUP );
+        ok &= kindAt( spans, t, "2;", Kind.NUMBER );        // its value
         ok &= kindAt( spans, t, "TaxLabels", Kind.KEYWORD );
         ok &= kindAt( spans, t, "A B", null );
         ok &= kindAt( spans, t, "End;", Kind.KEYWORD );
@@ -204,6 +208,79 @@ public final class TreeTextTest {
         ok &= kindAt( spans, t, "[&R]", Kind.COMMENT );
         ok &= kindAt( spans, t, "A:1", null );
         ok &= kindAt( spans, t, "1,B", Kind.NUMBER );
+        // ---- a keyword is only a keyword where a COMMAND can stand ----
+        // a taxon called "End" or "Matrix" in a label list is data, not markup
+        final String labels = "Begin Taxa;\n TaxLabels End Matrix Format;\nEnd;\n";
+        final List<Span> ls = TreeText.spans( labels, Format.NEXUS );
+        ok &= kindAt( ls, labels, "End Matrix", null );
+        ok &= kindAt( ls, labels, "Matrix Format", null );
+        ok &= kindAt( ls, labels, "Format;", null );
+        ok &= kindAt( ls, labels, "End;", Kind.KEYWORD ); // ... but the real one still is
+        // a wrapped statement: the continuation line does not start a command, so a taxon there stays data even
+        // when it is spelled like one (only a finished ";" statement lets the next line open a command)
+        final String wrapped = "Begin Taxa;\n TaxLabels A\n Tree Matrix;\nEnd;\n";
+        final List<Span> ws = TreeText.spans( wrapped, Format.NEXUS );
+        ok &= kindAt( ws, wrapped, "Tree Matrix", null );
+        ok &= kindAt( ws, wrapped, "Matrix;", null );
+        ok &= kindAt( ws, wrapped, "End;", Kind.KEYWORD );
+        // a label inside a tree is never a keyword either
+        final String intree = "Begin Trees;\n Tree t1=(Matrix:1,End:2)Format;\nEnd;\n";
+        final List<Span> is = TreeText.spans( intree, Format.NEXUS );
+        ok &= kindAt( is, intree, "Matrix:1", null );
+        ok &= kindAt( is, intree, "End:2", null );
+        ok &= kindAt( is, intree, "Format;", null );
+        // several commands on ONE line: the ";" is what opens the next one
+        final String one = "Begin Taxa; Dimensions NTax=3; End;";
+        final List<Span> os = TreeText.spans( one, Format.NEXUS );
+        ok &= kindAt( os, one, "Taxa;", Kind.KEYWORD );
+        ok &= kindAt( os, one, "Dimensions", Kind.KEYWORD );
+        ok &= kindAt( os, one, "NTax=3", Kind.ATTRIBUTE );
+        ok &= kindAt( os, one, "3;", Kind.NUMBER );
+        ok &= kindAt( os, one, "End;", Kind.KEYWORD );
+        // A name with an apostrophe is written in DOUBLE quotes ("Seba's short-tailed bat"). Read as a plain word
+        // plus a stray apostrophe, it opened a single-quoted "label" that ran to the next apostrophe -- in the bat
+        // demo that swallowed "End;", "Begin Trees;" and "Tree", which is exactly what the user saw.
+        final String dq = "Begin Taxa;\n TaxLabels \"Seba's bat\" 'Large fox' \"Pallas's bat\";\nEnd;\nBegin Trees;\n"
+                + " Tree t=[&R](\"Seba's bat\":1,('Large fox':2,\"Pallas's bat\":3)80:1);\nEnd;\n";
+        final List<Span> ds = TreeText.spans( dq, Format.NEXUS );
+        ok &= kindAt( ds, dq, "Seba's bat\" 'Large", null );
+        ok &= kindAt( ds, dq, "Pallas's bat\";", null );
+        ok &= kindAt( ds, dq, "End;\nBegin Trees", Kind.KEYWORD );
+        ok &= kindAt( ds, dq, "Trees;", Kind.KEYWORD );
+        ok &= kindAt( ds, dq, "Tree t=", Kind.KEYWORD );
+        ok &= kindAt( ds, dq, "[&R]", Kind.COMMENT );
+        ok &= kindAt( ds, dq, "Seba's bat\":1", null );
+        ok &= kindAt( ds, dq, "1,(", Kind.NUMBER );
+        ok &= kindAt( ds, dq, "80:1", Kind.NUMBER );
+        ok &= kindAt( ds, dq, "End;\n", Kind.KEYWORD );
+        if ( ds.isEmpty() || ( ds.get( ds.size() - 1 ).end < dq.lastIndexOf( "End" ) ) ) {
+            return TestFail.here( "the last End; must still be reached: " + ds );
+        }
+        // a quote INSIDE a word is not a quote: a stray one must not un-tint everything after it
+        final String stray = "Begin Taxa;\n TaxLabels Foo\"bar O'Neil baz;\nEnd;\nBegin Trees;\n Tree t=(a:1,b:2);\nEnd;\n";
+        final List<Span> ss = TreeText.spans( stray, Format.NEXUS );
+        ok &= kindAt( ss, stray, "Foo\"bar", null );
+        ok &= kindAt( ss, stray, "O'Neil", null );
+        ok &= kindAt( ss, stray, "End;\nBegin Trees", Kind.KEYWORD );
+        ok &= kindAt( ss, stray, "Trees;", Kind.KEYWORD );
+        ok &= kindAt( ss, stray, "Tree t=", Kind.KEYWORD );
+        ok &= kindAt( ss, stray, "2)", Kind.NUMBER );
+        // ... and the same in plain Newick, where the tree's own quote style is all there is
+        final String dn = "(\"Seba's bat\":0.1,'it''s':0.2)90:1;";
+        final List<Span> dns = TreeText.spans( dn, Format.NEWICK );
+        ok &= kindAt( dns, dn, "Seba's", null );
+        ok &= kindAt( dns, dn, "0.1", Kind.NUMBER );
+        ok &= kindAt( dns, dn, "it''s", null );
+        ok &= kindAt( dns, dn, "0.2", Kind.NUMBER );
+        ok &= kindAt( dns, dn, "90:1", Kind.NUMBER );
+        // a Format command's settings, and a non-numeric value left plain
+        final String fmt = "Begin Data;\n Format DataType=DNA Gap=-;\nEnd;\n";
+        final List<Span> fs = TreeText.spans( fmt, Format.NEXUS );
+        ok &= kindAt( fs, fmt, "Data;", Kind.KEYWORD );
+        ok &= kindAt( fs, fmt, "Format Data", Kind.KEYWORD );
+        ok &= kindAt( fs, fmt, "DataType=", Kind.ATTRIBUTE );
+        ok &= kindAt( fs, fmt, "DNA", null );
+        ok &= kindAt( fs, fmt, "Gap=", Kind.ATTRIBUTE );
         return ok;
     }
 

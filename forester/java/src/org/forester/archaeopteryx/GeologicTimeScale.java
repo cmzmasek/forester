@@ -34,10 +34,11 @@ import java.util.List;
  * Chart this decade." Episodes 48: 105-115. Boundary ages and unit colours from the International Commission on
  * Stratigraphy (ICS / IUGS), www.stratigraphy.org.
  * <p>
- * Populated ranks: EON, ERA, PERIOD, EPOCH -- so the two-band axis can adapt its rank pair to the tree's depth
- * (Period/Epoch for a Phanerozoic tree, Era/Period into the Proterozoic, Eon/Era for a deep Archean tree; see
- * {@link #bandRanks(double)}). STAGE/AGE (the finer band for very recent trees) is a follow-on. Ages/colours follow
- * the ICS scheme (via Macrostrat) and should be spot-checked against the official chart PDF before shipping.
+ * Populated ranks: EON, ERA, PERIOD, EPOCH and AGE (Stage) -- so the two-band axis can adapt its rank pair to the
+ * window the tree actually spans: Epoch/Stage for a tree inside one or two Series, Period/Epoch for a Phanerozoic
+ * tree, Era/Period into the Proterozoic, Eon/Era for a deep Archean tree (see {@link #bandRanks(double, double)}).
+ * Ages/colours follow the ICS scheme (via Macrostrat); every value here was checked against that source, and the
+ * tests pin the coverage and contiguity of each rank.
  */
 final class GeologicTimeScale {
 
@@ -98,6 +99,7 @@ final class GeologicTimeScale {
     private static final List<Interval> ERAS    = new ArrayList<>();
     private static final List<Interval> PERIODS = new ArrayList<>();
     private static final List<Interval> EPOCHS  = new ArrayList<>();
+    private static final List<Interval> AGES    = new ArrayList<>();
 
     static {
         // ---- Eons (Eonothem/Eon), youngest -> oldest ----
@@ -173,6 +175,113 @@ final class GeologicTimeScale {
         e( "Miaolingian", 497, 506.5, 0xA6CF86 );
         e( "Series 2", 506.5, 521, 0x99C078 );
         e( "Terreneuvian", 521, 538.8, 0x8CB06C );
+        // ---- Ages (Stage/Age), youngest -> oldest: the finest ICS rank, and the finer band for a tree that
+        // spans only one or two Series. They exist for the Phanerozoic only (0 - 538.8 Ma) -- the Precambrian
+        // has no ratified stages -- which is exactly the depth at which bandRanks can reach for them. The
+        // PRIDOLI is a Series with no stages of its own, so (as on the ICS chart itself) it stands in the stage
+        // row for its own span; without it the band would have a hole at 419.62-422.7 Ma.
+        a( "Meghalayan", 0, 0.0042, 0xFEF2E0 );
+        a( "Northgrippian", 0.0042, 0.0082, 0xFEF2E0 );
+        a( "Greenlandian", 0.0082, 0.0117, 0xFEF2E0 );
+        a( "Late Pleistocene", 0.0117, 0.129, 0xFFF2C7 );
+        a( "Chibanian", 0.129, 0.774, 0xFFF2C7 );
+        a( "Calabrian", 0.774, 1.8, 0xFFF2C7 );
+        a( "Gelasian", 1.8, 2.58, 0xFFEDB3 );
+        a( "Piacenzian", 2.58, 3.6, 0xFFFFBF );
+        a( "Zanclean", 3.6, 5.333, 0xFFFFB3 );
+        a( "Messinian", 5.333, 7.246, 0xFFFF73 );
+        a( "Tortonian", 7.246, 11.63, 0xFFFF66 );
+        a( "Serravallian", 11.63, 13.82, 0xFFFF59 );
+        a( "Langhian", 13.82, 15.98, 0xFFFF4D );
+        a( "Burdigalian", 15.98, 20.45, 0xFFFF41 );
+        a( "Aquitanian", 20.45, 23.04, 0xFFFF33 );
+        a( "Chattian", 23.04, 27.3, 0xFEE6AA );
+        a( "Rupelian", 27.3, 33.9, 0xFED99A );
+        a( "Priabonian", 33.9, 37.71, 0xFDCDA1 );
+        a( "Bartonian", 37.71, 41.03, 0xFDC091 );
+        a( "Lutetian", 41.03, 48.07, 0xFCB482 );
+        a( "Ypresian", 48.07, 56, 0xFCA773 );
+        a( "Thanetian", 56, 59.24, 0xFDBF6F );
+        a( "Selandian", 59.24, 61.66, 0xFEBF65 );
+        a( "Danian", 61.66, 66, 0xFDB462 );
+        a( "Maastrichtian", 66, 72.2, 0xF2FA8C );
+        a( "Campanian", 72.2, 83.6, 0xE6F47F );
+        a( "Santonian", 83.6, 85.7, 0xD9EF74 );
+        a( "Coniacian", 85.7, 89.8, 0xCCE968 );
+        a( "Turonian", 89.8, 93.9, 0xBFE35D );
+        a( "Cenomanian", 93.9, 100.5, 0xB3DE53 );
+        a( "Albian", 100.5, 113.2, 0xCCEA97 );
+        a( "Aptian", 113.2, 121.4, 0xBFE48A );
+        a( "Barremian", 121.4, 125.77, 0xB3DF7F );
+        a( "Hauterivian", 125.77, 132.6, 0xA6D975 );
+        a( "Valanginian", 132.6, 137.05, 0x99D36A );
+        a( "Berriasian", 137.05, 143.1, 0x8CCD60 );
+        a( "Tithonian", 143.1, 149.2, 0xD9F1F7 );
+        a( "Kimmeridgian", 149.2, 154.8, 0xCCECF4 );
+        a( "Oxfordian", 154.8, 161.5, 0xBFE7F1 );
+        a( "Callovian", 161.5, 165.3, 0xBFE7E5 );
+        a( "Bathonian", 165.3, 168.2, 0xB3E2E3 );
+        a( "Bajocian", 168.2, 170.9, 0xA6DDE0 );
+        a( "Aalenian", 170.9, 174.7, 0x9AD9DD );
+        a( "Toarcian", 174.7, 184.2, 0x99CEE3 );
+        a( "Pliensbachian", 184.2, 192.9, 0x80C5DD );
+        a( "Sinemurian", 192.9, 199.5, 0x67BCD8 );
+        a( "Hettangian", 199.5, 201.4, 0x4EB3D3 );
+        a( "Rhaetian", 201.4, 205.7, 0xE3B9DB );
+        a( "Norian", 205.7, 227.3, 0xD6AAD3 );
+        a( "Carnian", 227.3, 237, 0xC99BCB );
+        a( "Ladinian", 237, 241.464, 0xC983BF );
+        a( "Anisian", 241.464, 246.7, 0xBC75B7 );
+        a( "Olenekian", 246.7, 249.9, 0xB051A5 );
+        a( "Induan", 249.9, 251.902, 0xA4469F );
+        a( "Changhsingian", 251.902, 254.14, 0xFCC0B2 );
+        a( "Wuchiapingian", 254.14, 259.51, 0xFCB4A2 );
+        a( "Capitanian", 259.51, 264.28, 0xFB9A85 );
+        a( "Wordian", 264.28, 266.9, 0xFB8D76 );
+        a( "Roadian", 266.9, 274.4, 0xFB8069 );
+        a( "Kungurian", 274.4, 283.3, 0xE38776 );
+        a( "Artinskian", 283.3, 290.1, 0xE37B68 );
+        a( "Sakmarian", 290.1, 293.52, 0xE36F5C );
+        a( "Asselian", 293.52, 298.9, 0xE36350 );
+        a( "Gzhelian", 298.9, 303.7, 0xCCD4C7 );
+        a( "Kasimovian", 303.7, 307, 0xBFD0C5 );
+        a( "Moscovian", 307, 315.2, 0xC7CBB9 );
+        a( "Bashkirian", 315.2, 323.4, 0x99C2B5 );
+        a( "Serpukhovian", 323.4, 330.3, 0xBFC26B );
+        a( "Visean", 330.3, 346.7, 0xA6B96C );
+        a( "Tournaisian", 346.7, 358.86, 0x8CB06C );
+        a( "Famennian", 358.86, 372.15, 0xF2EDC5 );
+        a( "Frasnian", 372.15, 382.31, 0xF2EDAD );
+        a( "Givetian", 382.31, 387.95, 0xF1E185 );
+        a( "Eifelian", 387.95, 393.47, 0xF1D576 );
+        a( "Emsian", 393.47, 410.62, 0xE5D075 );
+        a( "Pragian", 410.62, 413.02, 0xE5C468 );
+        a( "Lochkovian", 413.02, 419.62, 0xE5B75A );
+        a( "Pridoli", 419.62, 422.7, 0xE6F5E1 );
+        a( "Ludfordian", 422.7, 425, 0xD9F0DF );
+        a( "Gorstian", 425, 426.7, 0xCCECDD );
+        a( "Homerian", 426.7, 430.6, 0xCCEBD1 );
+        a( "Sheinwoodian", 430.6, 432.9, 0xBFE6C3 );
+        a( "Telychian", 432.9, 438.6, 0xBFE6CF );
+        a( "Aeronian", 438.6, 440.5, 0xB3E1C2 );
+        a( "Rhuddanian", 440.5, 443.1, 0xA6DCB5 );
+        a( "Hirnantian", 443.1, 445.2, 0xA6DBAB );
+        a( "Katian", 445.2, 452.8, 0x99D69F );
+        a( "Sandbian", 452.8, 458.2, 0x8CD094 );
+        a( "Darriwilian", 458.2, 469.4, 0x74C69C );
+        a( "Dapingian", 469.4, 471.3, 0x66C092 );
+        a( "Floian", 471.3, 477.1, 0x41B087 );
+        a( "Tremadocian", 477.1, 486.85, 0x33A97E );
+        a( "Stage 10", 486.85, 491, 0xE6F5C9 );
+        a( "Jiangshanian", 491, 494.2, 0xD9F0BB );
+        a( "Paibian", 494.2, 497, 0xCCEBAE );
+        a( "Guzhangian", 497, 500.5, 0xCCDFAA );
+        a( "Drumian", 500.5, 504.5, 0xBFD99D );
+        a( "Wuliuan", 504.5, 506.5, 0xB3D492 );
+        a( "Stage 4", 506.5, 514.5, 0xB3CA8E );
+        a( "Stage 3", 514.5, 521, 0xA6C583 );
+        a( "Stage 2", 521, 529, 0xA6BA80 );
+        a( "Fortunian", 529, 538.8, 0x99B575 );
     }
 
     private static void eon( final String name, final double young, final double old, final int rgb ) {
@@ -191,7 +300,11 @@ final class GeologicTimeScale {
         EPOCHS.add( new Interval( name, Rank.EPOCH, young, old, new Color( rgb ) ) );
     }
 
-    /** All intervals of a rank (unmodifiable-ish; callers must not mutate), youngest first. Empty for AGE (a follow-on). */
+    private static void a( final String name, final double young, final double old, final int rgb ) {
+        AGES.add( new Interval( name, Rank.AGE, young, old, new Color( rgb ) ) );
+    }
+
+    /** All intervals of a rank (unmodifiable-ish; callers must not mutate), youngest first. */
     static List<Interval> intervals( final Rank rank ) {
         switch ( rank ) {
             case EON:
@@ -202,6 +315,8 @@ final class GeologicTimeScale {
                 return PERIODS;
             case EPOCH:
                 return EPOCHS;
+            case AGE:
+                return AGES;
             default:
                 return new ArrayList<>();
         }
@@ -216,11 +331,27 @@ final class GeologicTimeScale {
         return m;
     }
 
-    /** The coarse+fine rank pair for the two-band axis, adapted to a tree spanning {@code [0, old_ma]}: Period over
-     *  Epoch for a Phanerozoic tree (epochs cover it), Era over Period once it reaches into the Proterozoic (epochs
-     *  run out at ~539 Ma), and Eon over Era for a deep Archean tree (periods run out at ~2500 Ma) -- so BOTH bands
-     *  always fully cover the range (no blank deep segment). Returns {@code [upper (coarser), lower (finer)]}. */
+    /** A window this narrow -- one or two Series -- is banded Epoch over Stage rather than Period over Epoch. */
+    static final int MAX_SERIES_FOR_STAGE_BANDS = 2;
+
+    /** The pair for a tree measured from the present; see {@link #bandRanks(double, double)}. */
     static Rank[] bandRanks( final double old_ma ) {
+        return bandRanks( 0, old_ma );
+    }
+
+    /** The coarse+fine rank pair for the two-band axis, adapted to a tree spanning {@code [young_ma, old_ma]}:
+     *  Epoch over Stage for a window narrow enough to sit in one or two Series (else the axis would be two huge
+     *  blocks and no scale at all), Period over Epoch for a Phanerozoic tree, Era over Period once it reaches into
+     *  the Proterozoic (epochs run out at ~539 Ma), and Eon over Era for a deep Archean tree (periods run out at
+     *  ~2500 Ma) -- so BOTH bands always fully cover the range (no blank segment at either end). Returns
+     *  {@code [upper (coarser), lower (finer)]}. */
+    static Rank[] bandRanks( final double young_ma, final double old_ma ) {
+        if ( old_ma <= coverageMa( Rank.AGE ) ) { // stages exist for the Phanerozoic only
+            final int series = overlapping( Rank.EPOCH, young_ma, old_ma ).size();
+            if ( ( series > 0 ) && ( series <= MAX_SERIES_FOR_STAGE_BANDS ) ) {
+                return new Rank[] { Rank.EPOCH, Rank.AGE };
+            }
+        }
         if ( old_ma <= coverageMa( Rank.EPOCH ) ) {
             return new Rank[] { Rank.PERIOD, Rank.EPOCH };
         }

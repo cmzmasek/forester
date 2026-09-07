@@ -52,6 +52,9 @@ public final class FocusGlowRenderTest {
     }
 
     public static boolean test() {
+        if ( !hueMathOk() ) {
+            return false;
+        }
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
@@ -295,6 +298,50 @@ public final class FocusGlowRenderTest {
             cp.displayedPhylogenyMightHaveChanged( true );
             tp.calcParametersForPainting( W, H );
 
+            // ---- (6) a node with a colour of its own lends the halo its hue -------------------------------
+            // Outside Select mode the glow is chrome, so it follows the node: a tip the figure already draws in
+            // green must not be marked with an unrelated blue cloud.
+            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            final org.forester.phylogeny.data.NodeVisualData vis = new org.forester.phylogeny.data.NodeVisualData();
+            vis.setNodeColor( new java.awt.Color( 0, 150, 0 ) );
+            target.getNodeData().setNodeVisualData( vis );
+            cp.setCheckbox( DisplayOption.USE_STYLE, true );
+            cp.displayedPhylogenyMightHaveChanged( true );
+            tp.setHoverForTest( null, false );
+            final BufferedImage g_off = shot( tp );
+            final int gx = Math.round( target.getXcoord() ), gy = Math.round( target.getYcoord() );
+            if ( TreePanel.glowHueOf( tp.nodeDisplayColor( target ) ) == null ) {
+                return fail( "precondition: the styled tip must have a colour of its own" );
+            }
+            tp.setHoverForTest( target, false );
+            final BufferedImage g_on = shot( tp );
+            final int[] hue_ink = glowInk( g_off, g_on, gx, gy );
+            final int green = greenish( g_off, g_on, gx, gy );
+            if ( green < 60 ) {
+                return fail( "a green node's halo must be green, only " + green + " greenish px changed" );
+            }
+            if ( hue_ink[ 0 ] >= green ) {
+                return fail( "the halo followed the accent, not the node: bluish " + hue_ink[ 0 ] + " vs greenish "
+                        + green );
+            }
+            // ... but in Select mode the colour still MEANS something, so the node's hue must not override it
+            cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
+            tp.setFoundNodes0( null );
+            tp.setHoverForTest( null, false );
+            final BufferedImage s_off = shot( tp );
+            tp.setHoverForTest( target, false );
+            final BufferedImage s_on = shot( tp );
+            final int[] sel_ink = glowInk( s_off, s_on, gx, gy );
+            if ( sel_ink[ 1 ] <= greenish( s_off, s_on, gx, gy ) ) {
+                return fail( "in Select mode a coloured node must still glow in the FOUND colour, got reddish "
+                        + sel_ink[ 1 ] + " vs greenish " + greenish( s_off, s_on, gx, gy ) );
+            }
+            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            tp.setHoverForTest( null, false );
+            target.getNodeData().setNodeVisualData( null );
+            cp.setCheckbox( DisplayOption.USE_STYLE, false );
+            cp.displayedPhylogenyMightHaveChanged( true );
+
             return true;
         }
         catch ( final Exception e ) {
@@ -308,6 +355,56 @@ public final class FocusGlowRenderTest {
                 nh.delete();
             }
         }
+    }
+
+    /**
+     * {@link TreePanel#glowHueOf}: a coloured node lends the halo its hue (pushed to a saturation/brightness that
+     * survives the glow's alpha), an INK colour (grey / black / white) lends nothing so the halo stays the accent.
+     */
+    private static boolean hueMathOk() {
+        final java.awt.Color orange = new java.awt.Color( 0xE6, 0x9F, 0x00 );
+        final java.awt.Color from_orange = TreePanel.glowHueOf( orange );
+        if ( from_orange == null ) {
+            return fail( "a saturated node colour must give the halo a hue" );
+        }
+        final float[] a = java.awt.Color.RGBtoHSB( orange.getRed(), orange.getGreen(), orange.getBlue(), null );
+        final float[] b = java.awt.Color.RGBtoHSB( from_orange.getRed(), from_orange.getGreen(),
+                                                   from_orange.getBlue(), null );
+        if ( Math.abs( a[ 0 ] - b[ 0 ] ) > 0.01f ) {
+            return fail( "the halo must keep the node's HUE: " + a[ 0 ] + " -> " + b[ 0 ] );
+        }
+        // a dark colour is lifted so the faint wash still shows its hue, and the hue survives that
+        final java.awt.Color dark_blue = new java.awt.Color( 0, 0, 60 );
+        final java.awt.Color lifted = TreePanel.glowHueOf( dark_blue );
+        if ( ( lifted == null ) || ( lifted.getBlue() <= dark_blue.getBlue() ) ) {
+            return fail( "a dark node colour must be lifted for the halo, got " + lifted );
+        }
+        for ( final java.awt.Color ink : new java.awt.Color[] { java.awt.Color.BLACK, java.awt.Color.WHITE,
+                new java.awt.Color( 128, 128, 128 ), new java.awt.Color( 90, 92, 95 ) } ) {
+            if ( TreePanel.glowHueOf( ink ) != null ) {
+                return fail( "an ink colour has no hue to lend the halo: " + ink );
+            }
+        }
+        return TreePanel.glowHueOf( null ) == null || fail( "null in, null out" );
+    }
+
+    /** Changed pixels near the node whose dominant channel is GREEN. */
+    private static int greenish( final BufferedImage off, final BufferedImage on, final int cx, final int cy ) {
+        int n = 0;
+        final int r = 40;
+        for ( int y = Math.max( 0, cy - r ); y < Math.min( on.getHeight(), cy + r ); y++ ) {
+            for ( int x = Math.max( 0, cx - r ); x < Math.min( on.getWidth(), cx + r ); x++ ) {
+                if ( off.getRGB( x, y ) == on.getRGB( x, y ) ) {
+                    continue;
+                }
+                final int rgb = on.getRGB( x, y );
+                final int rr = ( rgb >> 16 ) & 0xff, gg = ( rgb >> 8 ) & 0xff, bb = rgb & 0xff;
+                if ( ( gg > ( rr + 12 ) ) && ( gg > ( bb + 12 ) ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     private static boolean inkAt( final BufferedImage off, final BufferedImage on, final int x, final int y ) {

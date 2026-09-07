@@ -392,7 +392,9 @@ final public class Options {
         _bold_found_labels = false;
         _dim_non_matches = true;   // on by default: fade non-matching labels/numbers so search hits stand out
         _pulse_found_nodes = true; // on by default: a gentle halo pulse around found/selected nodes
-        _check_for_updates_at_launch = true; // one silent request for the latest release, a moment after launch
+        // OPT-IN: off unless the user turns it on. The program has no server of its own, and asking a public
+        // web site about itself at every launch is not something to do to a user who never asked for it.
+        _check_for_updates_at_launch = false;
         _show_tree_name = true; // show the tree's name in the lower-left of the canvas by default
         _antialias_export = true;
         _graphics_export_visible_only = false;

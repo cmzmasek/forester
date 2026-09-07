@@ -49,7 +49,7 @@ public final class DemoTreesGalleryTest {
             "ancestral-pie-charts.xml",
             "node-hpd-bars.xml",
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
-            "dinosaur-time-tree.xml", "lagomorph-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
+            "dinosaur-time-tree.xml", "late-cretaceous-stages.xml", "lagomorph-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
             "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml", "gtdb-genomes.xml" };
 
     public static void main( final String[] args ) {
@@ -71,8 +71,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 23 ) {
-                return fail( "the demo catalog should have 23 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 24 ) {
+                return fail( "the demo catalog should have 24 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -336,7 +336,8 @@ public final class DemoTreesGalleryTest {
                         + tp.getAncestralPieTrait() );
             }
         }
-        else if ( label.startsWith( "Dinosaur" ) || label.startsWith( "Ammonite" ) || label.startsWith( "Tree of Life" )
+        else if ( label.startsWith( "Dinosaur" ) || label.startsWith( "Late Cretaceous" )
+                || label.startsWith( "Ammonite" ) || label.startsWith( "Tree of Life" )
                 || label.startsWith( "Lagomorph" ) ) {
             if ( tp.effectiveTimeAxisType() != Options.TIME_AXIS_TYPE.GEOLOGIC ) {
                 fail( ok, "the " + label + " demo must show the GEOLOGIC axis, got " + tp.effectiveTimeAxisType() );

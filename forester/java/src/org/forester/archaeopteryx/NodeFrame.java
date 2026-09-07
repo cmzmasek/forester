@@ -20,14 +20,15 @@
 
 package org.forester.archaeopteryx;
 
+import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
 /**
  * The per-node window: a {@link NodeDataForm} in the shared {@link EditorFrame} chrome. {@link NodeDataForm.Mode#VIEW}
  * ("Show node data") is read-only with a single Close button; {@link NodeDataForm.Mode#EDIT} ("Edit node data") adds
  * the status line and the <b>Write to Tree</b> button. The window is non-modal so several can stay open; the tree
- * panel tracks them and closes them all when an undo or redo swaps the tree underneath (their node would belong to
- * the replaced tree).
+ * panel tracks them and, when an undo or redo swaps the tree underneath, {@link #rebind rebinds} each to its node in
+ * the restored tree (unwritten edits are kept).
  */
 final class NodeFrame extends EditorFrame {
 
@@ -50,6 +51,30 @@ final class NodeFrame extends EditorFrame {
 
     NodeDataForm getForm() {
         return _form;
+    }
+
+    /**
+     * After an undo or redo installed {@code tree}: re-attaches this window to the node with the same id in it
+     * (node ids survive the snapshot copy), keeping any unwritten edits. When no such node exists any more -- the
+     * undone step was what added it, or a redo deletes it -- the window stays open, says so in its status line and
+     * cannot write, so nothing typed disappears unseen; a later redo/undo that brings the node back re-attaches it.
+     */
+    void rebind( final Phylogeny tree ) {
+        final long id = _form.node().getId();
+        final PhylogenyNode n = ( ( tree == null ) || tree.isEmpty() ) ? null : tree.getNode( id );
+        final String prefix = _form.isEditable() ? "Edit Node: " : "Node: ";
+        if ( n == _form.node() ) { // the live tree changed around the node (a delete elsewhere): nothing to re-read
+            _form.refreshHeader();
+            setBaseTitle( prefix + NodeDataForm.nodeLabel( n ) );
+        }
+        else if ( n != null ) {
+            _form.rebind( n );
+            setBaseTitle( prefix + NodeDataForm.nodeLabel( n ) );
+        }
+        else {
+            _form.markDetached();
+            setBaseTitle( prefix + NodeDataForm.nodeLabel( _form.node() ) + " (no longer in the tree)" );
+        }
     }
 
     /** Releases the tree panel's slot. */

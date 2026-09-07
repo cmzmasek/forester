@@ -260,6 +260,13 @@ final class DemoTrees {
                                  final TreePanel tp = openTree( mf, "ammonite-time-tree.xml" );
                                  timeAxis( mf, tp, Options.TIME_AXIS_TYPE.GEOLOGIC ); // fossil range bars auto-enable
                              } ) );
+        demos.add( new Demo( "Late Cretaceous Dinosaurs (Geologic Stages)",
+                             "An all-extinct clade inside ONE Series, so the geologic axis drops a rank and bands the "
+                                     + "Late Cretaceous over its stages (Maastrichtian, Campanian, ... Cenomanian).",
+                             mf -> {
+                                 final TreePanel tp = openTree( mf, "late-cretaceous-stages.xml" );
+                                 timeAxis( mf, tp, Options.TIME_AXIS_TYPE.GEOLOGIC );
+                             } ) );
         demos.add( new Demo( "Tree of Life (Deep Time)",
                              "A time-calibrated tree of life back to LUCA (~3.8 Ga), with Eon/Era geologic bands.",
                              mf -> {

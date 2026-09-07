@@ -104,7 +104,7 @@ public final class ResetToDefaultsTest {
         o.setBoldFoundLabels( true );
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
         o.setPulseFoundNodes( false ); // default is ON, so drive to OFF to prove reset restores it
-        o.setCheckForUpdatesAtLaunch( false ); // default ON
+        o.setCheckForUpdatesAtLaunch( true ); // default OFF (opt-in)
         o.setAutoColorNewTrees( false ); // default is ON (JS-parity auto-color), so drive OFF
         o.setAbbreviateScientificTaxonNames( true );
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT (the DEFAULT new tabs get)
@@ -179,7 +179,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "dimNonMatches", o.isDimNonMatches(), def.isDimNonMatches() );
         ok &= eq( "pulseFoundNodes", o.isPulseFoundNodes(), def.isPulseFoundNodes() );
         ok &= eq( "checkForUpdatesAtLaunch", o.isCheckForUpdatesAtLaunch(), def.isCheckForUpdatesAtLaunch() );
-        ok &= eq( "checkForUpdatesAtLaunch default ON", def.isCheckForUpdatesAtLaunch(), true );
+        ok &= eq( "checkForUpdatesAtLaunch default OFF (opt-in)", def.isCheckForUpdatesAtLaunch(), false );
         // pin the shipped defaults so an accidental revert to OFF is caught (the reset comparison above only checks
         // reset == fresh-default, which would still pass if BOTH flipped)
         ok &= eq( "dimNonMatches default ON", def.isDimNonMatches(), true );

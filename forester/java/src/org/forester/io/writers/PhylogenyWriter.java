@@ -714,8 +714,11 @@ public final class PhylogenyWriter {
             writer.write( NexusConstants.TREE );
             writer.write( " " );
             if ( !ForesterUtil.isEmpty( phylogeny.getName() ) ) {
+                // The name is always written in single quotes, so an apostrophe INSIDE it must be doubled (the
+                // Nexus escape) -- unescaped, "Seba's tree" would end the quoted name three characters in and
+                // leave a stray quote that swallows the rest of the file for any reader.
                 writer.write( "\'" );
-                writer.write( phylogeny.getName() );
+                writer.write( phylogeny.getName().replace( "'", "''" ) );
                 writer.write( "\'" );
             }
             else {

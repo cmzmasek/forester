@@ -269,6 +269,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node window rebind: ");
+        if (org.forester.archaeopteryx.NodeWindowRebindTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Node hover card: ");
+        if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree properties draft: ");
         if (org.forester.archaeopteryx.TreePropertiesDraftTest.test()) {
             System.out.println("OK.");
@@ -9406,6 +9422,16 @@ public final class Test {
             }
             if ((ntax < taxa_start) || (ntax > taxa_end) || (lower.indexOf("ntax", ntax + 1) >= 0)) {
                 System.out.println("NTax must appear exactly once, inside the Taxa block");
+                return false;
+            }
+            // (4) the tree NAME is written in single quotes, so an apostrophe inside it must be doubled (the
+            // Nexus escape); unescaped it ends the name early and leaves a stray quote that swallows the rest.
+            phy.setName("Seba's tree");
+            final String named = new PhylogenyWriter()
+                    .toNexus(phy, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE).toString();
+            if (!named.contains("Tree 'Seba''s tree'=")) {
+                System.out.println("an apostrophe in the tree name must be escaped as '' in Nexus output, got: "
+                        + named.substring(named.indexOf("Tree "), Math.min(named.length(), named.indexOf("Tree ") + 30)));
                 return false;
             }
             return true;

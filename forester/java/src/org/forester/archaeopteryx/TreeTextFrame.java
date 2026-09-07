@@ -322,6 +322,9 @@ final class TreeTextFrame extends JFrame {
                 final SimpleAttributeSet keyword = new SimpleAttributeSet();
                 StyleConstants.setForeground( keyword, accentColor() );
                 StyleConstants.setBold( keyword, true );
+                // an attribute / setting name is subordinate to its keyword: the same accent, without the weight
+                final SimpleAttributeSet attribute = new SimpleAttributeSet();
+                StyleConstants.setForeground( attribute, accentColor() );
                 for( final Span s : spans ) {
                     final SimpleAttributeSet a;
                     switch ( s.kind ) {
@@ -330,6 +333,9 @@ final class TreeTextFrame extends JFrame {
                             break;
                         case KEYWORD:
                             a = keyword;
+                            break;
+                        case ATTRIBUTE:
+                            a = attribute;
                             break;
                         default:
                             a = markup;

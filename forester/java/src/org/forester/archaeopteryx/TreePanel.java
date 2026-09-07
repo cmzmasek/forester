@@ -1363,6 +1363,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         rebuildAnnotationColumns();
         rebuildCladeBands(); // band roots hold NODE REFERENCES: a deleted one must not survive into the next paint
         setHover(null, false); // the pointer's node may be the one just deleted; the focus glow walks its tips
+        // an open node window on the deleted node would keep editing it, detached: mark it (the other windows just
+        // refresh their headers -- the tree around their node changed)
+        rebindNodeFrames(_phylogeny);
     }
 
     /** The delete itself, past the confirmation dialog -- package-visible so the behaviour can be tested without
@@ -4715,7 +4718,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (root_age <= 0) {
                 return;
             }
-            final GeologicTimeScale.Rank fine = GeologicTimeScale.bandRanks(root_age)[1];
+            final GeologicTimeScale.Rank fine = geologicBandRanks()[1];
             final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: no grid lines past the tips
             for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(fine, young_bound, root_age)) {
                 final double b = Math.min(root_age, iv.oldMa());
@@ -5242,7 +5245,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Stroke saved_stroke = g.getStroke();
         // the coarse+fine rank pair adapts to the tree's depth (Period/Epoch -> Era/Period -> Eon/Era); the coarse
         // rank fills the coloured annuli, the fine rank draws the boundary rings
-        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
+        final GeologicTimeScale.Rank[] ranks = geologicBandRanks();
         // translucent coarse-rank annuli (age -> radius: age root_age at the centre, the youngest tip at the outer ring)
         for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(ranks[0], young_bound, root_age)) {
             final double young = Math.max(young_bound, iv.youngMa());
@@ -5295,7 +5298,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // collect each coarse-rank band's label baseline y up the top spoke (at its annulus mid-radius), then draw
         // INNER->OUTER (ascending radius) greedily keeping a >=line_h gap -- order-independent of what overlapping() gives
         final java.util.List<GeologicTimeScale.Interval> periods = new java.util.ArrayList<>(
-                GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0], young_bound, root_age));
+                GeologicTimeScale.overlapping(geologicBandRanks()[0], young_bound, root_age));
         periods.sort((x, y) -> Double.compare(x.youngMa(), y.youngMa())); // young first = outer first (larger radius)
         int last_label_y = Integer.MIN_VALUE / 2; // outer->inner, ly increases; keep a >=line_h gap (half-min: no overflow)
         for (final GeologicTimeScale.Interval iv : periods) {
@@ -5357,7 +5360,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int outer_cutoff = (radius > (2 * line_h)) ? (radius - (2 * line_h)) : radius;
         final double young_bound = timeAxisYoungestAgeMa(); // >0 for a fossil-only tree: no boundaries past the tips
         final java.util.List<Double> ages = new java.util.ArrayList<>();
-        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(GeologicTimeScale.bandRanks(root_age)[0],
+        for (final GeologicTimeScale.Interval iv : GeologicTimeScale.overlapping(geologicBandRanks()[0],
                 young_bound, root_age)) {
             final double b = iv.oldMa();
             if ((b > young_bound) && (b < root_age)) {
@@ -5775,6 +5778,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  (present-day) tip, but &gt; 0 for a fossil-only tree whose most-recent taxon is still older than the present. The
      *  geologic axis / ruler / rings are drawn over {@code [youngestAge, root_age]} (mapped to [tip edge, root]) so they
      *  stay aligned to the branches and don't extend past the tips toward the present. */
+    /** The coarse+fine rank pair the geologic axis bands with, for the window this tree actually spans -- one
+     *  source, so the bands, their boundary rings, the grid lines and the age labels can never disagree. */
+    private GeologicTimeScale.Rank[] geologicBandRanks() {
+        return GeologicTimeScale.bandRanks(timeAxisYoungestAgeMa(), timeAxisRootAgeMa());
+    }
+
     private double timeAxisYoungestAgeMa() {
         return Math.max(0, timeAxisRootAgeMa() - getMaxDistanceToRoot());
     }
@@ -5792,7 +5801,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Draws the two-band colored geologic (ICS) time axis in the reserved bottom strip: the coarse rank over the fine
-     *  rank (adaptive to depth -- Period/Epoch, Era/Period, or Eon/Era; see {@link GeologicTimeScale#bandRanks}), each cell
+     *  rank (adaptive to the window -- Epoch/Stage, Period/Epoch, Era/Period or Eon/Era; see
+     *  {@link GeologicTimeScale#bandRanks(double, double)}), each cell
      *  filled with its official ICS colour and (where it fits) labelled, boundaries at the true ages. */
     private void paintGeologicTimeAxis(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
                                        final int graphics_file_y, final int graphics_file_height) {
@@ -5809,8 +5819,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int top_y = bottom - geologicAxisReserve(); // band ends one GEOLOGIC_AXIS_EDGE_GAP short of the edge
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
-        // the coarse+fine rank pair adapts to the tree's depth (Period/Epoch -> Era/Period -> Eon/Era)
-        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age);
+        // the coarse+fine rank pair adapts to the window the tree spans (Epoch/Stage -> Period/Epoch -> Era/Period -> Eon/Era)
+        final GeologicTimeScale.Rank[] ranks = geologicBandRanks();
         paintGeologicBand(g, ranks[0], root_age, origin_x, corr, top_y, row_h, to_pdf, to_graphics_file);
         paintGeologicBand(g, ranks[1], root_age, origin_x, corr, top_y + row_h, row_h, to_pdf, to_graphics_file);
         // optional Ma age labels at the coarse-band boundaries, in the reserved row between the band and the edge
@@ -5843,7 +5853,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 to_graphics_file);
         final Font saved_font = g.getFont();
         final Color saved_color = g.getColor();
-        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks(root_age); // Period/Epoch -> Era/Period -> Eon/Era
+        final GeologicTimeScale.Rank[] ranks = geologicBandRanks(); // Epoch/Stage -> Period/Epoch -> Era/Period -> Eon/Era
         paintGeologicBand(g, ranks[0], root_age, origin_x, corr, band_top, row_h, to_pdf, to_graphics_file);
         paintGeologicBand(g, ranks[1], root_age, origin_x, corr, band_top + row_h, row_h, to_pdf, to_graphics_file);
         // optional Ma age labels at the coarse-band boundaries; ride R (logical coords) like the band cell labels
@@ -6773,6 +6783,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void showNodeFrame(final PhylogenyNode n) {
         openNodeFrame(n, NodeDataForm.Mode.VIEW);
+    }
+
+    /** For tests: opens the read-only node window the way "Display Node Data" does. */
+    final void showNodeFrameForTest(final PhylogenyNode n) {
+        showNodeFrame(n);
     }
 
     private void openNodeFrame(final PhylogenyNode n, final NodeDataForm.Mode mode) {
@@ -9529,9 +9544,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void restoreSnapshot(final TreeHistory.Snapshot s) {
         _restoring_snapshot = true;
         try {
-            // Any open node window points at a node of the tree we are ABOUT to replace. Left open it would edit a
-            // detached node: the user's changes would vanish with no feedback while still marking the file dirty.
-            closeAllNodeFrames();
             final Phylogeny phy = s.getPhylogeny();
             setTree(phy); // also nulls the preorder cache
             setFoundNodes0(null); // the restored copy's search/selection hits from the mutated tree no longer apply
@@ -9554,6 +9566,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // the ladderize toggle icon is view state, not in the snapshot -- re-derive it from the restored tree
                 getControlPanel().syncOrderButtonIconToTree(this);
             }
+            // Every open node window pointed at a node of the tree just replaced: re-attach each to its node in the
+            // restored tree (unwritten edits survive), or mark it detached when the node is gone. Last, so the
+            // windows read a fully recomputed tree (renderable domain architectures, counts).
+            rebindNodeFrames(phy);
             setEdited(s.isEdited());
         }
         finally {
@@ -12908,6 +12924,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final float[] HOVER_GLOW_RADII   = { 1.65f, 1.15f, 0.75f };
     private static final int[]   HOVER_GLOW_ALPHAS  = { 34, 44, 58 };
     private static final int     HOVER_GLOW_MIN_DIA = 18;                        // readable on a tiny default node
+    /** Below this saturation a colour has no hue worth borrowing for the halo (grey / black / white ink). */
+    private static final float   GLOW_MIN_SATURATION   = 0.15f;
+    /** The halo is a faint wash, so a pale or dark node colour is pushed to at least this much colour to survive it. */
+    private static final float   GLOW_HUE_SATURATION   = 0.55f;
+    private static final float   GLOW_HUE_BRIGHTNESS   = 0.80f;
     private static final Color   HOVER_GLOW_ACCENT_FALLBACK = new Color(0x26, 0x75, 0xbf);
     /** A subtree currently held by Cut/Copy. Its own muted amber: it is neither a search hit (red) nor navigation
      *  chrome (the accent), and a deliberately different amber from the Okabe-Ito duplication-or-speciation event
@@ -13009,7 +13030,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         final Color saved = g.getColor();
-        paintFocusGlow(g, _hover_node, hoverGlowColor(select_mode, deselect));
+        paintFocusGlow(g, _hover_node, hoverGlowColor(_hover_node, select_mode, deselect));
         if (marks != null) {
             // the clade's tips: the glow marks the clade ROOT, these say which tips the click will take
             final Color f = getTreeColorSet().getFoundColor0();
@@ -13029,15 +13050,83 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved);
     }
 
-    /** The colour the focus glow takes -- see {@link #paintHoverPreview}. */
-    private Color hoverGlowColor(final boolean select_mode, final boolean deselect) {
+    /**
+     * The colour the focus glow takes -- see {@link #paintHoverPreview}. In Select mode the glow carries MEANING
+     * (it says what a click will do), so it is the found colour or the grey remove colour and nothing else.
+     * Everywhere else it is chrome, and there it follows the node: a node the figure already draws in a colour of
+     * its own (Color-by, a node style, an event, a colorized clade) gets a halo of that hue, so the mark reads as
+     * belonging to THAT node rather than as a second, unrelated colour landing on it. A node with no colour of its
+     * own keeps the neutral accent.
+     */
+    private Color hoverGlowColor(final PhylogenyNode node, final boolean select_mode, final boolean deselect) {
         if (select_mode) {
             if (deselect) {
                 return BRANCH_HOVER_REMOVE; // "a click here will de-select"
             }
             return getTreeColorSet().getFoundColor0(); // "a click here will select"
         }
-        return uiAccentColor();
+        final Color own = glowHueOf(nodeDisplayColor(node));
+        return (own != null) ? own : uiAccentColor();
+    }
+
+    /**
+     * The colour {@code node} is drawn in that is ITS OWN -- the "Color by" value, a per-node visual style, an
+     * event box, or the branch colour of a colorized clade -- or null when it is drawn like every other node.
+     * Deliberately NOT the found colour: a search hit's red belongs to the search, and a focus ring must never
+     * read as a selection state (see {@link #hoverGlowColor}). Mirrors the precedence {@code paintNodeBox} uses,
+     * with the "Color by" dot first because it is drawn on top of the node box and is what the eye sees.
+     */
+    Color nodeDisplayColor(final PhylogenyNode node) {
+        if (node == null) {
+            return null;
+        }
+        if (isColorByProperty() && (_property_color_scheme != null)
+                && (node.isExternal() || node.isCollapse())) {
+            final Color c = _property_color_scheme.colorFor(node);
+            if (c != null) {
+                return c;
+            }
+        }
+        if (shows(DisplayOption.USE_STYLE) && (node.getNodeData().getNodeVisualData() != null)
+                && (node.getNodeData().getNodeVisualData().getNodeColor() != null)) {
+            return node.getNodeData().getNodeVisualData().getNodeColor();
+        }
+        if (shows(DisplayOption.WRITE_EVENTS) && TreePanelUtil.isHasAssignedEvent(node)) {
+            final Event event = node.getNodeData().getEvent();
+            if (event.isDuplication()) {
+                return getTreeColorSet().getDuplicationBoxColor();
+            }
+            if (event.isSpeciation()) {
+                return getTreeColorSet().getSpecBoxColor();
+            }
+            if (event.isSpeciationOrDuplication()) {
+                return getTreeColorSet().getDuplicationOrSpeciationColor();
+            }
+        }
+        if (shows(DisplayOption.USE_STYLE)) {
+            final Color branch = PhylogenyMethods.getBranchColorValue(node);
+            if ((branch != null) && !branch.equals(getTreeColorSet().getBranchColor())) {
+                return branch;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * {@code c}'s hue as a halo colour: the same hue, pushed to a saturation and brightness that still read as
+     * that colour once the glow's ~15-25% alpha has washed it over the background. A colour with essentially no
+     * hue (grey, black, white -- an ink colour, not a data colour) returns null, so the caller keeps the accent
+     * rather than smudging the node with a grey cloud. Pure.
+     */
+    static Color glowHueOf(final Color c) {
+        if (c == null) {
+            return null;
+        }
+        final float[] hsb = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null);
+        if (hsb[1] < GLOW_MIN_SATURATION) {
+            return null; // no hue to borrow
+        }
+        return Color.getHSBColor(hsb[0], Math.max(hsb[1], GLOW_HUE_SATURATION), Math.max(hsb[2], GLOW_HUE_BRIGHTNESS));
     }
 
     /** The look-and-feel's accent, with the house fallback -- the colour interactive CHROME is drawn in (the focus
@@ -14515,11 +14604,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _tree_text_frame;
     }
 
-    /**
-     * Remove a node-edit frame.
-     */
-    /** Closes every open node window. Called before an undo/redo installs a different tree, since a node frame
-     *  holds a direct reference to a node of the tree being replaced. */
     /** For tests: how many node windows this panel currently has open. */
     int openNodeFrameCountForTest() {
         return _node_frame_index;
@@ -14535,17 +14619,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return false;
     }
 
-    private void closeAllNodeFrames() {
-        // Disposed and cleared DIRECTLY rather than through NodeFrame.close(), which calls back into
-        // removeEditNodeFrame and compacts the array underneath this loop. (Unsaved edits in an open editor are
-        // discarded here: the tree they were made against is being replaced.)
-        for (int i = 0; i < _node_frames.length; ++i) {
+    /** After an undo/redo installed {@code phy}, or a delete changed the live tree: every open node window
+     *  {@link NodeFrame#rebind rebinds} to its node in {@code phy} (by node id, which {@code Phylogeny.copy()}
+     *  keeps) or is marked detached when the node is gone. */
+    private void rebindNodeFrames(final Phylogeny phy) {
+        for (int i = 0; i < _node_frame_index; ++i) {
             if (_node_frames[i] != null) {
-                _node_frames[i].dispose();
-                _node_frames[i] = null;
+                _node_frames[i].rebind(phy);
             }
         }
-        _node_frame_index = 0;
     }
 
     /** Releases a closed node window's slot (found by IDENTITY -- the array is compacted on every close, so a
@@ -14559,7 +14641,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if (i < 0) {
-            return; // already released (e.g. closed by an undo)
+            return; // already released (e.g. closed with its tab)
         }
         for (int j = i; j < (_node_frame_index - 1); ++j) {
             _node_frames[j] = _node_frames[j + 1];

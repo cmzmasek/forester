@@ -69,10 +69,15 @@ public final class NodeHoverCardTest {
         for( final Row r : NodeHoverText.rows( n ) ) {
             got.add( r.toString() );
         }
+        // Every row stands either in the leading "the node itself" block or under a heading -- see NodeHoverText:
+        // a row printed after a headed section reads as part of it, so "Distribution" and "Tips below" belong up
+        // here with the other node facts, and the properties get a heading of their own.
         final List<String> expected = List.of( "Name: BRCA1 clade",
                                                "Distance to parent: 0.0123",
                                                "Date: 6.5 [5.0 - 8.0] mya (split)",
+                                               "Distribution: San Francisco",
                                                "Depth: 1",
+                                               "Tips below: 2",
                                                "Confidence [bootstrap]: 95",
                                                "Confidence [probability]: 0.98",
                                                "stdev: 0.01",
@@ -92,14 +97,13 @@ public final class NodeHoverCardTest {
                                                "[Sequence]",
                                                "Name: BRCA1 mRNA",
                                                "Type: rna",
-                                               "Distribution: San Francisco",
                                                "[Events]",
                                                "Duplications: 1",
                                                "Losses: 2",
+                                               "[Properties]",
                                                "depth: 120 METRIC:m",
-                                               "habitat: coastal",
-                                               "Tips below: 2" );
-        return eq( "rows of the rich node (JS tooltip order)", expected, got );
+                                               "habitat: coastal" );
+        return eq( "rows of the rich node", expected, got );
     }
 
     private static boolean rowsEdgeCases() {
@@ -115,17 +119,26 @@ public final class NodeHoverCardTest {
         pl.addProperty( new Property( "data:year", "2019", "", "xsd:integer", AppliesTo.NODE ) );
         pl.addProperty( new Property( "data:empty", "", "", "xsd:string", AppliesTo.NODE ) );
         p.getNodeData().setProperties( pl );
-        ok = ok && eq( "properties: user-visible only, namespace stripped",
-                       List.of( "Name: p", "Depth: 0", "year: 2019" ), strings( NodeHoverText.rows( p ) ) );
+        ok = ok && eq( "properties: headed, user-visible only, namespace stripped",
+                       List.of( "Name: p", "Depth: 0", "[Properties]", "year: 2019" ),
+                       strings( NodeHoverText.rows( p ) ) );
+        // ... and a node whose only properties are hidden ones gets no heading either
+        final PhylogenyNode hp = new PhylogenyNode();
+        hp.setName( "hp" );
+        final PropertiesList hidden = new PropertiesList();
+        hidden.addProperty( new Property( "aptx:figure", "v1;x", "", "xsd:string", AppliesTo.NODE ) );
+        hp.getNodeData().setProperties( hidden );
+        ok = ok && eq( "hidden properties only -> no heading", List.of( "Name: hp", "Depth: 0" ),
+                       strings( NodeHoverText.rows( hp ) ) );
         // a typed event shows its type; a counts-only event does not invent one
         final PhylogenyNode e = new PhylogenyNode();
         e.setName( "e" );
         e.addAsChild( new PhylogenyNode() );
         e.getNodeData().setEvent( new Event( 0, 0, 0, "transfer" ) );
-        ok = ok && eq( "typed event", List.of( "Name: e", "Depth: 0", "[Events]", "Type: transfer", "Tips below: 1" ),
+        ok = ok && eq( "typed event", List.of( "Name: e", "Depth: 0", "Tips below: 1", "[Events]", "Type: transfer" ),
                        strings( NodeHoverText.rows( e ) ) );
         e.getNodeData().setEvent( new Event( 2, 0, 0 ) );
-        ok = ok && eq( "counts-only event", List.of( "Name: e", "Depth: 0", "[Events]", "Duplications: 2", "Tips below: 1" ),
+        ok = ok && eq( "counts-only event", List.of( "Name: e", "Depth: 0", "Tips below: 1", "[Events]", "Duplications: 2" ),
                        strings( NodeHoverText.rows( e ) ) );
         // an empty taxonomy object adds no heading
         final PhylogenyNode t = new PhylogenyNode();

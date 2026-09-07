@@ -52,7 +52,7 @@ public final class GeologicAxisRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return axisRendersOk() && fossilOnlyAlignmentOk();
+        return axisRendersOk() && fossilOnlyAlignmentOk() && stageBandOk();
     }
 
     /** A FOSSIL-ONLY tree (no extant age-0 tip, so maxDistanceToRoot &lt; rootAge) must have its geologic axis aligned to
@@ -134,6 +134,93 @@ public final class GeologicAxisRenderTest {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * A tree whose whole span sits inside ONE Series must band Epoch over STAGE, not Period over Epoch: on the Late
+     * Cretaceous demo that is "Late Cretaceous" over Maastrichtian / Campanian / ... / Cenomanian, where the old
+     * fixed pair gave two enormous "Cretaceous"/"Late Cretaceous" blocks and no scale at all. Dogfoods the demo.
+     */
+    private static boolean stageBandOk() {
+        try {
+            final File file = new File( System.getProperty( "user.dir" ), "forester/demo/late-cretaceous-stages.xml" );
+            if ( !file.exists() ) {
+                return fail( "demo tree missing: " + file.getAbsolutePath() );
+            }
+            final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
+            final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance().create( file, parser )[ 0 ];
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { phy }, new Configuration(), "geostage" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    o.setGraphicsExportWhiteBackground( false );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    o.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.GEOLOGIC );
+                    final int w = 900, h = 520;
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    if ( !tp.geologicAxisApplies() ) {
+                        fail( ok, "the geologic axis must apply to the Late Cretaceous demo" );
+                    }
+                    // TEETH: the demo really is fossil-only and inside one Series -- else the check is vacuous
+                    final double young = tp.timeAxisYoungestAgeMaForTest(), old_ma = tp.timeAxisRootAgeMa();
+                    if ( ( young < 60.0 ) || ( old_ma > 110.0 ) ) {
+                        fail( ok, "the demo must span one Series (66-100 Ma), got " + young + "-" + old_ma );
+                    }
+                    final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks( young, old_ma );
+                    if ( ( ranks[ 0 ] != GeologicTimeScale.Rank.EPOCH )
+                            || ( ranks[ 1 ] != GeologicTimeScale.Rank.AGE ) ) {
+                        fail( ok, "a one-Series window must band Epoch over Stage, got " + ranks[ 0 ] + "/" + ranks[ 1 ] );
+                    }
+                    // ... and the STAGE names must actually reach the pixels: the fine band paints its cell labels,
+                    // so the render differs from the same tree with the axis off, and the stage cells are there
+                    final java.util.List<GeologicTimeScale.Interval> stages = GeologicTimeScale
+                            .overlapping( GeologicTimeScale.Rank.AGE, young, old_ma );
+                    if ( ( stages.size() < 5 ) || !containsName( stages, "Maastrichtian" )
+                            || !containsName( stages, "Cenomanian" ) ) {
+                        fail( ok, "the Late Cretaceous window must cover its stages, got " + stages.size() );
+                    }
+                    final java.awt.image.BufferedImage on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                                                                             false );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.calcParametersForPainting( w, h );
+                    final java.awt.image.BufferedImage off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1,
+                                                                                              false );
+                    if ( diffPixels( off, on ) < 2000 ) {
+                        fail( ok, "the stage band must render, only " + diffPixels( off, on ) + " px differ" );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private static boolean containsName( final java.util.List<GeologicTimeScale.Interval> ivs, final String name ) {
+        for ( final GeologicTimeScale.Interval iv : ivs ) {
+            if ( name.equals( iv.name() ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean axisRendersOk() {

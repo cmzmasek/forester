@@ -75,6 +75,11 @@ abstract class EditorFrame extends JFrame {
         boolean write();
 
         void addChangeListener( Runnable r );
+
+        /** A reason the form cannot write right now (shown in the status line, Write disabled), or null. */
+        default String notice() {
+            return null;
+        }
     }
 
     private static final long serialVersionUID = 1L;
@@ -220,7 +225,22 @@ abstract class EditorFrame extends JFrame {
             setTitle( ( dirty ? "• " : "" ) + _base_title );
             getRootPane().putClientProperty( "Window.documentModified", dirty );
         }
+        final String notice = _form.notice();
+        if ( notice != null ) { // the form cannot write at all right now (e.g. its node is gone) -- any mode
+            if ( !notice.equals( _status.getText() ) ) {
+                _status.setText( notice );
+                _status.setForeground( errorColor() );
+            }
+            if ( _write != null ) {
+                _write.setEnabled( false );
+            }
+            return;
+        }
         if ( !_form.isEditable() ) {
+            if ( !" ".equals( _status.getText() ) ) { // a notice that has since been lifted
+                _status.setText( " " );
+                _status.setForeground( mutedColor() );
+            }
             return;
         }
         final List<Problem> problems = _form.problems();

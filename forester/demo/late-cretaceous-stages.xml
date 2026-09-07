@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="My" rerootable="true">
+  <name>Late Cretaceous dinosaurs (demo)</name>
+  <description>A schematic, time-calibrated tree of Late Cretaceous dinosaurs (ages in Ma). Every taxon is extinct, so the tree spans only 66 - 100 Ma -- one Series -- and the geologic axis (Settings &gt; Overlays &gt; Time axis: Geologic) drops a rank and bands the Late Cretaceous over its STAGES: Maastrichtian, Campanian, Santonian, Coniacian, Turonian, Cenomanian. A deeper tree such as dinosaur-time-tree.xml gets Period over Epoch instead. Schematic, not a rigorous phylogeny.</description>
+  <clade>
+    <name>Dinosauria</name>
+    <branch_length>0.0</branch_length>
+    <date unit="mya">
+      <value>100.0</value>
+    </date>
+    <clade>
+      <name>Ornithischia</name>
+      <branch_length>4.0</branch_length>
+      <date unit="mya">
+        <value>96.0</value>
+      </date>
+      <clade>
+        <name>Ankylosaurus</name>
+        <branch_length>30.0</branch_length>
+        <date unit="mya">
+          <value>66.0</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Ornithopoda + Ceratopsia</name>
+        <branch_length>4.0</branch_length>
+        <date unit="mya">
+          <value>92.0</value>
+        </date>
+        <clade>
+          <name>Parasaurolophus</name>
+          <branch_length>19.0</branch_length>
+          <date unit="mya">
+            <value>73.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Triceratops</name>
+          <branch_length>26.0</branch_length>
+          <date unit="mya">
+            <value>66.0</value>
+          </date>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <name>Theropoda</name>
+      <branch_length>2.0</branch_length>
+      <date unit="mya">
+        <value>98.0</value>
+      </date>
+      <clade>
+        <name>Spinosaurus</name>
+        <branch_length>4.0</branch_length>
+        <date unit="mya">
+          <value>94.0</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Avetheropoda</name>
+        <branch_length>2.0</branch_length>
+        <date unit="mya">
+          <value>96.0</value>
+        </date>
+        <clade>
+          <name>Carcharodontosaurus</name>
+          <branch_length>2.0</branch_length>
+          <date unit="mya">
+            <value>94.0</value>
+          </date>
+        </clade>
+        <clade>
+          <name>Coelurosauria</name>
+          <branch_length>6.0</branch_length>
+          <date unit="mya">
+            <value>90.0</value>
+          </date>
+          <clade>
+            <name>Tyrannosaurus</name>
+            <branch_length>24.0</branch_length>
+            <date unit="mya">
+              <value>66.0</value>
+            </date>
+          </clade>
+          <clade>
+            <name>Velociraptor</name>
+            <branch_length>19.0</branch_length>
+            <date unit="mya">
+              <value>71.0</value>
+            </date>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

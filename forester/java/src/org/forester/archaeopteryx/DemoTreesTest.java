@@ -238,6 +238,14 @@ public final class DemoTreesTest {
         ok &= hasBranchLengths( "dinosaur-time-tree.xml" );
         ok &= hasAtLeastTips( "dinosaur-time-tree.xml", 7 );
         ok &= isDetectedTimeTree( "dinosaur-time-tree.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        // stage-level geologic axis: an all-extinct Late Cretaceous clade whose whole span (66 - 100 Ma) sits inside
+        // ONE Series, so the axis drops a rank and bands Epoch over STAGE. If the demo ever grew past two Series the
+        // stage band would silently disappear, which is the whole point of the file -- so pin the window.
+        ok &= hasBranchLengths( "late-cretaceous-stages.xml" );
+        ok &= hasAtLeastTips( "late-cretaceous-stages.xml", 6 );
+        ok &= isDetectedTimeTree( "late-cretaceous-stages.xml", AptxUtil.TIME_TREE_KIND.DATED );
+        ok &= allExternalDatesAtLeast( "late-cretaceous-stages.xml", 60.0 ); // fossil-only: nothing reaches 0 Ma
+        ok &= spansOneOrTwoSeries( "late-cretaceous-stages.xml" );
         // fossil range bars: a dated equid tree whose TIPS carry a <date> min/max (FAD/LAD) stratigraphic range --
         // the "Fossil Range Bars (FAD/LAD)" overlay draws each tip's known duration
         ok &= hasBranchLengths( "fossil-range-bars.xml" );
@@ -684,6 +692,34 @@ public final class DemoTreesTest {
 
     /** Every external tip's {@code <date>} value is at least {@code min_ma} Ma -- i.e. the tree is FOSSIL-ONLY (no extant
      *  tip at/near the present), the case the fossil-only geologic alignment targets. */
+    /** The demo's age window really does fall inside one or two Series, so the geologic axis bands Epoch over Stage
+     *  (the file exists to show that). Reads the tree's own dates, exactly as {@code timeAxisRootAgeMa} does. */
+    private static boolean spansOneOrTwoSeries( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        double oldest = 0, youngest = Double.MAX_VALUE;
+        for ( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasDate() && ( n.getNodeData().getDate().getValue() != null ) ) {
+                final double v = n.getNodeData().getDate().getValue().doubleValue();
+                oldest = Math.max( oldest, v );
+                if ( n.isExternal() ) {
+                    youngest = Math.min( youngest, v );
+                }
+            }
+        }
+        final GeologicTimeScale.Rank[] ranks = GeologicTimeScale.bandRanks( youngest, oldest );
+        if ( ( ranks[ 0 ] != GeologicTimeScale.Rank.EPOCH ) || ( ranks[ 1 ] != GeologicTimeScale.Rank.AGE ) ) {
+            System.out.println( "  [DemoTreesTest] " + file_name + " (" + youngest + "-" + oldest
+                    + " Ma) must span one or two Series so the axis bands Epoch over Stage, got " + ranks[ 0 ] + "/"
+                    + ranks[ 1 ] );
+            return false;
+        }
+        return true;
+    }
+
     private static boolean allExternalDatesAtLeast( final String file_name, final double min_ma ) {
         final Phylogeny phy = load( file_name );
         if ( phy == null ) {
