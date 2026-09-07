@@ -14493,17 +14493,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    /** Closes the tree windows unconditionally (the tab is going away). */
+    /** Closes the tree windows unconditionally (the tab is going away); close() also stops their refresh timers. */
     private void closeTreeWindows() {
         if (_tree_properties_frame != null) {
             final TreePropertiesFrame f = _tree_properties_frame;
             _tree_properties_frame = null;
-            f.dispose();
+            f.close();
         }
         if (_tree_text_frame != null) {
             final TreeTextFrame f = _tree_text_frame;
             _tree_text_frame = null;
-            f.dispose();
+            f.close();
         }
     }
 
