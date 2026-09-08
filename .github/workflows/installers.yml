@@ -30,10 +30,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-latest,   kind: mac }
+          - { os: macos-latest,   kind: mac }         # Apple Silicon
+          - { os: macos-15-intel, kind: mac-intel }   # Intel Macs (still widely in use)
           - { os: windows-latest, kind: win }
           - { os: ubuntu-latest,  kind: linux }
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60      # a wedged leg must never hold a release hostage
     steps:
       - uses: actions/checkout@v4
 
@@ -64,9 +66,17 @@ jobs:
         working-directory: forester/java
         run: |
           set -euxo pipefail
-          if [ "${{ matrix.kind }}" = "mac" ]; then
+          if [[ "${{ matrix.kind }}" == mac* ]]; then
             # reuse the committed macOS target: fat jar + app-image + icon + Info.plist version fixup + .dmg
             ant jpackage-dmg
+            VERSION=$(grep 'VERSION =' src/org/forester/archaeopteryx/AptxConstants.java | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+            # Two Macs, two dmgs: jpackage names both the same, so stamp the architecture into the
+            # file name -- an unlabeled dmg is how an Intel user ends up downloading an arm64 build.
+            if [ "${{ matrix.kind }}" = "mac-intel" ]; then ARCH_SUFFIX=intel; EXPECT=x86_64; else ARCH_SUFFIX=apple-silicon; EXPECT=arm64; fi
+            # Guard: the launcher must really be the architecture this leg advertises.
+            file dist/Archaeopteryx.app/Contents/MacOS/Archaeopteryx | grep -q "$EXPECT" \
+              || { echo "FATAL: $ARCH_SUFFIX leg produced a launcher that is not $EXPECT"; exit 1; }
+            mv "dist/Archaeopteryx-$VERSION.dmg" "dist/Archaeopteryx-$VERSION-$ARCH_SUFFIX.dmg"
           else
             ant all   # build the self-contained forester.jar
             VERSION=$(grep 'VERSION =' src/org/forester/archaeopteryx/AptxConstants.java | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
@@ -139,7 +149,8 @@ jobs:
             echo
             echo "| Platform | File |"
             echo "|----------|------|"
-            echo "| macOS (Apple Silicon) | Archaeopteryx-$TAG.dmg |"
+            echo "| macOS (Apple Silicon: M1-M4) | Archaeopteryx-$TAG-apple-silicon.dmg |"
+            echo "| macOS (Intel) | Archaeopteryx-$TAG-intel.dmg |"
             echo "| Windows | Archaeopteryx-$TAG.msi |"
             echo "| Linux (Debian/Ubuntu) | archaeopteryx_${TAG}_amd64.deb |"
             echo
