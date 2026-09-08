@@ -1,7 +1,7 @@
 # Cross-platform native installers for Archaeopteryx, built with jpackage.
 #
 # jpackage only produces an installer for the OS it runs on, so this fans out over a
-# macOS / Windows / Linux matrix. macOS reuses the committed `ant jpackage-dmg` target
+# macOS (Apple Silicon + Intel) / Windows / Linux matrix. macOS reuses the `ant jpackage-dmg` target
 # (icon + version mapping + Info.plist fixup); Windows/Linux invoke jpackage directly
 # here because those bundlers have no Ant target yet.
 #
@@ -117,7 +117,7 @@ jobs:
             forester/java/dist/*.deb
           if-no-files-found: error
 
-  # On a version-tag push only, gather the three installers and publish them to a GitHub Release.
+  # On a version-tag push only, gather the installers and publish them to a GitHub Release.
   # Manual (workflow_dispatch) runs skip this and just leave the run artifacts.
   release:
     name: publish release
