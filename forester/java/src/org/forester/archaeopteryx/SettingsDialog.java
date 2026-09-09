@@ -564,7 +564,10 @@ final class SettingsDialog extends JDialog {
     private JPanel filesTab() {
         final JPanel c = column();
         c.add( header( "Newick / NHX / Nexus Reading" ) );
-        add( c, cb( _mf._internal_number_are_confidence_for_nh_parsing_cbmi ) );
+        add( c, labeled( "Treat internal labels as confidence values:",
+                         enumCombo( Options.CONFIDENCE_FROM_INTERNAL_LABELS.values(),
+                                    _mf.getOptions().getConfidenceFromInternalLabels(),
+                                    v -> _mf.getOptions().setConfidenceFromInternalLabels( v ) ) ) );
         add( c, cb( _mf._replace_underscores_cbmi ) );
         add( c, cb( _mf._parse_beast_style_extended_nexus_tags_cbmi ) );
         add( c, cb( _mf._allow_errors_in_distance_to_parent_cbmi ) );

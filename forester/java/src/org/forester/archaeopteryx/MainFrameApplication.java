@@ -367,8 +367,6 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 extractTipDates();
-            } else if (o == _internal_number_are_confidence_for_nh_parsing_cbmi) {
-                updateOptions(getOptions());
             } else if (o == _replace_underscores_cbmi) {
                 updateOptions(getOptions());
             } else if (o == _allow_errors_in_distance_to_parent_cbmi) {
@@ -1247,17 +1245,15 @@ public final class MainFrameApplication extends MainFrame {
 
     /**
      * Everything that happens once a file's trees have been parsed: open them in tabs, warn about suspect Newick,
-     * and make the load-time offers (ignored domains, extract labels, extract dates, treat as a time tree,
-     * internal names as confidence). Shared by the Open dialog and Open Recent so a tree behaves the same
+     * and make the load-time offers (ignored domains, extract labels, extract dates, treat as a time tree).
+     * Shared by the Open dialog and Open Recent so a tree behaves the same
      * whichever way it was opened -- and the one place a successfully opened file is remembered.
      */
     private void afterPhylogeniesRead(final Phylogeny[] phys, final File file, final boolean nhx_or_nexus) {
+        AptxUtil.applyInternalLabelPolicy(phys, nhx_or_nexus, getOptions().getConfidenceFromInternalLabels());
         boolean one_desc = false;
         if (nhx_or_nexus) {
             for (final Phylogeny phy : phys) {
-                if (getOptions().isInternalNumberAreConfidenceForNhParsing()) {
-                    PhylogenyMethods.transferInternalNodeNamesToConfidence(phy, "");
-                }
                 if (PhylogenyMethods.getMinimumDescendentsPerInternalNodes(phy) == 1) {
                     one_desc = true;
                     break;
@@ -1285,9 +1281,6 @@ public final class MainFrameApplication extends MainFrame {
         offerLabelExtraction(phys);
         offerTipDateExtraction(); // before the ultrametric offer: extracting dates preempts it
         offerTreatAsTimeTree(); // format-agnostic: offer for an ultrametric (undated) tree
-        if (nhx_or_nexus) {
-            offerInternalNamesAsConfidence(phys);
-        }
     }
 
     /**
@@ -1830,7 +1823,6 @@ public final class MainFrameApplication extends MainFrame {
         _antialias_export_cbmi = new JCheckBoxMenuItem("Antialias (export)");
         _export_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White");
         _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export");
-        _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem("Internal Node Names are Confidence Values");
         _replace_underscores_cbmi = new JCheckBoxMenuItem("Replace Underscores with Spaces");
         _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem("Parse BEAST-style extended Newick/Nexus tags");
         _parse_beast_style_extended_nexus_tags_cbmi
@@ -1889,8 +1881,6 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL);
         customizeCheckBoxMenuItem(_antialias_export_cbmi, getOptions().isAntialiasExport());
         customizeCheckBoxMenuItem(_export_black_and_white_cbmi, getOptions().isExportBlackAndWhite());
-        customizeCheckBoxMenuItem(_internal_number_are_confidence_for_nh_parsing_cbmi,
-                getOptions().isInternalNumberAreConfidenceForNhParsing());
         customizeCheckBoxMenuItem(_replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing());
         customizeCheckBoxMenuItem(_allow_errors_in_distance_to_parent_cbmi,
                 getOptions().isAllowErrorsInDistanceToParent());
@@ -2038,7 +2028,7 @@ public final class MainFrameApplication extends MainFrame {
 
     /** Fresh Options seeded from the configuration, then overlaid with the user's persisted display toggles
      *  (so the view the user last chose is restored). Paired with the saveFrom(...) in {@link #exit()}. */
-    private Options optionsWithSavedPreferences() {
+    static Options optionsWithSavedPreferences() {
         final Options options = Options.createInstance();
         new GuiPreferences().applyTo(options);
         return options;

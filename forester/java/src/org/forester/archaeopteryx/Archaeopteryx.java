@@ -103,11 +103,12 @@ public final class Archaeopteryx {
                         nex.setIgnoreQuotes( false );
                     }
                     phylogenies = PhylogenyMethods.readPhylogenies( p, f );
-                    if ( nhx_or_nexus && conf.isInternalNumberAreConfidenceForNhParsing() ) {
-                        for( final Phylogeny phy : phylogenies ) {
-                            PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
-                        }
-                    }
+                    // Same promotion the Open dialog and aptx_render use -- a tree opened from the command
+                    // line must not read differently from the same tree opened through File > Open.
+                    AptxUtil.applyInternalLabelPolicy( phylogenies,
+                                                       nhx_or_nexus,
+                                                       MainFrameApplication.optionsWithSavedPreferences()
+                                                               .getConfidenceFromInternalLabels() );
                 }
             }
         }

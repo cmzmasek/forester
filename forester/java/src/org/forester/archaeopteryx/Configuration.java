@@ -65,7 +65,6 @@ public final class Configuration {
     private SortedMap<String, Color> _display_colors = null;
 
     // Read directly by the NH/NHX/Nexus parse path (see Archaeopteryx.main).
-    private final boolean _internal_number_are_confidence_for_nh_parsing = false;
     private final boolean _nh_parsing_replace_underscores = false;
     private final TAXONOMY_EXTRACTION _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
 
@@ -170,9 +169,6 @@ public final class Configuration {
     }
 
 
-    boolean isInternalNumberAreConfidenceForNhParsing() {
-        return _internal_number_are_confidence_for_nh_parsing;
-    }
 
     boolean isReplaceUnderscoresInNhParsing() {
         return _nh_parsing_replace_underscores;

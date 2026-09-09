@@ -709,23 +709,173 @@ public final class AptxUtil {
         return Options.TIME_AXIS_TYPE.NONE;
     }
 
+    /** The top of every support scale we recognise: 0-1 posteriors, 0-100 bootstrap, 0-1000 MrBayes-style. */
+    static final double MAX_SUPPORT_VALUE = 1000.0;
+
     /**
-     * Heuristic for the load-time "treat internal labels as support values?" offer: {@code true} when the
-     * tree looks like a bootstrap/posterior tree -- at least two internal nodes carry a non-empty name,
-     * <em>every</em> such name is a number in [0, 100] (bare or wrapped in {@code [ ]}), and none is a real
-     * (non-numeric) clade name. Internal nodes that already carry a confidence are ignored. Strict by
-     * design so the offer never pops up on a tree with named clades or out-of-range numbers. Used only for
-     * NH/NHX/Nexus loads (phyloXML encodes confidence explicitly).
+     * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js (agreed 2026-09-08 -- change BOTH sides or neither):
+     * does this tree's internal labels look like support values rather than clade names? True when
+     * <em>every</em> non-empty internal label (the ROOT excluded -- it has no branch above it, so a label there
+     * is never support) parses as a number in [0, {@link #MAX_SUPPORT_VALUE}], there are at least
+     * <em>threshold</em> of them, and they are not clade NUMBERING.
+     * <p>
+     * The threshold is 2, dropping to 1 when some internal node already carries a confidence: brackets are
+     * consumed by the parser, so a file mixing {@code )[100]:} and {@code )95:} can leave a single bare label,
+     * and a flat "&ge; 2" would promote the bracketed ones and leave that one a stray name.
+     * <p>
+     * All-or-nothing on purpose: one real clade name vetoes the whole tree, so a mixed tree keeps its names
+     * (use ALWAYS for those). Newick-family formats only -- phyloXML and Auspice JSON encode confidence.
      */
     public final static boolean internalNamesLookLikeConfidenceValues(final Phylogeny phy) {
         if ((phy == null) || phy.isEmpty()) {
             return false;
         }
-        int candidates = 0;
+        final List<Double> values = new ArrayList<>();
+        boolean corroborated = false;
         for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            // skip the root (a tree/root label is not a support value and must not veto the offer) and
-            // nodes that already carry a confidence (nothing to reinterpret).
+            if (n.isExternal() || n.isRoot()) {
+                continue;
+            }
+            if (n.getBranchData().isHasConfidences()) {
+                corroborated = true; // already-parsed support is evidence the bare labels are support too
+                continue;
+            }
+            final String name = n.getName();
+            if (ForesterUtil.isEmpty(name)) {
+                continue;
+            }
+            final Double v = supportLikeValue(name);
+            if (v == null) {
+                return false;
+            }
+            values.add(v);
+        }
+        if (values.size() < (corroborated ? 1 : 2)) {
+            return false;
+        }
+        return !isCladeNumbering(values);
+    }
+
+    /**
+     * {@code true} when the values are a permutation of 1..n -- i.e. clade NUMBERING, not support. Load-bearing,
+     * not a nicety: without it a tree whose internal nodes are numbered 1, 2, 3 is silently promoted to
+     * "1%, 2%, 3% support", which is wrong in a way that looks plausible enough to survive review.
+     */
+    static boolean isCladeNumbering(final List<Double> values) {
+        final int n = values.size();
+        if (new HashSet<>(values).size() != n) {
+            return false; // support values repeat; a numbering does not
+        }
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+        for (final double v : values) {
+            if (v != Math.floor(v)) {
+                return false; // fractional -> a posterior scale, never a numbering
+            }
+            min = Math.min(min, v);
+            max = Math.max(max, v);
+        }
+        return (min == 1.0) && (max == n);
+    }
+
+    /**
+     * The value of a support-like label, or {@code null} when it is not one: a finite number in
+     * [0, {@link #MAX_SUPPORT_VALUE}], bare or wrapped in {@code [ ]} (the bracketed support form).
+     */
+    static Double supportLikeValue(final String s) {
+        String t = s.trim();
+        if ((t.length() >= 2) && (t.charAt(0) == '[') && (t.charAt(t.length() - 1) == ']')) {
+            t = t.substring(1, t.length() - 1).trim();
+        }
+        try {
+            final double d = Double.parseDouble(t);
+            if (!Double.isFinite(d) || (d < 0.0) || (d > MAX_SUPPORT_VALUE)) {
+                return null;
+            }
+            return Double.valueOf(d);
+        }
+        catch (final NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** A number in [0, {@link #MAX_SUPPORT_VALUE}], optionally bracketed. */
+    static boolean isSupportLikeNumber(final String s) {
+        return supportLikeValue(s) != null;
+    }
+
+    /**
+     * THE one place internal Newick labels become confidences -- every load path must come through here, or the
+     * same tree reads differently depending on how it was opened. That is not hypothetical: before this existed,
+     * File&gt;Open, the command-line launch and {@code aptx_render} each did their own thing, and the renderer
+     * did nothing at all, so a bootstrap tree drew support in the window and bare names in a headless figure.
+     * <p>
+     * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js (agreed 2026-09-08). Returns the number of labels
+     * promoted.
+     */
+    /**
+     * For headless entry points (e.g. {@code aptx_render}) that have no live Options: applies the user's SAVED
+     * policy. Keeping this here rather than in the caller is the point -- a command-line tool should not have to
+     * know how effective options are assembled in order to read a tree the same way the window does.
+     */
+    public final static int applyInternalLabelPolicy(final Phylogeny[] phys, final PhylogenyParser parser) {
+        return applyInternalLabelPolicy(phys,
+                                        parser,
+                                        MainFrameApplication.optionsWithSavedPreferences()
+                                                .getConfidenceFromInternalLabels());
+    }
+
+    public final static int applyInternalLabelPolicy(final Phylogeny[] phys,
+                                                     final PhylogenyParser parser,
+                                                     final Options.CONFIDENCE_FROM_INTERNAL_LABELS policy) {
+        return applyInternalLabelPolicy(phys, isNewickOrNexusParser(parser), policy);
+    }
+
+    /**
+     * As {@link #applyInternalLabelPolicy(Phylogeny[], PhylogenyParser, Options.CONFIDENCE_FROM_INTERNAL_LABELS)},
+     * for the load paths that have already worked out whether the source was a Newick-family file.
+     */
+    public final static int applyInternalLabelPolicy(final Phylogeny[] phys,
+                                                     final boolean newick_family,
+                                                     final Options.CONFIDENCE_FROM_INTERNAL_LABELS policy) {
+        if ((phys == null) || (policy == null) || !newick_family
+                || (policy == Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER)) {
+            return 0;
+        }
+        int promoted = 0;
+        for (final Phylogeny phy : phys) {
+            if ((phy == null) || phy.isEmpty()) {
+                continue;
+            }
+            if ((policy == Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO)
+                    && !internalNamesLookLikeConfidenceValues(phy)) {
+                continue;
+            }
+            stripBracketsFromInternalNames(phy);
+            promoted += promoteNumericInternalLabels(phy);
+        }
+        return promoted;
+    }
+
+    /** Only the Newick family needs the promotion: phyloXML and Auspice JSON carry real confidences. */
+    static boolean isNewickOrNexusParser(final PhylogenyParser parser) {
+        return (parser instanceof NHXParser) || (parser instanceof NexusPhylogeniesParser);
+    }
+
+    /**
+     * Per node: a numeric internal label becomes a confidence (type deliberately UNSET -- a value range cannot
+     * tell bootstrap from posterior from aLRT, and a wrong type printed beside a number in a published figure is
+     * worse than none) and the label is CLEARED -- a move, not a copy, or the value would be drawn twice.
+     * <p>
+     * A non-numeric label is left alone, which is exactly what makes ALWAYS usable on a mixed tree; and no range
+     * check here, so ALWAYS really is unbounded (a user may deliberately promote values AUTO would refuse).
+     * The ROOT is skipped, matching {@link #internalNamesLookLikeConfidenceValues}: it has no branch above it.
+     */
+    static int promoteNumericInternalLabels(final Phylogeny phy) {
+        int promoted = 0;
+        for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
             if (n.isExternal() || n.isRoot() || n.getBranchData().isHasConfidences()) {
                 continue;
             }
@@ -733,33 +883,27 @@ public final class AptxUtil {
             if (ForesterUtil.isEmpty(name)) {
                 continue;
             }
-            if (!isSupportLikeNumber(name)) {
-                return false;
+            final double d;
+            try {
+                d = Double.parseDouble(name.trim());
             }
-            ++candidates;
+            catch (final NumberFormatException e) {
+                continue; // a real clade name -- leave it
+            }
+            if (!Double.isFinite(d) || (d < 0.0)) {
+                continue;
+            }
+            n.getBranchData().addConfidence(new Confidence(d, ""));
+            n.setName("");
+            ++promoted;
         }
-        return candidates >= 2;
-    }
-
-    /** A number in [0, 100], optionally wrapped in {@code [ ]} (the bracketed support form). */
-    static boolean isSupportLikeNumber(final String s) {
-        String t = s.trim();
-        if ((t.length() >= 2) && (t.charAt(0) == '[') && (t.charAt(t.length() - 1) == ']')) {
-            t = t.substring(1, t.length() - 1).trim();
-        }
-        try {
-            final double d = Double.parseDouble(t);
-            return (d >= 0.0) && (d <= 100.0);
-        }
-        catch (final NumberFormatException e) {
-            return false;
-        }
+        return promoted;
     }
 
     /**
      * Strips surrounding {@code [ ]} from internal node names (e.g. {@code "[90]"} &rarr; {@code "90"}) so
-     * the bracketed support form is convertible by {@code transferInternalNodeNamesToConfidence}, which
-     * parses the bare name. No-op on names without brackets or on external nodes.
+     * the bracketed support form is convertible by {@link #promoteNumericInternalLabels}, which parses the
+     * bare name. No-op on names without brackets or on external nodes.
      */
     public final static void stripBracketsFromInternalNames(final Phylogeny phy) {
         for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
@@ -832,7 +976,7 @@ public final class AptxUtil {
     final public static Phylogeny[] readPhylogeniesFromUrl(final URL url,
                                                            final boolean phyloxml_validate_against_xsd,
                                                            final boolean replace_underscores,
-                                                           final boolean internal_numbers_are_confidences,
+                                                           final Options.CONFIDENCE_FROM_INTERNAL_LABELS confidence_policy,
                                                            final TAXONOMY_EXTRACTION taxonomy_extraction,
                                                            final boolean midpoint_reroot)
             throws FileNotFoundException, IOException {
@@ -865,11 +1009,7 @@ public final class AptxUtil {
             throw new IOException(e.getMessage());
         }
         if (phys != null) {
-            if (nhx_or_nexus && internal_numbers_are_confidences) {
-                for (final Phylogeny phy : phys) {
-                    PhylogenyMethods.transferInternalNodeNamesToConfidence(phy, "");
-                }
-            }
+            applyInternalLabelPolicy(phys, nhx_or_nexus, confidence_policy);
             if (midpoint_reroot) {
                 for (final Phylogeny phy : phys) {
                     PhylogenyMethods.midpointRoot(phy);

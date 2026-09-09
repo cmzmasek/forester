@@ -113,6 +113,8 @@ public final class ResetToDefaultsTest {
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE ); // default is BAR
+        // default is AUTO (silently promote numeric internal labels that all look like support)
+        o.setConfidenceFromInternalLabels( Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER );
         o.setDomainLabelMode( Options.DOMAIN_LABEL_MODE.LEGEND ); // default is ON_DOMAINS
         o.setShowDomainGlow( true ); // default is false
         o.setShowMsa( true ); // default is false
@@ -190,6 +192,8 @@ public final class ResetToDefaultsTest {
         ok &= eq( "abbreviateNames", o.isAbbreviateScientificTaxonNames(), def.isAbbreviateScientificTaxonNames() );
         ok &= eq( "supportViz", o.getSupportVisualization(), def.getSupportVisualization() );
         ok &= eq( "nodeAgeShape", o.getNodeAgeShape(), def.getNodeAgeShape() );
+        ok &= eq( "confidenceFromInternalLabels", o.getConfidenceFromInternalLabels(),
+                  def.getConfidenceFromInternalLabels() );
         ok &= eq( "domainLabelMode", o.getDomainLabelMode(), def.getDomainLabelMode() );
         ok &= eq( "showDomainGlow", o.isShowDomainGlow(), def.isShowDomainGlow() );
         ok &= eq( "showMsa", o.isShowMsa(), def.isShowMsa() );
@@ -251,7 +255,7 @@ public final class ResetToDefaultsTest {
                           frame._show_scale_cbmi, frame._show_tree_name_cbmi,
                           frame._show_overview_cbmi, frame._show_confidence_stddev_cbmi, frame._show_mad_confidence_cbmi,
                           frame._antialias_export_cbmi, frame._export_black_and_white_cbmi,
-                          frame._internal_number_are_confidence_for_nh_parsing_cbmi, frame._replace_underscores_cbmi,
+                          frame._replace_underscores_cbmi,
                           frame._allow_errors_in_distance_to_parent_cbmi, frame._graphics_export_visible_only_cbmi,
                           frame._parse_beast_style_extended_nexus_tags_cbmi, frame._collapsed_with_average_height_cbmi,
                           frame._show_abbreviated_labels_for_collapsed_nodes_cbmi, frame._label_direction_cbmi,

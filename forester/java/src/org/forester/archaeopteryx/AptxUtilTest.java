@@ -67,7 +67,8 @@ public final class AptxUtilTest {
                 && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testQualitativePalette() && testGatherDomainNames() && testShortenLabel()
-                && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
+                && testInternalNamesLookLikeConfidenceValues() && testInternalLabelPolicy()
+                && testInternalNodeDateInterval()
                 && testPreferredDisplayTypeForBranchLengthTree() && testMostlyMeasuredForPhylogram()
                 && testDetectTimeTree()
                 && testDeriveTimeAxisType();
@@ -279,6 +280,11 @@ public final class AptxUtilTest {
      * number, fewer than two labels, or none do not. The root label is ignored.
      */
     /**
+     * The detector behind the internal-label promotion, as agreed with Archaeopteryx.js 2026-09-08. Every
+     * clause here is a decision someone could plausibly "simplify" away, so each is pinned with the case that
+     * justifies it.
+     */
+    /**
      * The phylogram-vs-cladogram decision. The first case IS the reported bug, in miniature: a 39 MB BV-BRC
      * influenza tree (13246 tips, only 16% with a length; all 5265 internal non-root branches measured) opened
      * as a cladogram because absent TIP lengths outvoted a fully measured topology. `((A,B):0.1,(C,D):0.2)` has
@@ -349,76 +355,200 @@ public final class AptxUtilTest {
 
     private static boolean testInternalNamesLookLikeConfidenceValues() {
         try {
-            // isSupportLikeNumber units (incl. the bracketed form)
+            // range: the three real support scales, and the bracketed form
             if ( !AptxUtil.isSupportLikeNumber( "95" ) || !AptxUtil.isSupportLikeNumber( "0.95" )
                     || !AptxUtil.isSupportLikeNumber( "[87]" ) || !AptxUtil.isSupportLikeNumber( "100" )
-                    || !AptxUtil.isSupportLikeNumber( "0" ) ) {
-                return fail( "support-like numbers (incl. bracketed) must be recognized" );
+                    || !AptxUtil.isSupportLikeNumber( "1000" ) || !AptxUtil.isSupportLikeNumber( "0" ) ) {
+                return fail( "support-like numbers (incl. 0-1000 and the bracketed form) must be recognized" );
             }
-            if ( AptxUtil.isSupportLikeNumber( "150" ) || AptxUtil.isSupportLikeNumber( "-1" )
+            if ( AptxUtil.isSupportLikeNumber( "1001" ) || AptxUtil.isSupportLikeNumber( "-1" )
                     || AptxUtil.isSupportLikeNumber( "Clade" ) || AptxUtil.isSupportLikeNumber( "" ) ) {
                 return fail( "out-of-range / non-numeric must not be support-like" );
             }
-            // two numeric internal labels in range -> looks like confidence (root label ignored)
+            // the WIDENING: a MrBayes-style 0-1000 tree used to be refused by the old [0,100] bound
+            if ( !AptxUtil.internalNamesLookLikeConfidenceValues(
+                    Phylogeny.createInstanceFromNhxString( "((A,B)1000,(C,D)870);" ) ) ) {
+                return fail( "a 0-1000 support scale must be recognized" );
+            }
             if ( !AptxUtil.internalNamesLookLikeConfidenceValues(
                     Phylogeny.createInstanceFromNhxString( "((A,B)95,(C,D)87)myTree;" ) ) ) {
-                return fail( "two numeric internal labels should look like confidence" );
+                return fail( "two numeric internal labels should look like confidence (root label ignored)" );
             }
             if ( !AptxUtil.internalNamesLookLikeConfidenceValues(
                     Phylogeny.createInstanceFromNhxString( "((A,B)0.95,(C,D)0.87);" ) ) ) {
                 return fail( "posterior-probability internal labels should look like confidence" );
             }
-            // a real clade name vetoes the offer
+            // all-or-nothing: one real clade name vetoes the whole tree (that tree needs ALWAYS instead)
             if ( AptxUtil.internalNamesLookLikeConfidenceValues(
                     Phylogeny.createInstanceFromNhxString( "((A,B)95,(C,D)Mammalia);" ) ) ) {
-                return fail( "a non-numeric clade name must veto the offer" );
+                return fail( "a non-numeric clade name must veto promotion" );
             }
-            // only one labeled internal node -> below the >=2 threshold
             if ( AptxUtil.internalNamesLookLikeConfidenceValues(
                     Phylogeny.createInstanceFromNhxString( "((A,B)95,(C,D));" ) ) ) {
-                return fail( "a single numeric internal label is not enough" );
+                return fail( "a single numeric internal label is not enough without corroboration" );
             }
-            // out-of-range number vetoes
+            // CORROBORATION: brackets are parser-consumed, so a mixed-dialect file can leave ONE bare label.
+            // An already-parsed confidence is evidence, and drops the threshold to 1 -- without this the tree
+            // below would keep "56" as a stray name beside a real confidence.
+            final Phylogeny corroborated = Phylogeny
+                    .createInstanceFromNhxString( "((A:0.1,B:0.1)[100]:0.05,(C:0.1,D:0.1)56:0.05)r;" );
+            if ( !AptxUtil.internalNamesLookLikeConfidenceValues( corroborated ) ) {
+                return fail( "one bare label + an existing confidence must clear the lowered threshold" );
+            }
             if ( AptxUtil.internalNamesLookLikeConfidenceValues(
-                    Phylogeny.createInstanceFromNhxString( "((A,B)150,(C,D)87);" ) ) ) {
-                return fail( "an out-of-range number must veto the offer" );
+                    Phylogeny.createInstanceFromNhxString( "((A,B)1001,(C,D)87);" ) ) ) {
+                return fail( "an out-of-range number must veto promotion" );
             }
-            // no internal labels
             if ( AptxUtil.internalNamesLookLikeConfidenceValues(
                     Phylogeny.createInstanceFromNhxString( "((A,B),(C,D));" ) ) ) {
-                return fail( "no internal labels -> no offer" );
+                return fail( "no internal labels -> nothing to promote" );
             }
-            // end-to-end on the BRACKETED form (built by hand, since a parser may strip "[95]" as a
-            // comment): detector accepts it, then strip-brackets + transfer yields confidence 95 / empty name.
-            final Phylogeny bracketed = new Phylogeny();
-            final PhylogenyNode root = new PhylogenyNode();
-            final PhylogenyNode i1 = new PhylogenyNode();
-            i1.setName( "[95]" );
-            i1.addAsChild( new PhylogenyNode() );
-            i1.addAsChild( new PhylogenyNode() );
-            final PhylogenyNode i2 = new PhylogenyNode();
-            i2.setName( "[87]" );
-            i2.addAsChild( new PhylogenyNode() );
-            i2.addAsChild( new PhylogenyNode() );
-            root.addAsChild( i1 );
-            root.addAsChild( i2 );
-            bracketed.setRoot( root );
-            bracketed.externalNodesHaveChanged();
-            if ( !AptxUtil.internalNamesLookLikeConfidenceValues( bracketed ) ) {
-                return fail( "bracketed numeric internal labels should look like confidence" );
+            // CLADE NUMBERING guard: 1..n each exactly once is a numbering, not support. Load-bearing --
+            // without it this tree is silently promoted to "1%, 2%, 3% support".
+            if ( AptxUtil.internalNamesLookLikeConfidenceValues( Phylogeny
+                    .createInstanceFromNhxString( "((A,B)1,((C,D)2,(E,F)3));" ) ) ) {
+                return fail( "consecutive clade numbering 1..n must not be promoted" );
             }
-            AptxUtil.stripBracketsFromInternalNames( bracketed );
-            PhylogenyMethods.transferInternalNodeNamesToConfidence( bracketed, "" );
-            if ( !i1.getBranchData().isHasConfidences()
-                    || ( i1.getBranchData().getConfidences().get( 0 ).getValue() != 95.0 )
-                    || !i1.getName().isEmpty() ) {
-                return fail( "strip-brackets + transfer must yield confidence 95 and clear the name" );
+            // ...and the honest limit of that guard: a NON-consecutive numbering still slips through, which is
+            // why the Never setting is the real backstop. Pinned so the limitation is not mistaken for a bug.
+            if ( !AptxUtil.internalNamesLookLikeConfidenceValues( Phylogeny
+                    .createInstanceFromNhxString( "((A,B)10,((C,D)20,(E,F)30));" ) ) ) {
+                return fail( "10/20/30 is documented to slip through the numbering guard" );
+            }
+            if ( !AptxUtil.isCladeNumbering( Arrays.asList( 3.0, 1.0, 2.0 ) )
+                    || AptxUtil.isCladeNumbering( Arrays.asList( 1.0, 1.0, 2.0 ) )
+                    || AptxUtil.isCladeNumbering( Arrays.asList( 0.98, 0.72 ) ) ) {
+                return fail( "isCladeNumbering: permutation yes; repeats no; fractional no" );
             }
             return true;
         }
         catch ( final Exception e ) {
             return fail( "unexpected exception: " + e );
         }
+    }
+
+    /**
+     * The promotion itself: the three states, and the invariants that keep the two viewers in step. The
+     * entry-point agreement check is the one that matters most -- before the shared helper existed, File&gt;Open,
+     * the command-line launch and aptx_render each did their own thing and the renderer did nothing at all.
+     */
+    private static boolean testInternalLabelPolicy() {
+        try {
+            // NEVER: nothing happens, whatever the tree looks like
+            Phylogeny phy = Phylogeny.createInstanceFromNhxString( "((A,B)100,(C,D)56)r;" );
+            if ( ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                      Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER ) != 0 )
+                    || confidenceCount( phy ) != 0 ) {
+                return fail( "NEVER must promote nothing" );
+            }
+            // AUTO on a bootstrap tree: promoted, and the label is CLEARED (a move, not a copy -- a kept
+            // label would draw the value twice)
+            phy = Phylogeny.createInstanceFromNhxString( "((A,B)100,(C,D)56)r;" );
+            if ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                    Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO ) != 2 ) {
+                return fail( "AUTO must promote both bootstrap labels" );
+            }
+            if ( ( confidenceCount( phy ) != 2 ) || ( namedInternalCount( phy ) != 0 ) ) {
+                return fail( "promotion must MOVE the label, not copy it" );
+            }
+            // AUTO refuses a mixed tree; ALWAYS is the state that handles it, per node
+            phy = Phylogeny.createInstanceFromNhxString( "((A,B)Clade_I,(C,D)100)r;" );
+            if ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                    Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO ) != 0 ) {
+                return fail( "AUTO is all-or-nothing: a mixed tree must be left alone" );
+            }
+            phy = Phylogeny.createInstanceFromNhxString( "((A,B)Clade_I,(C,D)100)r;" );
+            if ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                    Options.CONFIDENCE_FROM_INTERNAL_LABELS.ALWAYS ) != 1 ) {
+                return fail( "ALWAYS must promote the numeric label of a mixed tree" );
+            }
+            if ( ( confidenceCount( phy ) != 1 ) || ( namedInternalCount( phy ) != 1 ) ) {
+                return fail( "ALWAYS must leave the real clade name alone" );
+            }
+            // ALWAYS is deliberately UNBOUNDED: it promotes values AUTO refuses. Adding the range check here
+            // would quietly turn it into a second AUTO.
+            phy = Phylogeny.createInstanceFromNhxString( "((A,B)9606,(C,D)10090)r;" );
+            if ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                    Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO ) != 0 ) {
+                return fail( "AUTO must refuse out-of-range values" );
+            }
+            if ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                    Options.CONFIDENCE_FROM_INTERNAL_LABELS.ALWAYS ) != 2 ) {
+                return fail( "ALWAYS must be unbounded" );
+            }
+            // the ROOT is never promoted: it has no branch above it, so a label there is not support, and on
+            // a rooted Newick that trailing label is usually the tree NAME. (The old shared-library transfer
+            // DID convert it -- that asymmetry is why this promotion is our own walk. It has since been
+            // removed, having no callers left.)
+            phy = Phylogeny.createInstanceFromNhxString( "((A,B)100,(C,D)56)99;" );
+            AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                               Options.CONFIDENCE_FROM_INTERNAL_LABELS.ALWAYS );
+            if ( phy.getRoot().getBranchData().isHasConfidences() || !"99".equals( phy.getRoot().getName() ) ) {
+                return fail( "a numeric ROOT label must be left alone" );
+            }
+            // gating: only the Newick family. phyloXML and Auspice carry real confidences.
+            phy = Phylogeny.createInstanceFromNhxString( "((A,B)100,(C,D)56)r;" );
+            if ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, false,
+                                                    Options.CONFIDENCE_FROM_INTERNAL_LABELS.ALWAYS ) != 0 ) {
+                return fail( "a non-Newick source must not be touched" );
+            }
+            if ( !AptxUtil.isNewickOrNexusParser( new org.forester.io.parsers.nhx.NHXParser() )
+                    || !AptxUtil.isNewickOrNexusParser( new org.forester.io.parsers.nexus.NexusPhylogeniesParser() )
+                    || AptxUtil.isNewickOrNexusParser( org.forester.io.parsers.phyloxml.PhyloXmlParser
+                            .createPhyloXmlParser() )
+                    || AptxUtil.isNewickOrNexusParser( null ) ) {
+                return fail( "Newick-family gating must accept NHX/Nexus and refuse phyloXML/null" );
+            }
+            // ENTRY-POINT AGREEMENT: the parser-shaped door (aptx_render) and the boolean-shaped door (the GUI
+            // load paths) must produce the identical tree. Two doors into one helper is the whole design; if
+            // they ever drift, a headless figure stops matching the window again.
+            final Phylogeny a = Phylogeny.createInstanceFromNhxString( "((A,B)100,(C,D)56)r;" );
+            final Phylogeny b = Phylogeny.createInstanceFromNhxString( "((A,B)100,(C,D)56)r;" );
+            AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { a }, new org.forester.io.parsers.nhx.NHXParser(),
+                                               Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO );
+            AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { b }, true,
+                                               Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO );
+            if ( ( confidenceCount( a ) != confidenceCount( b ) ) || ( confidenceCount( a ) != 2 )
+                    || ( namedInternalCount( a ) != namedInternalCount( b ) ) ) {
+                return fail( "the parser and boolean entry points must agree" );
+            }
+            // null/empty inputs degrade quietly rather than throwing on a load path
+            if ( ( AptxUtil.applyInternalLabelPolicy( null, true, Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO ) != 0 )
+                    || ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { new Phylogeny() }, true,
+                                                            Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO ) != 0 )
+                    || ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true, null ) != 0 ) ) {
+                return fail( "null / empty inputs must be no-ops" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "unexpected exception: " + e );
+        }
+    }
+
+    /** Internal (non-root) nodes carrying a confidence. */
+    private static int confidenceCount( final Phylogeny phy ) {
+        int n = 0;
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( !node.isExternal() && !node.isRoot() && node.getBranchData().isHasConfidences() ) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+    /** Internal (non-root) nodes that still carry a non-empty name. */
+    private static int namedInternalCount( final Phylogeny phy ) {
+        int n = 0;
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( !node.isExternal() && !node.isRoot()
+                    && ( node.getName() != null ) && !node.getName().isEmpty() ) {
+                ++n;
+            }
+        }
+        return n;
     }
 
     /**

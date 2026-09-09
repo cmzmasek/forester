@@ -2597,7 +2597,7 @@ public final class Test {
         try {
             final String s = "http://phyloxml.org/test/simple_1.nh";
             final Phylogeny phys[] = AptxUtil
-                    .readPhylogeniesFromUrl(new URL(s), false, false, false, TAXONOMY_EXTRACTION.NO, false);
+                    .readPhylogeniesFromUrl(new URL(s), false, false, org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER, TAXONOMY_EXTRACTION.NO, false);
             if ((phys == null) || (phys.length != 5)) {
                 return false;
             }
@@ -2610,7 +2610,7 @@ public final class Test {
                 return false;
             }
             final Phylogeny phys2[] = AptxUtil
-                    .readPhylogeniesFromUrl(new URL(s), false, false, false, TAXONOMY_EXTRACTION.NO, false);
+                    .readPhylogeniesFromUrl(new URL(s), false, false, org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER, TAXONOMY_EXTRACTION.NO, false);
             if ((phys2 == null) || (phys2.length != 5)) {
                 return false;
             }
@@ -2626,7 +2626,7 @@ public final class Test {
                     .readPhylogeniesFromUrl(new URL("https://swisstree.vital-it.ch/SwissTree/ST001/consensus_tree.nhx"),
                             false,
                             false,
-                            false,
+                            org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER,
                             TAXONOMY_EXTRACTION.NO,
                             false);
             if ((phys3 == null) || (phys3.length != 1)) {
@@ -2641,7 +2641,7 @@ public final class Test {
                     .readPhylogeniesFromUrl(new URL("https://swisstree.vital-it.ch/SwissTree/ST001/consensus_tree.nhx"),
                             false,
                             false,
-                            false,
+                            org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER,
                             TAXONOMY_EXTRACTION.NO,
                             false);
             if ((phys4 == null) || (phys4.length != 1)) {

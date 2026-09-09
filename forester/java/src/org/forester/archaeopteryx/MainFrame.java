@@ -349,7 +349,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _antialias_export_cbmi;
     JCheckBoxMenuItem _export_black_and_white_cbmi;
     // _  parsing
-    JCheckBoxMenuItem _internal_number_are_confidence_for_nh_parsing_cbmi;
     JCheckBoxMenuItem _replace_underscores_cbmi;
     JCheckBoxMenuItem _allow_errors_in_distance_to_parent_cbmi;
     JCheckBoxMenuItem _use_brackets_for_conf_in_nh_export_cbmi;
@@ -2275,12 +2274,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    /**
-     * Load-time offer (NH/NHX/Nexus only, and only when the manual "Internal Node Names are Confidence
-     * Values" option is off): if the internal node labels look like support values
-     * ({@link AptxUtil#internalNamesLookLikeConfidenceValues}), ask whether to treat them as confidence
-     * values rather than node names.
-     */
     /** After a load, OFFER to label any merely-ultrametric (undated) loaded tree a time tree. A DATED tree is
      *  auto-labeled by the badge itself and needs no dialog; this handles only the ambiguous case (ultrametric
      *  could also be a UPGMA distance tree, so we ask rather than assert). One dialog covers all loaded tabs. */
@@ -2317,43 +2310,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (choice == JOptionPane.YES_OPTION) {
             for (final TreePanel tp : ultrametric) {
                 tp.setConfirmedTimeTree(true);
-            }
-        }
-    }
-
-    void offerInternalNamesAsConfidence(final Phylogeny[] phys) {
-        if (isRenderingOnly()) {
-            return; // a modal dialog would hang a command-line render
-        }
-        if ((phys == null) || getOptions().isInternalNumberAreConfidenceForNhParsing()) {
-            return;
-        }
-        boolean offer = false;
-        for (final Phylogeny p : phys) {
-            if (AptxUtil.internalNamesLookLikeConfidenceValues(p)) {
-                offer = true;
-                break;
-            }
-        }
-        if (!offer) {
-            return;
-        }
-        final int choice = JOptionPane.showConfirmDialog(this,
-                "The internal node labels look like support / confidence values (e.g. bootstrap).\n"
-                        + "Treat them as confidence values instead of node names?",
-                "Internal Labels Look Like Support Values", JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-        if (choice == JOptionPane.YES_OPTION) {
-            for (final Phylogeny p : phys) {
-                AptxUtil.stripBracketsFromInternalNames(p);
-                PhylogenyMethods.transferInternalNodeNamesToConfidence(p, "");
-            }
-            if (_mainpanel.getCurrentTreePanel() != null) {
-                _mainpanel.getCurrentTreePanel().setEdited(true);
-                // reveal the freshly-created confidence values so the conversion is immediately visible
-                _mainpanel.getControlPanel().setCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES, true);
-                _mainpanel.getControlPanel().displayedPhylogenyMightHaveChanged(true);
-                _mainpanel.getCurrentTreePanel().repaint();
             }
         }
     }
@@ -3353,8 +3309,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         options.setExportBlackAndWhite((_export_black_and_white_cbmi != null)
                 && _export_black_and_white_cbmi.isSelected());
-        options.setInternalNumberAreConfidenceForNhParsing((_internal_number_are_confidence_for_nh_parsing_cbmi != null)
-                && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected());
         // Taxonomy extraction from node names has no GUI control any more; Options keeps its default
         // (TAXONOMY_EXTRACTION.NO) so the NHX/Nexus parsers read with no extraction.
         options.setReplaceUnderscoresInNhParsing((_replace_underscores_cbmi != null)
@@ -3433,8 +3387,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_show_mad_confidence_cbmi, options.isShowMadConfidence());
         setSelected(_antialias_export_cbmi, options.isAntialiasExport());
         setSelected(_export_black_and_white_cbmi, options.isExportBlackAndWhite());
-        setSelected(_internal_number_are_confidence_for_nh_parsing_cbmi,
-                options.isInternalNumberAreConfidenceForNhParsing());
         setSelected(_replace_underscores_cbmi, options.isReplaceUnderscoresInNhParsing());
         setSelected(_allow_errors_in_distance_to_parent_cbmi, options.isAllowErrorsInDistanceToParent());
         setSelected(_graphics_export_visible_only_cbmi, options.isGraphicsExportVisibleOnly());

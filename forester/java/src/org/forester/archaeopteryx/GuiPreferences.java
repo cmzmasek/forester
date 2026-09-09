@@ -119,6 +119,10 @@ final class GuiPreferences {
             enumPref( "support_visualization", Options::getSupportVisualization, Options::setSupportVisualization,
                       SUPPORT_VISUALIZATION::valueOf ),
             enumPref( "node_age_shape", Options::getNodeAgeShape, Options::setNodeAgeShape, NODE_AGE_SHAPE::valueOf ),
+            // A file-reading preference: a user who has set Never wants it to stay Never next launch.
+            enumPref( "confidence_from_internal_labels", Options::getConfidenceFromInternalLabels,
+                      Options::setConfidenceFromInternalLabels,
+                      Options.CONFIDENCE_FROM_INTERNAL_LABELS::valueOf ),
             enumPref( "domain_label_mode", Options::getDomainLabelMode, Options::setDomainLabelMode,
                       Options.DOMAIN_LABEL_MODE::valueOf ),
             boolPref( "show_domain_glow", Options::isShowDomainGlow, Options::setShowDomainGlow ),

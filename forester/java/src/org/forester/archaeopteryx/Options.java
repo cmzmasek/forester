@@ -42,6 +42,33 @@ final public class Options {
         HORIZONTAL, RADIAL;
     }
 
+    /**
+     * What to do with a numeric internal node label in a Newick-family file ({@code )100:0.005}), which the
+     * parser leaves as a NAME. CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js (agreed 2026-09-08):
+     * both viewers offer the same three states with the same semantics.
+     * <p>
+     * AUTO and ALWAYS differ in more than strictness, so do not collapse them: AUTO is all-or-nothing over the
+     * whole tree (one real clade name and nothing is promoted), while ALWAYS is per node and unbounded -- it is
+     * the only state that handles a MIXED tree, and the only way to promote values outside the recognised
+     * support range.
+     */
+    public static enum CONFIDENCE_FROM_INTERNAL_LABELS {
+        AUTO( "Auto (only if they all look like support)" ),
+        ALWAYS( "Always (every numeric label)" ),
+        NEVER( "Never (keep them as names)" );
+
+        private final String _label;
+
+        CONFIDENCE_FROM_INTERNAL_LABELS( final String label ) {
+            _label = label;
+        }
+
+        @Override
+        public String toString() {
+            return _label;
+        }
+    }
+
     /** The umbrella "time axis" mode for a time tree: OFF, a colored GEOLOGIC (ICS chronostratigraphic) axis, or --
      *  future -- numeric-My / calendar-date. */
     public static enum TIME_AXIS_TYPE {
@@ -227,7 +254,7 @@ final public class Options {
     private short _default_node_shape_size;
     private boolean _editable;
     private boolean _graphics_export_visible_only;
-    private boolean _internal_number_are_confidence_for_nh_parsing;
+    private CONFIDENCE_FROM_INTERNAL_LABELS _confidence_from_internal_labels;
     private boolean _inverse_search_result;
     private boolean _match_whole_terms_only;
     private boolean _search_with_regex;
@@ -370,7 +397,7 @@ final public class Options {
         // GRADIENT was retired as a user-selectable node fill, so do not default to it.
         _default_node_fill = NodeFill.SOLID;
         _default_node_shape_size = AptxConstants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-        _internal_number_are_confidence_for_nh_parsing = false;
+        _confidence_from_internal_labels = CONFIDENCE_FROM_INTERNAL_LABELS.AUTO;
         _show_scale = false;
         _show_scale_grid = false;
         _show_scale_axis = false;
@@ -585,8 +612,8 @@ final public class Options {
         return _graphics_export_visible_only;
     }
 
-    final boolean isInternalNumberAreConfidenceForNhParsing() {
-        return _internal_number_are_confidence_for_nh_parsing;
+    final CONFIDENCE_FROM_INTERNAL_LABELS getConfidenceFromInternalLabels() {
+        return _confidence_from_internal_labels;
     }
 
     final boolean isInverseSearchResult() {
@@ -928,8 +955,8 @@ final public class Options {
         _graphics_export_visible_only = graphics_export_visible_only;
     }
 
-    final void setInternalNumberAreConfidenceForNhParsing(final boolean internal_number_are_confidence_for_nh_parsing) {
-        _internal_number_are_confidence_for_nh_parsing = internal_number_are_confidence_for_nh_parsing;
+    final void setConfidenceFromInternalLabels(final CONFIDENCE_FROM_INTERNAL_LABELS policy) {
+        _confidence_from_internal_labels = policy;
     }
 
     final void setInverseSearchResult(final boolean inverse_search_result) {

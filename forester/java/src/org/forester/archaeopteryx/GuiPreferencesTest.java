@@ -72,6 +72,11 @@ public final class GuiPreferencesTest {
             final NodeFill fill = ( src.getDefaultNodeFill() == NodeFill.NONE ) ? NodeFill.SOLID : NodeFill.NONE;
             final SUPPORT_VISUALIZATION support_viz = ( src.getSupportVisualization() == SUPPORT_VISUALIZATION.NONE )
                     ? SUPPORT_VISUALIZATION.SIZE_SCALED : SUPPORT_VISUALIZATION.NONE;
+            // a file-reading preference must survive a restart: a user who set Never means it
+            final Options.CONFIDENCE_FROM_INTERNAL_LABELS conf_policy =
+                    ( src.getConfidenceFromInternalLabels() == Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO )
+                            ? Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER
+                            : Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO;
             final Options.NODE_AGE_SHAPE age_shape = ( src.getNodeAgeShape() == Options.NODE_AGE_SHAPE.BAR )
                     ? Options.NODE_AGE_SHAPE.SPINDLE : Options.NODE_AGE_SHAPE.BAR;
             final short node_size = (short) ( src.getDefaultNodeShapeSize() + 3 );
@@ -120,6 +125,7 @@ public final class GuiPreferencesTest {
             src.setDefaultBranchWidth( branch_width );
             src.setSupportVisualization( support_viz );
             src.setNodeAgeShape( age_shape );
+            src.setConfidenceFromInternalLabels( conf_policy );
             src.setSupportThreshold( support_threshold );
             src.setMinConfidenceFraction( min_conf );
             src.setPhylogenyGraphicsType( gtype );
@@ -186,6 +192,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getSupportVisualization() != support_viz ) {
                 return fail( "support_visualization did not round-trip" );
+            }
+            if ( dst.getConfidenceFromInternalLabels() != conf_policy ) {
+                return fail( "confidence_from_internal_labels did not round-trip" );
             }
             if ( dst.getNodeAgeShape() != age_shape ) {
                 return fail( "node_age_shape did not round-trip" );
