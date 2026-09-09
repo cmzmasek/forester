@@ -243,20 +243,58 @@ public final class AptxUtil {
         return false;
     }
 
-    final static public boolean isHasAtLeast50PercentBranchLengthLargerThanZero(final Phylogeny phy) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        int positive = 0;
-        int total = 0;
-        while (it.hasNext()) {
-            if (it.next().getDistanceToParent() > 0.0) {
-                ++positive;
+    /**
+     * Is this tree measured enough to open as a PHYLOGRAM rather than a cladogram? Judged over the INTERNAL,
+     * NON-ROOT branches only.
+     * <p>
+     * Two decisions, both learned from a real file (a 39 MB BV-BRC influenza tree, 18512 nodes, that opened as a
+     * cladogram in both Archaeopteryx and Archaeopteryx.js):
+     * <ul>
+     * <li><b>The denominator is internal non-root branches, not every branch.</b> That tree has 13246 tips of
+     * which only 2153 carry a length, but ALL 5265 internal non-root branches do. Counting every branch
+     * uniformly gave 7418/18512 = 0.40 and called a completely measured topology a cladogram: 11093 absent TIP
+     * lengths outvoted it. Tips left unmeasured are ordinary -- identical sequences collapsed into polytomies
+     * write no tip length -- while the internal branches are what a phylogram actually positions. The ROOT is
+     * excluded because a branch length is a property of the branch ABOVE a node and the root has none (the same
+     * rule that keeps the root out of the confidence promotion); without that exclusion a star tree reads 0/0.
+     * <li><b>"Has a length" is the test, not "is positive".</b> A zero-length branch is a measurement, not a
+     * missing one -- it is how a polytomy is written -- so an explicit 0.0 counts as measured. Absence is
+     * distinguishable here because it has its own sentinel ({@link PhylogenyDataUtil#BRANCH_LENGTH_DEFAULT}).
+     * </ul>
+     * A tree with no internal branches at all (a star) has nothing to judge, so it falls back to its tips.
+     * <p>
+     * The threshold is a STRICT majority: at exactly half, half the scale-bearing branches are unmeasured, and
+     * drawing that to scale puts those nodes at zero distance and misrepresents the topology -- a cladogram is
+     * the honest answer there. (Matched with Archaeopteryx.js, which uses the same strict test.)
+     * <p>
+     * This does NOT decide whether a phylogram is possible -- {@link #isHasAtLeastOneBranchLengthLargerThanZero}
+     * gates that first, so a tree whose every length is zero cannot become a degenerate zero-depth phylogram.
+     */
+    final static public boolean isMostlyMeasuredForPhylogram(final Phylogeny phy) {
+        int internal_measured = 0;
+        int internal_total = 0;
+        int tips_measured = 0;
+        int tips_total = 0;
+        for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            final boolean measured = n.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
+            if (n.isExternal()) {
+                ++tips_total;
+                if (measured) {
+                    ++tips_measured;
+                }
             }
-            ++total;
+            else if (!n.isRoot()) {
+                ++internal_total;
+                if (measured) {
+                    ++internal_measured;
+                }
+            }
         }
-        if (total == 0) {
-            return false;
+        if (internal_total > 0) {
+            return ((((double) internal_measured) / internal_total) > 0.5);
         }
-        return ((((double) positive) / total) >= 0.5);
+        return (tips_total > 0) && ((((double) tips_measured) / tips_total) > 0.5);
     }
 
     final static public boolean isHasNoBranchLengthSmallerThanZero(final Phylogeny phy) {
@@ -1251,7 +1289,7 @@ public final class AptxUtil {
                         // open the tree in the user's persisted P/A/C preference (default UNALIGNED_PHYLOGRAM), gated
                         // on the branch lengths -- so a restored "A"/"C" choice survives a restart
                         cp.setTreeDisplayType(AptxUtil.preferredDisplayTypeForBranchLengthTree(
-                                AptxUtil.isHasAtLeast50PercentBranchLengthLargerThanZero(t),
+                                AptxUtil.isMostlyMeasuredForPhylogram(t),
                                 cp.getOptions().getPhylogenyDisplayType()));
                         cp.setDrawPhylogramEnabled(true);
                     } else {

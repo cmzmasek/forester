@@ -3523,7 +3523,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     // use the SAME preference-aware policy as the load-time auto-detect, so a SPARSE-branch-length
                     // tree resets to a cladogram (not a degenerate phylogram) exactly as a fresh load would
                     cp.setTreeDisplayType(AptxUtil.preferredDisplayTypeForBranchLengthTree(
-                            AptxUtil.isHasAtLeast50PercentBranchLengthLargerThanZero(current.getPhylogeny()),
+                            AptxUtil.isMostlyMeasuredForPhylogram(current.getPhylogeny()),
                             getOptions().getPhylogenyDisplayType()));
                 }
                 else {

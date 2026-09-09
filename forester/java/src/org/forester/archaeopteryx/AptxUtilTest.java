@@ -68,7 +68,8 @@ public final class AptxUtilTest {
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testQualitativePalette() && testGatherDomainNames() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalNodeDateInterval()
-                && testPreferredDisplayTypeForBranchLengthTree() && testDetectTimeTree()
+                && testPreferredDisplayTypeForBranchLengthTree() && testMostlyMeasuredForPhylogram()
+                && testDetectTimeTree()
                 && testDeriveTimeAxisType();
     }
 
@@ -277,6 +278,75 @@ public final class AptxUtilTest {
      * [0,100] (bare or bracketed) on >=2 nodes look like confidence; a real clade name, an out-of-range
      * number, fewer than two labels, or none do not. The root label is ignored.
      */
+    /**
+     * The phylogram-vs-cladogram decision. The first case IS the reported bug, in miniature: a 39 MB BV-BRC
+     * influenza tree (13246 tips, only 16% with a length; all 5265 internal non-root branches measured) opened
+     * as a cladogram because absent TIP lengths outvoted a fully measured topology. `((A,B):0.1,(C,D):0.2)` has
+     * exactly that shape and reproduces it in four tips.
+     */
+    private static boolean testMostlyMeasuredForPhylogram() {
+        try {
+            // measured internals, UNMEASURED tips -> a phylogram. Old rule: 2 positive / 7 nodes = 0.29 -> cladogram.
+            if ( !AptxUtil.isMostlyMeasuredForPhylogram(
+                    Phylogeny.createInstanceFromNhxString( "((A,B):0.1,(C,D):0.2);" ) ) ) {
+                return fail( "measured internal branches must give a phylogram even when the tips are unmeasured" );
+            }
+            // fully measured -> phylogram (unchanged behaviour)
+            if ( !AptxUtil.isMostlyMeasuredForPhylogram(
+                    Phylogeny.createInstanceFromNhxString( "((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.2);" ) ) ) {
+                return fail( "a fully measured tree must be a phylogram" );
+            }
+            // no lengths at all -> cladogram
+            if ( AptxUtil.isMostlyMeasuredForPhylogram(
+                    Phylogeny.createInstanceFromNhxString( "((A,B),(C,D));" ) ) ) {
+                return fail( "a tree with no branch lengths must be a cladogram" );
+            }
+            // a few stray lengths on an otherwise unmeasured tree -> still a cladogram (the original intent)
+            if ( AptxUtil.isMostlyMeasuredForPhylogram(
+                    Phylogeny.createInstanceFromNhxString( "((A,B),((C,D),(E,F)):0.2);" ) ) ) {
+                return fail( "one stray length among four internal branches must stay a cladogram" );
+            }
+            // an EXPLICIT zero is a measurement, not a missing value -- it is how a polytomy is written
+            final Phylogeny zeros = Phylogeny.createInstanceFromNhxString( "((A,B):0.0,(C,D):0.1);" );
+            if ( !AptxUtil.isMostlyMeasuredForPhylogram( zeros ) ) {
+                return fail( "an explicit zero-length branch must count as measured" );
+            }
+            // ...and the sentinel really is distinct from 0.0, or the clause above is vacuous
+            boolean saw_zero = false;
+            for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = zeros.iteratorPreorder(); it
+                    .hasNext(); ) {
+                if ( it.next().getDistanceToParent() == 0.0 ) {
+                    saw_zero = true;
+                }
+            }
+            if ( !saw_zero ) {
+                return fail( "precondition: the parser must record an explicit 0.0, not the absent sentinel" );
+            }
+            // EXACTLY half measured -> cladogram. Strict majority: half the scale-bearing branches unmeasured
+            // would be drawn at zero distance, misrepresenting the topology.
+            if ( AptxUtil.isMostlyMeasuredForPhylogram(
+                    Phylogeny.createInstanceFromNhxString( "((A,B):0.1,(C,D));" ) ) ) {
+                return fail( "exactly half the internal branches measured must stay a cladogram" );
+            }
+            // a degenerate single-node tree must not divide 0/0 into a NaN
+            if ( AptxUtil.isMostlyMeasuredForPhylogram( Phylogeny.createInstanceFromNhxString( "A;" ) ) ) {
+                return fail( "a single-node tree must be a cladogram, not NaN" );
+            }
+            // a STAR tree has no internal branch to judge -> fall back to the tips rather than divide 0/0
+            if ( !AptxUtil.isMostlyMeasuredForPhylogram(
+                    Phylogeny.createInstanceFromNhxString( "(A:0.1,B:0.2,C:0.3);" ) ) ) {
+                return fail( "a measured star tree must be a phylogram" );
+            }
+            if ( AptxUtil.isMostlyMeasuredForPhylogram( Phylogeny.createInstanceFromNhxString( "(A,B,C);" ) ) ) {
+                return fail( "an unmeasured star tree must be a cladogram" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "unexpected exception: " + e );
+        }
+    }
+
     private static boolean testInternalNamesLookLikeConfidenceValues() {
         try {
             // isSupportLikeNumber units (incl. the bracketed form)
