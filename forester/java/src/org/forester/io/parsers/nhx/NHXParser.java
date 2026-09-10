@@ -80,6 +80,9 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private boolean _ignore_quotes;
     private boolean _in_comment = false;
     private boolean _in_double_quote = false;
+    // The quote character that closed a quoted label on the PREVIOUS character, or 0.
+    // An immediately following identical quote is the Nexus/Newick escape for a literal one.
+    private char _just_closed_quote = 0;
     private boolean _in_open_bracket = false;
     private boolean _in_single_quote = false;
     private byte _input_type;
@@ -153,6 +156,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _in_open_bracket = false;
         _in_double_quote = false;
         _in_single_quote = false;
+        _just_closed_quote = 0;
         _after_close_paren = false;
         _clade_level = 0;
         _current_anotation = new StringBuilder();
@@ -354,6 +358,11 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 }
                 c = _my_source_charary[_i];
             }
+            // '' (or "") is the escape for a literal quote INSIDE a quoted label -- 'Seba''s bat' is
+            // one label reading "Seba's bat", not a label ending and another starting. Only a pair on
+            // ADJACENT characters counts, so this is consumed and cleared for every character.
+            final char closed_quote = _just_closed_quote;
+            _just_closed_quote = 0;
             if (!_in_single_quote && !_in_double_quote) {
                 if (c == ':') {
                     _saw_colon = true;
@@ -378,18 +387,26 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             } else if (_in_double_quote) {
                 if (c == '"') {
                     _in_double_quote = false;
+                    _just_closed_quote = '"';
                 } else {
                     _current_anotation.append(changeCharInParens(c));
                 }
             } else if ((c == '"') && !_in_single_quote) {
+                if (closed_quote == '"') {
+                    _current_anotation.append('"');
+                }
                 _in_double_quote = true;
             } else if (_in_single_quote) {
                 if (c == 39) {
                     _in_single_quote = false;
+                    _just_closed_quote = 39;
                 } else {
                     _current_anotation.append(changeCharInParens(c));
                 }
             } else if (c == 39) {
+                if (closed_quote == 39) {
+                    _current_anotation.append('\'');
+                }
                 _in_single_quote = true;
             } else if (c == '[') {
                 _saw_open_bracket = true;

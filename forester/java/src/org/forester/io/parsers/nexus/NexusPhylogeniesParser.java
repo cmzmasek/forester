@@ -225,23 +225,15 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             for( final String seq_id : _seqs.keySet() ) {
                 seqs_by_key.put( joinKey( seq_id ), _seqs.get( seq_id ) );
             }
+            final boolean tips_are_taxlabels_indices = tipsAreTaxlabelsIndices( p, _taxlabels );
             final PhylogenyNodeIterator it = p.iteratorExternalForward();
             while ( it.hasNext() ) {
                 final PhylogenyNode node = it.next();
                 if ( ( _translate_map.size() > 0 ) && _translate_map.containsKey( node.getName() ) ) {
-                    node.setName( _translate_map.get( node.getName() ).replaceAll( "['\"]+", "" ) );
+                    node.setName( _translate_map.get( node.getName() ) );
                 }
-                else if ( _taxlabels.size() > 0 ) {
-                    int i = -1;
-                    try {
-                        i = Integer.parseInt( node.getName() );
-                    }
-                    catch ( final NumberFormatException e ) {
-                        // Ignore.
-                    }
-                    if ( i > 0 ) {
-                        node.setName( _taxlabels.get( i - 1 ).replaceAll( "['\"]+", "" ) );
-                    }
+                else if ( tips_are_taxlabels_indices ) {
+                    node.setName( _taxlabels.get( Integer.parseInt( node.getName().trim() ) - 1 ) );
                 }
                 if ( !_replace_underscores && ( ( _taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
                     ParserUtils.extractTaxonomyDataFromNodeName( node, _taxonomy_extraction );
@@ -357,7 +349,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         final Matcher name_matcher = TREE_NAME_PATTERN.matcher( line );
                         if ( name_matcher.matches() ) {
                             _name = name_matcher.group( 1 );
-                            _name = _name.replaceAll( "['\"]+", "" );
+                            _name = ParserUtils.unquoteLabel( _name );
                         }
                         final Matcher rootedness_matcher = ROOTEDNESS_PATTERN.matcher( line );
                         if ( rootedness_matcher.matches() ) {
@@ -394,13 +386,15 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         _in_taxalabels = false;
                     }
                     else {
-                        final String[] labels = line.split( "\\s+" );
-                        for( String label : labels ) {
+                        // Quote-aware: 'Seba''s bat' is ONE label, and a plain whitespace split
+                        // would turn it into two -- which then line up with the wrong tips.
+                        for( String label : ParserUtils.splitWhitespaceOutsideQuotes( line ) ) {
                             if ( !label.toLowerCase().equals( taxlabels ) ) {
                                 if ( label.endsWith( ";" ) ) {
                                     _in_taxalabels = false;
                                     label = label.substring( 0, label.length() - 1 );
                                 }
+                                label = ParserUtils.unquoteLabel( label );
                                 if ( label.length() > 0 ) {
                                     _taxlabels.add( label );
                                 }
@@ -515,11 +509,25 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         final char c0 = row.charAt( 0 );
         if ( ( c0 == '\'' ) || ( c0 == '"' ) ) {
             // a quoted taxon label may contain spaces: the id runs to the matching closing quote
-            final int close = row.indexOf( c0, 1 );
+            // -- a DOUBLED quote inside is the Nexus escape for a literal one, not the end.
+            int close = -1;
+            for( int j = 1; j < row.length(); ++j ) {
+                if ( row.charAt( j ) == c0 ) {
+                    if ( ( ( j + 1 ) < row.length() ) && ( row.charAt( j + 1 ) == c0 ) ) {
+                        ++j;
+                    }
+                    else {
+                        close = j;
+                        break;
+                    }
+                }
+            }
             if ( close < 1 ) {
                 return;
             }
-            id = row.substring( 0, close + 1 );
+            // Store the id un-quoted, so interleaved blocks that quote a taxon differently still
+            // concatenate onto one row and the sequence is not named with its quotes.
+            id = ParserUtils.unquoteLabel( row.substring( 0, close + 1 ) );
             rest = row.substring( close + 1 );
         }
         else {
@@ -576,11 +584,43 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     }
 
     // Canonical key for joining a matrix row id to a tree tip name. Nexus treats '_' and ' ' as
-    // equivalent and labels may be quoted, a matrix often capitalizes names differently from the tree,
+    // equivalent and a label may be quoted, a matrix often capitalizes names differently from the tree,
     // and the tree tip may already have been underscore-replaced while the matrix id keeps its '_' --
-    // so normalize underscores to spaces, strip quotes, trim, and lower-case both sides.
+    // so un-quote, normalize underscores to spaces, trim, and lower-case both sides. Both sides go
+    // through this same function, so they normalize identically even where it is lenient.
+    // A bare integer in a TREES block is ambiguous: it can be a TAXLABELS index (legal Nexus when
+    // there is no TRANSLATE table) or an ordinary tip NAME -- an accession like "92829" is a label,
+    // not a pointer. Deciding that per node silently renames a real tip to an unrelated taxon, which
+    // is worse than a crash because the tree still looks plausible. So the index reading is taken only
+    // when the WHOLE tree reads as index references: every tip a number, every number in range. A tree
+    // that mixes "2" with "Gorilla" is not using index references, and is left alone.
+    private final static boolean tipsAreTaxlabelsIndices( final Phylogeny p, final List<String> taxlabels ) {
+        if ( ( taxlabels == null ) || taxlabels.isEmpty() || p.isEmpty() ) {
+            return false;
+        }
+        boolean any = false;
+        for( final PhylogenyNodeIterator it = p.iteratorExternalForward(); it.hasNext(); ) {
+            final String name = it.next().getName();
+            if ( ForesterUtil.isEmpty( name ) ) {
+                return false;
+            }
+            final int i;
+            try {
+                i = Integer.parseInt( name.trim() );
+            }
+            catch ( final NumberFormatException e ) {
+                return false;
+            }
+            if ( ( i < 1 ) || ( i > taxlabels.size() ) ) {
+                return false;
+            }
+            any = true;
+        }
+        return any;
+    }
+
     private final static String joinKey( final String name ) {
-        return name.replace( '_', ' ' ).replaceAll( "['\"]+", "" ).trim().toLowerCase();
+        return ParserUtils.unquoteLabel( name ).replace( '_', ' ' ).trim().toLowerCase();
     }
 
     // Strip Nexus [ ... ] comments, tracking an OPEN comment across lines (via _in_data_comment) so a
@@ -625,7 +665,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             final Matcher m = TRANSLATE_PATTERN.matcher( pair );
             if ( m.find() ) {
                 key = m.group( 1 );
-                value = m.group( 2 ).replaceAll( "\'", "" ).replaceAll( "\"", "" ).trim();
+                value = m.group( 2 ).trim();
             }
             else {
                 throw new IOException( "ill-formatted translate values: " + pair );
@@ -633,7 +673,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             if ( value.endsWith( ";" ) ) {
                 value = value.substring( 0, value.length() - 1 );
             }
-            _translate_map.put( key, value );
+            _translate_map.put( key, ParserUtils.unquoteLabel( value ) );
         }
     }
     

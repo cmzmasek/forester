@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -429,6 +431,93 @@ public final class ParserUtils {
             parser = new org.forester.io.parsers.json.AuspiceJsonParser(); // Auspice / Nextstrain v2 dataset
         }
         return parser;
+    }
+
+    /**
+     * Un-quote a Nexus/Newick label: strip ONE matching pair of outer quotes and un-double the
+     * escape inside them ('' -&gt; ', "" -&gt; ").
+     * <p>
+     * Nexus quotes a label that contains a space or a special character in single quotes and writes
+     * a literal apostrophe as TWO apostrophes, so stripping every quote character -- what this code
+     * did before -- silently loses it: <code>'Seba''s bat'</code> must read back as
+     * <code>Seba's bat</code>, not <code>Sebas bat</code>. (forester's own Nexus writer escapes this
+     * way, so before this the round trip was lossy on the way back in.)
+     * <p>
+     * A token that is NOT a well-formed quoted token stays lenient and simply drops stray quotes, as
+     * before: an unquoted Nexus token may not legally contain a quote at all, and refusing the file
+     * over one would be worse than reading it.
+     */
+    private final static Pattern           STRAY_QUOTES              = Pattern.compile( "['\"]+" );
+
+    public final static String unquoteLabel( final String s ) {
+        if ( s == null ) {
+            return null;
+        }
+        final String t = s.trim();
+        final int len = t.length();
+        if ( len > 1 ) {
+            final char q = t.charAt( 0 );
+            if ( ( ( q == '\'' ) || ( q == '"' ) ) && ( t.charAt( len - 1 ) == q ) ) {
+                final String quote = String.valueOf( q );
+                return t.substring( 1, len - 1 ).replace( quote + quote, quote );
+            }
+        }
+        return STRAY_QUOTES.matcher( t ).replaceAll( "" );
+    }
+
+    /**
+     * Split on whitespace, but keep a QUOTED run ('...' or "...") together as one token, so a quoted
+     * label containing a space survives: a plain whitespace split turns the two Nexus taxon labels
+     * <code>'Seba''s bat' 'O''Neil sp.'</code> into four tokens, which then line up with the wrong
+     * tips -- silent corruption, not just a lost apostrophe.
+     * <p>
+     * A doubled quote inside a quoted run is the escape, so it does not end the token. A quote is an
+     * opener only at a token boundary; inside a word it is just a character of that word (the same
+     * rule the Nexus text view tokenizes by). The quotes are KEPT in the returned tokens -- pass each
+     * through {@link #unquoteLabel(String)} to get the label itself.
+     */
+    public final static List<String> splitWhitespaceOutsideQuotes( final String s ) {
+        final List<String> tokens = new ArrayList<String>();
+        final StringBuilder sb = new StringBuilder();
+        char quote = 0;
+        for( int i = 0; i < s.length(); ++i ) {
+            final char c = s.charAt( i );
+            if ( quote != 0 ) {
+                sb.append( c );
+                if ( c == quote ) {
+                    if ( ( ( i + 1 ) < s.length() ) && ( s.charAt( i + 1 ) == quote ) ) {
+                        sb.append( quote );
+                        ++i;
+                    }
+                    else {
+                        quote = 0;
+                    }
+                }
+            }
+            else if ( ( ( c == '\'' ) || ( c == '"' ) ) && ( sb.length() == 0 ) ) {
+                quote = c;
+                sb.append( c );
+            }
+            else if ( isPlainWhitespace( c ) ) {
+                if ( sb.length() > 0 ) {
+                    tokens.add( sb.toString() );
+                    sb.setLength( 0 );
+                }
+            }
+            else {
+                sb.append( c );
+            }
+        }
+        if ( sb.length() > 0 ) {
+            tokens.add( sb.toString() );
+        }
+        return tokens;
+    }
+
+    // Exactly the characters the regex class \s matches, which is what the plain split this
+    // replaced used -- so an exotic Unicode space inside an unquoted label is still not a separator.
+    private final static boolean isPlainWhitespace( final char c ) {
+        return ( c == ' ' ) || ( c == '\t' ) || ( c == '\n' ) || ( c == 0x0B ) || ( c == '\f' ) || ( c == '\r' );
     }
 
     private final static String extractTaxonomyCodeFromNodeNameLettersOnly( final String name ) {

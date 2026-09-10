@@ -1921,6 +1921,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Nexus quoted-label un-doubling: ");
+        if (Test.testNexusQuotedLabels()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Nexus TAXLABELS index heuristic: ");
+        if (Test.testNexusTaxlabelsIndices()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("BEAST annotation parsing: ");
         if (org.forester.io.parsers.nhx.BeastAnnotationParserTest.test()) {
             System.out.println("OK.");
@@ -9689,6 +9705,241 @@ public final class Test {
             return false;
         }
         return true;
+    }
+
+    // Quoted Nexus/Newick labels: the '' escape must be UN-DOUBLED, not stripped.
+    // Nexus quotes a label containing a space or a special character in single quotes and writes a
+    // literal apostrophe as two apostrophes. Every reader path here used to drop every quote
+    // character instead, so "Seba's bat" came back as "Sebas bat" -- and forester's own Nexus writer
+    // escapes correctly, so the round trip was lossy on the way back IN. Two of these cases are
+    // silent CORRUPTION rather than a lost apostrophe: a quoted TAXLABEL containing a space was split
+    // into several labels, which then line up with the wrong tips.
+    // A bare integer in a TREES block is ambiguous: a TAXLABELS index (legal Nexus without a TRANSLATE
+    // table) or an ordinary tip NAME. Deciding per node silently renamed a real tip to an unrelated
+    // taxon -- worse than the crash it sits next to, because the tree still looks plausible. The index
+    // reading is taken only when the WHOLE tree reads as index references.
+    private static boolean testNexusTaxlabelsIndices() {
+        try {
+            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
+            // (1) every tip a number, every one in range -> genuine index references, resolved.
+            // (The real-file version of this is testNexusTreeParsingTranslating on nexus_test_5.nex.)
+            final StringBuffer all = new StringBuffer();
+            all.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=3;\n TAXLABELS Homo Pan Gorilla;\nEND;\n");
+            all.append("BEGIN TREES;\n TREE t1 = [&R] ((1,2),3);\nEND;\n");
+            parser.setSource(all);
+            Phylogeny[] p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[Homo][Pan][Gorilla]")) {
+                System.out.println("an all-numeric in-range tree must resolve as indices, got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (2) MIXED: a tree that names some tips cannot be using index references, so a numeric tip
+            // name is a NAME. This used to rename tip "2" to the unrelated taxon "Pan", silently.
+            final StringBuffer mixed = new StringBuffer();
+            mixed.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS Homo Pan;\nEND;\n");
+            mixed.append("BEGIN TREES;\n TREE t1 = [&R] (2,(Gorilla,Pongo));\nEND;\n");
+            parser.setSource(mixed);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[2][Gorilla][Pongo]")) {
+                System.out.println("a numeric tip name in a MIXED tree must be kept, got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (3) all numeric but ONE out of range: all-or-nothing, so no half-renamed tree. This is the
+            // real accession case -- a tree of bare accessions where one happens to be <= NTAX.
+            final StringBuffer part = new StringBuffer();
+            part.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=3;\n TAXLABELS Homo Pan Gorilla;\nEND;\n");
+            part.append("BEGIN TREES;\n TREE t1 = [&R] ((1,2),99);\nEND;\n");
+            parser.setSource(part);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[1][2][99]")) {
+                System.out.println("one out-of-range index must leave the whole tree alone, got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (4) a TRANSLATE table is the explicit, unambiguous form and is unaffected by any of this
+            final StringBuffer tr = new StringBuffer();
+            tr.append("#NEXUS\nBEGIN TREES;\n TRANSLATE\n  1 Homo,\n  2 Pan\n ;\n");
+            tr.append(" TREE t1 = [&R] (1,2);\nEND;\n");
+            parser.setSource(tr);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[Homo][Pan]")) {
+                System.out.println("TRANSLATE must still resolve, got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (5) zero is not a 1-based index
+            final StringBuffer zero = new StringBuffer();
+            zero.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS Homo Pan;\nEND;\n");
+            zero.append("BEGIN TREES;\n TREE t1 = [&R] (0,1);\nEND;\n");
+            parser.setSource(zero);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[0][1]")) {
+                System.out.println("index 0 must not resolve, got " + tipNamesOf(p[0]));
+                return false;
+            }
+        }
+        catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testNexusQuotedLabels() {
+        try {
+            // (1) the pure un-quoting rule
+            if (!ParserUtils.unquoteLabel("'Seba''s bat'").equals("Seba's bat")) {
+                System.out.println("'' inside a quoted label must un-double to one apostrophe");
+                return false;
+            }
+            if (!ParserUtils.unquoteLabel("\"Seba's tree\"").equals("Seba's tree")) {
+                System.out.println("a double-quoted label must keep an apostrophe inside it");
+                return false;
+            }
+            if (!ParserUtils.unquoteLabel("''''").equals("'")) {
+                return false;
+            }
+            if (!ParserUtils.unquoteLabel("''").equals("")) {
+                return false;
+            }
+            if (!ParserUtils.unquoteLabel("plain").equals("plain")) {
+                return false;
+            }
+            // a token that is not well-formed stays lenient (stray quotes dropped), as before
+            if (!ParserUtils.unquoteLabel("'dangling").equals("dangling")) {
+                return false;
+            }
+            if (ParserUtils.unquoteLabel(null) != null) {
+                return false;
+            }
+            // (2) the quote-aware whitespace split: a quoted label containing a space is ONE token
+            List<String> tokens = ParserUtils.splitWhitespaceOutsideQuotes("'Seba''s bat' 'O''Neil sp.' plain");
+            if ((tokens.size() != 3) || !tokens.get(0).equals("'Seba''s bat'") || !tokens.get(2).equals("plain")) {
+                System.out.println("a quoted label containing a space must stay one token, got " + tokens);
+                return false;
+            }
+            // a quote INSIDE a word is a character of that word, not an opener
+            tokens = ParserUtils.splitWhitespaceOutsideQuotes("O'Neil sp.");
+            if ((tokens.size() != 2) || !tokens.get(0).equals("O'Neil")) {
+                return false;
+            }
+            // CONSECUTIVE doubled quotes must EACH keep us inside the run -- if a pair merely ended the
+            // run, the space after it would split the label and we would be back to the silent
+            // corruption of (4). Two pairs in a row is what a single-pair lookahead can get wrong.
+            tokens = ParserUtils.splitWhitespaceOutsideQuotes("'a''''b c' plain");
+            if ((tokens.size() != 2) || !tokens.get(0).equals("'a''''b c'")) {
+                System.out.println("consecutive '' pairs must stay inside the quoted run, got " + tokens);
+                return false;
+            }
+            if (!ParserUtils.unquoteLabel(tokens.get(0)).equals("a''b c")) {
+                System.out.println("two '' pairs must un-double to two apostrophes, got ["
+                        + ParserUtils.unquoteLabel(tokens.get(0)) + "]");
+                return false;
+            }
+            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
+            // (3) the tree NAME, in both the '' form forester writes and the "..." form
+            final StringBuffer nm = new StringBuffer();
+            nm.append("#NEXUS\nBEGIN TREES;\n TREE 'Seba''s tree' = [&R] (A,B);\nEND;\n");
+            parser.setSource(nm);
+            Phylogeny[] p = parser.parse();
+            if ((p.length != 1) || !"Seba's tree".equals(p[0].getName())) {
+                System.out.println("quoted tree name: expected [Seba's tree], got [" + p[0].getName() + "]");
+                return false;
+            }
+            final StringBuffer nm2 = new StringBuffer();
+            nm2.append("#NEXUS\nBEGIN TREES;\n TREE \"Seba's tree\" = [&R] (A,B);\nEND;\n");
+            parser.setSource(nm2);
+            p = parser.parse();
+            if ((p.length != 1) || !"Seba's tree".equals(p[0].getName())) {
+                return false;
+            }
+            // (4) TAXLABELS: two quoted labels, each containing a space AND an escaped apostrophe.
+            // The whitespace split used to make FOUR labels out of these two, so the tips came back
+            // named "Sebas" and "bat" -- the wrong names, silently.
+            final StringBuffer tl = new StringBuffer();
+            tl.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS 'Seba''s bat' 'O''Neil sp.';\nEND;\n");
+            tl.append("BEGIN TREES;\n TREE t1 = [&R] (1,2);\nEND;\n");
+            parser.setSource(tl);
+            p = parser.parse();
+            if ((p.length != 1) || (p[0].getNumberOfExternalNodes() != 2)) {
+                return false;
+            }
+            if (!tipNamesOf(p[0]).equals("[Seba's bat][O'Neil sp.]")) {
+                System.out.println("quoted TAXLABELS: got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (5) TRANSLATE values
+            final StringBuffer tr = new StringBuffer();
+            tr.append("#NEXUS\nBEGIN TREES;\n TRANSLATE\n  1 'Seba''s bat',\n  2 'O''Neil sp.'\n ;\n");
+            tr.append(" TREE t1 = [&R] (1,2);\nEND;\n");
+            parser.setSource(tr);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[Seba's bat][O'Neil sp.]")) {
+                System.out.println("quoted TRANSLATE: got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (6) a tip label quoted in the tree body itself (the NHX scanner)
+            final StringBuffer tb = new StringBuffer();
+            tb.append("#NEXUS\nBEGIN TREES;\n TREE t1 = [&R] ('Seba''s bat',plain);\nEND;\n");
+            parser.setSource(tb);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[Seba's bat][plain]")) {
+                System.out.println("quoted tip label in the tree body: got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (7) a quoted MATRIX row id: the closing quote is the first one that is NOT doubled, so
+            // the row still joins to its tip instead of being skipped as unparseable
+            final StringBuffer mx = new StringBuffer();
+            mx.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS 'Seba''s bat' plain;\nEND;\n");
+            mx.append("BEGIN CHARACTERS;\n DIMENSIONS NCHAR=4;\n FORMAT DATATYPE=DNA;\n MATRIX\n");
+            mx.append("  'Seba''s bat' ACGT\n  plain TTTT\n ;\nEND;\n");
+            mx.append("BEGIN TREES;\n TREE t1 = [&R] (1,2);\nEND;\n");
+            parser.setSource(mx);
+            p = parser.parse();
+            if ((p.length != 1) || (countAlignedTips(p[0]) != 2)) {
+                System.out.println("a quoted matrix row id must still join to its tip");
+                return false;
+            }
+            if (!alignedSeqOf(p[0], "Seba's bat").equals("ACGT")) {
+                return false;
+            }
+            // (8) a tip NAME that is a number is only a TAXLABELS index when the WHOLE tree reads as
+            // index references (see testNexusTaxlabelsIndices). Real trees have tips named with a bare
+            // accession (e.g. 92829); indexing on it threw IndexOutOfBounds and lost the whole file.
+            final StringBuffer oob = new StringBuffer();
+            oob.append("#NEXUS\nBEGIN TAXA;\n DIMENSIONS NTAX=2;\n TAXLABELS A B;\nEND;\n");
+            oob.append("BEGIN TREES;\n TREE t1 = [&R] (92829,1);\nEND;\n");
+            parser.setSource(oob);
+            p = parser.parse();
+            if ((p.length != 1) || !tipNamesOf(p[0]).equals("[92829][1]")) {
+                System.out.println("an out-of-range numeric tip name must be kept, got " + tipNamesOf(p[0]));
+                return false;
+            }
+            // (9) end to end through forester's OWN writer: the apostrophes must survive the round trip
+            final Phylogeny rt = Phylogeny.createInstanceFromNhxString("(X,Y)");
+            rt.setName("Seba's tree");
+            rt.getExternalNodes().get(0).setName("Seba's bat");
+            rt.getExternalNodes().get(1).setName("O'Neil sp.");
+            final StringBuffer written = new PhylogenyWriter().toNexus(rt, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE);
+            parser.setSource(written);
+            p = parser.parse();
+            if ((p.length != 1) || !"Seba's tree".equals(p[0].getName())
+                    || !tipNamesOf(p[0]).equals("[Seba's bat][O'Neil sp.]")) {
+                System.out.println("Nexus round trip lost an apostrophe: name [" + p[0].getName() + "] tips "
+                        + tipNamesOf(p[0]));
+                return false;
+            }
+        }
+        catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+        return true;
+    }
+
+    private static String tipNamesOf(final Phylogeny p) {
+        final StringBuilder sb = new StringBuilder();
+        for (final PhylogenyNode node : p.getExternalNodes()) {
+            sb.append("[").append(node.getName()).append("]");
+        }
+        return sb.toString();
     }
 
     private static int countAlignedTips(final Phylogeny p) {
