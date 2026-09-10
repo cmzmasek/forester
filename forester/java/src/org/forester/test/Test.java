@@ -1913,6 +1913,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("phyloXML namespace header: ");
+        if (testPhyloXmlNamespaceHeader()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Nexus export spec compliance: ");
         if (Test.testNexusExportSpecCompliance()) {
             System.out.println("OK.");
@@ -9375,6 +9384,55 @@ public final class Test {
     // block) -- NTax belongs in the TAXA block, or in a DATA block, where NEWTAXA is implied. Rule (b) is
     // exactly the bug found in Archaeopteryx.js's Nexus export (AliView refused its files); the writers here
     // are clean, and this keeps them that way when an alignment-carrying Nexus export is added to Aptx.
+    /**
+     * What the phyloXML writer stamps at the top of every file it produces. The NAMESPACE is written and must not
+     * change -- it is an opaque identifier in every phyloXML file in existence. The xsi:schemaLocation HINT is
+     * deliberately NOT written: it pointed at phyloxml.org, a domain that lapsed and is now held by someone else,
+     * so a tool honouring the hint would fetch whatever that party serves. Nothing here needed it -- the
+     * validating parser pins the schema from the copy bundled in the jar -- and a file that still CARRIES the old
+     * hint must keep parsing, since every phyloXML file written before 2026-09-10 has one.
+     */
+    private static boolean testPhyloXmlNamespaceHeader() {
+        try {
+            final Phylogeny p = Phylogeny.createInstanceFromNhxString("((A:0.1,B:0.1):0.1,C:0.2);");
+            final String out = p.toPhyloXML(0);
+            if (!out.contains("xmlns=\"" + ForesterConstants.PHYLO_XML_LOCATION + "\"")) {
+                System.out.println("the phyloXML namespace must be written; got: " + out.split("\n")[1]);
+                return false;
+            }
+            if (out.contains("schemaLocation")) {
+                System.out.println("the schemaLocation hint must NOT be written (it points at a lapsed domain); got: "
+                        + out.split("\n")[1]);
+                return false;
+            }
+            // dropping the hint must not break our OWN validating read of what we write
+            final Phylogeny[] back = ParserBasedPhylogenyFactory.getInstance()
+                    .create(new StringBuffer(out), PhyloXmlParser.createPhyloXmlParserXsdValidating());
+            if ((back.length != 1) || (back[0].getNumberOfExternalNodes() != 3)) {
+                System.out.println("a written phyloXML file must re-read under the XSD-validating parser");
+                return false;
+            }
+            // and a file that DOES carry the old hint must still be accepted (every pre-2026-09-10 file has one)
+            final String legacy = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    + "<phyloxml xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                    + "xsi:schemaLocation=\"http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd\" "
+                    + "xmlns=\"http://www.phyloxml.org\">"
+                    + "<phylogeny rooted=\"true\"><clade><clade><name>A</name></clade>"
+                    + "<clade><name>B</name></clade></clade></phylogeny></phyloxml>";
+            final Phylogeny[] old = ParserBasedPhylogenyFactory.getInstance()
+                    .create(new StringBuffer(legacy), PhyloXmlParser.createPhyloXmlParserXsdValidating());
+            if ((old.length != 1) || (old[0].getNumberOfExternalNodes() != 2)) {
+                System.out.println("a file carrying the legacy schemaLocation hint must still parse");
+                return false;
+            }
+        }
+        catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testNexusExportSpecCompliance() {
         try {
             // (1) the MSA writer (used by the rid + msa_compactor CLI tools): whole-file output, so it must

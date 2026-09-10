@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="My" rerootable="true">
   <name>Tree of life (deep time, demo)</name>
   <description>A schematic, time-calibrated tree of the three domains of life (ages in Ma), with LUCA near 3.8 Ga in the Archean and the crown eukaryotes in the Proterozoic. Turn on Settings &gt; Overlays &gt; Time axis: Geologic to draw the coloured ICS geologic axis; because the tree reaches deep time it adapts to the coarse band pair (Eon over Era), so the Precambrian (Archean, Proterozoic) is banded rather than blank. Extant tips at 0 Ma reach the present. Schematic (rough molecular-clock ages), not a rigorous phylogeny.</description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="substitutions/site" rerootable="true">
   <name>Root at top (demo)</name>
   <description>Synthetic 12-tip vertebrate phylogram with branch lengths (substitutions/site) and bootstrap support on the internal nodes. Set Settings &gt; Display &gt; Orientation to &quot;Root at Top&quot; (or &quot;Root at Bottom&quot;): the tree becomes a vertical dendrogram with vertical tip labels, while the support and branch-length numbers stay upright.</description>

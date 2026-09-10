@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Color by property (demo)</name>
   <description>Synthetic influenza-surveillance tree. Each tip has a categorical &apos;host&apos; and a numeric &apos;year&apos;; two environmental samples carry no host. Try Color by: host (a distinct color per host; the legend&apos;s dashed &apos;no value&apos; row counts the host-less tips) or Color by: year (a numeric gradient).</description>

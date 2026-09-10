@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Heat map matrix (demo)</name>
   <description>Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a phylogram, then Tools &gt; Annotation Fields and add s1..s6 as &quot;Heat map (matrix)&quot;: they render on ONE shared color scale (a clustergram grid), best in a vertical orientation with Tip Labels Below Columns.</description>

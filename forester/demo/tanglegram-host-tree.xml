@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Tanglegram host tree (pocket gophers)</name>
   <description>A HOST tree (pocket gophers) for Analysis &gt; Create Tanglegram, paired with &apos;tanglegram-parasite-tree.xml&apos; (their chewing lice). The host and parasite tip names share nothing, so they are linked through the two-column &apos;tanglegram-association.tsv&apos; (host&lt;TAB&gt;louse). Open BOTH trees, run Analysis &gt; Create Tanglegram, link BOTH on Node Name, tick &quot;Link by an association file&quot; and choose tanglegram-association.tsv. The two topologies differ (a host switch), so some connectors cross.</description>

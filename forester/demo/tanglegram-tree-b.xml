@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Tanglegram tree B</name>
   <description>The companion of &apos;tanglegram-tree-a.xml&apos; for Analysis &gt; Create Tanglegram: the same eight species in a different topology, so the linked connectors cross. Open both files and link on Node Name or Taxonomy: Scientific Name; set Colour: clade in the tanglegram window to colour the connectors by clade.</description>

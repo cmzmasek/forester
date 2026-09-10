@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="years" rerootable="true">
   <name>SARS-CoV-2 time tree (demo)</name>
   <description>A schematic, time-calibrated SARS-CoV-2 phylodynamic tree: the tips are named lineages/variants with their sampling dates as calendar years (Wuhan-Hu-1 late 2019 through the Omicron sub-lineages in 2022), so the tree is TIP-DATED (non-ultrametric). Turn on Settings &gt; Overlays &gt; Time axis: Calendar to draw the labelled calendar-year axis (the most-recent tip = the present is derived automatically). Works in every layout, including concentric year rings in the circular view. Schematic, not a rigorous phylogeny.</description>

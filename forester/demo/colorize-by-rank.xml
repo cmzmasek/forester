@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Colorize by taxonomic rank (demo)</name>
   <description>Synthetic mammal tree. Each TIP carries its order as an in-tree rank annotation (the species is the node name), so Tools &gt; Colorize Subtrees via Taxonomic Rank -- and Annotate Clades by Rank -- work at &apos;order&apos; (Carnivora, Rodentia, Primates) with NO online lookup. The Carnivora clade root is deliberately MIS-annotated &apos;Rodentia&apos; to show that a tip&apos;s own identity wins over a wrong/partial internal annotation.</description>

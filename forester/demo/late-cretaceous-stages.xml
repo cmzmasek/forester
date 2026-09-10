@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="My" rerootable="true">
   <name>Late Cretaceous dinosaurs (demo)</name>
   <description>A schematic, time-calibrated tree of Late Cretaceous dinosaurs (ages in Ma). Every taxon is extinct, so the tree spans only 66 - 100 Ma -- one Series -- and the geologic axis (Settings &gt; Overlays &gt; Time axis: Geologic) drops a rank and bands the Late Cretaceous over its STAGES: Maastrichtian, Campanian, Santonian, Coniacian, Turonian, Cenomanian. A deeper tree such as dinosaur-time-tree.xml gets Period over Epoch instead. Schematic, not a rigorous phylogeny.</description>

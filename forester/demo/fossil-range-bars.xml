@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="My" rerootable="true">
   <name>Fossil ranges (equid evolution, demo)</name>
   <description>A schematic horse (Equidae) evolutionary tree (ages in Ma) where each genus carries a stratigraphic range -- its First Appearance Datum (oldest) and Last Appearance Datum (youngest) -- as a phyloXML date min/max. It is auto-detected as a time tree and &quot;Fossil Range Bars (FAD/LAD)&quot; turns on, drawing each taxon&apos;s known duration as a capped bar. Turn on Settings &gt; Overlays &gt; Time axis: Geologic to read the ranges against the coloured ICS geologic axis; the extant Equus reaches 0 Ma so the axis reaches the present. Schematic, not a rigorous phylogeny or literal ranges.</description>

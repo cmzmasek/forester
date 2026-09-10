@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Import GTDB Taxonomy (demo)</name>
   <description>A tree of 14 Bacteria + Archaea genomes named only by their assembly accession -- no taxonomy. Pair it with the companion gtdb-classifications.tsv (a GTDB-Tk-style table): File &gt; Import GTDB Taxonomy, pick the TSV. Each GTDB rank becomes a gtdb:&lt;rank&gt; property (+ a taxonomy at the most specific rank), so you can Color by gtdb:phylum or gtdb:domain, add an Annotation Column for gtdb:family, and search gtdb:genus -- entirely offline.</description>

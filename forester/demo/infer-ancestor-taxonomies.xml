@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Infer ancestral taxonomies (demo)</name>
   <description>Synthetic vertebrate tree whose six tips are real, well-known species (Homo sapiens, Pan troglodytes, Mus musculus, Rattus norvegicus, Felis catus, Canis lupus) and whose internal nodes carry NO taxonomy. Run Analysis &gt; Infer Ancestor Taxonomies and accept the online resolve: each internal node is filled with the deepest taxon its descendants share (e.g. Murinae, Carnivora, Boreoeutheria), with ranks and NCBI tax-ids where defined, so you can then Colorize / Annotate Clades by Rank on the inferred internal taxa. Requires an internet connection for the resolve.</description>

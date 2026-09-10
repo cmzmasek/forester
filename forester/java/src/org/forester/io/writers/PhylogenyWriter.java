@@ -47,16 +47,19 @@ public final class PhylogenyWriter {
     public final static boolean         INDENT_PHYLOXML_DEAFULT         = true;
     public final static String          PHYLO_XML_INTENDATION_BASE      = "  ";
     public final static String          PHYLO_XML_VERSION_ENCODING_LINE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-    public final static String          PHYLO_XML_NAMESPACE_LINE        = "<phyloxml xmlns:xsi=\""
-            + ForesterConstants.XML_SCHEMA_INSTANCE
-            + "\" xsi:schemaLocation=\""
-            + ForesterConstants.PHYLO_XML_LOCATION
-            + " "
-            + ForesterConstants.PHYLO_XML_LOCATION
-            + "/"
-            + ForesterConstants.PHYLO_XML_VERSION
-            + "/" + ForesterConstants.PHYLO_XML_XSD
-            + "\" " + "xmlns=\""
+    /*
+     * The phyloXML NAMESPACE is written; the xsi:schemaLocation HINT deliberately is NOT.
+     *
+     * schemaLocation is only a hint, and the phyloxml.org domain it used to point at lapsed and is now held by
+     * someone else (2026-09-10) -- so a tool that honours the hint and fetches it would be fetching whatever that
+     * party chooses to serve. Nothing here ever needed it: the validating parser pins the schema explicitly from
+     * the copy bundled in the jar (PhyloXmlParser.createPhyloXmlParserXsdValidating -> JAXP_SCHEMA_SOURCE), and
+     * the namespace URI is only ever string-compared, never dereferenced.
+     *
+     * The NAMESPACE itself must not change. It is an opaque identifier written into every phyloXML file in
+     * existence; changing it would break the format and every other tool rather than protect anyone.
+     */
+    public final static String          PHYLO_XML_NAMESPACE_LINE        = "<phyloxml xmlns=\""
             + ForesterConstants.PHYLO_XML_LOCATION
             + "\">";
     public final static String          PHYLO_XML_END                   = "</phyloxml>";

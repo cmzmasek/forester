@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Stacked bar columns (demo)</name>
   <description>Synthetic metagenomic-sample tree: each tip carries read counts for three bacterial phyla (&apos;firmicutes&apos;, &apos;bacteroidetes&apos;, &apos;proteobacteria&apos;). Try Tools &gt; Annotation Fields, set all three to &apos;Stacked bar&apos; -- they merge into one segmented bar per tip (segment length = the read count, so the bar&apos;s total length shows sequencing depth AND its segments show composition). Tick &apos;Normalize stacked bars to 100%&apos; for pure proportional composition.</description>

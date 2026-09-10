@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="substitutions/site" rerootable="true">
   <name>Scale axis (demo)</name>
   <description>Synthetic gene-family phylogram with branch lengths in substitutions/site (max depth ~0.7). Turn on Settings &gt; Display &gt; Scale Axis to read a labeled distance axis with ticks along the bottom.</description>

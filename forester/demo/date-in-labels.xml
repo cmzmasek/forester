@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Dates in tip labels (demo)</name>
   <description>Synthetic SARS-CoV-2-like tree whose tips carry the SAMPLING DATE in the label (mixed formats: ISO 2020-02-20, ISO year-month 2020-01, bare year 2019, month-name 01-Dec-2021) but NO structured &lt;date&gt;. Run Tools &gt; Extract Dates from Labels... to pull each date into a &lt;date&gt; + a Color-by-able data:date property; the tree then gets the Calendar axis.</description>

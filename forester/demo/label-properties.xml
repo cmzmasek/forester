@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Properties in labels (demo)</name>
   <description>Synthetic tree whose tips each carry SIX properties: &apos;accession&apos; (a different value on every tip), &apos;host&apos;, &apos;country&apos;, &apos;clade&apos;, &apos;passage&apos; and &apos;year&apos;. Showing all six in the tip label makes it unreadable, so give each field ONE role in Tools &gt; Annotation Fields: keep &apos;accession&apos; and &apos;passage&apos; in the label, render &apos;host&apos;, &apos;country&apos; and &apos;clade&apos; as color-strip columns and &apos;year&apos; as a heat map -- and use the up/down buttons to set the order the label reads in. Note that &apos;accession&apos; is offered for the LABEL even though it has a different value on every tip, which makes it useless as a color.</description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" branch_length_unit="My" rerootable="true">
   <name>Lagomorph time tree (demo)</name>
   <description>A time-calibrated species tree of the rabbits, hares and pikas (order Lagomorpha), ages in Ma; all 18 tips are extant (0 Ma) so the axis reaches the present. It auto-detects as a time tree; turn on Settings &gt; Overlays &gt; Time axis: Geologic to draw the ICS geologic scale (the pika/rabbit split is Eocene, the Lepus radiation Pliocene). Every tip carries a common + scientific name and every internal node is dated and annotated with its clade + rank (order Lagomorpha; families Leporidae, Ochotonidae; genera Lepus, Sylvilagus, Ochotona), so Colorize / Annotate Clades by Rank works offline. Schematic divergence times, not a rigorous chronogram.</description>

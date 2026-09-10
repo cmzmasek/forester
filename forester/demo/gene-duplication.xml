@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Gene duplications &amp; speciations (demo)</name>
   <description>Synthetic gene-family tree with NO accompanying species tree. Each of the six tips is a gene (node name = gene label, e.g. BCL2_human) tagged with the real species it comes from (taxonomy scientific name: Homo sapiens, Pan troglodytes, Mus musculus). The family was duplicated in the mammalian common ancestor into two paralogs (BCL2-like + BCLX-like), each following the species tree (human+chimp)+mouse. Run Analysis &gt; Infer Duplications &amp; Speciations (using NCBI taxonomy): a species tree is built AUTOMATICALLY from the tips&apos; NCBI taxonomy and GSDIR marks the ancestral gene DUPLICATION and the SPECIATIONS. Requires an internet connection for the resolve.</description>

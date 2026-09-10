@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Animal tree of life (sponges to mammals, demo)</name>
   <description>A 25-species backbone of the animals (Metazoa), from sponges and comb jellies out to the mammals. Built for NESTED clade annotation: every internal clade is annotated at PHYLUM, CLASS or ORDER, so Tools &gt; Annotate Clades by Rank can draw all three at once as nested bars or brackets -- pick &apos;order&apos; plus &apos;class&apos; plus &apos;phylum&apos; and each phylum&apos;s classes take shades of that phylum&apos;s colour. Also works for a single rank, and for Colorize Subtrees via Taxonomic Rank. Everything resolves OFFLINE; no database lookup is needed. CAVEAT on the deepest node: this tree places Ctenophora (comb jellies) as sister to all other animals, following the chromosome-synteny evidence of Schultz et al. 2023 (Nature 618:110-117), but the competing Porifera-sister (sponges-first) hypothesis remains well supported and the animal root is not settled -- read that split as unresolved. Branch lengths are illustrative, not estimated.</description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Search emphasis (demo)</name>
   <description>Synthetic 15-tip tree; four tips are &apos;*_kinase&apos;, scattered across the tree, with branch lengths and bootstrap support on the internal nodes. Search (box a) for &quot;kinase&quot;, then turn on Settings &gt; Display &gt; Bold Found Labels and/or Dim Non-Matches -- the four hits go bold while the rest (names AND their support / branch-length numbers) fade toward the background.</description>

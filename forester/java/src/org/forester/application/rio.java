@@ -744,7 +744,7 @@ public class rio {
         System.out.println();
         System.out.println( " Formats" );
         System.out
-                .println( "  The gene trees, as well as the species tree, ideally are in phyloXML (www.phyloxml.org) format," );
+                .println( "  The gene trees, as well as the species tree, ideally are in phyloXML format," );
         System.out
                 .println( "  but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be" );
         System.out

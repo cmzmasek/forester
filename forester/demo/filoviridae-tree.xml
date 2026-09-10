@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>filoviridae [protein|MAFFT|FastTree JTT]</name>
   <description>This tree is based on a concatenation of marker proteins (GP, L, L protein, NP, RNA-dependent RNA polymerase, RNA-directed RNA polymerase L, envelope glycoprotein, glycoprotein, nucleocapsid protein, nucleoprotein, spike glycoprotein); amino-acid; each leaf is one representative sequence. | repseq 0.44.1 phylogeny | generated 2026-06-02 03:39:01 UTC | alphabet=protein | MSA=MAFFT v7.520 (2023/Mar/22) | tree=FastTree FastTree Version 2.1.11 Double precision (No SSE3) | model=JTT | bootstrap=none | rooting=taxonomy | markers=GP, L, L protein, NP, RNA-dependent RNA polymerase, RNA-directed RNA polymerase L, envelope glycoprotein, glycoprotein, nucleocapsid protein, nucleoprotein, spike glycoprotein</description>

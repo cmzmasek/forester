@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.20/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Domain architectures (demo)</name>
   <description>Synthetic protein-family phylogram; each tip carries a sequence with a Pfam-style domain architecture. View as a phylogram and turn on Display Data: Domain Architectures. Also works in a vertical orientation (root at top/bottom), where each tip&apos;s architecture becomes a vertical bar.</description>
