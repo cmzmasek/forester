@@ -186,16 +186,23 @@ Output goes to `forester/java/dist/` (git-ignored). The Ant targets:
 
 #### The CI workflow
 
-`.github/workflows/installers.yml` builds all three platforms' installers on
-GitHub-hosted runners.
+`.github/workflows/installers.yml` builds every platform's installer on
+GitHub-hosted runners — including **both macOS architectures**, since an
+Apple-Silicon `.dmg` will not run on an Intel Mac at all.
 
+- **Both macOS installers stamp the architecture into the file name.** An
+  unlabelled `.dmg` is how an Intel user ends up downloading an Apple-Silicon
+  build and finding it will not open; each mac leg also *asserts* that its
+  launcher really is the architecture it advertises, so a mislabelled installer
+  cannot be published.
 - **Triggers:** pushing a **version tag** (`*.*.*`, e.g. `0.9.83`), or a manual
   run from the **Actions** tab (`workflow_dispatch`).
 - **Build matrix** (`fail-fast: false`, so each OS reports independently):
 
   | Runner | Output | How |
   |--------|--------|-----|
-  | `macos-latest` (Apple Silicon) | `.dmg` | reuses `ant jpackage-dmg` (the exact local target) |
+  | `macos-latest` (Apple Silicon) | `Archaeopteryx-<version>-apple-silicon.dmg` | reuses `ant jpackage-dmg` (the exact local target) |
+  | `macos-15-intel` (Intel) | `Archaeopteryx-<version>-intel.dmg` | the same `ant jpackage-dmg`, on a native Intel runner |
   | `windows-latest` | `.msi` | `ant all` + `jpackage --type msi`; a step puts **WiX 3** on `PATH` (jpackage needs it for `.msi`); the msi is renamed to the real version; Start-menu/desktop shortcuts + install-dir chooser |
   | `ubuntu-latest` | `.deb` | `ant all` + `jpackage --type deb` (installs `fakeroot`); PNG icon |
 
