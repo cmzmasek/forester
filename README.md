@@ -31,9 +31,13 @@ What's in forester
 - **Archaeopteryx** (`org.forester.archaeopteryx`) — the interactive tree viewer
   and editor (see the links above).
 - **phyloXML & tree I/O** (`org.forester.io`, `org.forester.phylogeny`) — the
-  reference implementation of the [phyloXML](http://www.phyloxml.org) format
-  (reader, writer, object model), plus Newick / New Hampshire (NH/NHX) and Nexus
-  parsers, and the phylogeny data structures they build.
+  reference implementation of the
+  [phyloXML](https://doi.org/10.1186/1471-2105-10-356) format (reader, writer,
+  object model), plus Newick / New Hampshire (NH/NHX) and Nexus parsers, and the
+  phylogeny data structures they build. The phyloXML schema is bundled in this
+  repository under `forester/resources/phyloxml_schema/`; the `phyloxml.org`
+  domain is no longer under the format authors' control and should not be used
+  as a source for it.
 - **SDI / GSDI / GSDIR** (`org.forester.sdi`) — speciation–duplication inference:
   reconcile a gene tree against a species tree to infer gene duplications and
   speciations.
