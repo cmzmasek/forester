@@ -454,6 +454,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // "Break Long Branches": the model-length cap, cached by tree IDENTITY (like maxNodeDateValue) -- it depends only
     // on the tree's branch-length distribution. <=0 = no positive branch length (capping inactive).
     private Phylogeny _break_cap_for = null;
+    // The tree's boring shared tip-name prefix, for "Shorten Labels". Keyed by tree IDENTITY like the caches
+    // above, so it is recomputed on any tree swap; an in-place rename does not invalidate it (the same accepted
+    // wart as the colour-by and time-axis caches).
+    private String    _common_name_prefix = null;
+    private Phylogeny _common_name_prefix_for = null;
     private double _break_cap = 0;
     private double _break_capped_height = 0;
     // the RADIAL normalizer: max capped distance-to-root over the tips (root branch EXCLUDED, collapse-unaware) -- the
@@ -2238,6 +2243,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /** The tree's boring shared tip-name prefix (see {@link AptxUtil#commonNamePrefix}), cached per tree. */
+    String commonNamePrefix() {
+        if (_common_name_prefix_for != _phylogeny) {
+            _common_name_prefix = AptxUtil.commonNamePrefix(_phylogeny);
+            _common_name_prefix_for = _phylogeny;
+        }
+        return _common_name_prefix;
+    }
+
     private final void nodeDataAsSB(final PhylogenyNode node, final StringBuilder sb) {
         if (node != null) {
             if (shows(DisplayOption.SHOW_NODE_NAMES) && (!ForesterUtil.isEmpty(node.getName()))
@@ -2248,7 +2262,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // Display-only shortening of an over-long name (e.g. a whole UniProt/NCBI header): the
                 // node's actual name is left intact, so export / Find / accession parsing keep the full text.
                 sb.append(shows(DisplayOption.SHORTEN_LABELS)
-                        ? AptxUtil.shortenLabel(node.getName(), AptxConstants.LONG_NODE_NAME_LIMIT)
+                        ? AptxUtil.shortenLabel(node.getName(), commonNamePrefix(), node.isExternal())
                         : node.getName());
             }
             if (node.getNodeData().isHasSequence()

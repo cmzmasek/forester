@@ -98,8 +98,6 @@ public final class AptxConstants {
     static final int MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
     // External node names longer than this (e.g. whole UniProt/NCBI FASTA-header descriptions pasted in
     // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that
-    // (data-gated) checkbox appears at all -- trees with sane labels never see it. Display-only.
-    static final int LONG_NODE_NAME_LIMIT = 60;
     // Diameters (in tree coordinate space, so they scale with zoom like node shapes) of the
     // internal-node support symbols: the smallest dot drawn for low support in SIZE_SCALED mode,
     // and the fixed dot for THRESHOLD_MARKS / full support.
