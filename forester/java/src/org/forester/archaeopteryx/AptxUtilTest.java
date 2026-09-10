@@ -352,45 +352,96 @@ public final class AptxUtilTest {
     }
 
     /**
-     * shortenLabel returns short/exact-length/null labels unchanged, and an over-long label as its head
-     * (with trailing whitespace trimmed) plus a single-character ellipsis -- the display-only treatment
-     * for pasted-in UniProt/NCBI FASTA-header names.
+     * Label shortening, a PORT of the Archaeopteryx.js method -- the two must produce identical strings. The
+     * shared prefix is dropped first (tips only, case-insensitively), then what remains is cut to its first and
+     * last 8 characters joined by "..". Cases mirror the JS implementation's own worked examples.
      */
     private static boolean testShortenLabel() {
-        if ( !"abc".equals( AptxUtil.shortenLabel( "abc", 10 ) ) || ( AptxUtil.shortenLabel( null, 10 ) != null ) ) {
-            return fail( "short or null labels must be returned unchanged" );
+        try {
+            // --- commonNamePrefix ---
+            final Phylogeny flu = Phylogeny.createInstanceFromNhxString(
+                    "('Influenza A virus (A/mallard/1)','Influenza A virus (A/duck/2)');" );
+            if ( !"Influenza A virus (A/".equals( AptxUtil.commonNamePrefix( flu ) ) ) {
+                return fail( "shared prefix should stop at the last common character; got '"
+                        + AptxUtil.commonNamePrefix( flu ) + "'" );
+            }
+            // a prefix that SPLITS A WORD is trimmed back to the last separator -- and "ABC_" is then too short
+            final Phylogeny split = Phylogeny.createInstanceFromNhxString( "(ABC_house,ABC_horse);" );
+            if ( !"".equals( AptxUtil.commonNamePrefix( split ) ) ) {
+                return fail( "a word-splitting prefix trimmed below the minimum must be dropped; got '"
+                        + AptxUtil.commonNamePrefix( split ) + "'" );
+            }
+            // ...but a long enough one survives the trim
+            final Phylogeny split2 = Phylogeny.createInstanceFromNhxString( "(SAMPLE_house,SAMPLE_horse);" );
+            if ( !"SAMPLE_".equals( AptxUtil.commonNamePrefix( split2 ) ) ) {
+                return fail( "a word-splitting prefix must trim back to the separator; got '"
+                        + AptxUtil.commonNamePrefix( split2 ) + "'" );
+            }
+            // case-insensitive, but the ORIGINAL casing of the first name is what is returned
+            final Phylogeny mixed = Phylogeny
+                    .createInstanceFromNhxString( "('Influenza A virus X','influenza a VIRUS Y');" );
+            // The casing returned is that of the LAST tip in tree order, because Archaeopteryx.js walks children
+            // in reverse and we match it deliberately. Unobservable in output (the strip is by length, ignoring
+            // case) but pinned so the two implementations return the identical STRING.
+            if ( !"influenza a VIRUS ".equals( AptxUtil.commonNamePrefix( mixed ) ) ) {
+                return fail( "the prefix comparison is case-insensitive, casing from the last tip; got '"
+                        + AptxUtil.commonNamePrefix( mixed ) + "'" );
+            }
+            if ( !"".equals( AptxUtil.commonNamePrefix(
+                    Phylogeny.createInstanceFromNhxString( "(Alpha,Beta);" ) ) ) ) {
+                return fail( "unrelated names have no shared prefix" );
+            }
+            if ( !"".equals( AptxUtil.commonNamePrefix(
+                    Phylogeny.createInstanceFromNhxString( "(OnlyOneTip);" ) ) ) ) {
+                return fail( "a single tip has no shared prefix to speak of" );
+            }
+            // --- shortenLabel ---
+            if ( AptxUtil.shortenLabel( null, "", true ) != null ) {
+                return fail( "null in, null out" );
+            }
+            if ( !"short".equals( AptxUtil.shortenLabel( "short", "", true ) ) ) {
+                return fail( "a short name is unchanged" );
+            }
+            // exactly at the limit is NOT shortened; one over is
+            if ( !"ABCDEFGHIJKLMNOPQR".equals( AptxUtil.shortenLabel( "ABCDEFGHIJKLMNOPQR", "", true ) ) ) {
+                return fail( "a name exactly at the limit must not be shortened" );
+            }
+            if ( !"ABCDEFGH..STUVWXYZ".equals(
+                    AptxUtil.shortenLabel( "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", true ) ) ) {
+                return fail( "an over-long name keeps BOTH ends joined by '..'; got "
+                        + AptxUtil.shortenLabel( "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", true ) );
+            }
+            // the prefix is dropped first, then any leading separator -- this is what makes an 8-character
+            // head informative rather than 8 characters of shared boilerplate
+            if ( !"mallard/1)".equals( AptxUtil.shortenLabel( "Influenza A virus (A/mallard/1)",
+                                                             "Influenza A virus (A/", true ) ) ) {
+                return fail( "the shared prefix must be dropped before shortening; got "
+                        + AptxUtil.shortenLabel( "Influenza A virus (A/mallard/1)", "Influenza A virus (A/", true ) );
+            }
+            if ( !"house".equals( AptxUtil.shortenLabel( "SAMPLE_house", "SAMPLE_", true ) ) ) {
+                return fail( "a leading separator left by the prefix must be stripped" );
+            }
+            if ( !"house".equals( AptxUtil.shortenLabel( "SAMPLE house", "SAMPLE", true ) ) ) {
+                return fail( "the separator strip runs after the prefix, whatever the separator" );
+            }
+            // case-insensitive strip, by LENGTH
+            if ( !"Y".equals( AptxUtil.shortenLabel( "influenza a VIRUS Y", "Influenza A virus ", true ) ) ) {
+                return fail( "the prefix strip is case-insensitive; got "
+                        + AptxUtil.shortenLabel( "influenza a VIRUS Y", "Influenza A virus ", true ) );
+            }
+            // INTERNAL nodes keep their prefix -- only tips share the boring part
+            if ( !"Influenza A virus (A/x)".substring( 0, 8 ).equals(
+                    AptxUtil.shortenLabel( "Influenza A virus (A/x)", "Influenza A virus (A/", false )
+                            .substring( 0, 8 ) ) ) {
+                return fail( "an internal node must not have the tip prefix stripped" );
+            }
+            return true;
         }
-        if ( !"abcde".equals( AptxUtil.shortenLabel( "abcde", 5 ) ) ) {
-            return fail( "a label exactly at the limit must not be shortened" );
+        catch ( final Exception e ) {
+            return fail( "unexpected exception: " + e );
         }
-        if ( !"abcd…".equals( AptxUtil.shortenLabel( "abcdef", 5 ) ) ) {
-            return fail( "an over-long label must become head + ellipsis; got " + AptxUtil.shortenLabel( "abcdef", 5 ) );
-        }
-        if ( !"ab…".equals( AptxUtil.shortenLabel( "ab cdef", 4 ) ) ) {
-            return fail( "whitespace before the cut must be trimmed; got " + AptxUtil.shortenLabel( "ab cdef", 4 ) );
-        }
-        final String header = "tr|A0A8H5JZG0|A0A8H5JZG0_9HYPO Radical s-adenosyl methionine domain-containing protein OS=Fusarium phyllophilum";
-        final String shortened = AptxUtil.shortenLabel( header, 60 );
-        if ( ( shortened.length() > 60 ) || !shortened.endsWith( "…" )
-                || !header.startsWith( shortened.substring( 0, shortened.length() - 1 ) ) ) {
-            return fail( "a UniProt header must shorten to a <=60-char head ending in the ellipsis; got " + shortened );
-        }
-        return true;
     }
 
-    /**
-     * The rank colorizer's palette: each taxon gets a color, the colors are all distinct, the result
-     * is deterministic (same input -&gt; same colors) and ordered like the (sorted) input, and an
-     * empty/null input yields an empty map.
-     */
-    /** The domain palette scatters hues by the golden angle, so SPELLING-adjacent names (DUF1/DUF11/DUF2,
-     *  Flavi_glycoprot/Flavi_glycoprot_C/Flavi_E_stem) get FAR-apart colours -- unlike the i/n taxonomy sweep, which
-     *  would crush them into one hue band. */
-    /**
-     * gatherDomainNames feeds the domain palette: it must collect only the DRAWN domains -- those passing the
-     * E-value cutoff (Math.pow(10, exp)) -- and skip null-named domains (matching colorFor's / the renderer's null
-     * guard). Verifies the cutoff direction, that a looser threshold admits more, and null/empty-tree safety.
-     */
     private static boolean testGatherDomainNames() {
         final Phylogeny phy = new Phylogeny();
         final PhylogenyNode root = new PhylogenyNode();

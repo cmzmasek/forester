@@ -38,6 +38,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -437,10 +438,11 @@ public final class AptxUtil {
             if (!present.contains(DisplayOption.SHOW_NODE_NAMES) && !ForesterUtil.isEmpty(n.getName())) {
                 present.add(DisplayOption.SHOW_NODE_NAMES);
             }
-            // Offer "Shorten Labels" only for trees that actually have an over-long external name (e.g. a
-            // whole UniProt/NCBI FASTA header used as a label) -- otherwise the checkbox stays hidden.
+            // Offer "Shorten Labels" exactly when shortening could DO something -- i.e. gated on the same
+            // threshold the shortening itself uses. The option defaults ON, so a higher gate here would let it
+            // shorten names while its checkbox stayed hidden and the user had no way to switch it off.
             if (!present.contains(DisplayOption.SHORTEN_LABELS) && n.isExternal() && (n.getName() != null)
-                    && (n.getName().length() > AptxConstants.LONG_NODE_NAME_LIMIT)) {
+                    && (n.getName().length() > SHORTEN_NAME_MAX_LENGTH)) {
                 present.add(DisplayOption.SHORTEN_LABELS);
             }
             // Match the renderer: it writes the branch length whenever it is set to anything other than
@@ -512,16 +514,135 @@ public final class AptxUtil {
         return present;
     }
 
+    /** Longer than this and a displayed name is shortened. Archaeopteryx.js SHORTEN_NAME_MAX_LENGTH. */
+    public final static int SHORTEN_NAME_MAX_LENGTH = 8 + 8 + 2;
+
+    /** Characters kept at each END of a shortened name. Archaeopteryx.js shortenName(name, 8). */
+    public final static int SHORTEN_NAME_KEEP = 8;
+
+    /** The separators a shared prefix is cut back to, and stripped from the front of what remains. */
+    private final static String NAME_SEPARATORS = " /|_.-:";
+
+    /** The shortest shared prefix worth stripping -- below this it is not the boring part of a name. */
+    private final static int MIN_COMMON_PREFIX_LENGTH = 6;
+
     /**
-     * A display-shortened {@code label}: if longer than {@code max} characters, its head followed by an
-     * ellipsis ("…"); otherwise unchanged. Trailing whitespace before the ellipsis is trimmed so a cut at
-     * a word boundary reads cleanly. Display-only -- callers must not write the result back onto the node.
+     * The boring part of every tip name: the longest common prefix of the external node names, cut back to the
+     * last separator so no word is split, and only when it is at least {@value #MIN_COMMON_PREFIX_LENGTH}
+     * characters. Empty when there is nothing worth stripping.
+     * <p>
+     * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js (`forester.commonNamePrefix`) -- this is a port, and the
+     * two must not drift. The comparison is CASE-INSENSITIVE ("Influenza A virus" and "Influenza A Virus" are the
+     * same boring prefix), so callers must strip by LENGTH after an ignore-case test, never by exact match.
+     * <p>
+     * Why it exists: when every tip starts with "Influenza A virus ...", a shortener that keeps the first
+     * characters keeps exactly the characters that carry no information.
+     * <p>
+     * One deliberate simplification against the JS original: JS reads the label PROPERTY value when a label ref is
+     * in effect and falls back to the node name; the desktop shortens {@code node.getName()} specifically (label
+     * properties are appended separately), so this reads names only -- the JS fallback path, which is the common case.
      */
-    public final static String shortenLabel(final String label, final int max) {
-        if ((label == null) || (max < 2) || (label.length() <= max)) {
-            return label;
+    public final static String commonNamePrefix(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty()) {
+            return "";
         }
-        return label.substring(0, max - 1).stripTrailing() + "…";
+        final List<String> names = new ArrayList<>();
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (!n.isExternal() || (n.getName() == null)) {
+                continue;
+            }
+            final String name = n.getName().trim();
+            if (!name.isEmpty()) {
+                names.add(name);
+            }
+        }
+        if (names.size() < 2) {
+            return "";
+        }
+        // Archaeopteryx.js's preOrderTraversalAll walks children in REVERSE, so its first name is the LAST tip.
+        // The prefix LENGTH is order-independent, and the only consumer strips by length with an ignore-case
+        // test -- so this affects nothing a user can see. We match it anyway so the two implementations return
+        // the identical STRING and a cross-check never reports a phantom difference.
+        Collections.reverse(names);
+        String prefix = names.get(0);
+        for (int k = 1; (k < names.size()) && (prefix.length() > 0); ++k) {
+            // lower-case the WHOLE strings and compare, exactly as the JS does
+            final String a = prefix.toLowerCase(Locale.ROOT);
+            final String b = names.get(k).toLowerCase(Locale.ROOT);
+            final int max = Math.min(a.length(), b.length());
+            int i = 0;
+            while ((i < max) && (a.charAt(i) == b.charAt(i))) {
+                ++i;
+            }
+            if (i < prefix.length()) {
+                prefix = prefix.substring(0, i);
+            }
+        }
+        if (prefix.isEmpty()) {
+            return "";
+        }
+        // Trim back to the last separator ONLY when the prefix actually splits a word -- "ABC_ho" against
+        // "ABC_house"/"ABC_horse" does; "Influenza A virus" against "...virus A/x" and "...virus(A/y)" does not.
+        boolean splits_word = isAsciiAlnum(prefix.charAt(prefix.length() - 1));
+        if (splits_word) {
+            boolean any = false;
+            for (final String name : names) {
+                if ((name.length() > prefix.length()) && isAsciiAlnum(name.charAt(prefix.length()))) {
+                    any = true;
+                    break;
+                }
+            }
+            splits_word = any;
+        }
+        if (splits_word) {
+            int cut = -1;
+            for (int i = prefix.length() - 1; i >= 0; --i) {
+                if (NAME_SEPARATORS.indexOf(prefix.charAt(i)) >= 0) {
+                    cut = i;
+                    break;
+                }
+            }
+            prefix = (cut >= 0) ? prefix.substring(0, cut + 1) : "";
+        }
+        return (prefix.length() >= MIN_COMMON_PREFIX_LENGTH) ? prefix : "";
+    }
+
+    private static boolean isAsciiAlnum(final char c) {
+        return ((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9'));
+    }
+
+    /**
+     * A display-shortened {@code label}, by the SAME method as Archaeopteryx.js: the tree's boring shared prefix is
+     * dropped first (external nodes only, case-insensitively, then any leading separator), and what remains is cut
+     * to its first and last {@value #SHORTEN_NAME_KEEP} characters joined by ".." once it exceeds
+     * {@value #SHORTEN_NAME_MAX_LENGTH}.
+     * <p>
+     * Keeping BOTH ends is the point: a strain name's head and tail are where it differs from its neighbours, and
+     * a head-only cut on names sharing a long prefix returns identical labels for different tips.
+     * <p>
+     * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js -- change both or neither. Display-only: callers must not
+     * write the result back onto the node, so export / Find / accession parsing keep the full text.
+     */
+    public final static String shortenLabel(final String label, final String common_prefix,
+                                            final boolean is_external) {
+        if (label == null) {
+            return null;
+        }
+        String name = label;
+        if (is_external && (common_prefix != null) && !common_prefix.isEmpty()
+                && (name.length() > common_prefix.length())
+                && name.substring(0, common_prefix.length()).equalsIgnoreCase(common_prefix)) {
+            name = name.substring(common_prefix.length());
+            while (!name.isEmpty() && (NAME_SEPARATORS.indexOf(name.charAt(0)) >= 0)) {
+                name = name.substring(1);
+            }
+        }
+        if (name.length() > SHORTEN_NAME_MAX_LENGTH) {
+            return name.substring(0, SHORTEN_NAME_KEEP) + ".."
+                    + name.substring(name.length() - SHORTEN_NAME_KEEP);
+        }
+        return name;
     }
 
     /** How strongly a tree looks like a time tree (see {@link #detectTimeTree}). */

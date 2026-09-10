@@ -172,6 +172,10 @@ public final class MsaHitTestTest {
                 // names used above leave the band ending well clear of it, and the check would be vacuous.
                 for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
                     t.setName( "a_rather_long_sequence_identifier_" + t.getName() );
+                    // this check needs a WIDE label column so the alignment band reaches under the overview box;
+                    // "Shorten Labels" would cut every name to 18 characters (and strip the shared prefix these
+                    // names deliberately have), so switch it off rather than depend on the shortening policy
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHORTEN_LABELS, false );
                 }
                 mf[ 0 ].showWhole();
                 tp.setSize( w, h );
