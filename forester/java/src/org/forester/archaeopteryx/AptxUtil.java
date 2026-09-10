@@ -565,9 +565,28 @@ public final class AptxUtil {
     private final static int MIN_COMMON_PREFIX_LENGTH = 6;
 
     /**
-     * The boring part of every tip name: the longest common prefix of the external node names, cut back to the
-     * last separator so no word is split, and only when it is at least {@value #MIN_COMMON_PREFIX_LENGTH}
-     * characters. Empty when there is nothing worth stripping.
+     * A shared prefix must be carried by at least this fraction of the tips.
+     * <p>
+     * The old rule was effectively 1.0 -- the longest common prefix of EVERY tip -- which a handful of oddly-named
+     * tips could veto for the whole tree. Measured on a 13,246-tip BV-BRC influenza tree: 13,096 tips share a
+     * 53-character preamble and 150 do not, so the prefix came back EMPTY and every label rendered as 8 characters
+     * of pure boilerplate ("Alphainf..213/2024").
+     * <p>
+     * 0.95 is deliberately CONSERVATIVE, and the measurement is why. Over the real-tree corpus every value from
+     * 0.50 to 0.95 returns the IDENTICAL prefix on every tree, so the data gives no reason to go lower -- while a
+     * lower value starts accepting SPLIT trees, where stripping is wrong: on a 50/50 "HumanSample_" /
+     * "MouseSample_" tree, 0.50 strips one group and leaves the other, so the two halves stop being comparable.
+     * This value refuses that and every 90/10 split, and still clears the influenza case (98.9%) with margin.
+     * <p>
+     * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js -- agreed jointly; change both or neither.
+     */
+    private final static double MIN_PREFIX_TIP_FRACTION = 0.95;
+
+    /**
+     * The boring part of the tip names: the longest prefix carried by at least
+     * {@value #MIN_PREFIX_TIP_FRACTION} of the external node names, cut back to the last separator so no word is
+     * split, and only when it is at least {@value #MIN_COMMON_PREFIX_LENGTH} characters. Empty when there is
+     * nothing worth stripping.
      * <p>
      * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js (`forester.commonNamePrefix`) -- this is a port, and the
      * two must not drift. The comparison is CASE-INSENSITIVE ("Influenza A virus" and "Influenza A Virus" are the
@@ -576,11 +595,23 @@ public final class AptxUtil {
      * Why it exists: when every tip starts with "Influenza A virus ...", a shortener that keeps the first
      * characters keeps exactly the characters that carry no information.
      * <p>
+     * Why a FRACTION and not all tips: see {@link #MIN_PREFIX_TIP_FRACTION}. The tips that do NOT carry the prefix
+     * need no special handling -- {@link #shortenLabel} tests that a label actually starts with the prefix before
+     * stripping it, so a minority tip simply keeps its full name.
+     * <p>
      * One deliberate simplification against the JS original: JS reads the label PROPERTY value when a label ref is
      * in effect and falls back to the node name; the desktop shortens {@code node.getName()} specifically (label
      * properties are appended separately), so this reads names only -- the JS fallback path, which is the common case.
      */
     public final static String commonNamePrefix(final Phylogeny phy) {
+        return commonNamePrefix(phy, MIN_PREFIX_TIP_FRACTION);
+    }
+
+    /**
+     * {@link #commonNamePrefix(Phylogeny)} with an explicit fraction, so a test can pin the boundary behaviour and
+     * so {@code min_fraction == 1.0} still reproduces the original all-tips rule exactly.
+     */
+    static String commonNamePrefix(final Phylogeny phy, final double min_fraction) {
         if ((phy == null) || phy.isEmpty()) {
             return "";
         }
@@ -603,29 +634,33 @@ public final class AptxUtil {
         // test -- so this affects nothing a user can see. We match it anyway so the two implementations return
         // the identical STRING and a cross-check never reports a phantom difference.
         Collections.reverse(names);
-        String prefix = names.get(0);
-        for (int k = 1; (k < names.size()) && (prefix.length() > 0); ++k) {
-            // lower-case the WHOLE strings and compare, exactly as the JS does
-            final String a = prefix.toLowerCase(Locale.ROOT);
-            final String b = names.get(k).toLowerCase(Locale.ROOT);
-            final int max = Math.min(a.length(), b.length());
-            int i = 0;
-            while ((i < max) && (a.charAt(i) == b.charAt(i))) {
-                ++i;
-            }
-            if (i < prefix.length()) {
-                prefix = prefix.substring(0, i);
+        final String lower_prefix = sharedPrefixLowerCase(names, min_fraction);
+        if (lower_prefix.isEmpty()) {
+            return "";
+        }
+        // Casing comes from the first name -- in the SAME traversal order the two implementations share -- that
+        // actually carries the prefix, so both sides return the identical string.
+        String prefix = null;
+        final List<String> carriers = new ArrayList<>();
+        for (final String name : names) {
+            if (startsWithIgnoreCase(name, lower_prefix)) {
+                if (prefix == null) {
+                    prefix = name.substring(0, lower_prefix.length());
+                }
+                carriers.add(name);
             }
         }
-        if (prefix.isEmpty()) {
+        if (prefix == null) {
             return "";
         }
         // Trim back to the last separator ONLY when the prefix actually splits a word -- "ABC_ho" against
         // "ABC_house"/"ABC_horse" does; "Influenza A virus" against "...virus A/x" and "...virus(A/y)" does not.
+        // Only the names that CARRY the prefix can say whether it splits a word; a name that does not share it at
+        // all says nothing about where its words end.
         boolean splits_word = isAsciiAlnum(prefix.charAt(prefix.length() - 1));
         if (splits_word) {
             boolean any = false;
-            for (final String name : names) {
+            for (final String name : carriers) {
                 if ((name.length() > prefix.length()) && isAsciiAlnum(name.charAt(prefix.length()))) {
                     any = true;
                     break;
@@ -641,9 +676,57 @@ public final class AptxUtil {
                     break;
                 }
             }
+            // Shortening only ever ADDS carriers, so the fraction still holds and needs no re-check.
             prefix = (cut >= 0) ? prefix.substring(0, cut + 1) : "";
         }
         return (prefix.length() >= MIN_COMMON_PREFIX_LENGTH) ? prefix : "";
+    }
+
+    /**
+     * The longest lower-cased prefix carried by at least {@code min_fraction} of {@code names}, or "" if there is
+     * none. Any k names sharing a prefix are CONTIGUOUS once sorted, so the answer is the best
+     * {@code lcp(sorted[i], sorted[i + k - 1])} -- exact, and O(n log n) rather than the quadratic scan the
+     * definition suggests. At {@code min_fraction == 1.0} this is k == n, i.e. the plain all-tips common prefix.
+     */
+    private static String sharedPrefixLowerCase(final List<String> names, final double min_fraction) {
+        final int n = names.size();
+        // Java and JavaScript both round IEEE 754 doubles, so Math.ceil agrees on both sides at every boundary.
+        int k = (int) Math.ceil(min_fraction * n);
+        if (k < 2) {
+            k = 2;
+        }
+        if (k > n) {
+            return "";
+        }
+        final String[] lower = new String[n];
+        for (int i = 0; i < n; ++i) {
+            lower[i] = names.get(i).toLowerCase(Locale.ROOT);
+        }
+        Arrays.sort(lower);
+        int best_length = 0;
+        int best_index = -1;
+        for (int i = 0; (i + k - 1) < n; ++i) {
+            final int l = commonPrefixLength(lower[i], lower[i + k - 1]);
+            if (l > best_length) {
+                best_length = l;
+                best_index = i;
+            }
+        }
+        return (best_length > 0) ? lower[best_index].substring(0, best_length) : "";
+    }
+
+    private static int commonPrefixLength(final String a, final String b) {
+        final int max = Math.min(a.length(), b.length());
+        int i = 0;
+        while ((i < max) && (a.charAt(i) == b.charAt(i))) {
+            ++i;
+        }
+        return i;
+    }
+
+    private static boolean startsWithIgnoreCase(final String s, final String lower_prefix) {
+        return (s.length() >= lower_prefix.length())
+                && s.substring(0, lower_prefix.length()).toLowerCase(Locale.ROOT).equals(lower_prefix);
     }
 
     private static boolean isAsciiAlnum(final char c) {

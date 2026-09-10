@@ -595,6 +595,69 @@ public final class AptxUtilTest {
                     Phylogeny.createInstanceFromNhxString( "(OnlyOneTip);" ) ) ) ) {
                 return fail( "a single tip has no shared prefix to speak of" );
             }
+            // --- a MAJORITY prefix: a handful of odd tips must not veto the whole tree (OPEN ITEM 1) ---
+            // 19 of 20 tips share "BoringPrefix_". Under the old all-tips rule the single oddball blanked the
+            // prefix for everybody, so every label rendered as its boring first 8 characters. Measured for real
+            // on a 13,246-tip BV-BRC influenza tree, where 150 stray tips hid a 53-character preamble.
+            final StringBuilder majority = new StringBuilder( "(" );
+            for( int i = 0; i < 19; ++i ) {
+                majority.append( "BoringPrefix_sample" ).append( i ).append( "," );
+            }
+            majority.append( "Unrelated_oddball);" );
+            final Phylogeny maj = Phylogeny.createInstanceFromNhxString( majority.toString() );
+            if ( !"BoringPrefix_".equals( AptxUtil.commonNamePrefix( maj ) ) ) {
+                return fail( "a prefix carried by 19 of 20 tips must still be found; got '"
+                        + AptxUtil.commonNamePrefix( maj ) + "'" );
+            }
+            // ...and the OLD all-tips rule is still exactly reproducible, which is what the JS cross-check pins
+            if ( !"".equals( AptxUtil.commonNamePrefix( maj, 1.0 ) ) ) {
+                return fail( "fraction 1.0 must reproduce the all-tips rule exactly; got '"
+                        + AptxUtil.commonNamePrefix( maj, 1.0 ) + "'" );
+            }
+            // the tip that does NOT carry the prefix needs no special handling: shortenLabel only strips a
+            // prefix a label actually starts with, so the minority keeps its own full name
+            if ( !"Unrelated_oddball".equals( AptxUtil.shortenLabel( "Unrelated_oddball", "BoringPrefix_", true ) ) ) {
+                return fail( "a tip that does not carry the shared prefix must keep its full name; got '"
+                        + AptxUtil.shortenLabel( "Unrelated_oddball", "BoringPrefix_", true ) + "'" );
+            }
+            // --- but a SPLIT tree must NOT be stripped: that is what the 0.95 threshold buys ---
+            // 50/50 -- stripping one group leaves half the tree prefixed and half not, so the two halves stop
+            // being comparable. A "most tips" rule set at 0.5 would do exactly that.
+            final StringBuilder half = new StringBuilder( "(" );
+            for( int i = 0; i < 10; ++i ) {
+                half.append( "HumanSample_x" ).append( i ).append( ",MouseSample_y" ).append( i ).append( "," );
+            }
+            half.setLength( half.length() - 1 );
+            half.append( ");" );
+            if ( !"".equals( AptxUtil
+                    .commonNamePrefix( Phylogeny.createInstanceFromNhxString( half.toString() ) ) ) ) {
+                return fail( "a 50/50 split must not be stripped" );
+            }
+            // 90/10 is still a split rather than boilerplate -- this is the case a lower threshold would break
+            final StringBuilder ninety = new StringBuilder( "(" );
+            for( int i = 0; i < 18; ++i ) {
+                ninety.append( "HumanSample_x" ).append( i ).append( "," );
+            }
+            ninety.append( "MouseSample_y0,MouseSample_y1);" );
+            if ( !"".equals( AptxUtil
+                    .commonNamePrefix( Phylogeny.createInstanceFromNhxString( ninety.toString() ) ) ) ) {
+                return fail( "a 90/10 split must not be stripped at the agreed threshold" );
+            }
+            // the word-split trim asks only the tips that CARRY the prefix: here the 19 carriers all end the
+            // prefix at a separator (mixed "_" and "-"), so nothing is split and "ABCDEFG" survives whole --
+            // the one non-carrier, which merely happens to have a letter at that offset, must not get a vote
+            final StringBuilder mixed_sep = new StringBuilder( "(" );
+            for( int i = 0; i < 19; ++i ) {
+                mixed_sep.append( "ABCDEFG" ).append( ( ( i % 2 ) == 0 ) ? "_" : "-" ).append( "sample" )
+                        .append( i ).append( "," );
+            }
+            mixed_sep.append( "ZZZZZZZZZZ);" );
+            if ( !"ABCDEFG".equals( AptxUtil
+                    .commonNamePrefix( Phylogeny.createInstanceFromNhxString( mixed_sep.toString() ) ) ) ) {
+                return fail( "only the tips carrying the prefix decide whether it splits a word; got '"
+                        + AptxUtil.commonNamePrefix( Phylogeny.createInstanceFromNhxString( mixed_sep.toString() ) )
+                        + "'" );
+            }
             // --- shortenLabel ---
             if ( AptxUtil.shortenLabel( null, "", true ) != null ) {
                 return fail( "null in, null out" );
