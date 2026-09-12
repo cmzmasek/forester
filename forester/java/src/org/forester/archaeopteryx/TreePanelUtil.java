@@ -21,7 +21,6 @@
 package org.forester.archaeopteryx;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.geom.AffineTransform;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -38,7 +37,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import javax.swing.JOptionPane;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -187,10 +185,6 @@ public class TreePanelUtil {
             }
         }
         return uri_str;
-    }
-
-    final public static void showInformationMessage( final Component parent, final String title, final String msg ) {
-        JOptionPane.showMessageDialog( parent, msg, title, JOptionPane.INFORMATION_MESSAGE );
     }
 
     final static void collapseSubtree( final PhylogenyNode node, final boolean collapse ) {
@@ -1781,17 +1775,6 @@ public class TreePanelUtil {
             return false;
         }
         return true;
-    }
-
-    final static boolean isSequenceEmpty( final Sequence seq ) {
-        return ( seq.getAccession() == null ) && ForesterUtil.isEmpty( seq.getName() )
-                && ForesterUtil.isEmpty( seq.getGeneName() ) && ForesterUtil.isEmpty( seq.getSymbol() );
-    }
-
-    final static boolean isTaxonomyEmpty( final Taxonomy tax ) {
-        return ( ( tax.getIdentifier() == null ) && ForesterUtil.isEmpty( tax.getTaxonomyCode() )
-                && ForesterUtil.isEmpty( tax.getCommonName() ) && ForesterUtil.isEmpty( tax.getScientificName() )
-                && tax.getSynonyms().isEmpty() );
     }
 
     final static Phylogeny subTree( final PhylogenyNode new_root, final Phylogeny source_phy ) {

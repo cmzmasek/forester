@@ -221,7 +221,6 @@ public final class NodeDataImporter {
         public int getTotalTips() { return _total_tips; }
         public int getTipsWithoutRow() { return _tips_without_row; }
         public List<String> getPropertyColumns() { return _property_columns; }
-        public List<String> getReservedColumns() { return _reserved_columns; }
 
         /** A one-line preview for the dialog, e.g. "42/45 rows match · 3 unmatched · 2 of 44 tips have no row · imports: host, reads". */
         public String summaryLine() {

@@ -23,7 +23,6 @@ package org.forester.archaeopteryx;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -396,10 +395,6 @@ final class NodeStyleDialog extends JDialog {
     void setApplyShapeForTest( final NodeShape shape ) {
         _shape_combo.setSelectedItem( labelForShape( shape ) );
         _apply_shape.setSelected( true );
-    }
-
-    boolean isApplyFontStyleTickedForTest() {
-        return _apply_font_style.isSelected();
     }
 
     void applyForTest() {

@@ -87,10 +87,6 @@ final class CladeLevel {
         _bands = ( bands == null ) ? Collections.<CladeBand> emptyList() : bands;
     }
 
-    Spec getSpec() {
-        return _spec;
-    }
-
     String getRank() {
         return _spec.getRank();
     }

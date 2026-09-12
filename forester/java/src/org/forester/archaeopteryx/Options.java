@@ -172,9 +172,6 @@ final public class Options {
             return _name;
         }
 
-        public String toTag() {
-            return toString().replaceAll(" ", "_");
-        }
     }
 
     // How branch support (confidence) at internal nodes is drawn as a node symbol. Monochrome by

@@ -109,9 +109,6 @@ import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.ws.seqdb.TaxonLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
-import org.forester.phylogeny.data.NodeDataField;
-import org.forester.phylogeny.data.NodeVisualData.NodeFill;
-import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.archaeopteryx.tools.TaxonomySpeciesTreeBuilder;
 import org.forester.sdi.GSDI;
@@ -2830,24 +2827,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    boolean GAndSDoHaveMoreThanOneSpeciesInComman(final Phylogeny gene_tree) {
-        if ((gene_tree == null) || gene_tree.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Gene tree and species tree have no species in common.",
-                    "Error during SDI",
-                    JOptionPane.ERROR_MESSAGE);
-            return false;
-        } else if (gene_tree.getNumberOfExternalNodes() < 2) {
-            JOptionPane.showMessageDialog(this,
-                    "Gene tree and species tree have only one species in common.",
-                    "Error during SDI",
-                    JOptionPane.ERROR_MESSAGE);
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     ControlPanel getControlPanel() {
         return getMainPanel().getControlPanel();
     }
@@ -2897,10 +2876,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     /** Test hook: the View-menu "Find Previous" item (⌘⇧G). */
     JMenuItem getFindPreviousHitItemForTest() {
         return _find_prev_hit_item;
-    }
-
-    JMenu getHelpMenu() {
-        return _help_jmenu;
     }
 
 
@@ -2997,10 +2972,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         getMainPanel().getControlPanel().getSearchTextField1().setText("");
         getMainPanel().getControlPanel().getSearchResetButton1().setEnabled(false);
         getMainPanel().getControlPanel().getSearchResetButton1().setVisible(false);
-    }
-
-    void setConfiguration(final Configuration configuration) {
-        _configuration = configuration;
     }
 
     void setCurrentDir(final DirectoryPreferences.Category cat, final File current_dir) {

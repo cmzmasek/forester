@@ -168,7 +168,4 @@ final class TreeHistory {
         return _undo.size();
     }
 
-    int redoDepth() {
-        return _redo.size();
-    }
 }

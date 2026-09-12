@@ -296,38 +296,10 @@ public final class AptxUtil {
         return true;
     }
 
-    final static public boolean isHasAtLeastOneBranchWithSupportSD(final Phylogeny phy) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while (it.hasNext()) {
-            final PhylogenyNode n = it.next();
-            if (n.getBranchData().isHasConfidences()) {
-                final List<Confidence> c = n.getBranchData().getConfidences();
-                for (final Confidence confidence : c) {
-                    if (confidence.getStandardDeviation() > 0) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     final static public boolean isHasAtLeastOneBranchWithSupportValues(final Phylogeny phy) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while (it.hasNext()) {
             if (it.next().getBranchData().isHasConfidences()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    final static public boolean isHasAtLeastOneNodeWithScientificName(final Phylogeny phy) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while (it.hasNext()) {
-            final PhylogenyNode n = it.next();
-            if (n.getNodeData().isHasTaxonomy()
-                    && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getScientificName())) {
                 return true;
             }
         }
@@ -1344,20 +1316,6 @@ public final class AptxUtil {
     final static boolean canWriteFormat(final String format_name) {
         final Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName(format_name);
         return iter.hasNext();
-    }
-
-    /**
-     * Exits with -1.
-     *
-     * @param message to message to be printed
-     */
-    final static void dieWithSystemError(final String message) {
-        System.out.println();
-        System.out.println(AptxConstants.PRG_NAME + " encountered the following system error: " + message);
-        System.out.println("Please contact the authors.");
-        System.out.println(AptxConstants.PRG_NAME + " needs to close.");
-        System.out.println();
-        System.exit(-1);
     }
 
 

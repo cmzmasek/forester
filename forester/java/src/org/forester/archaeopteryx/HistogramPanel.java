@@ -59,10 +59,6 @@ final class HistogramPanel extends JComponent {
         setMaximumSize( new Dimension( MAX_WIDTH, BAR_AREA_HEIGHT + 4 + label_h ) );
     }
 
-    Histogram histogramForTest() {
-        return _h;
-    }
-
     private Font smallFont() {
         final Font f = getFont();
         return f.deriveFont( Math.max( 9f, f.getSize2D() - 2f ) );

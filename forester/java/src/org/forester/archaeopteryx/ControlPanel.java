@@ -2514,15 +2514,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    /** Test hook: the divergence button's tooltip, which is what tells a reader whether the number is recorded or
-     *  derived. Plain text, with any HTML the tooltip helper added stripped. */
-    String getDivergenceTooltipForTest() {
-        if ( ( _branch_length_div_tb == null ) || ( _branch_length_div_tb.getToolTipText() == null ) ) {
-            return "";
-        }
-        return _branch_length_div_tb.getToolTipText().replaceAll( "<[^>]*>", " " ).replaceAll( "\\s+", " " ).trim();
-    }
-
     /** Test hook: whether the Time | Div control is currently visible. */
     boolean isBranchLengthsControlVisible() {
         return (_branch_lengths_panel != null) && _branch_lengths_panel.isVisible();
@@ -2964,9 +2955,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     };
 
     // ---- test hooks for the search tool -------------------------------------------------------
-    int searchFieldCountForTest() {
-        return ( _search_field_0 != null ) ? _search_field_0.getItemCount() : 0;
-    }
 
     int searchModeCountForTest() {
         return ( _search_mode_0 != null ) ? _search_mode_0.getItemCount() : 0;
@@ -2978,26 +2966,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     SearchMode getSearchModeForTest(final boolean box_a) {
         return (SearchMode) ( box_a ? _search_mode_0 : _search_mode_1 ).getSelectedItem();
-    }
-
-    /** Selects the field whose backing NDF equals {@code ndf} (or the "Any text" field when {@code ndf} is null),
-     *  without firing a search (guarded), so a test can set field + text + then call search0()/search1() itself. */
-    void setSearchFieldForTest(final boolean box_a, final PhylogenyMethods.NDF ndf) {
-        final JComboBox<SearchField> combo = box_a ? _search_field_0 : _search_field_1;
-        _search_controls_adjusting = true;
-        try {
-            for ( int i = 0; i < combo.getItemCount(); i++ ) {
-                final SearchField f = combo.getItemAt( i );
-                final boolean match = ( ndf == null ) ? ( f.kind() == SearchField.Kind.ANY_TEXT ) : ( f.ndf() == ndf );
-                if ( match ) {
-                    combo.setSelectedIndex( i );
-                    return;
-                }
-            }
-        }
-        finally {
-            _search_controls_adjusting = false;
-        }
     }
 
     void setSearchModeForTest(final boolean box_a, final SearchMode mode) {
@@ -3758,70 +3726,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         final MainFrame mf = getMainFrame();
         if (mf != null) {
             mf.updateFoundSelectedCounter();
-        }
-    }
-
-    void setVisibilityOfX() {
-        final MainFrame mf = getMainFrame();
-        if (mf != null) {
-            if ((getCurrentTreePanel() != null) && (getCurrentTreePanel().getPhylogeny() != null)) {
-                if (AptxUtil.isHasAtLeastOneBranchWithSupportSD(getCurrentTreePanel().getPhylogeny())) {
-                    if (mf._show_confidence_stddev_cbmi != null) {
-                        mf._show_confidence_stddev_cbmi.setVisible(true);
-                    }
-                } else {
-                    if (mf._show_confidence_stddev_cbmi != null) {
-                        mf._show_confidence_stddev_cbmi.setVisible(false);
-                    }
-                }
-                if (AptxUtil.isHasAtLeastOneNodeWithScientificName(getCurrentTreePanel().getPhylogeny())) {
-                    if (mf._abbreviate_scientific_names != null) {
-                        mf._abbreviate_scientific_names.setVisible(true);
-                    }
-                } else {
-                    if (mf._abbreviate_scientific_names != null) {
-                        mf._abbreviate_scientific_names.setVisible(false);
-                    }
-                }
-            }
-            if (isDrawPhylogram() || ((getCurrentTreePanel() != null) && ((getCurrentTreePanel()
-                    .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
-                    || (getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)))) {
-                if (mf._non_lined_up_cladograms_rbmi != null) {
-                    mf._non_lined_up_cladograms_rbmi.setVisible(false);
-                }
-                if (mf._ext_node_dependent_cladogram_rbmi != null) {
-                    mf._ext_node_dependent_cladogram_rbmi.setVisible(false);
-                }
-            } else {
-                if (mf._non_lined_up_cladograms_rbmi != null) {
-                    mf._non_lined_up_cladograms_rbmi.setVisible(true);
-                }
-                if (mf._ext_node_dependent_cladogram_rbmi != null) {
-                    mf._ext_node_dependent_cladogram_rbmi.setVisible(true);
-                }
-            }
-            if (isDrawPhylogram()) {
-                if (mf._show_scale_cbmi != null) {
-                    mf._show_scale_cbmi.setVisible(true);
-                }
-            } else {
-                if (mf._show_scale_cbmi != null) {
-                    mf._show_scale_cbmi.setVisible(false);
-                }
-            }
-            if (getCurrentTreePanel() != null) {
-                if ((getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
-                        || (getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
-                    if (mf._label_direction_cbmi != null) {
-                        mf._label_direction_cbmi.setVisible(true);
-                    }
-                } else {
-                    if (mf._label_direction_cbmi != null) {
-                        mf._label_direction_cbmi.setVisible(false);
-                    }
-                }
-            }
         }
     }
 

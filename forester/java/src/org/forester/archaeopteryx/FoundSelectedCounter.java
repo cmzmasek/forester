@@ -290,11 +290,6 @@ final class FoundSelectedCounter extends JComponent {
         return getToolTipText();
     }
 
-    /** Drives one animation frame (the Timer is EDT-based; a test advances it deterministically). */
-    void tickForTest() {
-        onTick();
-    }
-
     /** Runs the sweep to completion (both passes) so a test can assert it settles static; returns the number of
      *  animation frames it took (a single-pass regression would be far fewer). */
     int runSweepToEndForTest() {

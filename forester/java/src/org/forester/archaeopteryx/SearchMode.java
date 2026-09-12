@@ -76,8 +76,4 @@ enum SearchMode {
         return new SearchMode[] { EQ, NE, LT, LE, GT, GE, RANGE };
     }
 
-    /** The default mode for a field of the given kind: {@link #CONTAINS} for string, {@link #EQ} for numeric. */
-    static SearchMode defaultFor( final boolean numeric ) {
-        return numeric ? EQ : CONTAINS;
-    }
 }

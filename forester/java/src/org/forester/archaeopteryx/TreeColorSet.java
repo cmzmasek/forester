@@ -91,7 +91,6 @@ public final class TreeColorSet {
     private Color              branch_color;
     private Color              branch_length_color;
     private Color              collapse_fill_color;
-    private Color              domain_label_color;
     private Color              domain_base_color;
     private Color              dup_box_color;
     private Color              duplication_or_specation_color;
@@ -113,10 +112,6 @@ public final class TreeColorSet {
 
     public Color getDomainBaseColor() {
         return domain_base_color;
-    }
-
-    public Color getDomainLabelColor() {
-        return domain_label_color;
     }
 
     private void setColorForDefault( final int i, final Color color ) {
@@ -224,7 +219,6 @@ public final class TreeColorSet {
         dup_box_color = _color_schemes[ scheme ][ 7 ];
         spec_box_color = _color_schemes[ scheme ][ 8 ];
         duplication_or_specation_color = _color_schemes[ scheme ][ 9 ];
-        domain_label_color = _color_schemes[ scheme ][ 10 ];
         domain_base_color = _color_schemes[ scheme ][ 11 ];
         ov_color = _color_schemes[ scheme ][ 12 ];
     }

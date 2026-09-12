@@ -75,10 +75,6 @@ public enum DisplayOption {
         return _title;
     }
 
-    public DefaultState defaultState() {
-        return _default_state;
-    }
-
     /** True if the checkbox is on by default (the old "yes"). */
     public boolean isCheckedByDefault() {
         return _default_state == DefaultState.ON;

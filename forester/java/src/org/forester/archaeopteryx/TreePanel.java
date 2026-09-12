@@ -347,9 +347,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // The target just clicked: its hover preview stays suppressed until the pointer moves off it, so it does not
     // instantly flip to the "will be removed" grey over what the click just selected.
     private PhylogenyNode _click_suppressed = null;
-    private final FontRenderContext _frc = new FontRenderContext(null,
-            false,
-            false);
     private PHYLOGENY_GRAPHICS_TYPE _graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
     // PER-TAB view state, held here rather than on the (per-WINDOW) Options/ControlPanel so two tabs can be
     // looked at differently -- one tree root-left with its internal labels on, another a root-top clustergram
@@ -6730,11 +6727,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _hover_card != null;
     }
 
-    /** Test hook: the hover card's current placement on the canvas (null when none). */
-    final Rectangle hoverCardBoundsForTest() {
-        return (_hover_card == null) ? null : _hover_card.placement(_hover_card_x, _hover_card_y, getVisibleRect());
-    }
-
     /**
      * Shows the hover card for {@code node} at the pointer -- or keeps the one already showing for that node (a
      * card is anchored where the node was first hovered and rebuilt only when the hovered node changes, so gliding
@@ -7058,16 +7050,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _longest_ext_node_info = longest;
         }
         _length_of_longest_text = calcLengthOfLongestText();
-    }
-
-    /** Test hook: the computed scale-bar distance (drives the bar, the axis ticks and the grid). */
-    double getScaleDistanceForTest() {
-        return getScaleDistance();
-    }
-
-    /** Test hook: the scale-bar label as drawn. */
-    String getScaleLabelForTest() {
-        return getScaleLabel();
     }
 
     final void calculateScaleDistance() {
@@ -9178,11 +9160,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** The levels currently drawn, finest rank first (nearest the tips); never null. */
     private java.util.List<CladeLevel> cladeLevels() {
         return (_clade_levels == null) ? java.util.Collections.<CladeLevel> emptyList() : _clade_levels;
-    }
-
-    /** How many ranks are annotated at once. */
-    final int cladeLevelCount() {
-        return cladeLevels().size();
     }
 
     /** The ranks actually DRAWN, finest first -- for the report and the legend titles. A rank that placed no

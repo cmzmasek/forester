@@ -403,19 +403,4 @@ final class SearchValueAutocomplete {
         accept( value, true );
     }
 
-    /** Whether the suggestion window is currently visible (exercises the realized show path). */
-    boolean isPopupShowingForTest() {
-        return ( _popup != null ) && _popup.isVisible();
-    }
-
-    /** The rows currently shown in the popup (hint row included), for a realized-frame check. */
-    List<String> currentModelForTest() {
-        final List<String> out = new ArrayList<>();
-        if ( _model != null ) {
-            for ( int i = 0; i < _model.size(); i++ ) {
-                out.add( _model.getElementAt( i ) );
-            }
-        }
-        return out;
-    }
 }

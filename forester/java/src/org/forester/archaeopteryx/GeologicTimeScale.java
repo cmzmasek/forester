@@ -46,7 +46,6 @@ final class GeologicTimeScale {
     static final String REFERENCE =
             "Cohen, K.M., Harper, D.A.T., Gibbard, P.L. & Car, N. (2025, updated) "
                     + "The ICS International Chronostratigraphic Chart this decade. Episodes 48: 105-115.";
-    static final String SOURCE = "International Commission on Stratigraphy (ICS / IUGS), www.stratigraphy.org";
 
     /** The chronostratigraphic ranks, coarse -> fine. EON, ERA, PERIOD, EPOCH are populated (AGE is a follow-on). */
     enum Rank {
@@ -84,10 +83,6 @@ final class GeologicTimeScale {
 
         double oldMa() {
             return _old_ma;
-        }
-
-        double durationMa() {
-            return _old_ma - _young_ma;
         }
 
         Color color() {
@@ -387,13 +382,6 @@ final class GeologicTimeScale {
             }
         }
         return null;
-    }
-
-    /** The oldest boundary we have data for (Ma) -- the deep end of the embedded scale (the Eon/Era ranks reach the
-     *  base of the Archean, ~4031 Ma). */
-    static double oldestMa() {
-        return Math.max( coverageMa( Rank.EON ), Math.max( coverageMa( Rank.ERA ),
-                Math.max( coverageMa( Rank.PERIOD ), coverageMa( Rank.EPOCH ) ) ) );
     }
 
     private GeologicTimeScale() {

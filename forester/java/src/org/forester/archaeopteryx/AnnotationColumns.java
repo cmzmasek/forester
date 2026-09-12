@@ -343,10 +343,6 @@ final class AnnotationColumns {
         return _columns.size();
     }
 
-    List<Column> getColumns() {
-        return _columns;
-    }
-
     Column getColumn( final int i ) {
         return _columns.get( i );
     }

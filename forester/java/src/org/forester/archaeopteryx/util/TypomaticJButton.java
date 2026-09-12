@@ -76,14 +76,6 @@ public final class TypomaticJButton extends JButton implements ActionListener, M
         }
     }
 
-    final public int getDelay() {
-        return delay;
-    }
-
-    final public int getInitialDelay() {
-        return initial_delay;
-    }
-
     final private void init() {
         addMouseListener( this );
         timer = new Timer( delay, this );
@@ -146,10 +138,6 @@ public final class TypomaticJButton extends JButton implements ActionListener, M
         }
     }
 
-    final public void setDelay( final int d ) {
-        delay = d;
-    }
-
     @Override
     final public void setEnabled( final boolean e ) {
         if ( e != super.isEnabled() ) {
@@ -165,13 +153,4 @@ public final class TypomaticJButton extends JButton implements ActionListener, M
         initial_delay = d;
     }
 
-    final public void setRepeatEnabled( final boolean e ) {
-        if ( !e ) {
-            pressed = false;
-            if ( timer.isRunning() ) {
-                timer.stop();
-            }
-        }
-        repeat_enabled = e;
-    }
 }
