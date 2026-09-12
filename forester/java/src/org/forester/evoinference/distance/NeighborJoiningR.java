@@ -45,7 +45,6 @@ public final class NeighborJoiningR {
     private int                            _min_i;
     private int                            _min_j;
     private Sarray                         _s;
-    private double                         _d_min;                             //TODO remove me
     private int[]                          _rev_mappings;
     private double                         _umax;
     private double                         _rmax;

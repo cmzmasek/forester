@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import org.forester.application.support_transfer;
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.clade_analysis.CladeAnalysisTest;
 import org.forester.development.DevelopmentTools;
@@ -76,7 +74,6 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Accession;
-import org.forester.phylogeny.data.Accession.Source;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
@@ -2635,139 +2632,6 @@ public final class Test {
         return true;
     }
 
-    private static final boolean testNHXparsingFromURL2() {
-        try {
-            final String s = "http://phyloxml.org/test/simple_1.nh";
-            final Phylogeny phys[] = AptxUtil
-                    .readPhylogeniesFromUrl(new URL(s), false, false, org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER, TAXONOMY_EXTRACTION.NO, false);
-            if ((phys == null) || (phys.length != 5)) {
-                return false;
-            }
-            if (!phys[0].toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                System.out.println(phys[0].toNewHampshire());
-                return false;
-            }
-            if (!phys[1].toNewHampshire().equals("((1,2,3),(4,5,6),(7,8,9));")) {
-                System.out.println(phys[1].toNewHampshire());
-                return false;
-            }
-            final Phylogeny phys2[] = AptxUtil
-                    .readPhylogeniesFromUrl(new URL(s), false, false, org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER, TAXONOMY_EXTRACTION.NO, false);
-            if ((phys2 == null) || (phys2.length != 5)) {
-                return false;
-            }
-            if (!phys2[0].toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                System.out.println(phys2[0].toNewHampshire());
-                return false;
-            }
-            if (!phys2[1].toNewHampshire().equals("((1,2,3),(4,5,6),(7,8,9));")) {
-                System.out.println(phys2[1].toNewHampshire());
-                return false;
-            }
-            final Phylogeny phys3[] = AptxUtil
-                    .readPhylogeniesFromUrl(new URL("https://swisstree.vital-it.ch/SwissTree/ST001/consensus_tree.nhx"),
-                            false,
-                            false,
-                            org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER,
-                            TAXONOMY_EXTRACTION.NO,
-                            false);
-            if ((phys3 == null) || (phys3.length != 1)) {
-                return false;
-            }
-            if (!phys3[0].toNewHampshire()
-                    .equals("((((POP23a_CIOIN_ENSCING00000016202,POP23b_CIOIN_ENSCING00000016169),POP23_CIOSA_ENSCSAVG00000000248),((POP23a_BRAFL_C3ZMF1,POP23b_BRAFL_121417),(((POP3_ORYLA_ENSORLG00000019669,POP3_GASAC_ENSGACG00000014023,POP3_DANRE_Q6JWW1),(POP3_XENTR_B1H1F6,(POP3_CHICK_Q9DG25,(POP3_ORNAN_ENSOANG00000004179,POP3_MONDO_ENSMODG00000018033,((POP3_MOUSE_Q9ES81,POP3_RAT_Q3BCU3),POP3_RABIT_ENSOCUG00000025973,POP3_MACMU_ENSMMUG00000014473,POP3_HUMAN_Q9HBV1))))),(((POP2_GASAC_ENSGACG00000001420,POP2_ORYLA_ENSORLG00000008627,POP2_TAKRU_ENSTRUG00000015933),POP2_DANRE_ENSDARG00000069922),POP2_XENTR_ENSXETG00000018064,(((POP2_TAEGU_ENSTGUG00000013383,POP2_CHICK_Q6T9Z5),POP2_ANOCA_ENSACAG00000003557),((POP2_MACEU_ENSMEUG00000015825,POP2_MONDO_ENSMODG00000018205),((POP2_RABIT_ENSOCUG00000009515,(POP2_RAT_Q6P722,POP2_MOUSE_Q9ES82)),(POP2_MACMU_ENSMMUG00000000905,POP2_HUMAN_Q9HBU9)))))))),((POP1_CIOSA_ENSCSAVG00000000247,POP1_CIOIN_ENSCING00000000496),((POP1_DANRE_Q5PQZ7,(POP1_ORYLA_ENSORLG00000019663,POP1_GASAC_ENSGACG00000014015,POP1_TAKRU_ENSORLG00000019663)),(POP1_XENTR_B1H1G2,(POP1_ANOCA_ENSACAG00000003910,(POP1_TAEGU_ENSTGUG00000012218,POP1_CHICK_Q9DG23)),POP1_ORNAN_ENSOANG00000004180,POP1_MONDO_ENSMODG00000018034,(POP1_RABIT_ENSOCUG00000016944,(POP1_RAT_Q3BCU4,POP1_MOUSE_Q9ES83),(POP1_HUMAN_Q8NE79,POP1_MACMU_ENSMMUG00000014471))))));")) {
-                System.out.println(phys3[0].toNewHampshire());
-                return false;
-            }
-            final Phylogeny phys4[] = AptxUtil
-                    .readPhylogeniesFromUrl(new URL("https://swisstree.vital-it.ch/SwissTree/ST001/consensus_tree.nhx"),
-                            false,
-                            false,
-                            org.forester.archaeopteryx.Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER,
-                            TAXONOMY_EXTRACTION.NO,
-                            false);
-            if ((phys4 == null) || (phys4.length != 1)) {
-                return false;
-            }
-            if (!phys4[0].toNewHampshire()
-                    .equals("((((POP23a_CIOIN_ENSCING00000016202,POP23b_CIOIN_ENSCING00000016169),POP23_CIOSA_ENSCSAVG00000000248),((POP23a_BRAFL_C3ZMF1,POP23b_BRAFL_121417),(((POP3_ORYLA_ENSORLG00000019669,POP3_GASAC_ENSGACG00000014023,POP3_DANRE_Q6JWW1),(POP3_XENTR_B1H1F6,(POP3_CHICK_Q9DG25,(POP3_ORNAN_ENSOANG00000004179,POP3_MONDO_ENSMODG00000018033,((POP3_MOUSE_Q9ES81,POP3_RAT_Q3BCU3),POP3_RABIT_ENSOCUG00000025973,POP3_MACMU_ENSMMUG00000014473,POP3_HUMAN_Q9HBV1))))),(((POP2_GASAC_ENSGACG00000001420,POP2_ORYLA_ENSORLG00000008627,POP2_TAKRU_ENSTRUG00000015933),POP2_DANRE_ENSDARG00000069922),POP2_XENTR_ENSXETG00000018064,(((POP2_TAEGU_ENSTGUG00000013383,POP2_CHICK_Q6T9Z5),POP2_ANOCA_ENSACAG00000003557),((POP2_MACEU_ENSMEUG00000015825,POP2_MONDO_ENSMODG00000018205),((POP2_RABIT_ENSOCUG00000009515,(POP2_RAT_Q6P722,POP2_MOUSE_Q9ES82)),(POP2_MACMU_ENSMMUG00000000905,POP2_HUMAN_Q9HBU9)))))))),((POP1_CIOSA_ENSCSAVG00000000247,POP1_CIOIN_ENSCING00000000496),((POP1_DANRE_Q5PQZ7,(POP1_ORYLA_ENSORLG00000019663,POP1_GASAC_ENSGACG00000014015,POP1_TAKRU_ENSORLG00000019663)),(POP1_XENTR_B1H1G2,(POP1_ANOCA_ENSACAG00000003910,(POP1_TAEGU_ENSTGUG00000012218,POP1_CHICK_Q9DG23)),POP1_ORNAN_ENSOANG00000004180,POP1_MONDO_ENSMODG00000018034,(POP1_RABIT_ENSOCUG00000016944,(POP1_RAT_Q3BCU4,POP1_MOUSE_Q9ES83),(POP1_HUMAN_Q8NE79,POP1_MACMU_ENSMMUG00000014471))))));")) {
-                System.out.println(phys4[0].toNewHampshire());
-                return false;
-            }
-        } catch (final Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    private static final boolean testNHXparsingFromURL() {
-        try {
-            final String s = "http://phyloxml.org/test/simple_1.nh";
-            final URL u = new URL(s);
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create(u, new NHXParser());
-            if ((phys == null) || (phys.length != 5)) {
-                return false;
-            }
-            if (!phys[0].toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                System.out.println(phys[0].toNewHampshire());
-                return false;
-            }
-            if (!phys[1].toNewHampshire().equals("((1,2,3),(4,5,6),(7,8,9));")) {
-                System.out.println(phys[1].toNewHampshire());
-                return false;
-            }
-            final URL u2 = new URL(s);
-            final Phylogeny[] phys2 = factory.create(u2.openStream(), new NHXParser());
-            if ((phys2 == null) || (phys2.length != 5)) {
-                return false;
-            }
-            if (!phys2[0].toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                System.out.println(phys2[0].toNewHampshire());
-                return false;
-            }
-            final PhylogenyFactory factory2 = ParserBasedPhylogenyFactory.getInstance();
-            final NHXParser p = new NHXParser();
-            final URL u3 = new URL(s);
-            p.setSource(u3);
-            if (!p.hasNext()) {
-                return false;
-            }
-            if (!p.next().toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                return false;
-            }
-            if (!p.hasNext()) {
-                return false;
-            }
-            p.reset();
-            if (!p.hasNext()) {
-                return false;
-            }
-            if (!p.next().toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                return false;
-            }
-            if (!p.next().toNewHampshire().equals("((1,2,3),(4,5,6),(7,8,9));")) {
-                return false;
-            }
-            p.reset();
-            if (!p.hasNext()) {
-                return false;
-            }
-            if (!p.next().toNewHampshire().equals("((((A,B),C),D),(E,F));")) {
-                return false;
-            }
-            if (!p.next().toNewHampshire().equals("((1,2,3),(4,5,6),(7,8,9));")) {
-                return false;
-            }
-        } catch (final Exception e) {
-            System.out.println(e.toString());
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
     private static boolean testOverlapRemoval() {
         try {
             final Domain d0 = new BasicDomain("d0", (short) 2, (short) 5, (short) 1, (short) 1, 0.1, 1);
@@ -2927,25 +2791,6 @@ public final class Test {
         return true;
     }
 
-
-    private static final boolean testPhyloXMLparsingFromURL() {
-        try {
-            final String s = "http://phyloxml.org/test/a.xml";
-            final URL u = new URL(s);
-            final Phylogeny[] phys = ForesterUtil.readPhylogeniesFromUrl(u, PhyloXmlParser.createPhyloXmlParser());
-            if ((phys == null) || (phys.length != 2)) {
-                return false;
-            }
-            final Phylogeny[] phys2 = ForesterUtil.readPhylogeniesFromUrl(u, PhyloXmlParser.createPhyloXmlParser());
-            if ((phys2 == null) || (phys2.length != 2)) {
-                return false;
-            }
-        } catch (final Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
 
     private final static Phylogeny createPhylogeny(final String nhx) throws IOException {
         final Phylogeny p = ParserBasedPhylogenyFactory.getInstance().create(nhx, new NHXParser())[0];
@@ -11210,7 +11055,6 @@ public final class Test {
             final String p28_S1 = "((((A,B)ab,C)abc,D)abcd,E)abcde";
             final String p28_S2 = "(A,(B,(C,(D,E)de)cde)bcde)abcde";
             final String p28_S3 = "(A,B)ab";
-            final String p28_S4 = "((((A,B),C),D),;E;)";
             final Phylogeny[] p28 = factory.create(new File(Test.PATH_TO_TEST_DATA + "phylogeny28.nhx"),
                     new NHXParser());
             if (!p28[0].toNewHampshireX().equals(p28_S1)) {

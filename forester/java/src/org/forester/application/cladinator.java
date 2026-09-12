@@ -66,7 +66,6 @@ public final class cladinator {
     final static private String REMOVE_ANNOT_SEP_OPTION = "rs";
     final static private String SIMPLE_OUTPUT_OPTION = "sim";
     final static private String SIMPLE_OUTPUT_CUTOFF_OPTION = "simc";
-    final static private double SPECIFICS_CUTOFF_DEFAULT = 0.7;
     final static private String SEP_DEFAULT = ".";
     final static private Pattern QUERY_PATTERN_DEFAULT = AnalysisMulti.DEFAULT_QUERY_PATTERN_FOR_PPLACER_TYPE;
     final static private String EXTRA_PROCESSING1_SEP_DEFAULT = "|";

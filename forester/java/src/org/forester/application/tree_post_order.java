@@ -22,11 +22,6 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +29,6 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
@@ -48,7 +42,6 @@ public class tree_post_order {
     private static final String PRG_DATE = "2022-06-02";
     private static final String PRG_VERSION = "0.0.1";
     private static final String PRG_NAME = "tree_post_order";
-    private static final Pattern annotation_p = Pattern.compile("_\\{(.+)\\}");
     //private static final Pattern annotation_p = Pattern.compile( "(.+?)\\|.+" );
     private static final String XSD_STRING = "xsd:string";
     private static final String REF = "subspecies:clade";
@@ -353,59 +346,4 @@ public class tree_post_order {
         }
     }
 
-    private static void procNode1(final PhylogenyNode node) {
-        if (node.isExternal()) {
-            if (node.isHasNodeData() && (node.getNodeData().getProperties() != null)
-                    && (node.getNodeData().getProperties().size() > 0)
-                    && (PhylogenyMethods.getNodePropertyValues(node, REF).size() == 1)) {
-            } else if (!ForesterUtil.isEmpty(node.getName())) {
-                final String name = node.getName();
-                String annotation = null;
-                final Matcher m = annotation_p.matcher(name);
-                if (m.find()) {
-                    annotation = m.group(1);
-                } else {
-                    //
-                    if (name.length() < 14) {
-                        annotation = name;
-                    } else {
-                        ForesterUtil.fatalError(PRG_NAME, "No annotation found in " + name);
-                    }
-                    //
-                    //ForesterUtil.fatalError( PRG_NAME, "No annotation found in " + name );
-                }
-                final Property prop = new Property(REF, annotation, "", XSD_STRING, Property.AppliesTo.NODE);
-                PropertiesList custom_data = node.getNodeData().getProperties();
-                if (custom_data == null) {
-                    custom_data = new PropertiesList();
-                }
-                custom_data.addProperty(prop);
-                node.getNodeData().setProperties(custom_data);
-            } else {
-                ForesterUtil.fatalError(PRG_NAME, "No annotation found in node" + node.getId());
-            }
-        } else {
-            final List<PhylogenyNode> descs = node.getDescendants();
-            final List<String> annotatons = new ArrayList<>();
-            for (final PhylogenyNode desc : descs) {
-                if (desc.isHasNodeData() && (desc.getNodeData().getProperties() != null)
-                        && (desc.getNodeData().getProperties().size() > 0)
-                        && (PhylogenyMethods.getNodePropertyValues(desc, REF).size() == 1)) {
-                    annotatons.add(PhylogenyMethods.getNodePropertyValues(desc, REF).get(0));
-                } else {
-                    ForesterUtil.fatalError(PRG_NAME, "No annotation found in node " + node.getId());
-                }
-            }
-            //   final String x = ForesterUtil.greatestCommonPrefix( annotatons, "." );
-            final String x = ForesterUtil.greatestCommonPrefix(annotatons);
-            final Property prop = new Property(REF, x, "", XSD_STRING, Property.AppliesTo.NODE);
-            PropertiesList custom_data = node.getNodeData().getProperties();
-            if (custom_data == null) {
-                custom_data = new PropertiesList();
-            }
-            custom_data.addProperty(prop);
-            node.getNodeData().setProperties(custom_data);
-            node.setName(x);
-        }
-    }
 }

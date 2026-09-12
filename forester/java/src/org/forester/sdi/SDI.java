@@ -384,36 +384,4 @@ public class SDI {
         return base;
     }
 
-    /**
-     * Calculates the mapping function for the external nodes of the gene tree:
-     * links (sets the field "link" of PhylogenyNode) each external by taxonomy
-     * identifier
-     * PhylogenyNode of gene_tree to the external PhylogenyNode of species_tree
-     * which has the same species name.
-     * Olivier CHABROL : olivier.chabrol@univ-provence.fr
-     */
-    private final void linkNodesOfGByTaxonomyIdentifier() {
-        final HashMap<String, PhylogenyNode> speciestree_ext_nodes = new HashMap<String, PhylogenyNode>();
-        if ( _species_tree.getFirstExternalNode().isRoot() ) {
-            speciestree_ext_nodes.put( _species_tree.getFirstExternalNode().getNodeData().getTaxonomy().getIdentifier()
-                                       .getValue(), _species_tree.getFirstExternalNode() );
-        }
-        else {
-            for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
-                final PhylogenyNode s = iter.next();
-                speciestree_ext_nodes.put( s.getNodeData().getTaxonomy().getIdentifier().getValue(), s );
-            }
-        }
-        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
-            final PhylogenyNode g = iter.next();
-            final PhylogenyNode s = speciestree_ext_nodes
-                    .get( g.getNodeData().getTaxonomy().getIdentifier().getValue() );
-            if ( s == null ) {
-                String message = "species [" + g.getNodeData().getTaxonomy().getIdentifier().getValue();
-                message += "] not present in species tree";
-                throw new IllegalArgumentException( message );
-            }
-            g.setLink( s );
-        }
-    }
 } // End of class SDIse.

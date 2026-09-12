@@ -107,15 +107,6 @@ class ThreadedStreamHandler extends Thread {
         sudoIsRequested = false;
     }
 
-    private void doSleep( final long millis ) {
-        try {
-            Thread.sleep( millis );
-        }
-        catch ( final InterruptedException e ) {
-            // ignore
-        }
-    }
-
     public StringBuilder getOutputBuffer() {
         return outputBuffer;
     }

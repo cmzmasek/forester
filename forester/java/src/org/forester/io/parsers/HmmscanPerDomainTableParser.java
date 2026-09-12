@@ -387,10 +387,8 @@ public final class HmmscanPerDomainTableParser {
             // PKD_channel          PF08016.5    426 jgi|Nemve1|7|gw.28.1.1 -           1604   5.9e-19   67.4  70.5   1   8   0.00053       1.1    7.3   0.4   220   264   142   191   134   200 0.73 Polycystin cation channel
             final String tokens[] = line.split( "\\s+" );
             final String target_id = tokens[ 0 ];
-            final String target_acc = tokens[ 1 ];
             final int tlen = parseInt( tokens[ 2 ], line_number, "tlen" );
             final String query = tokens[ 3 ];
-            final String query_acc = tokens[ 4 ];
             final int qlen = parseInt( tokens[ 5 ], line_number, "qlen" );
             final double fs_e_value = parseDouble( tokens[ 6 ], line_number, "E-value" );
             final double fs_score = parseDouble( tokens[ 7 ], line_number, "score" );

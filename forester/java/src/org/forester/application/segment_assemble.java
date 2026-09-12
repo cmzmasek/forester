@@ -21,13 +21,9 @@
 package org.forester.application;
 
 import org.forester.io.parsers.FastaParser;
-import org.forester.io.writers.SequenceWriter;
-import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
-import org.forester.sequence.BasicSequence;
 import org.forester.sequence.MolecularSequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.ForesterUtil;
-import org.forester.util.ViralUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -181,15 +177,6 @@ public final class segment_assemble {
         final Matcher m = p.matcher(name);
         if (m.find()) {
             return m.group(2).trim();
-        } else {
-            return null;
-        }
-    }
-
-    private static String extractSeqId(final String name, final Pattern p) {
-        final Matcher m = p.matcher(name);
-        if (m.find()) {
-            return m.group(1).trim();
         } else {
             return null;
         }

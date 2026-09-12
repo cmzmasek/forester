@@ -343,20 +343,8 @@ final class DomainParsimonyCalculator {
         return phylogeny;
     }
 
-    int getSumOfUnchangedAbsentOnNode( final String node_identifier ) {
-        return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_ABSENT );
-    }
-
-    int getSumOfUnchangedOnNode( final String node_identifier ) {
-        return getSumOfUnchangedPresentOnNode( node_identifier ) + getSumOfUnchangedAbsentOnNode( node_identifier );
-    }
-
     int getSumOfUnchangedPresentOnNode( final String node_identifier ) {
         return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_PRESENT );
-    }
-
-    SortedSet<String> getUnitsUnchangedAbsentOnNode( final String node_identifier ) {
-        return getUnitsDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_ABSENT );
     }
 
     SortedSet<String> getUnitsUnchangedPresentOnNode( final String node_identifier ) {

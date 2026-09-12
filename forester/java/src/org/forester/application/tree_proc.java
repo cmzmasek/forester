@@ -22,20 +22,12 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Annotation;
-import org.forester.phylogeny.data.PropertiesList;
-import org.forester.phylogeny.data.Property;
-import org.forester.phylogeny.data.Property.AppliesTo;
-import org.forester.phylogeny.data.Sequence;
-import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -48,9 +40,7 @@ public class tree_proc {
     private static final String PRG_NAME     = "tree_proc";
     private static final String XSD_STRING   = "xsd:string";
     private static final String VIPR_HOST    = "vipr:Hosts";
-    private static final String VIPR_SPECIES = "vipr:Species";
     private static final String VIPR_YEAR    = "vipr:Year";
-    private static final String VIPR_EC      = "vipr:EC";
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         System.out.println();
@@ -82,71 +72,11 @@ public class tree_proc {
                 .programMessage( PRG_NAME,
                                  "Successfully read in tree with " + p.getNumberOfExternalNodes() + " external nodes" );
         final int properties_added = 0;
-        final Pattern species_p = Pattern.compile( "\\[(\\S+\\s+\\S+)" );
-        final Pattern tax_p = Pattern.compile( "\\[(\\S+\\s+[^\\\\|]+)" );
         for( final PhylogenyNodeIterator iter = p.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( node.isExternal() ) {
                 node.getNodeData().setSequence(null);
 
-                /*if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                    final String name = node.getName();
-                    String species = "";
-                    final Matcher m = species_p.matcher( name );
-                    if ( m.find() ) {
-                        species = m.group( 1 );
-                    }
-                    else {
-                        System.out.println( name );
-                    }
-                    final Matcher m2 = tax_p.matcher( name );
-                    String tax = "";
-                    if ( m2.find() ) {
-                        tax = m2.group( 1 );
-                        System.out.println( tax );
-                        final Taxonomy t = new Taxonomy();
-                        t.setScientificName( tax );
-                        node.getNodeData().setTaxonomy( t );
-                    }
-                    final Sequence s = new Sequence();
-                    s.setName( "DNA polymerase III epsilon subunit" );
-                    final Annotation a = new Annotation( "EC", "2.7.7.7" );
-                    s.addAnnotation( a );
-                    node.getNodeData().addSequence( s );
-                    ///////////
-                    String host = "Human";
-                    final String ec = "2.7.7.7";
-                    if ( tax.indexOf( "felis" ) > -1 ) {
-                        host = "Human, Cat, Flea";
-                    }
-                    if ( tax.indexOf( "endosymbiont of Proechinophthirus fluctus" ) > -1 ) {
-                        host = "Lice";
-                    }
-                    if ( tax.indexOf( "endosymbiont of Cimex lectularius" ) > -1 ) {
-                        host = "Bed bug";
-                    }
-                    if ( tax.indexOf( "endosymbiont of Ixodes pacificus" ) > -1 ) {
-                        host = "Tick";
-                    }
-                    node.setName( tax + "|DNA polymerase III epsilon subunit");
-                    PropertiesList custom_data = node.getNodeData().getProperties();
-                    if ( custom_data == null ) {
-                        custom_data = new PropertiesList();
-                        node.getNodeData().setProperties( custom_data );
-                    }
-                    if ( !ForesterUtil.isEmpty( host ) ) {
-                        custom_data.addProperty( new Property( VIPR_HOST, host, "", XSD_STRING, AppliesTo.NODE ) );
-                    }
-                    if ( !ForesterUtil.isEmpty( ec ) ) {
-                        custom_data.addProperty( new Property( VIPR_EC, ec, "", XSD_STRING, AppliesTo.NODE ) );
-                    }
-                    if ( !ForesterUtil.isEmpty( species ) ) {
-                        custom_data
-                                .addProperty( new Property( VIPR_SPECIES, species, "", XSD_STRING, AppliesTo.NODE ) );
-                    }
-                    ///////////
-                }
-                */
 
             }
 

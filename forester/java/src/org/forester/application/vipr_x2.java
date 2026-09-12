@@ -98,8 +98,6 @@ public class vipr_x2 {
                         final String species = m.group( 1 );
                         final String strain = m.group( 2 );
                         final String gb_prot_acc = m.group( 3 );
-                        final String gb_genome_acc = m.group( 4 );
-                        final String uniprot_acc = m.group( 5 );
                         final String date = m.group( 6 );
                         final String host = m.group( 7 );
                         final String country = m.group( 8 );

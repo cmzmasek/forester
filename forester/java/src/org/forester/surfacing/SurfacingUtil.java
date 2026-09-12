@@ -3085,42 +3085,6 @@ final class SurfacingUtil {
         return binary_combinations;
     }
 
-    private static void printSomeStats( final DescriptiveStatistics stats, final AsciiHistogram histo, final Writer w )
-            throws IOException {
-        w.write( "<hr>" );
-        w.write( "<br>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<tt><pre>" );
-        w.write( SurfacingConstants.NL );
-        if ( histo != null ) {
-            w.write( histo.toStringBuffer( 20, '|', 40, 5 ).toString() );
-            w.write( SurfacingConstants.NL );
-        }
-        w.write( "</pre></tt>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<table>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<tr><td>N: </td><td>" + stats.getN() + "</td></tr>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<tr><td>Min: </td><td>" + stats.getMin() + "</td></tr>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<tr><td>Max: </td><td>" + stats.getMax() + "</td></tr>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<tr><td>Mean: </td><td>" + stats.arithmeticMean() + "</td></tr>" );
-        w.write( SurfacingConstants.NL );
-        if ( stats.getN() > 1 ) {
-            w.write( "<tr><td>SD: </td><td>" + stats.sampleStandardDeviation() + "</td></tr>" );
-        }
-        else {
-            w.write( "<tr><td>SD: </td><td>n/a</td></tr>" );
-        }
-        w.write( SurfacingConstants.NL );
-        w.write( "</table>" );
-        w.write( SurfacingConstants.NL );
-        w.write( "<br>" );
-        w.write( SurfacingConstants.NL );
-    }
-
     private static List<String> splitDomainCombination( final String dc ) {
         final String[] s = dc.split( "=" );
         if ( s.length != 2 ) {
