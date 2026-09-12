@@ -33,12 +33,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.util.ForesterUtil;
 
 /**
@@ -116,6 +118,8 @@ final class PropertyColorScheme {
     private final char               _truncate_at;
     // whether _ref is a reserved element slot (taxonomy/sequence field): values verbatim, no grouping
     private final boolean            _element_slot;
+    // the ref's visualization candidate when the scheme was built for one: values are read as it grouped them
+    private final VisCandidate       _candidate;
     // Coverage, for the legend's "no value" row (JS-parity: total - coverage, pinned last, dashed swatch):
     // how many visible tips the scheme was built over, and how many of those actually carry a value.
     private final int                _visible_tip_count;
@@ -168,7 +172,21 @@ final class PropertyColorScheme {
     PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
                          final String palette_name, final Map<String, Color> memory, final int[] memory_next,
                          final Boolean forced_gradient ) {
+        this( phylogeny, ref, overrides, palette_name, memory, memory_next, forced_gradient, null );
+    }
+
+    /**
+     * @param candidate the ref's visualization CANDIDATE (see {@link #visualizationCandidates(Phylogeny)}), or null.
+     *                  When given, a node's value is read exactly as the candidate grouped it
+     *                  ({@link #visualizationNodeValue}): folded and mapped to its group's representative, so a
+     *                  numeric field's "1" and "1.0" are one legend row and one colour. Null keeps the plain per-ref
+     *                  reading (annotation columns, and refs that are not candidates).
+     */
+    PropertyColorScheme( final Phylogeny phylogeny, final String ref, final Map<String, Color> overrides,
+                         final String palette_name, final Map<String, Color> memory, final int[] memory_next,
+                         final Boolean forced_gradient, final VisCandidate candidate ) {
         _ref = ref;
+        _candidate = candidate;
         _palette = paletteByName( palette_name );
         _truncate_at = truncationDelimiter( ref );
         _element_slot = isElementSlot( ref );
@@ -188,7 +206,7 @@ final class PropertyColorScheme {
         int nonempty = 0;
         int numeric = 0;
         for( final PhylogenyNode node : leaves ) {
-            final String v = valueFor( node, ref );
+            final String v = nodeValue( node );
             if ( !ForesterUtil.isEmpty( v ) && !displayLabel( v ).isEmpty() ) { // fold-to-empty draws no mark
                 nonempty++;
                 if ( parseNumber( v ) != null ) {
@@ -207,7 +225,7 @@ final class PropertyColorScheme {
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
             for( final PhylogenyNode node : leaves ) {
-                final Double d = parseNumber( valueFor( node, ref ) );
+                final Double d = parseNumber( nodeValue( node ) );
                 if ( d != null ) {
                     min = Math.min( min, d );
                     max = Math.max( max, d );
@@ -224,7 +242,7 @@ final class PropertyColorScheme {
             // "homo_sapiens " share one color. Each group's legend label is its most frequent spelling.
             final Map<String, Map<String, Integer>> key_to_label_counts = new HashMap<String, Map<String, Integer>>();
             for( final PhylogenyNode node : leaves ) {
-                final String v = valueFor( node, ref );
+                final String v = nodeValue( node );
                 if ( !ForesterUtil.isEmpty( v ) ) {
                     final String label = displayLabel( v );
                     if ( label.isEmpty() ) {
@@ -323,14 +341,14 @@ final class PropertyColorScheme {
     /** The color for this node's value of the property, or {@code null} if it has none. */
     Color colorFor( final PhylogenyNode node ) {
         if ( _gradient ) {
-            final Double d = parseNumber( valueFor( node, _ref ) );
+            final Double d = parseNumber( nodeValue( node ) );
             if ( d == null ) {
                 return null;
             }
             final double t = ( _max > _min ) ? ( ( d - _min ) / ( _max - _min ) ) : 0.0;
             return gradientColorAt( t );
         }
-        final String v = valueFor( node, _ref );
+        final String v = nodeValue( node );
         return ForesterUtil.isEmpty( v ) ? null : _key_to_color.get( groupKey( v ) );
     }
 
@@ -343,7 +361,7 @@ final class PropertyColorScheme {
         if ( !_gradient ) {
             return null;
         }
-        final Double d = parseNumber( valueFor( node, _ref ) );
+        final Double d = parseNumber( nodeValue( node ) );
         if ( d == null ) {
             return null;
         }
@@ -374,10 +392,15 @@ final class PropertyColorScheme {
      * preserved -- this is what the legend shows.
      */
     private String displayLabel( final String v ) {
-        return foldLabel( v, _truncate_at, _element_slot );
+        return ( _candidate != null ) ? v : foldLabel( v, _truncate_at, _element_slot ); // a candidate value is folded already
     }
 
-    /** The display form a raw value is grouped under -- the instance path and the candidate scorer share it. */
+    /** A node's value of this scheme's field: as its candidate grouped it, else the plain first value. */
+    private String nodeValue( final PhylogenyNode node ) {
+        return ( _candidate != null ) ? visualizationNodeValue( node, _candidate ) : valueFor( node, _ref );
+    }
+
+    /** The display form a raw value is grouped under, for a scheme built without a candidate. */
     private static String foldLabel( final String v, final char truncate_at, final boolean element_slot ) {
         if ( element_slot ) {
             return v; // element-slot values are used VERBATIM (no cut/fold/dictionary) -- the JS rule
@@ -662,11 +685,14 @@ final class PropertyColorScheme {
     }
 
     /**
-     * A user-friendly display label for a property ref: the namespace prefix is dropped,
-     * underscores become spaces, and the first letter of each word is capitalized
-     * (e.g. {@code repseq:protein_names} becomes {@code Protein Names}). The rest of each
-     * word is left untouched so acronyms such as {@code RNA} are preserved. For display
-     * only -- the underlying ref and the stored property values are never modified.
+     * The name the menus and legends show for a ref -- a PORT of Archaeopteryx.js {@code propertyDisplayName} /
+     * {@code prettifyVisLabel} (forester.js 79dd9de), character for character, because the exclusion rules match
+     * THIS string and the two programs are diffed against a shared fixture. The namespace is everything up to the
+     * FIRST colon; underscores become spaces; camelCase splits on lowercase->uppercase and on a digit before an
+     * uppercase+lowercase pair (so "H5N1" stays whole and "GlobalH1Clade" reads "Global H1 Clade"); a word whose
+     * first character is a lowercase ASCII letter has that letter capitalised, and every other word is left exactly
+     * as written. A hyphen is not a separator. The six element slots have fixed names. Display only -- the ref and
+     * the stored values are never modified.
      */
     static String displayName( final String ref ) {
         if ( ForesterUtil.isEmpty( ref ) ) {
@@ -691,28 +717,95 @@ final class PropertyColorScheme {
         if ( SEQ_GENE_NAME_REF.equals( ref ) ) {
             return "Gene Name";
         }
-        final int colon = ref.lastIndexOf( ':' );
-        final String name = ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref;
-        final StringBuilder sb = new StringBuilder( name.length() );
-        boolean start_of_word = true;
-        for( int i = 0; i < name.length(); ++i ) {
-            char c = name.charAt( i );
-            if ( c == '_' ) {
-                c = ' ';
+        return prettifyVisLabel( localName( ref ) );
+    }
+
+    /** The ref minus its namespace: everything after the FIRST colon, as forester.js reads it
+     *  ({@code ref.indexOf(':')}); the whole ref when there is none. */
+    static String localName( final String ref ) {
+        final int colon = ref.indexOf( ':' );
+        return ( colon >= 0 ) ? ref.substring( colon + 1 ) : ref;
+    }
+
+    /** forester.js {@code prettifyVisLabel}, verbatim -- see {@link #displayName(String)}. Splits on single spaces
+     *  and keeps empty words, exactly like the JS {@code split(' ')}, so runs of spaces survive as written. */
+    static String prettifyVisLabel( final String name ) {
+        final String s = name.replace( '_', ' ' ).replaceAll( "([a-z])([A-Z])", "$1 $2" )
+                .replaceAll( "([0-9])([A-Z][a-z])", "$1 $2" );
+        final String[] words = s.split( " ", -1 );
+        final StringBuilder sb = new StringBuilder( s.length() );
+        for( int i = 0; i < words.length; ++i ) {
+            if ( i > 0 ) {
+                sb.append( ' ' );
             }
-            if ( Character.isWhitespace( c ) ) {
-                start_of_word = true;
-                sb.append( c );
-            }
-            else if ( start_of_word ) {
-                sb.append( Character.toUpperCase( c ) );
-                start_of_word = false;
+            final String w = words[ i ];
+            if ( !w.isEmpty() && ( w.charAt( 0 ) >= 'a' ) && ( w.charAt( 0 ) <= 'z' ) ) {
+                sb.append( Character.toUpperCase( w.charAt( 0 ) ) ).append( w, 1, w.length() );
             }
             else {
-                sb.append( c );
+                sb.append( w );
             }
         }
         return sb.toString();
+    }
+
+    /** The displayed name split into lower-case words: every run of non-alphanumerics is one break (forester.js
+     *  {@code visNameWords}). The word rules below read this, so a rule and the label it judges cannot drift. */
+    private static String visNameWords( final String ref ) {
+        return prettifyVisLabel( localName( ref ) ).toLowerCase( Locale.ROOT ).replaceAll( "[^a-z0-9]+", " " ).trim();
+    }
+
+    private static final Pattern   VIS_EXCLUDED_LOCAL_NAME_RE = Pattern.compile( "(taxonomy|taxon|tax)id$" );
+    private static final Pattern[] VIS_EXCLUDED_WORD_RES      = { Pattern.compile( "(^| )authors?( |$)" ),
+            Pattern.compile( "(^| )set( |$)" ), Pattern.compile( "(^| )data use( |$)" ),
+            Pattern.compile( "(^| )ids?( |$)" ), Pattern.compile( "accessions?$" ),
+            Pattern.compile( "identifiers?$" ), Pattern.compile( "(^| )restricted ?until( |$)" ) };
+    private static final String[]  VIS_EXCLUDED_WORD_REASONS  = { "author", "set", "data use", "id", "accession",
+            "identifier", "restricted until" };
+    private static final Pattern[] VIS_DEPRIORITIZED_WORD_RES = { Pattern.compile( "(^| )(in|out) groups?( |$)" ),
+            Pattern.compile( "(^| )(in|out)groups?( |$)" ) };
+
+    /**
+     * Why a property ref is never offered for visualization, or {@code null} when it may be -- forester.js
+     * {@code visExcludedRef}, verbatim. These describe the RECORD rather than the organism (who deposited it, which
+     * collection it belongs to, what may be done with it, what a database calls it): they repeat like categories and
+     * so pass every statistical test, but a colour spent on one says nothing about the tree.
+     * <ul>
+     * <li>the {@code style:} namespace (per-node rendering instructions, not data);</li>
+     * <li>a taxon id: the LOCAL name, lower-cased with every non-alphanumeric removed, ends in taxonomyid / taxonid /
+     * taxid (so vipr:NCBI_Taxon_Id, ncbi_taxid, taxon_id all count);</li>
+     * <li>on the DISPLAYED name split into words: the WORDS author(s), set, data use and id(s) -- word-anchored, so
+     * "Dataset", "Authority", "Plasmid", "Hybrid" and "Lipid" survive -- and the SUFFIXES accession(s) and
+     * identifier(s), which are long enough that a name ending in those letters is one ("GBAccession").</li>
+     * </ul>
+     * Matching the displayed name rather than the raw ref is load-bearing: {@code dataUseTerms} reaches the user as
+     * "Data Use Terms". CROSS-IMPLEMENTATION CONTRACT, JS-authoritative (Christian, 2026-09-12): pinned by the JS
+     * repo's test/fixtures/vis-contract.tsv; never retune it here alone.
+     */
+    static String excludedRefReason( final String ref ) {
+        if ( ForesterUtil.isEmpty( ref ) ) {
+            return null;
+        }
+        if ( ref.startsWith( "style:" ) ) {
+            return "style";
+        }
+        if ( VIS_EXCLUDED_LOCAL_NAME_RE.matcher( localName( ref ).toLowerCase( Locale.ROOT ).replaceAll( "[^a-z0-9]",
+                                                                                                          "" ) )
+                .find() ) {
+            return "taxon id";
+        }
+        final String words = visNameWords( ref );
+        for( int i = 0; i < VIS_EXCLUDED_WORD_RES.length; ++i ) {
+            if ( VIS_EXCLUDED_WORD_RES[ i ].matcher( words ).find() ) {
+                return VIS_EXCLUDED_WORD_REASONS[ i ];
+            }
+        }
+        return null;
+    }
+
+    /** Whether a ref must never be offered for visualization. See {@link #excludedRefReason(String)}. */
+    static boolean isExcludedRef( final String ref ) {
+        return excludedRefReason( ref ) != null;
     }
 
     /**
@@ -801,216 +894,822 @@ final class PropertyColorScheme {
         return ForesterUtil.isEmpty( v ) ? null : v;
     }
 
-    /**
-     * The property references worth coloring by: those present on the tree's external
-     * nodes with between two distinct values and one less than the number of leaves
-     * (constant and per-leaf-unique properties are useless to color by). The explicit
-     * {@code style:*} visualization properties are excluded. Sorted alphabetically.
-     */
-    static List<String> colorableRefs( final Phylogeny phylogeny ) {
-        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
-            return new ArrayList<String>();
+    // =====================================================================================================
+    // AUTOMATIC VISUALIZATION CANDIDATES -- a PORT of Archaeopteryx.js, forester.js "Automatic visualization
+    // candidates" (commit 79dd9de). Christian, 2026-09-12: "The JS rules are the authoritative ones. Desktop will
+    // have to follow them 100%." The acceptance test is the JS repo's pair of fixtures -- test/fixtures/
+    // vis-contract.tsv (names) and vis-trees.tsv + vis-trees/*.xml (data) -- copied into
+    // forester/test_data/vis_contract/ and diffed by PropertyColorSchemeTest. Never retune a rule here alone.
+    //
+    // Candidacy is decided on the TREE: when it is loaded, and again only after it is EDITED. A VIEW -- a subtree,
+    // a collapse -- never re-decides it; it only re-summarizes a candidate over the tips on screen
+    // (visualizationSummary). A clade is by nature a set of tips sharing a value, and one value is refused, so
+    // re-classifying per view would drop the chosen colouring in most clades.
+    //
+    // THE REFUSAL RULES DECIDE WHAT IS OFFERED, NEVER WHAT IS ALREADY CHOSEN: after an edit, a field the user had
+    // chosen that still carries a value on any tip is KEPT, even where the rules would now refuse it
+    // (visualizationCandidatesKeeping).
+    //
+    // The rules, per candidate, in order (external nodes only):
+    //   multi-valued  a ref carried more than once by any one tip -> refused: a node cannot be two colours.
+    //   numeric       every grouped value matches VIS_NUMERIC_RE -> numeric; spellings of one number fold.
+    //   repetition    fewer than 2 distinct values -> refused.
+    //   coverage      on fewer than 2/3 of the tips -> SPARSE: offered, ranked low, never refused.
+    //   categorical   as many distinct values as the tree has TIPS (all tips, not the covered ones) -> refused as
+    //                 an identifier; more than 20 -> WIDE (offered, never opens a tree), and if distinct/covered
+    //                 > 3/5 also NEAR-UNIQUE (the very bottom).
+    //   numeric       no uniqueness test of any kind: a measurement is naturally one value per sample.
+    //   shape         <= 7 distinct values, numeric or not.
+    // Tiers, best first: 0 clean categorical, 1 every numeric, 2 wide, 3 in/out-group, 4 sparse, 5 near-unique;
+    // within a tier by score = coverage x normalised entropy, then label, then id. The tree OPENS with the first
+    // candidate that is not wide.
+    // =====================================================================================================
+
+    static final int             VIS_MIN_COVERAGE_NUM     = 2;
+    static final int             VIS_MIN_COVERAGE_DEN     = 3;
+    static final int             VIS_MAX_COLOR_CATEGORIES = 20;
+    static final int             VIS_MAX_SHAPE_CATEGORIES = 7;
+    static final int             VIS_NUMERIC_CATEGORY_MAX = 10;
+    static final int             VIS_WIDE_REPEAT_NUM      = 3;
+    static final int             VIS_WIDE_REPEAT_DEN      = 5;
+    /** What "numeric" means, spelled out: an optional sign, decimal digits with an optional fraction, an optional
+     *  exponent. PINNED as a grammar because a host language's own parser is not portable -- Java's parseDouble
+     *  accepts "Infinity" and "NaN", JavaScript's Number() accepts "0x1A" and "0b101" -- and a field of either would
+     *  be a gradient in one program and a category in the other. Matched against the whole (trimmed) value. */
+    private static final Pattern VIS_NUMERIC_RE           = Pattern
+            .compile( "[+-]?(\\d+\\.?\\d*|\\.\\d+)([eE][+-]?\\d+)?" );
+
+    /** Whether a (trimmed) value is a number under the pinned grammar -- see {@link #VIS_NUMERIC_RE}. */
+    static boolean isVisNumber( final String v ) {
+        return ( v != null ) && VIS_NUMERIC_RE.matcher( v ).matches();
+    }
+
+    /** The number a grammar-valid spelling denotes, as a fold key: "1", "1.0" and "+1" meet here. Minus zero is
+     *  zero, as {@code String(Number("-0"))} is "0" in forester.js. */
+    private static Double visNumberKey( final String v ) {
+        final double d = Double.parseDouble( v );
+        return ( d == 0.0 ) ? 0.0 : d;
+    }
+
+    /** JavaScript's whitespace set ({@code String.prototype.trim} and {@code \s}), which is wider than Java's: it
+     *  includes the no-break space and the other Unicode spaces a spreadsheet export carries. */
+    private static final String  JS_WS                     = "\\t\\n\\u000B\\f\\r \\u00A0\\u1680\\u2000-\\u200A"
+            + "\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF";
+    private static final Pattern JS_WS_RUN                 = Pattern.compile( "[" + JS_WS + "]+" );
+    private static final Pattern JS_TRAILING_PARENTHETICAL = Pattern
+            .compile( "[" + JS_WS + "]*\\([^()]*\\)[" + JS_WS + "]*\\z" );
+
+    private static boolean isJsWhitespace( final char c ) {
+        switch ( c ) {
+            case '\t':
+            case '\n':
+            case '':
+            case '\f':
+            case '\r':
+            case ' ':
+            case ' ':
+            case ' ':
+            case ' ':
+            case ' ':
+            case ' ':
+            case ' ':
+            case '　':
+            case '﻿':
+                return true;
+            default:
+                return ( c >= ' ' ) && ( c <= ' ' );
         }
-        final Map<String, Set<String>> ref_to_values = new TreeMap<String, Set<String>>();
-        final Map<String, int[]> ref_to_counts = new HashMap<String, int[]>();       // [total non-empty, numeric]
-        final Map<String, Set<Double>> ref_to_numbers = new HashMap<String, Set<Double>>();
-        for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
-            if ( ( node.getNodeData() != null ) && ( node.getNodeData().getProperties() != null ) ) {
-                for( final Property p : node.getNodeData().getProperties().getProperties() ) {
-                    final String ref = p.getRef();
-                    if ( ref.startsWith( NodeVisualData.APTX_VISUALIZATION_REF ) ) {
-                        continue;
+    }
+
+    /** {@code String.prototype.trim}. */
+    static String jsTrim( final String s ) {
+        int b = 0;
+        int e = s.length();
+        while ( ( b < e ) && isJsWhitespace( s.charAt( b ) ) ) {
+            ++b;
+        }
+        while ( ( e > b ) && isJsWhitespace( s.charAt( e - 1 ) ) ) {
+            --e;
+        }
+        return s.substring( b, e );
+    }
+
+    /** The trimmed value, or null when there is none -- how forester.js reads a value before anything else. */
+    private static String jsClean( final String v ) {
+        if ( v == null ) {
+            return null;
+        }
+        final String s = jsTrim( v );
+        return s.isEmpty() ? null : s;
+    }
+
+    /**
+     * The display form a raw PROPERTY value is grouped under -- forester.js {@code visDisplayLabel}, verbatim. For
+     * refs named exactly "country" / "host" a trailing qualifier is cut at the first ':' / ';', and a cut that lands
+     * inside a parenthetical is trimmed back to before the first unclosed '('. Then trimmed, underscores read as
+     * spaces, whitespace runs collapsed, trimmed again (so "_" folds to empty and is dropped), and the synonym
+     * dictionary applied as a WHOLE-VALUE match, retried once without a trailing parenthetical. Case is preserved
+     * here; grouping lower-cases it. Element-slot values never come through here -- they are verbatim.
+     */
+    static String visDisplayLabel( final String value, final char cut ) {
+        String s = value;
+        if ( cut != 0 ) {
+            final int at = s.indexOf( cut );
+            if ( at >= 0 ) {
+                s = s.substring( 0, at );
+                final List<Integer> open = new ArrayList<Integer>();
+                for( int i = 0; i < s.length(); ++i ) {
+                    final char c = s.charAt( i );
+                    if ( c == '(' ) {
+                        open.add( i );
                     }
-                    Set<String> vs = ref_to_values.get( ref );
-                    if ( vs == null ) {
-                        vs = new HashSet<String>();
-                        ref_to_values.put( ref, vs );
-                        ref_to_counts.put( ref, new int[ 2 ] );
-                        ref_to_numbers.put( ref, new HashSet<Double>() );
+                    else if ( ( c == ')' ) && !open.isEmpty() ) {
+                        open.remove( open.size() - 1 );
                     }
-                    vs.add( p.getValue() );
-                    if ( !ForesterUtil.isEmpty( p.getValue() ) ) {
-                        ref_to_counts.get( ref )[ 0 ]++;
-                        final Double d = parseNumber( p.getValue() );
-                        if ( d != null ) {
-                            ref_to_counts.get( ref )[ 1 ]++;
-                            ref_to_numbers.get( ref ).add( d );
+                }
+                if ( !open.isEmpty() ) {
+                    s = s.substring( 0, open.get( 0 ) );
+                }
+            }
+        }
+        s = jsTrim( JS_WS_RUN.matcher( jsTrim( s ).replace( '_', ' ' ) ).replaceAll( " " ) );
+        String hit = SYNONYM_LOOKUP.get( s.toLowerCase( Locale.ROOT ) );
+        if ( hit == null ) {
+            final String stripped = JS_TRAILING_PARENTHETICAL.matcher( s ).replaceFirst( "" );
+            if ( !stripped.equals( s ) && !stripped.isEmpty() ) {
+                hit = SYNONYM_LOOKUP.get( stripped.toLowerCase( Locale.ROOT ) );
+            }
+        }
+        return ( hit != null ) ? hit : s;
+    }
+
+    /**
+     * Whether a property describes the node itself: phyloXML applies_to "node", or "clade" -- the clade rooted at an
+     * external node IS that node (the repseq pipeline writes clade for every field). "parent_branch" is out: that is
+     * the branch above the node. forester.js {@code isNodeScopedProperty}.
+     */
+    static boolean isNodeScopedProperty( final Property p ) {
+        return ( p.getAppliesTo() == Property.AppliesTo.NODE ) || ( p.getAppliesTo() == Property.AppliesTo.CLADE );
+    }
+
+    /**
+     * Offered, but ranked after the numerics: "In-Group" and "Out-Group" say which tips were the study set and which
+     * were there to root the tree -- a fact about the ANALYSIS, which the person who rooted it already knows -- and
+     * they are typically an even two-value split at full coverage, the shape that would otherwise win. Matched as
+     * WORDS of the displayed name ("Within Group" contains "in group" and must keep leading), in both hyphenations,
+     * both one-word spellings and the plurals. forester.js {@code visDeprioritizedRef}.
+     */
+    static boolean isDeprioritizedRef( final String ref ) {
+        if ( ForesterUtil.isEmpty( ref ) ) {
+            return false;
+        }
+        final String words = visNameWords( ref );
+        for( final Pattern p : VIS_DEPRIORITIZED_WORD_RES ) {
+            if ( p.matcher( words ).find() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * One visualization candidate: the desktop form of the object forester.js {@code visualizationCandidates}
+     * returns. The summary fields (values, counts, coverage, total and a numeric field's colour mode) describe the
+     * whole tree when built, and are re-set by {@link #visualizationCandidatesKeeping} for a KEPT field.
+     */
+    static final class VisCandidate {
+
+        final String              _id;            // "prop:" + ref, or the element-slot id -- as in forester.js
+        final String              _ref;           // the property ref or slot id: what menus and schemes key on
+        final boolean             _element_slot;
+        String                    _label;
+        final boolean             _numeric;
+        int                       _coverage;
+        int                       _total;
+        List<String>              _values;
+        Map<String, Integer>      _counts;
+        final Map<String, String> _canon;         // group key -> representative; null for a non-numeric slot
+        final char                _cut;
+        final double              _score;
+        String                    _color_mode;    // "category" or "range"
+        boolean                   _switchable;
+        final boolean             _wide;
+        final boolean             _near_unique;
+        final boolean             _sparse;
+        final boolean             _deprioritized;
+        final boolean             _shape;
+        boolean                   _kept;
+
+        VisCandidate( final String id,
+                      final String ref,
+                      final boolean element_slot,
+                      final String label,
+                      final boolean numeric,
+                      final int coverage,
+                      final int total,
+                      final List<String> values,
+                      final Map<String, Integer> counts,
+                      final Map<String, String> canon,
+                      final char cut,
+                      final double score,
+                      final String color_mode,
+                      final boolean switchable,
+                      final boolean wide,
+                      final boolean near_unique,
+                      final boolean sparse,
+                      final boolean deprioritized,
+                      final boolean shape ) {
+            _id = id;
+            _ref = ref;
+            _element_slot = element_slot;
+            _label = label;
+            _numeric = numeric;
+            _coverage = coverage;
+            _total = total;
+            _values = values;
+            _counts = counts;
+            _canon = canon;
+            _cut = cut;
+            _score = score;
+            _color_mode = color_mode;
+            _switchable = switchable;
+            _wide = wide;
+            _near_unique = near_unique;
+            _sparse = sparse;
+            _deprioritized = deprioritized;
+            _shape = shape;
+        }
+
+        /** forester.js {@code tierOf}: the FIRST flag that applies, in this precedence. */
+        int tier() {
+            if ( _near_unique ) {
+                return 5;
+            }
+            if ( _sparse ) {
+                return 4;
+            }
+            if ( _deprioritized ) {
+                return 3;
+            }
+            if ( _numeric ) {
+                return 1;
+            }
+            return _wide ? 2 : 0;
+        }
+    }
+
+    /** What a view shows of a candidate: forester.js {@code visualizationSummary}. */
+    static final class VisSummary {
+
+        final List<String>         _values;
+        final Map<String, Integer> _counts;
+        final int                  _coverage;
+        final int                  _total;
+        final int                  _distinct;
+        final String               _color_mode;  // a numeric candidate's band in this view; null for a category
+        final boolean              _switchable;
+
+        VisSummary( final List<String> values,
+                    final Map<String, Integer> counts,
+                    final int coverage,
+                    final int total,
+                    final String color_mode,
+                    final boolean switchable ) {
+            _values = values;
+            _counts = counts;
+            _coverage = coverage;
+            _total = total;
+            _distinct = values.size();
+            _color_mode = color_mode;
+            _switchable = switchable;
+        }
+    }
+
+    private static final class VisGroup {
+
+        int                        _count;
+        final Map<String, Integer> _spellings = new HashMap<String, Integer>();
+    }
+
+    private static final class VisStats {
+
+        final String                _ref;
+        final boolean               _element_slot;
+        final char                  _cut;
+        int                         _nodes;
+        boolean                     _multi;
+        final Map<String, VisGroup> _keys = new LinkedHashMap<String, VisGroup>();
+
+        VisStats( final String ref, final boolean element_slot, final char cut ) {
+            _ref = ref;
+            _element_slot = element_slot;
+            _cut = cut;
+        }
+    }
+
+    /** Best first: tier, then score (higher first), then label ignoring case, then id. forester.js's sort. */
+    static final Comparator<VisCandidate> VIS_ORDER = new Comparator<VisCandidate>() {
+
+        @Override
+        public int compare( final VisCandidate a, final VisCandidate b ) {
+            final int ta = a.tier();
+            final int tb = b.tier();
+            if ( ta != tb ) {
+                return ta - tb;
+            }
+            if ( a._score != b._score ) {
+                return Double.compare( b._score, a._score );
+            }
+            final int by_label = a._label.toLowerCase( Locale.ROOT ).compareTo( b._label.toLowerCase( Locale.ROOT ) );
+            return ( by_label != 0 ) ? by_label : a._id.compareTo( b._id );
+        }
+    };
+
+    /**
+     * The visualization candidates of a tree, best first -- forester.js {@code visualizationCandidates}, verbatim.
+     * See the rules at the top of this section. Candidates come from the six element slots (verbatim values, never
+     * folded) and from node-scoped properties that no name rule excludes. Every external node counts, collapsed or
+     * not: this is the TREE, not a view.
+     */
+    static List<VisCandidate> visualizationCandidates( final Phylogeny tree ) {
+        final List<VisCandidate> candidates = new ArrayList<VisCandidate>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return candidates;
+        }
+        int total = 0;
+        final Map<String, VisStats> stats = new LinkedHashMap<String, VisStats>();
+        for( final PhylogenyNode n : allExternalNodes( tree ) ) {
+            total++;
+            // gather this node's values per candidate first, so carrying the same ref twice is visible as such
+            final Map<String, List<String>> per_node = new LinkedHashMap<String, List<String>>();
+            final NodeData nd = n.getNodeData();
+            if ( nd != null ) {
+                for( final String slot : ELEMENT_SLOT_REFS ) {
+                    if ( slot.startsWith( "tax:" ) ) {
+                        if ( nd.getTaxonomies() != null ) {
+                            for( final Taxonomy t : nd.getTaxonomies() ) {
+                                addVisValue( per_node, slot, taxonomySlotValue( t, slot ) );
+                            }
+                        }
+                    }
+                    else if ( nd.getSequences() != null ) {
+                        for( final Sequence q : nd.getSequences() ) {
+                            addVisValue( per_node, slot, sequenceSlotValue( q, slot ) );
+                        }
+                    }
+                }
+                if ( nd.getProperties() != null ) {
+                    for( final Property p : nd.getProperties().getProperties() ) {
+                        if ( !ForesterUtil.isEmpty( p.getRef() ) && isNodeScopedProperty( p )
+                                && !isExcludedRef( p.getRef() ) ) {
+                            addVisValue( per_node, "prop:" + p.getRef(), p.getValue() );
                         }
                     }
                 }
             }
+            for( final Map.Entry<String, List<String>> e : per_node.entrySet() ) {
+                final String id = e.getKey();
+                VisStats s = stats.get( id );
+                if ( s == null ) {
+                    final boolean slot = !id.startsWith( "prop:" );
+                    final String ref = slot ? id : id.substring( 5 );
+                    s = new VisStats( ref, slot, slot ? 0 : truncationDelimiter( ref ) );
+                    stats.put( id, s );
+                }
+                s._nodes++;
+                if ( e.getValue().size() > 1 ) {
+                    s._multi = true;
+                }
+                for( final String v : e.getValue() ) {
+                    // properties group under their normalized display form; element slots are curated, verbatim
+                    final String display = s._element_slot ? v : visDisplayLabel( v, s._cut );
+                    if ( display.isEmpty() ) {
+                        continue;
+                    }
+                    final String key = s._element_slot ? display : display.toLowerCase( Locale.ROOT );
+                    VisGroup g = s._keys.get( key );
+                    if ( g == null ) {
+                        g = new VisGroup();
+                        s._keys.put( key, g );
+                    }
+                    g._count++;
+                    final Integer c = g._spellings.get( display );
+                    g._spellings.put( display, ( c == null ) ? 1 : ( c + 1 ) );
+                }
+            }
         }
-        final int leaves = phylogeny.getExternalNodes().size();
-        final List<String> candidate_refs = new ArrayList<String>();
-        // The ELEMENT SLOTS (taxonomy/sequence fields) are offered under the same candidacy rules as the
-        // properties. A per-leaf-unique categorical slot (sequence names, species names on a species tree)
-        // is dropped exactly like a property would be -- one color per tip is useless to color by, and
-        // identifier-like fields stay out (the JS rule too).
-        for( final String slot : ELEMENT_SLOT_REFS ) {
-            final Set<String> values = new HashSet<String>();
-            int nonempty = 0;
-            int numeric = 0;
-            final Set<Double> numbers = new HashSet<Double>();
-            for( final PhylogenyNode node : phylogeny.getExternalNodes() ) {
-                final String v = valueFor( node, slot );
-                if ( v != null ) {
-                    values.add( v );
-                    nonempty++;
-                    final Double d = parseNumber( v );
-                    if ( d != null ) {
-                        numeric++;
-                        numbers.add( d );
+        for( final Map.Entry<String, VisStats> e : stats.entrySet() ) {
+            final String id = e.getKey();
+            final VisStats s = e.getValue();
+            if ( s._multi ) {
+                continue;
+            }
+            final int covered = s._nodes;
+            // one legend row per group: the most frequent spelling (ties by code point), first letter capitalised
+            // for a property
+            final Map<String, String> canon = new LinkedHashMap<String, String>();
+            Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
+            for( final Map.Entry<String, VisGroup> ge : s._keys.entrySet() ) {
+                String rep = null;
+                int best = -1;
+                for( final Map.Entry<String, Integer> sp : ge.getValue()._spellings.entrySet() ) {
+                    final int n = sp.getValue();
+                    if ( ( n > best ) || ( ( n == best ) && ( sp.getKey().compareTo( rep ) < 0 ) ) ) {
+                        rep = sp.getKey();
+                        best = n;
+                    }
+                }
+                if ( !s._element_slot ) {
+                    rep = rep.substring( 0, 1 ).toUpperCase( Locale.ROOT ) + rep.substring( 1 );
+                }
+                canon.put( ge.getKey(), rep );
+                counts.put( rep, ge.getValue()._count );
+            }
+            List<String> values = new ArrayList<String>( counts.keySet() );
+            boolean numeric = true;
+            for( final String v : values ) {
+                if ( !isVisNumber( v ) ) {
+                    numeric = false;
+                    break;
+                }
+            }
+            if ( numeric ) {
+                // "1", "1.0" and "+1" are one value: group the spellings by the number they denote; the
+                // representative is the SHORTEST spelling, ties by code point (a number has no preferred spelling,
+                // so frequency would only pick the exporter's habit). canon then maps every group to it, so
+                // visualizationNodeValue folds a node's "1.0" the same way.
+                final Map<Double, String> rep_by_number = new LinkedHashMap<Double, String>();
+                final Map<Double, Integer> count_by_number = new HashMap<Double, Integer>();
+                for( final String v : values ) {
+                    final Double k = visNumberKey( v );
+                    final String r = rep_by_number.get( k );
+                    if ( r == null ) {
+                        rep_by_number.put( k, v );
+                        count_by_number.put( k, counts.get( v ) );
+                    }
+                    else {
+                        count_by_number.put( k, count_by_number.get( k ) + counts.get( v ) );
+                        if ( ( v.length() < r.length() ) || ( ( v.length() == r.length() ) && ( v.compareTo( r ) < 0 ) ) ) {
+                            rep_by_number.put( k, v );
+                        }
+                    }
+                }
+                final Map<String, Integer> folded = new LinkedHashMap<String, Integer>();
+                for( final Map.Entry<Double, String> re : rep_by_number.entrySet() ) {
+                    folded.put( re.getValue(), count_by_number.get( re.getKey() ) );
+                }
+                for( final Map.Entry<String, String> ce : canon.entrySet() ) {
+                    ce.setValue( rep_by_number.get( visNumberKey( ce.getValue() ) ) );
+                }
+                counts = folded;
+                values = new ArrayList<String>( counts.keySet() );
+            }
+            final int distinct = values.size();
+            // a sparse field is RANKED LOW, never refused: a half-annotated field is often the interesting one
+            final boolean sparse = ( covered * VIS_MIN_COVERAGE_DEN ) < ( total * VIS_MIN_COVERAGE_NUM );
+            if ( distinct < 2 ) {
+                continue;
+            }
+            final String color_mode;
+            boolean switchable = false;
+            boolean wide = false;
+            boolean near_unique = false;
+            if ( numeric ) {
+                // no uniqueness refusal for numbers: a read count, a viral load or a year is naturally one value per
+                // sample, which is what a measurement is -- identifiers are caught by the NAME rules
+                color_mode = ( distinct <= VIS_NUMERIC_CATEGORY_MAX ) ? "category" : "range";
+                switchable = distinct <= VIS_MAX_COLOR_CATEGORIES;
+                Collections.sort( values, new Comparator<String>() {
+
+                    @Override
+                    public int compare( final String a, final String b ) {
+                        return Double.compare( Double.parseDouble( a ), Double.parseDouble( b ) );
+                    }
+                } );
+            }
+            else {
+                // Counted against TOTAL tips, not the covered ones -- Christian's decision 2026-09-12, left alone
+                // until a user complains: a field unique across its annotated subset (1,168 strains over 1,168 of
+                // 1,170 tips) is offered at the bottom rather than refused, because counting against covered would
+                // also refuse a field carried by two tips with two values, where all-unique is a sample of two.
+                if ( distinct >= total ) {
+                    continue;
+                }
+                if ( distinct > VIS_MAX_COLOR_CATEGORIES ) {
+                    wide = true;
+                    if ( ( distinct * VIS_WIDE_REPEAT_DEN ) > ( covered * VIS_WIDE_REPEAT_NUM ) ) {
+                        near_unique = true;
+                    }
+                }
+                color_mode = "category";
+                Collections.sort( values );
+            }
+            // coverage times balance, where balance is the normalised entropy of the value distribution; StrictMath
+            // (fdlibm) is what V8 uses too, so equal scores stay equal across the two programs
+            double entropy = 0;
+            for( final String v : values ) {
+                final double p = (double) counts.get( v ) / covered;
+                entropy -= p * StrictMath.log( p );
+            }
+            final double balance = entropy / StrictMath.log( distinct );
+            candidates.add( new VisCandidate( id,
+                                              s._ref,
+                                              s._element_slot,
+                                              s._element_slot ? displayName( s._ref )
+                                                      : prettifyVisLabel( localName( s._ref ) ),
+                                              numeric,
+                                              covered,
+                                              total,
+                                              values,
+                                              counts,
+                                              ( !s._element_slot || numeric ) ? canon : null,
+                                              s._cut,
+                                              ( (double) covered / total ) * balance,
+                                              color_mode,
+                                              switchable,
+                                              wide,
+                                              near_unique,
+                                              sparse,
+                                              isDeprioritizedRef( s._ref ),
+                                              distinct <= VIS_MAX_SHAPE_CATEGORIES ) );
+        }
+        // two refs whose prettified labels coincide (different namespaces) are BOTH shown as their full ref
+        final Map<String, Integer> label_count = new HashMap<String, Integer>();
+        for( final VisCandidate c : candidates ) {
+            final Integer n = label_count.get( c._label );
+            label_count.put( c._label, ( n == null ) ? 1 : ( n + 1 ) );
+        }
+        for( final VisCandidate c : candidates ) {
+            if ( ( label_count.get( c._label ) > 1 ) && !c._element_slot ) {
+                c._label = c._ref;
+            }
+        }
+        Collections.sort( candidates, VIS_ORDER );
+        return candidates;
+    }
+
+    private static void addVisValue( final Map<String, List<String>> per_node, final String id, final String value ) {
+        final String v = jsClean( value );
+        if ( v == null ) {
+            return;
+        }
+        List<String> l = per_node.get( id );
+        if ( l == null ) {
+            l = new ArrayList<String>( 1 );
+            per_node.put( id, l );
+        }
+        l.add( v );
+    }
+
+    private static String taxonomySlotValue( final Taxonomy t, final String slot ) {
+        return TAX_CODE_REF.equals( slot ) ? t.getTaxonomyCode()
+                : ( TAX_SCI_NAME_REF.equals( slot ) ? t.getScientificName() : t.getCommonName() );
+    }
+
+    private static String sequenceSlotValue( final Sequence q, final String slot ) {
+        return SEQ_NAME_REF.equals( slot ) ? q.getName()
+                : ( SEQ_SYMBOL_REF.equals( slot ) ? q.getSymbol() : q.getGeneName() );
+    }
+
+    /** Every external node of the tree, collapsed or not (a collapse is a view; candidacy reads the tree). Walks
+     *  the topology rather than the cached external-node list, which an in-place edit can leave stale. */
+    static List<PhylogenyNode> allExternalNodes( final Phylogeny tree ) {
+        final List<PhylogenyNode> tips = new ArrayList<PhylogenyNode>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return tips;
+        }
+        final Deque<PhylogenyNode> stack = new ArrayDeque<PhylogenyNode>();
+        stack.push( tree.getRoot() );
+        while ( !stack.isEmpty() ) {
+            final PhylogenyNode n = stack.pop();
+            if ( n.isExternal() ) {
+                tips.add( n );
+            }
+            else {
+                for( final PhylogenyNode child : n.getDescendants() ) {
+                    stack.push( child );
+                }
+            }
+        }
+        return tips;
+    }
+
+    /**
+     * Reads a node's value for a candidate exactly as the classifier grouped it -- forester.js
+     * {@code visualizationNodeValue} -- so a node can never carry a value that maps to no colour: a property is
+     * folded through {@link #visDisplayLabel} and mapped to its group's representative (a numeric field's "1.0"
+     * reads "1"); an element slot is verbatim, except that a numeric slot folds its spellings too. Null when the node
+     * has none.
+     * <p>
+     * ONE DELIBERATE DIFFERENCE, reported to the JS side: a value that folds to EMPTY ("_") reads as no value here,
+     * where forester.js returns "" and so gives it a blank legend row of its own.
+     */
+    static String visualizationNodeValue( final PhylogenyNode node, final VisCandidate c ) {
+        final NodeData nd = node.getNodeData();
+        if ( nd == null ) {
+            return null;
+        }
+        if ( !c._element_slot ) {
+            if ( nd.getProperties() != null ) {
+                for( final Property p : nd.getProperties().getProperties() ) {
+                    if ( c._ref.equals( p.getRef() ) && isNodeScopedProperty( p ) ) {
+                        final String v = jsClean( p.getValue() );
+                        if ( v != null ) {
+                            if ( c._canon == null ) {
+                                return v;
+                            }
+                            final String display = visDisplayLabel( v, c._cut );
+                            if ( display.isEmpty() ) {
+                                return null;
+                            }
+                            final String r = c._canon.get( display.toLowerCase( Locale.ROOT ) );
+                            return ( r != null ) ? r : display;
+                        }
                     }
                 }
             }
-            final boolean gradient = ( ( numeric * 2 ) > nonempty ) && ( numbers.size() >= 2 );
-            if ( ( values.size() >= 2 ) && ( gradient || ( values.size() < leaves ) ) ) {
-                candidate_refs.add( slot );
+            return null;
+        }
+        if ( c._ref.startsWith( "tax:" ) ) {
+            if ( nd.getTaxonomies() != null ) {
+                for( final Taxonomy t : nd.getTaxonomies() ) {
+                    final String v = jsClean( taxonomySlotValue( t, c._ref ) );
+                    if ( v != null ) {
+                        return foldSlotValue( c, v );
+                    }
+                }
+            }
+            return null;
+        }
+        if ( nd.getSequences() != null ) {
+            for( final Sequence q : nd.getSequences() ) {
+                final String v = jsClean( sequenceSlotValue( q, c._ref ) );
+                if ( v != null ) {
+                    return foldSlotValue( c, v );
+                }
             }
         }
-        for( final Map.Entry<String, Set<String>> e : ref_to_values.entrySet() ) {
-            final String ref = e.getKey();
-            final int distinct = e.getValue().size();
-            if ( distinct < 2 ) {
-                continue; // constant column: nothing to distinguish
-            }
-            final int[] c = ref_to_counts.get( ref );
-            final boolean gradient = ( ( c[ 1 ] * 2 ) > c[ 0 ] ) && ( ref_to_numbers.get( ref ).size() >= 2 );
-            // Drop per-leaf-unique CATEGORICAL columns (one color per tip is useless to color by); a numeric
-            // column stays colorable even when every tip has a distinct value, because it renders as a gradient.
-            if ( gradient || ( distinct < leaves ) ) {
-                candidate_refs.add( ref );
-            }
-        }
-        // ORDER the candidates BEST FIRST (JS parity): tier (well-covered categorical, then well-covered
-        // gradient, then sparse), score = coverage x normalized entropy within a tier, ties by display label
-        // then ref. So a field that reads one value on 92% of its nodes ranks low even at full coverage, and
-        // -- deliberately unlike the JS, which REFUSES fields covering < 2/3 of the tips -- a sparse field is
-        // ranked LAST rather than hidden: desktop users hand-annotate subsets, and a field you added is a
-        // field you can color by.
-        final List<Object[]> scored = new ArrayList<Object[]>(); // { ref, tier, score }
-        for( final String ref : candidate_refs ) {
-            scored.add( new Object[] { ref, Integer.valueOf( candidateTier( phylogeny, ref, leaves ) ),
-                                       Double.valueOf( candidateScore( phylogeny, ref, leaves ) ) } );
-        }
-        Collections.sort( scored, new Comparator<Object[]>() {
+        return null;
+    }
 
-            @Override
-            public int compare( final Object[] a, final Object[] b ) {
-                final int by_tier = Integer.compare( (Integer) a[ 1 ], (Integer) b[ 1 ] );
-                if ( by_tier != 0 ) {
-                    return by_tier;
+    private static String foldSlotValue( final VisCandidate c, final String v ) {
+        if ( c._canon == null ) {
+            return v;
+        }
+        final String r = c._canon.get( v );
+        return ( r != null ) ? r : v;
+    }
+
+    /** The visualization a tree OPENS with: the first candidate that is not wide (21+ values are offered, never
+     *  imposed -- and they do not block what sits below them), or null. forester.js {@code openingVisualization}. */
+    static VisCandidate openingVisualization( final List<VisCandidate> candidates ) {
+        if ( candidates != null ) {
+            for( final VisCandidate c : candidates ) {
+                if ( !c._wide ) {
+                    return c;
                 }
-                final int by_score = Double.compare( (Double) b[ 2 ], (Double) a[ 2 ] );
-                if ( by_score != 0 ) {
-                    return by_score;
-                }
-                final int by_label = String.CASE_INSENSITIVE_ORDER.compare( displayName( (String) a[ 0 ] ),
-                                                                            displayName( (String) b[ 0 ] ) );
-                return ( by_label != 0 ) ? by_label : ( (String) a[ 0 ] ).compareTo( (String) b[ 0 ] );
             }
-        } );
+        }
+        return null;
+    }
+
+    /**
+     * What a VIEW shows of a candidate: its values, counts and coverage over {@code tips} -- forester.js
+     * {@code visualizationSummary}. Never re-decides candidacy. A numeric candidate also gets the view's colour-mode
+     * band (up to 10 distinct: colours, switchable; 11-20: range, switchable; above: range, fixed); a category keeps
+     * its mode.
+     */
+    static VisSummary visualizationSummary( final VisCandidate c, final List<PhylogenyNode> tips ) {
+        final Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
+        int total = 0;
+        int coverage = 0;
+        for( final PhylogenyNode n : tips ) {
+            total++;
+            final String v = visualizationNodeValue( n, c );
+            if ( v != null ) {
+                coverage++;
+                final Integer k = counts.get( v );
+                counts.put( v, ( k == null ) ? 1 : ( k + 1 ) );
+            }
+        }
+        final List<String> values = new ArrayList<String>( counts.keySet() );
+        if ( c._numeric ) {
+            Collections.sort( values, new Comparator<String>() {
+
+                @Override
+                public int compare( final String a, final String b ) {
+                    return Double.compare( Double.parseDouble( a ), Double.parseDouble( b ) );
+                }
+            } );
+            final int d = values.size();
+            return new VisSummary( values, counts, coverage, total,
+                                   ( d <= VIS_NUMERIC_CATEGORY_MAX ) ? "category" : "range",
+                                   d <= VIS_MAX_COLOR_CATEGORIES );
+        }
+        Collections.sort( values );
+        return new VisSummary( values, counts, coverage, total, null, false );
+    }
+
+    /**
+     * The candidates of a tree the user has EDITED, keeping the fields they had chosen -- forester.js
+     * {@code visualizationCandidatesKeeping}. The refusal rules decide what is offered, never what is already
+     * chosen: colouring by Host and deleting every clade but one must not silently uncolour the tree because one
+     * host is "not a category". A chosen field that is no longer offered but still carries a value on some tip is
+     * appended after the offered ones and flagged {@code _kept}, so the menu holds it exactly as long as the user
+     * does; the next edit drops it unless it is still chosen. {@code chosen} are the previous candidate objects --
+     * their grouping travels with them. A chosen field with no value left anywhere is dropped.
+     */
+    static List<VisCandidate> visualizationCandidatesKeeping( final Phylogeny tree,
+                                                              final java.util.Collection<VisCandidate> chosen ) {
+        final List<VisCandidate> candidates = visualizationCandidates( tree );
+        final Set<String> ids = new HashSet<String>();
+        for( final VisCandidate c : candidates ) {
+            ids.add( c._id );
+        }
+        if ( chosen != null ) {
+            for( final VisCandidate c : chosen ) {
+                if ( ( c == null ) || ids.contains( c._id ) ) {
+                    continue;
+                }
+                final VisSummary s = visualizationSummary( c, allExternalNodes( tree ) );
+                if ( s._coverage == 0 ) {
+                    continue;
+                }
+                c._values = s._values;
+                c._counts = s._counts;
+                c._coverage = s._coverage;
+                c._total = s._total;
+                if ( c._numeric ) {
+                    c._color_mode = s._color_mode;
+                    c._switchable = s._switchable;
+                }
+                c._kept = true;
+                ids.add( c._id );
+                candidates.add( c );
+            }
+        }
+        return candidates;
+    }
+
+    /** The candidate with this ref in {@code candidates}, or null. */
+    static VisCandidate findCandidate( final List<VisCandidate> candidates, final String ref ) {
+        if ( ( candidates != null ) && ( ref != null ) ) {
+            for( final VisCandidate c : candidates ) {
+                if ( ref.equals( c._ref ) ) {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The Color-by band of a CANDIDATE in a view: a numeric candidate's band follows its distinct count among the
+     *  tips on screen; a categorical candidate is a category in every view, whatever its values happen to look like
+     *  there. See {@link #colorModeBand(List, String)} for the legacy detection used by non-candidate refs. */
+    static ModeBand colorModeBand( final VisCandidate c, final List<PhylogenyNode> tips ) {
+        if ( !c._numeric ) {
+            return ModeBand.NOT_NUMERIC;
+        }
+        final int d = visualizationSummary( c, tips )._distinct;
+        if ( d <= VIS_NUMERIC_CATEGORY_MAX ) {
+            return ModeBand.SMALL;
+        }
+        return ( d <= VIS_MAX_COLOR_CATEGORIES ) ? ModeBand.MEDIUM : ModeBand.LARGE;
+    }
+
+    /** The refs of {@link #visualizationCandidates(Phylogeny)}, best first -- what "Color by" offers for a tree. */
+    static List<String> colorableRefs( final Phylogeny phylogeny ) {
         final List<String> refs = new ArrayList<String>();
-        for( final Object[] row : scored ) {
-            refs.add( (String) row[ 0 ] );
+        for( final VisCandidate c : visualizationCandidates( phylogeny ) ) {
+            refs.add( c._ref );
         }
         return refs;
     }
 
-    /**
-     * The field to AUTO-COLOR a newly opened tree by (JS parity: "a tree opens already coloured by its most
-     * informative field"), or null when nothing qualifies: the top-ranked candidate, provided it is
-     * well-covered (a sparse field is offered in the menu but never chosen for you -- the JS rule for its
-     * wide/refused fields, applied here to the sparse tier).
-     */
+    /** The field a newly opened tree is coloured by ({@link #openingVisualization}), or null for none. */
     static String autoColorCandidate( final Phylogeny phylogeny ) {
-        final List<String> refs = colorableRefs( phylogeny );
-        if ( refs.isEmpty() ) {
-            return null;
-        }
-        final String top = refs.get( 0 );
-        return ( candidateTier( phylogeny, top, phylogeny.getExternalNodes().size() ) < 2 ) ? top : null;
+        final VisCandidate c = openingVisualization( visualizationCandidates( phylogeny ) );
+        return ( c == null ) ? null : c._ref;
     }
 
-    /** Minimum share of tips a field must cover to rank in the well-covered tiers (the JS refusal threshold,
-     *  used here for RANKING only). */
-    private static final double WELL_COVERED_FRACTION = 2.0 / 3.0;
-
-    /** 0 = well-covered categorical-by-default, 1 = well-covered gradient-by-default, 2 = sparse (< 2/3). */
-    private static int candidateTier( final Phylogeny phy, final String ref, final int leaves ) {
-        final int[] cov = coverageAndGroups( phy, ref )._counts;
-        if ( ( leaves > 0 ) && ( ( (double) cov[ 0 ] / leaves ) < WELL_COVERED_FRACTION ) ) {
-            return 2;
-        }
-        return defaultsToGradient( phy.getExternalNodes(), ref ) ? 1 : 0;
-    }
-
-    /**
-     * The JS ranking score: {@code (coverage / total) x (H / ln distinct)} where {@code H} is the Shannon
-     * entropy of the GROUPED value distribution -- coverage times how informatively the field splits the
-     * tree. Grouping runs first (the score is computed on legend groups, like the JS classifier's).
-     */
-    static double candidateScore( final Phylogeny phy, final String ref, final int leaves ) {
-        final GroupStats g = coverageAndGroups( phy, ref );
-        final int coverage = g._counts[ 0 ];
-        final int distinct = g._group_counts.size();
-        if ( ( coverage == 0 ) || ( distinct < 2 ) || ( leaves == 0 ) ) {
-            return 0;
-        }
-        double h = 0;
-        for( final int n : g._group_counts.values() ) {
-            final double pr = (double) n / coverage;
-            h -= pr * Math.log( pr );
-        }
-        return ( (double) coverage / leaves ) * ( h / Math.log( distinct ) );
-    }
-
-    private static final class GroupStats {
-        final int[]                _counts;       // [ tips with a (non-fold-empty) value ]
-        final Map<String, Integer> _group_counts; // group key -> tips in the group
-
-        GroupStats( final int[] counts, final Map<String, Integer> group_counts ) {
-            _counts = counts;
-            _group_counts = group_counts;
-        }
-    }
-
-    private static GroupStats coverageAndGroups( final Phylogeny phy, final String ref ) {
-        final char truncate_at = truncationDelimiter( ref );
-        final boolean element_slot = isElementSlot( ref );
-        final Map<String, Integer> groups = new HashMap<String, Integer>();
-        int covered = 0;
-        for( final PhylogenyNode node : phy.getExternalNodes() ) {
-            final String v = valueFor( node, ref );
-            if ( !ForesterUtil.isEmpty( v ) ) {
-                final String label = foldLabel( v, truncate_at, element_slot );
-                if ( !label.isEmpty() ) {
-                    covered++;
-                    final String key = element_slot ? label : label.toLowerCase( Locale.ROOT );
-                    final Integer n = groups.get( key );
-                    groups.put( key, ( n == null ) ? 1 : ( n + 1 ) );
-                }
+    /** The NUMERIC candidates of a tree (every value a number under the pinned grammar), best first -- the fields
+     *  "Size by" can scale a symbol by. */
+    static List<String> numericRefs( final Phylogeny phylogeny ) {
+        final List<String> refs = new ArrayList<String>();
+        for( final VisCandidate c : visualizationCandidates( phylogeny ) ) {
+            if ( c._numeric ) {
+                refs.add( c._ref );
             }
         }
-        return new GroupStats( new int[] { covered }, groups );
+        return refs;
     }
 
-    /**
-     * The colorable refs whose (visible) values are predominantly numeric -- i.e. the ones that can be SIZED by
-     * ("Size by" scales a node symbol by the value). A subset of {@link #colorableRefs(Phylogeny)}; the same
-     * "predominantly numeric with a real range" test the gradient coloring uses.
-     */
-    static List<String> numericRefs( final Phylogeny phylogeny ) {
-        return numericRefs( phylogeny, colorableRefs( phylogeny ) );
-    }
-
-    /** As {@link #numericRefs(Phylogeny)} but reusing an already-computed {@code colorable} list, so a caller that
-     *  also needs {@link #colorableRefs(Phylogeny)} does not scan the whole tree's properties twice. */
+    /** The numeric refs among {@code colorable}, in its order. */
     static List<String> numericRefs( final Phylogeny phylogeny, final List<String> colorable ) {
-        final List<PhylogenyNode> leaves = visibleExternalNodes( phylogeny );
+        final Set<String> numeric = new HashSet<String>( numericRefs( phylogeny ) );
         final List<String> refs = new ArrayList<String>();
         for( final String ref : colorable ) {
-            if ( shouldUseGradient( leaves, ref ) ) {
+            if ( numeric.contains( ref ) ) {
                 refs.add( ref );
             }
         }

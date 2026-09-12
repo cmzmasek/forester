@@ -277,6 +277,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Visualization lifecycle (view never reclassifies, edit keeps the choice): ");
+        if (org.forester.archaeopteryx.VisualizationLifecycleTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node hover card: ");
         if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
             System.out.println("OK.");
@@ -1915,6 +1923,15 @@ public final class Test {
         }
         System.out.print("phyloXML namespace header: ");
         if (testPhyloXmlNamespaceHeader()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Branch-length layout (time<->divergence): ");
+        if (org.forester.archaeopteryx.BranchLengthLayoutTest.test()) {
             System.out.println("OK.");
             succeeded++;
         }

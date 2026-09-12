@@ -35,7 +35,6 @@ import java.net.URI;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,7 +59,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JOptionPane;
-import javax.swing.text.MaskFormatter;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
@@ -82,7 +80,6 @@ import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 import org.forester.util.TaxonomyUtil;
 
@@ -153,9 +150,8 @@ public final class AptxUtil {
      * Assigns each taxon a visually distinct color from a qualitative palette: hues spread evenly
      * around the wheel with a slight saturation/brightness alternation so adjacent entries separate
      * further. Deterministic in the input's (sorted) iteration order, so the same set of taxa always
-     * yields the same colors and exports are reproducible. Used by the rank colorizer instead of
-     * {@link #calculateColorFromString} (which derives a color from a name's spelling, so similar
-     * names collide into near-identical, muddy colors). Returns a map in the same order as the input.
+     * yields the same colors and exports are reproducible.
+     * Returns a map in the same order as the input.
      */
     /**
      * Tableau 10 -- the shared, curated qualitative palette for ALL categorical annotation coloring
@@ -209,15 +205,6 @@ public final class AptxUtil {
         return result;
     }
 
-    public static MaskFormatter createMaskFormatter(final String s) {
-        MaskFormatter formatter = null;
-        try {
-            formatter = new MaskFormatter(s);
-        } catch (final ParseException e) {
-            throw new IllegalArgumentException(e);
-        }
-        return formatter;
-    }
 
     final static public boolean isHasAtLeastNodeWithEvent(final Phylogeny phy) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
@@ -884,32 +871,22 @@ public final class AptxUtil {
                 return Options.TIME_AXIS_TYPE.CALENDAR;
             }
         }
-        // no / unrecognized unit -> magnitude fallback over the node <date> values
-        int count = 0;
-        int calendar_like = 0;
-        double min = Double.MAX_VALUE;
-        double max = -Double.MAX_VALUE;
-        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null)) {
-                final double v = n.getNodeData().getDate().getValue().doubleValue();
-                ++count;
-                min = Math.min(min, v);
-                max = Math.max(max, v);
-                if ((v >= 1500) && (v <= 2200)) {
-                    ++calendar_like;
-                }
-            }
-        }
-        if (count == 0) {
-            return Options.TIME_AXIS_TYPE.NONE;
-        }
-        if ((calendar_like * 2) > count) { // strict majority clustered near the present -> calendar years
-            return Options.TIME_AXIS_TYPE.CALENDAR;
-        }
-        if ((max > 10) && (min <= (max * 0.05))) { // ages before present, decreasing toward ~0 -> geologic
-            return Options.TIME_AXIS_TYPE.GEOLOGIC;
-        }
+        // No unit, or one we do not recognise: DO NOT GUESS. A time axis states what the numbers MEAN, so a wrong
+        // guess is worse than none -- it prints a confident, wrong claim across the figure.
+        //
+        // There used to be a magnitude fallback here: a majority of values in [1500,2200] -> CALENDAR, else
+        // max > 10 with min near 0 -> GEOLOGIC. The second rule is the trap. BEAST writes node ages as an
+        // UNIT-LESS `height`, so a perfectly ordinary influenza tree spanning 11 years satisfies it, and three real
+        // trees (HA_continuous_MCC, HA_discrete_MCC, influenza.tree -- 1,372 dated nodes) were being drawn with
+        // Neogene/Quaternary bands and labelled in millions of years. Measured over every dated tree in both
+        // projects' corpora: EVERY tree carrying a unit derives correctly from the unit alone, NO tree relied on the
+        // [1500,2200] calendar rule, and the only trees the fallback affected were the three it got wrong.
+        //
+        // A tree whose dates carry no unit therefore gets the plain numeric distance axis, and the user can still
+        // choose an axis per tree (the Time Axis control) when they know what the numbers are.
+        // FOLLOW-ON, agreed with Christian 2026-09-10: infer the unit from tip labels where they carry sampling
+        // dates ("A/duck/Guangdong/12/2000"), which would also give the calendar axis a real present-date anchor.
+        // That is inference from evidence in the file rather than a guess from magnitude.
         return Options.TIME_AXIS_TYPE.NONE;
     }
 
@@ -1688,14 +1665,17 @@ public final class AptxUtil {
             }
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);
-            // AUTO-COLOR (JS parity: "a tree opens already coloured by its most informative field"): apply the
-            // top-ranked well-covered Color-by candidate to the freshly loaded tree. Only when nothing chose a
-            // color already -- a figure spec restored from the file is applied AFTER this and wins anyway, and
-            // a tab that carries a color keeps it. A sparse field is offered but never chosen for you.
+            // AUTO-COLOR (JS-authoritative): a tree opens coloured by THE FIRST CANDIDATE THAT IS NOT WIDE
+            // (forester.js openingVisualization), so tiers 0, 1, 3 and 4 can open a tree, each only when nothing above
+            // it exists, and a wide field neither opens one nor blocks what sits below it. Only when nothing chose a
+            // color already -- a figure spec restored from the file is applied AFTER this and wins anyway, and a tab
+            // that carries a color keeps it.
             if (cp.getOptions().isAutoColorNewTrees() && (cp.getMainPanel().getCurrentTreePanel() != null)
                     && (cp.getMainPanel().getCurrentTreePanel().getPhylogeny() == t)
                     && (cp.getMainPanel().getCurrentTreePanel().getColorByPropertyRef() == null)) {
-                final String best = PropertyColorScheme.autoColorCandidate(t);
+                final PropertyColorScheme.VisCandidate first = PropertyColorScheme
+                        .openingVisualization(cp.getMainPanel().getCurrentTreePanel().getVisualizationCandidates());
+                final String best = (first == null) ? null : first._ref;
                 if (best != null) {
                     cp.getMainPanel().getCurrentTreePanel().setColorByPropertyRef(best);
                     cp.populateColorByPropertyBox();

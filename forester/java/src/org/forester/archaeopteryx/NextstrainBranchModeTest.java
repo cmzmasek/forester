@@ -72,14 +72,14 @@ public final class NextstrainBranchModeTest {
                         return;
                     }
                     // the tree carries both signals -> the toggle applies and its control is shown (via tabChanged)
-                    if ( !tp.isNextstrainTimeDivergenceApplicable() ) {
+                    if ( !tp.isBranchLengthToggleApplicable() ) {
                         fail( ok, "the demo must carry both a date and a nextstrain:div (toggle applicable)" );
                     }
                     if ( !cp.isBranchLengthsControlVisible() ) {
                         fail( ok, "the 'Branch lengths:' control must be visible for an Auspice tree" );
                     }
                     // default = TIME: laid out by year (root-to-tip span > 1) with a CALENDAR axis
-                    if ( tp.getNextstrainBranchMode() != TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME ) {
+                    if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
                         fail( ok, "default branch mode must be TIME" );
                     }
                     if ( !"Time".equals( cp.getBranchLengthsSelection() ) ) {
@@ -108,8 +108,8 @@ public final class NextstrainBranchModeTest {
                     }
 
                     // switch to DIVERGENCE via the real dropdown dispatch
-                    cp.userSelectBranchLengthsForTest( TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE );
-                    if ( tp.getNextstrainBranchMode() != TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE ) {
+                    cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+                    if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) {
                         fail( ok, "selecting Divergence must switch the mode" );
                     }
                     final double div_span = maxRootDist( tp.getPhylogeny() );
@@ -142,7 +142,7 @@ public final class NextstrainBranchModeTest {
                     }
 
                     // switch back to TIME -> exactly reversible (span + axis + unit restored)
-                    cp.userSelectBranchLengthsForTest( TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME );
+                    cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
                     if ( Math.abs( maxRootDist( tp.getPhylogeny() ) - time_span ) > 1e-6 ) {
                         fail( ok, "switching back to TIME must restore the year span exactly" );
                     }
@@ -154,9 +154,9 @@ public final class NextstrainBranchModeTest {
                     }
 
                     // Reset to Defaults path: from DIVERGENCE, reset returns to TIME
-                    cp.userSelectBranchLengthsForTest( TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE );
-                    tp.resetNextstrainBranchModeToDefault();
-                    if ( ( tp.getNextstrainBranchMode() != TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME )
+                    cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+                    tp.resetBranchLengthModeToDefault();
+                    if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME )
                             || ( Math.abs( maxRootDist( tp.getPhylogeny() ) - time_span ) > 1e-6 )
                             || ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) ) {
                         fail( ok, "Reset must return the branch mode to the TIME view" );

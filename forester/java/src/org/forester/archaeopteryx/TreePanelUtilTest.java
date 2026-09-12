@@ -2382,6 +2382,29 @@ public final class TreePanelUtilTest {
         }
         // scale-bar interval buckets: sized from the DRAWN extent, so a capped tree's bar reflects the ingroup scale
         // (e.g. a deep-outlier tree with maxDist 40 -> bucket 1, but capped extent 1.6 -> bucket 0.1)
+        // A molecular DIVERGENCE tree is routinely 0.001-0.01 deep. The old flat 0.01 floor made the scale bar
+        // LONGER THAN THE WHOLE TREE there, and left the axis with no ticks at all -- reported on the Auspice
+        // phylodynamics demo, which is 0.0032 subs/site deep in divergence mode.
+        if ( TreePanelUtil.niceScaleBarDistance( 0.0032 ) >= 0.0032 ) {
+            return fail( "the scale bar must never be longer than the tree it measures; got "
+                    + TreePanelUtil.niceScaleBarDistance( 0.0032 ) + " for a depth of 0.0032" );
+        }
+        if ( TreePanelUtil.scaleAxisTickValues( 0.0032, TreePanelUtil.niceScaleBarDistance( 0.0032 ) ).length < 2 ) {
+            return fail( "a very shallow tree must still get axis ticks, not a bare line" );
+        }
+        if ( TreePanelUtil.niceScaleBarDistance( 0.0032 ) != 5.0E-4 ) {
+            return fail( "expected a 1/2/5 step below 0.01; got " + TreePanelUtil.niceScaleBarDistance( 0.0032 ) );
+        }
+        // ...and nothing that already worked may move: 0.05 and up are exactly as before
+        if ( ( TreePanelUtil.niceScaleBarDistance( 0.05 ) != 0.01 )
+                || ( TreePanelUtil.niceScaleBarDistance( 0.5 ) != 0.01 )
+                || ( TreePanelUtil.niceScaleBarDistance( 250 ) != 10 ) ) {
+            return fail( "the fix must not change a tree whose scale already worked" );
+        }
+        if ( ( TreePanelUtil.niceStepAtMost( 0.00064 ) != 5.0E-4 ) || ( TreePanelUtil.niceStepAtMost( 7 ) != 5 )
+                || ( TreePanelUtil.niceStepAtMost( 10 ) != 10 ) || ( TreePanelUtil.niceStepAtMost( 0 ) != 0.0 ) ) {
+            return fail( "niceStepAtMost must round DOWN to a 1/2/5 decade step" );
+        }
         if ( ( TreePanelUtil.niceScaleBarDistance( 0.4 ) != 0.01 ) || ( TreePanelUtil.niceScaleBarDistance( 1.6 ) != 0.1 )
                 || ( TreePanelUtil.niceScaleBarDistance( 4.0 ) != 0.1 ) || ( TreePanelUtil.niceScaleBarDistance( 40 ) != 1 )
                 || ( TreePanelUtil.niceScaleBarDistance( 400 ) != 10 )

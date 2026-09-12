@@ -94,16 +94,24 @@ public final class AptxUtilTest {
         if ( AptxUtil.deriveTimeAxisType( datedTree( "CE", 2019, 2020, 2021 ) ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
             return fail( "unit 'CE' must derive CALENDAR" );
         }
-        // magnitude fallback (no / unrecognized unit). NOTE: a <date> whose ONLY field is a value of exactly 0 reports
-        // isHasDate()=false (ForesterUtil.isNull treats 0 as null-ish), so the recent end uses a small NON-zero age.
-        if ( AptxUtil.deriveTimeAxisType( datedTree( null, 250, 66, 2.58 ) ) != Options.TIME_AXIS_TYPE.GEOLOGIC ) {
-            return fail( "unitless ages (2.58..250) must fall back to GEOLOGIC" );
+        // NO UNIT, or one we do not recognise -> NONE. The derivation never guesses from magnitude: an axis states
+        // what the numbers MEAN, so a wrong guess prints a confident, wrong claim across the whole figure.
+        // NOTE: a <date> whose ONLY field is a value of exactly 0 reports isHasDate()=false (ForesterUtil.isNull
+        // treats 0 as null-ish), so any "recent end" below uses a small NON-zero age.
+        if ( AptxUtil.deriveTimeAxisType( datedTree( null, 250, 66, 2.58 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "unitless ages must NOT be guessed as geologic" );
         }
-        if ( AptxUtil.deriveTimeAxisType( datedTree( "bogus", 2019, 2020, 2022 ) ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
-            return fail( "unitless calendar years must fall back to CALENDAR" );
+        // the real case this protects: BEAST writes node ages as an UNIT-LESS `height`, so an ordinary influenza
+        // tree spanning ~11 years used to satisfy the old "max > 10 and min near 0" rule and was drawn with
+        // Neogene/Quaternary bands, labelled in millions of years
+        if ( AptxUtil.deriveTimeAxisType( datedTree( null, 10.78, 5.0, 0.5 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "a unit-less BEAST-style tree (ages 0.5..10.78) must NOT derive a geologic axis" );
+        }
+        if ( AptxUtil.deriveTimeAxisType( datedTree( "bogus", 2019, 2020, 2022 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "values that merely LOOK like calendar years are still a guess without a unit" );
         }
         if ( AptxUtil.deriveTimeAxisType( datedTree( "bogus", 5, 4, 3 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
-            return fail( "ambiguous small magnitudes (not near present, not ages-to-0) must derive NONE" );
+            return fail( "ambiguous small magnitudes must derive NONE" );
         }
         return true;
     }

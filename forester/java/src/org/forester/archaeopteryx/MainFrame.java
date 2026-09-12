@@ -3450,7 +3450,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.setShowInternalDataForThisTab(true); // per-tab: both Display-Data toggles back on
                 tp.setShowExternalDataForThisTab(true);
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
-                tp.resetNextstrainBranchModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
+                tp.resetBranchLengthModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
                 tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Fields selection (fresh install has none)
                 tp.clearCladeBands(); // per-tab: likewise the Tools>Annotate Clades by Rank marks + their legend
             }

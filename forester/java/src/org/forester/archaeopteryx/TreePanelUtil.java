@@ -393,6 +393,23 @@ public class TreePanelUtil {
     /** The smallest "nice" step (1/2/5 x 10^k, k ANY integer incl. NEGATIVE for sub-1 steps) that is &gt;= {@code raw}.
      *  Unlike {@link #niceYearStep} this allows fractional steps (0.5, 0.2, 0.1 ...), so a shallow geologic tree (root a
      *  few Ma old) gets fine ticks and a deep one gets 50/100/500 Ma ticks. 0 for a non-positive raw. */
+    /** The largest "nice" number (1, 2 or 5 x a power of ten) that is no greater than {@code raw} -- the round-DOWN
+     *  companion to {@link #niceAxisStep}. Used where overshooting is the failure: a scale bar longer than the tree
+     *  it measures is worse than one slightly shorter than intended. */
+    static double niceStepAtMost( final double raw ) {
+        if ( !( raw > 0.0 ) ) {
+            return 0.0;
+        }
+        final double pow = Math.pow( 10.0, Math.floor( Math.log10( raw ) ) );
+        double best = pow;
+        for( final double m : new double[] { 1, 2, 5 } ) {
+            if ( ( pow * m ) <= ( raw + ( raw * 1.0e-9 ) ) ) {
+                best = pow * m;
+            }
+        }
+        return best;
+    }
+
     static double niceAxisStep( final double raw ) {
         if ( !( raw > 0.0 ) ) {
             return 0.0;
@@ -2157,7 +2174,16 @@ public class TreePanelUtil {
             return 0.0;
         }
         if ( height <= 0.5 ) {
-            return 0.01;
+            // A flat 0.01 used to be returned for EVERY tree this shallow, which breaks down as the tree gets
+            // smaller: a molecular divergence tree is routinely 0.001-0.01 deep, and the Auspice phylodynamics demo
+            // in divergence mode is 0.0032 -- so the "scale bar" claimed three times the depth of the whole tree,
+            // and scaleAxisTickValues(0.0032, 0.01) produced NO ticks, leaving the axis a bare line. The same value
+            // drives the bar, the axis ticks AND the grid, so all three were wrong together.
+            //
+            // Below 0.01 the step now continues the same 1/2/5 decade pattern downward, aiming for about a fifth of
+            // the tree. The min() keeps every tree that already worked EXACTLY as it was: for a height of 0.05 or
+            // more the answer is still 0.01.
+            return Math.min( 0.01, niceStepAtMost( height / 5.0 ) );
         }
         if ( height <= 5.0 ) {
             return 0.1;

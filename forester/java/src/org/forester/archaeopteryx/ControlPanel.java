@@ -142,10 +142,21 @@ final class ControlPanel extends JPanel implements ActionListener {
     // discrete/geographic traits (a `beast:<trait>_set_prob` property); see populateAncestralPieBox().
     private JComboBox<String> _ancestral_pie_property_cb;
     private JLabel            _ancestral_pie_label;
-    // "Branch lengths:" (Time / Divergence) -- shown adaptively only for an Auspice/Nextstrain tree that carries BOTH
-    // a date and a nextstrain:div property; a reversible display mode. See populateBranchLengthsControl().
-    private JComboBox<String> _branch_lengths_cb;
-    private JLabel            _branch_lengths_label;
+    // Time | Div -- a segmented toggle sitting with the layout and P/A/C rows, because "what does the depth axis
+    // MEAN" is the same question they answer, not a data choice like "Color by". Shown adaptively, only for a tree
+    // that can be laid out BOTH ways (see BranchLengthLayout). A reversible display mode.
+    private JToggleButton _branch_length_time_tb;
+    private JToggleButton _branch_length_div_tb;
+    private JPanel        _branch_lengths_panel;
+    /** Short enough for a two-button row in a ~160px column; the tooltip carries the full meaning. */
+    private static final String BRANCH_LENGTH_DIV_SHORT      = "Div";
+    private static final String BRANCH_LENGTH_TIME_TIP       = "Lay the tree out by TIME: each branch spans the "
+            + "difference between its two nodes' dates";
+    private static final String BRANCH_LENGTH_DIV_STORED_TIP = "Lay the tree out by DIVERGENCE: genetic change "
+            + "along each branch, as recorded in the file (substitutions/site)";
+    private static final String BRANCH_LENGTH_DIV_DERIVED_TIP = "Lay the tree out by DIVERGENCE, DERIVED as the "
+            + "branch's clock rate x the time it spans. An inference from the model that produced this tree, not a "
+            + "value the file recorded.";
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
@@ -344,14 +355,15 @@ final class ControlPanel extends JPanel implements ActionListener {
                 tp.setAncestralPieTrait(
                         ((sel == null) || COLOR_BY_PROPERTY_NONE.equals(sel)) ? null : sel.toString());
                 tp.repaint();
-            } else if (e.getSource() == _branch_lengths_cb) {
-                final Object sel = _branch_lengths_cb.getSelectedItem();
-                // setNextstrainBranchMode is self-contained: it rewrites the branch lengths, swaps the distance unit +
+            } else if ((e.getSource() == _branch_length_time_tb) || (e.getSource() == _branch_length_div_tb)) {
+                // Dispatch on the INDEX, not the text: the divergence entry is relabelled per tree when the
+                // number is DERIVED ("Divergence (from clock rate)"), so matching on the string would silently
+                // stop working for exactly the trees this was generalized to support. Item 0 is always TIME.
+                // setBranchLengthMode is self-contained: it rewrites the branch lengths, swaps the distance unit +
                 // time axis, and re-fits to the viewport (a reversible display mode -- no setEdited / no undo).
-                tp.setNextstrainBranchMode(
-                        TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE.label().equals(sel)
-                                ? TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE
-                                : TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME);
+                tp.setBranchLengthMode(( e.getSource() == _branch_length_div_tb )
+                        ? BranchLengthLayout.MODE.DIVERGENCE
+                        : BranchLengthLayout.MODE.TIME);
             } else if (e.getSource() == _click_to_combobox) {
                 setClickToAction(_click_to_combobox.getSelectedIndex());
                 getCurrentTreePanel().repaint();
@@ -2282,7 +2294,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     final boolean is_selected, final boolean has_focus) {
                 super.getListCellRendererComponent(list, value, index, is_selected, has_focus);
                 if (value instanceof String) {
-                    setText(PropertyColorScheme.displayName((String) value));
+                    // the candidate's label: two refs whose names coincide both read as their full ref
+                    final TreePanel label_tp = (getMainPanel() != null) ? getMainPanel().getCurrentTreePanel() : null;
+                    setText((label_tp != null) ? label_tp.visualizationLabel((String) value)
+                            : PropertyColorScheme.displayName((String) value));
                 }
                 return this;
             }
@@ -2307,7 +2322,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     final boolean is_selected, final boolean has_focus) {
                 super.getListCellRendererComponent(list, value, index, is_selected, has_focus);
                 if (value instanceof String) {
-                    setText(PropertyColorScheme.displayName((String) value));
+                    // the candidate's label: two refs whose names coincide both read as their full ref
+                    final TreePanel label_tp = (getMainPanel() != null) ? getMainPanel().getCurrentTreePanel() : null;
+                    setText((label_tp != null) ? label_tp.visualizationLabel((String) value)
+                            : PropertyColorScheme.displayName((String) value));
                 }
                 return this;
             }
@@ -2327,8 +2345,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _size_by_property_cb.removeAllItems();
         _size_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
         if ((tp != null) && (tp.getPhylogeny() != null)) {
-            for (final String ref : PropertyColorScheme.numericRefs(tp.getPhylogeny())) {
-                _size_by_property_cb.addItem(ref);
+            // the TREE's numeric candidates (a kept one included), never re-decided by the displayed subtree
+            for (final PropertyColorScheme.VisCandidate c : tp.getVisualizationCandidates()) {
+                if (c._numeric) {
+                    _size_by_property_cb.addItem(c._ref);
+                }
             }
             _size_by_property_cb.setSelectedItem(
                     (tp.getPropertySizeScale() != null) ? tp.getPropertySizeScale().getRef() : COLOR_BY_PROPERTY_NONE);
@@ -2425,43 +2446,60 @@ final class ControlPanel extends JPanel implements ActionListener {
         return (sel == null) ? COLOR_BY_PROPERTY_NONE : sel.toString();
     }
 
-    /** The "Branch lengths:" dropdown (Time / Divergence): lay an Auspice/Nextstrain tree out by time (num_date) or by
-     *  divergence (nextstrain:div) -- a reversible display mode. Only appears for a tree that carries BOTH signals --
+    /** The Time | Div segmented toggle: lay a dated tree out by time or by genetic divergence -- a reversible
+     *  display mode. Built as two toggle buttons in one exclusive group, matching the P/A/C row directly above it,
+     *  because it answers the same question those do. Only appears for a tree that can be laid out both ways --
      *  see {@link #populateBranchLengthsControl()}. */
     void setupBranchLengthsControl() {
-        _branch_lengths_label = new JLabel("Branch lengths:");
-        _branch_lengths_label.setFont(ControlPanel.jcb_font);
-        _branch_lengths_cb = new JComboBox<String>();
-        _branch_lengths_cb.setFont(ControlPanel.js_font);
-        _branch_lengths_cb.setToolTipText(
-                "lay the tree out by time (num_date) or by divergence (nextstrain:div) -- a reversible display mode");
-        _branch_lengths_cb.addItem(TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label());
-        _branch_lengths_cb.addItem(TreePanel.NEXTSTRAIN_BRANCH_MODE.DIVERGENCE.label());
-        _branch_lengths_cb.addActionListener(this);
-        add(_branch_lengths_label);
-        add(_branch_lengths_cb);
-        // start hidden: revealed by populate only for an Auspice/Nextstrain tree carrying both a date and a div
-        _branch_lengths_label.setVisible(false);
-        _branch_lengths_cb.setVisible(false);
+        _branch_length_time_tb = new JToggleButton(BranchLengthLayout.MODE.TIME.label());
+        _branch_length_div_tb = new JToggleButton(BRANCH_LENGTH_DIV_SHORT);
+        final ButtonGroup g = new ButtonGroup();
+        g.add(_branch_length_time_tb);
+        g.add(_branch_length_div_tb);
+        for (final JToggleButton b : new JToggleButton[] { _branch_length_time_tb, _branch_length_div_tb }) {
+            b.setFont(ControlPanel.jcb_font);
+            // the documented FlatLaf trap: buttons in a narrow column fall below the L&F minimum width and clip
+            // their text to "..." unless the margins are trimmed
+            b.setMargin(new Insets(2, 1, 2, 1));
+            b.addActionListener(this);
+        }
+        _branch_length_time_tb.setSelected(true);
+        _branch_lengths_panel = new JPanel(new GridLayout(1, 2, 0, 0));
+        _branch_lengths_panel.setFont(ControlPanel.jcb_font);
+        _branch_lengths_panel.add(_branch_length_time_tb);
+        _branch_lengths_panel.add(_branch_length_div_tb);
+        add(_branch_lengths_panel);
+        _branch_lengths_panel.setVisible(false); // revealed by populate only for a tree that carries both
     }
 
-    /** Reseed the "Branch lengths:" dropdown from the current tree and show/hide the whole control (label + combo, so
-     *  the row collapses) depending on whether the tree carries both a time and a divergence signal. */
+    /** Reseed the Time | Div toggle from the current tree and show/hide the whole row (so it collapses) depending on
+     *  whether the tree can be laid out both ways. The divergence button's TOOLTIP is rebuilt per tree: a value
+     *  derived from a clock rate is an inference from the model that produced the tree, not something the file
+     *  recorded, and a reader should be able to find that out before quoting it. */
     void populateBranchLengthsControl() {
-        if (_branch_lengths_cb == null) {
+        if (_branch_lengths_panel == null) {
             return;
         }
         final TreePanel tp = getMainPanel().getCurrentTreePanel();
         final boolean applicable = (tp != null) && (tp.getPhylogeny() != null)
-                && tp.isNextstrainTimeDivergenceApplicable();
-        _branch_lengths_cb.removeActionListener(this);
+                && tp.isBranchLengthToggleApplicable();
         if (applicable) {
-            _branch_lengths_cb.setSelectedItem(tp.getNextstrainBranchMode().label());
+            final BranchLengthLayout.DIVERGENCE_SOURCE source = BranchLengthLayout
+                    .divergenceSource(tp.getPhylogeny());
+            describe(_branch_length_time_tb, BRANCH_LENGTH_TIME_TIP);
+            describe(_branch_length_div_tb,
+                     (source == BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE) ? BRANCH_LENGTH_DIV_DERIVED_TIP
+                             : BRANCH_LENGTH_DIV_STORED_TIP);
+            // reseed WITHOUT firing: setSelected on a grouped toggle does not fire an ActionEvent, so no guard needed
+            if (tp.getBranchLengthMode() == BranchLengthLayout.MODE.DIVERGENCE) {
+                _branch_length_div_tb.setSelected(true);
+            }
+            else {
+                _branch_length_time_tb.setSelected(true);
+            }
         }
-        _branch_lengths_cb.addActionListener(this);
-        final boolean changed = _branch_lengths_label.isVisible() != applicable;
-        _branch_lengths_label.setVisible(applicable);
-        _branch_lengths_cb.setVisible(applicable);
+        final boolean changed = _branch_lengths_panel.isVisible() != applicable;
+        _branch_lengths_panel.setVisible(applicable);
         if (changed) {
             revalidate();
             repaint();
@@ -2469,33 +2507,42 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /** Reseed the "Branch lengths" dropdown to the Time default WITHOUT firing the listener (for Reset to Defaults; the
-     *  per-tab TreePanel model is reset separately via {@code resetNextstrainBranchModeToDefault}). */
+     *  per-tab TreePanel model is reset separately via {@code resetBranchLengthModeToDefault}). */
     void setBranchLengthsSelectionToTime() {
-        if (_branch_lengths_cb != null) {
-            _branch_lengths_cb.removeActionListener(this);
-            _branch_lengths_cb.setSelectedItem(TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label());
-            _branch_lengths_cb.addActionListener(this);
+        if (_branch_length_time_tb != null) {
+            _branch_length_time_tb.setSelected(true);
         }
     }
 
-    /** Test hook: whether the "Branch lengths:" control is currently visible. */
+    /** Test hook: the divergence button's tooltip, which is what tells a reader whether the number is recorded or
+     *  derived. Plain text, with any HTML the tooltip helper added stripped. */
+    String getDivergenceTooltipForTest() {
+        if ( ( _branch_length_div_tb == null ) || ( _branch_length_div_tb.getToolTipText() == null ) ) {
+            return "";
+        }
+        return _branch_length_div_tb.getToolTipText().replaceAll( "<[^>]*>", " " ).replaceAll( "\\s+", " " ).trim();
+    }
+
+    /** Test hook: whether the Time | Div control is currently visible. */
     boolean isBranchLengthsControlVisible() {
-        return (_branch_lengths_cb != null) && _branch_lengths_cb.isVisible();
+        return (_branch_lengths_panel != null) && _branch_lengths_panel.isVisible();
     }
 
     /** Test hook: the "Branch lengths" dropdown's selected item as a string. */
     String getBranchLengthsSelection() {
-        if (_branch_lengths_cb == null) {
-            return TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label();
-        }
-        final Object sel = _branch_lengths_cb.getSelectedItem();
-        return (sel == null) ? TreePanel.NEXTSTRAIN_BRANCH_MODE.TIME.label() : sel.toString();
+        // the canonical mode label, not the button's shortened text, so a test stays about the MODE
+        return ((_branch_length_div_tb != null) && _branch_length_div_tb.isSelected())
+                ? BranchLengthLayout.MODE.DIVERGENCE.label()
+                : BranchLengthLayout.MODE.TIME.label();
     }
 
     /** Test hook: select a "Branch lengths" mode the way a user would (fires the real actionPerformed dispatch). */
-    void userSelectBranchLengthsForTest(final TreePanel.NEXTSTRAIN_BRANCH_MODE mode) {
-        if (_branch_lengths_cb != null) {
-            _branch_lengths_cb.setSelectedItem(mode.label());
+    void userSelectBranchLengthsForTest(final BranchLengthLayout.MODE mode) {
+        // drive the REAL listener, the way a user click does (setSelected alone fires nothing on a grouped toggle)
+        final JToggleButton b = (mode == BranchLengthLayout.MODE.DIVERGENCE) ? _branch_length_div_tb
+                : _branch_length_time_tb;
+        if (b != null) {
+            b.doClick();
         }
     }
 
@@ -2514,8 +2561,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         _color_by_property_cb.removeAllItems();
         _color_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
         if ((tp != null) && (tp.getPhylogeny() != null)) {
-            for (final String ref : PropertyColorScheme.colorableRefs(tp.getPhylogeny())) {
-                _color_by_property_cb.addItem(ref);
+            // the TREE's candidates (kept fields included), never the displayed subtree's: a view does not change
+            // what is offered
+            for (final PropertyColorScheme.VisCandidate c : tp.getVisualizationCandidates()) {
+                _color_by_property_cb.addItem(c._ref);
             }
             // reflect the tree panel's current state
             _color_by_property_cb.setSelectedItem(
@@ -2559,11 +2608,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupLayoutButtons();
         nextRowGap(TIGHT_GAP); // layout and P/A/C are both "how the tree is drawn" -- keep them as one block
         setupTreeDisplayTypeOptions();
-        nextRowGap(SECTION_GAP); // more space between the P/A/C row and "Color by"
+        nextRowGap(TIGHT_GAP); // Time|Div answers the same question as P/A/C -- keep it in that block
+        setupBranchLengthsControl();
+        nextRowGap(SECTION_GAP); // more space between the layout block and "Color by"
         setupColorByProperty();
         setupSizeByProperty();
         setupAncestralPieProperty();
-        setupBranchLengthsControl();
         setupDisplayCheckboxes();
         // Click-to options
         nextRowGap(SECTION_GAP);

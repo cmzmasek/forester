@@ -77,7 +77,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
@@ -85,7 +84,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -112,7 +110,6 @@ import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
-import org.forester.phylogeny.data.Uri;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
@@ -240,7 +237,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final int MIN_RADIAL_DIAMETER = 80;
     private static final int MAX_RADIAL_DIAMETER = 20000;
     private static final int DEFAULT_RADIAL_DIAMETER = 600;
-    private static final BasicStroke STROKE_2 = new BasicStroke(2f);
+
 
 
     // Fine dotted "leader" that links each tip to its lined-up label/data in aligned-phylogram mode (the
@@ -438,11 +435,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Auspice/Nextstrain: a per-panel, reversible time<->divergence branch-length display mode. Both metrics are
     // retained on the tree (the <date> values + the nextstrain:div properties), so switching just rewrites the branch
     // lengths from the retained metadata -- a pure display mode (no setEdited / no undo). Default TIME = the loaded default.
-    private NEXTSTRAIN_BRANCH_MODE _nextstrain_branch_mode = NEXTSTRAIN_BRANCH_MODE.TIME;
+    private BranchLengthLayout.MODE _branch_length_mode = BranchLengthLayout.MODE.TIME;
     // applicability (carries both a date AND a nextstrain:div) is a function of the tree's data, so cache it by tree
     // identity (like the derived-time-axis cache); a mode toggle doesn't change it, only a tree replacement does
-    private Phylogeny _nextstrain_applicable_for = null;
-    private boolean   _nextstrain_applicable     = false;
+    private Phylogeny _branch_length_toggle_for = null;
+    private boolean   _branch_length_toggle_applicable     = false;
     private final RenderingHints _rendering_hints = new RenderingHints(RenderingHints.KEY_RENDERING,
             RenderingHints.VALUE_RENDER_DEFAULT);
 
@@ -752,6 +749,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     public final void setEdited(final boolean edited) {
         _edited = edited;
         markTreeWindowsStale(); // the Tree Properties / Tree as Text windows show the tree: let them re-read it
+        // an EDIT makes it a different tree: re-derive the visualization candidates, KEEPING the chosen fields (an
+        // undo/redo restore does this itself, once the restored tree is installed)
+        if (edited && !_restoring_snapshot) {
+            rederiveVisualizationCandidates();
+        }
         // Undo/redo safety net: any edit made outside of an undo/redo restore invalidates the redo history
         // (it no longer describes a reachable future). Checkpointed ops already clear redo via checkpoint();
         // this also covers mutations that were NOT checkpointed, so a later Redo can never install a tree
@@ -5611,42 +5613,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    // ---- Auspice/Nextstrain time<->divergence display toggle (Increment 2) --------------------------------------
+    // ---- time<->divergence branch-length toggle -----------------------------------------------------------------
 
-    /** True when the current tree carries BOTH a date (time signal) AND a {@code nextstrain:div} property (divergence
-     *  signal), so the time&harr;divergence branch-length toggle is meaningful (an Auspice/Nextstrain tree). Cached by
-     *  tree identity (recomputed on a tree replacement; an in-place node-data edit that adds/removes the metric is the
-     *  same accepted cache-staleness class as the derived-time-axis / color-by caches). */
-    boolean isNextstrainTimeDivergenceApplicable() {
-        if ( _nextstrain_applicable_for != _phylogeny ) {
-            _nextstrain_applicable = AuspiceJsonParser.hasTimeAndDivergence( _phylogeny );
-            _nextstrain_applicable_for = _phylogeny;
+    /** True when the current tree can be laid out BOTH ways -- dates for time, and a divergence source (a recorded
+     *  cumulative divergence, or a per-branch clock rate to multiply by time). See {@link BranchLengthLayout}, which
+     *  is where the two shapes (Auspice and BEAST) are recognised. Cached by tree identity (recomputed on a tree
+     *  replacement; an in-place node-data edit that adds/removes the metric is the same accepted cache-staleness
+     *  class as the derived-time-axis / color-by caches). */
+    boolean isBranchLengthToggleApplicable() {
+        if ( _branch_length_toggle_for != _phylogeny ) {
+            _branch_length_toggle_applicable = BranchLengthLayout.isApplicable( _phylogeny );
+            _branch_length_toggle_for = _phylogeny;
         }
-        return _nextstrain_applicable;
+        return _branch_length_toggle_applicable;
     }
 
-    NEXTSTRAIN_BRANCH_MODE getNextstrainBranchMode() {
-        return _nextstrain_branch_mode;
+    BranchLengthLayout.MODE getBranchLengthMode() {
+        return _branch_length_mode;
     }
 
-    /** Switch the branch lengths (and the time axis) between the TIME view (num_date deltas + auto calendar axis) and
-     *  the DIVERGENCE view (nextstrain:div deltas + no calendar axis -- the numeric substitutions/site scale). A pure,
-     *  reversible display mode: both metrics stay retained on the tree, so it never {@code setEdited}s or checkpoints
-     *  undo. Re-fits to the viewport (the depth axis changes meaning, so a fit -- not just a repaint -- is needed). */
-    void setNextstrainBranchMode( final NEXTSTRAIN_BRANCH_MODE mode ) {
-        if ( ( mode == null ) || ( mode == _nextstrain_branch_mode ) || !isNextstrainTimeDivergenceApplicable() ) {
+    /** Switch the branch lengths (and the time axis) between the TIME view (date deltas + the auto-derived time axis)
+     *  and the DIVERGENCE view (genetic change + no time axis -- the numeric substitutions/site scale). A pure,
+     *  reversible display mode: both quantities stay retained on the tree, so it never {@code setEdited}s or
+     *  checkpoints undo. Re-fits to the viewport (the depth axis changes meaning, so a fit -- not just a repaint). */
+    void setBranchLengthMode( final BranchLengthLayout.MODE mode ) {
+        if ( ( mode == null ) || ( mode == _branch_length_mode ) || !isBranchLengthToggleApplicable() ) {
             return;
         }
-        _nextstrain_branch_mode = mode;
-        if ( mode == NEXTSTRAIN_BRANCH_MODE.DIVERGENCE ) {
-            AuspiceJsonParser.applyDivergenceBranchLengths( _phylogeny );
-            _phylogeny.setDistanceUnit( "subs/site" );
-            _time_axis_type = Options.TIME_AXIS_TYPE.NONE; // a calendar axis is meaningless for divergence lengths
+        _branch_length_mode = mode;
+        final String date_unit = AptxUtil.timeTreeUnit( _phylogeny ); // captured before the lengths change
+        if ( mode == BranchLengthLayout.MODE.DIVERGENCE ) {
+            BranchLengthLayout.applyDivergence( _phylogeny );
+            _phylogeny.setDistanceUnit( BranchLengthLayout.distanceUnit( mode, date_unit ) );
+            _time_axis_type = Options.TIME_AXIS_TYPE.NONE; // a time axis is meaningless for divergence lengths
         }
         else {
-            AuspiceJsonParser.applyTimeBranchLengths( _phylogeny );
-            _phylogeny.setDistanceUnit( "year" );
-            _time_axis_type = null; // back to auto -> re-derives CALENDAR from the retained <date> unit
+            BranchLengthLayout.applyTime( _phylogeny );
+            _phylogeny.setDistanceUnit( BranchLengthLayout.distanceUnit( mode, date_unit ) );
+            _time_axis_type = null; // back to auto -> re-derives from the retained <date> unit (NONE if unit-less)
         }
         recalculateMaxDistanceToRoot(); // the branch-length change invalidates the depth cache
         if ( getControlPanel() != null ) {
@@ -5667,12 +5671,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Reset the branch-length view to the TIME default (used by Reset to Defaults). Rewrites only THIS panel's model
      *  + invalidates its depth cache (NO cross-panel re-fit, so it is safe in a batch per-tab reset loop -- the layout
      *  refreshes when the tab is next shown). No-op if already TIME or the tree is not applicable. */
-    void resetNextstrainBranchModeToDefault() {
-        if ( _nextstrain_branch_mode == NEXTSTRAIN_BRANCH_MODE.TIME ) {
+    void resetBranchLengthModeToDefault() {
+        if ( _branch_length_mode == BranchLengthLayout.MODE.TIME ) {
             return;
         }
-        _nextstrain_branch_mode = NEXTSTRAIN_BRANCH_MODE.TIME;
-        if ( isNextstrainTimeDivergenceApplicable() ) {
+        _branch_length_mode = BranchLengthLayout.MODE.TIME;
+        if ( isBranchLengthToggleApplicable() ) {
             AuspiceJsonParser.applyTimeBranchLengths( _phylogeny );
             _phylogeny.setDistanceUnit( "year" );
             _time_axis_type = null;
@@ -5686,7 +5690,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  branch lengths are substitutions/site: a date-based node-age (HPD) bar/spindle or fossil-range bar would then be
      *  scaled by the (huge) divergence corr and paint absurdly long (covering the whole canvas). Gates those overlays. */
     boolean isBranchLengthTimeCalibrated() {
-        return _nextstrain_branch_mode != NEXTSTRAIN_BRANCH_MODE.DIVERGENCE;
+        return _branch_length_mode != BranchLengthLayout.MODE.DIVERGENCE;
     }
 
     /** Invalidate the identity-keyed time-axis caches (derived type + max node-date) after an IN-PLACE change to the
@@ -7056,6 +7060,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _length_of_longest_text = calcLengthOfLongestText();
     }
 
+    /** Test hook: the computed scale-bar distance (drives the bar, the axis ticks and the grid). */
+    double getScaleDistanceForTest() {
+        return getScaleDistance();
+    }
+
+    /** Test hook: the scale-bar label as drawn. */
+    String getScaleLabelForTest() {
+        return getScaleLabel();
+    }
+
     final void calculateScaleDistance() {
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
@@ -7066,7 +7080,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** The scale-bar label for a given distance: the number plus the tree's distance unit in brackets, if any. */
     private String scaleBarLabel(final double distance) {
-        String label = String.valueOf(distance);
+        // formatCompactNumber, not String.valueOf: a divergence tree's scale is ~0.0005, which valueOf renders as
+        // "5.0E-4". Scientific notation in a figure's scale bar is unreadable, and the AXIS tick labels next to it
+        // already use this formatter -- the two must not disagree about how the same number looks.
+        String label = TreePanelUtil.formatCompactNumber(distance);
         if (!ForesterUtil.isEmpty(_phylogeny.getDistanceUnit())) {
             label += " [" + _phylogeny.getDistanceUnit() + "]";
         }
@@ -7086,29 +7103,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return breakLongBranchesActive() ? scaleBarLabel(displayScaleDistance()) : getScaleLabel();
     }
 
-    final Color calculateTaxonomyBasedColor(final Taxonomy tax) {
-        if (ForesterUtil.isEmpty(tax.getTaxonomyCode()) && ForesterUtil.isEmpty(tax.getScientificName())) {
-            return getTreeColorSet().getTaxonomyColor();
-        }
-        Color c = null;
-        if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-            c = getControlPanel().getSpeciesColors().get(tax.getTaxonomyCode());
-        }
-        if ((c == null) && !ForesterUtil.isEmpty(tax.getScientificName())) {
-            c = getControlPanel().getSpeciesColors().get(tax.getScientificName());
-        }
-        if (c == null) {
-            if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-                c = AptxUtil.calculateColorFromString(tax.getTaxonomyCode(), true);
-                getControlPanel().getSpeciesColors().put(tax.getTaxonomyCode(), c);
-            } else {
-                c = AptxUtil.calculateColorFromString(tax.getScientificName(), true);
-                getControlPanel().getSpeciesColors().put(tax.getScientificName(), c);
-            }
-        }
-        return c;
-    }
-
     // ---------------------------------------------------------------------------
     // Color leaves on the fly by the value of a chosen phyloXML property.
     // ---------------------------------------------------------------------------
@@ -7117,6 +7111,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // scheme can be rebuilt for the currently displayed (sub)tree -- and so coloring switches
     // back on when the user returns to a super-tree even if it had no such values in a subtree.
     private String              _color_by_property_ref = null;
+    // the TREE's visualization candidates, best first, kept fields appended: decided at load and after an EDIT,
+    // never by a view (null = not derived yet). See getVisualizationCandidates().
+    private java.util.List<PropertyColorScheme.VisCandidate> _vis_candidates = null;
     private String              _color_palette_name = PropertyColorScheme.DEFAULT_PALETTE_NAME;
     // "Size by": scale the tip symbol by the value of a chosen numeric phyloXML property (the size counterpart of
     // Color by). Ref remembered separately from the scale so it rebuilds for the displayed (sub)tree, like above.
@@ -7160,20 +7157,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // once a third (pie) draggable legend was added.
     enum DRAGGED_LEGEND {
         PROPERTY, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA, DOMAIN
-    }
-    // The two branch-length metrics an Auspice/Nextstrain tree can be laid out by (Increment 2 display toggle).
-    enum NEXTSTRAIN_BRANCH_MODE {
-        TIME( "Time" ), DIVERGENCE( "Divergence" );
-
-        private final String _label;
-
-        NEXTSTRAIN_BRANCH_MODE( final String label ) {
-            _label = label;
-        }
-
-        String label() {
-            return _label;
-        }
     }
     private DRAGGED_LEGEND      _dragged_legend = DRAGGED_LEGEND.PROPERTY;
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
@@ -7286,11 +7269,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Whether the point of {@code e} is over the (last-drawn) legend box (property-color, rank, or column).
-     *  The active-legend test must match the paint dispatch exactly (isColorByProperty, not just a non-null
-     *  scheme): a non-null-but-EMPTY scheme -- e.g. after navigating into a subtree where no visible tip has
-     *  the property -- draws NO legend, so its stale bounds/controls must not stay clickable. */
+     *  The active-legend test must match the paint dispatch exactly (hasColorByPropertyLegend): a chosen field
+     *  whose scheme is EMPTY in this view -- no visible tip carries it -- still draws a legend, its "no value" row,
+     *  because a view never un-chooses a field. */
     final boolean isOnPropertyLegend(final MouseEvent e) {
-        return (isColorByProperty() || hasRankLegend() || hasAnnotationColumnLegend())
+        return (hasColorByPropertyLegend() || hasRankLegend() || hasAnnotationColumnLegend())
                 && (_property_legend_bounds != null)
                 && _property_legend_bounds.contains(e.getX(), e.getY());
     }
@@ -7511,7 +7494,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void drawLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         if (hasAnnotationColumnLegend()) {
             drawAnnotationColumnLegend(g, bounds, draggable);
-        } else if (isColorByProperty()) {
+        } else if (hasColorByPropertyLegend()) {
             drawPropertyColorLegend(g, bounds, draggable);
         } else if (hasRankLegend()) {
             drawRankLegend(g, bounds, draggable);
@@ -7817,6 +7800,72 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
+     * The visualization candidates of this tab's TREE, best first, any KEPT field appended -- the whole tree even while
+     * a subtree is displayed. Decided when the tree is loaded and again only after an EDIT
+     * ({@link #rederiveVisualizationCandidates()}); a VIEW (entering or leaving a subtree, collapsing a clade) never
+     * re-decides them, it only re-summarizes the chosen field over the tips on screen. JS-authoritative (forester.js
+     * 79dd9de): a view never changes what is offered or what is chosen.
+     */
+    java.util.List<PropertyColorScheme.VisCandidate> getVisualizationCandidates() {
+        if (_vis_candidates == null) {
+            _vis_candidates = PropertyColorScheme.visualizationCandidates(wholeTree());
+        }
+        return _vis_candidates;
+    }
+
+    /** The tree navigation started from: the displayed phylogeny, or the bottom of the subtree stack. */
+    private Phylogeny wholeTree() {
+        return (_subtree_index > 0) ? _sub_phylogenies[0] : _phylogeny;
+    }
+
+    /** This tree's candidate for {@code ref}, or null when the ref is not one. */
+    PropertyColorScheme.VisCandidate visualizationCandidate(final String ref) {
+        return PropertyColorScheme.findCandidate(getVisualizationCandidates(), ref);
+    }
+
+    /** The name menus and legends show for a field: its candidate's label (a label two namespaces share reads as the
+     *  full ref), else the plain display name. */
+    String visualizationLabel(final String ref) {
+        final PropertyColorScheme.VisCandidate c = visualizationCandidate(ref);
+        return (c != null) ? c._label : PropertyColorScheme.displayName(ref);
+    }
+
+    /**
+     * The tree was EDITED -- a deletion, a node-data write, an import, an undo or redo -- so it is a different tree
+     * now: the candidates are re-derived from what is left, KEEPING the fields the user had chosen ("Color by",
+     * "Size by") for as long as they still carry a value on any tip, even where the rules would now refuse them. THE
+     * REFUSAL RULES DECIDE WHAT IS OFFERED, NEVER WHAT IS ALREADY CHOSEN (forester.js
+     * visualizationCandidatesKeeping). A chosen field with no value left anywhere is dropped. Rebuilds the displays
+     * and, for the tab on screen, the menus.
+     * <p>
+     * The desktop also lets the user EDIT NODE DATA, which Archaeopteryx.js cannot; a node-data write goes through
+     * here exactly like a deletion, so a field the user is annotating stays chosen while it is being filled in.
+     */
+    void rederiveVisualizationCandidates() {
+        final java.util.List<PropertyColorScheme.VisCandidate> chosen = new java.util.ArrayList<>();
+        final PropertyColorScheme.VisCandidate color = (_vis_candidates == null) ? null
+                : PropertyColorScheme.findCandidate(_vis_candidates, _color_by_property_ref);
+        final PropertyColorScheme.VisCandidate size = (_vis_candidates == null) ? null
+                : PropertyColorScheme.findCandidate(_vis_candidates, _size_by_property_ref);
+        chosen.add(color);
+        chosen.add(size);
+        _vis_candidates = PropertyColorScheme.visualizationCandidatesKeeping(wholeTree(), chosen);
+        if ((color != null) && (PropertyColorScheme.findCandidate(_vis_candidates, _color_by_property_ref) == null)) {
+            _color_by_property_ref = null; // no value left anywhere: back to the default
+        }
+        if ((size != null) && (PropertyColorScheme.findCandidate(_vis_candidates, _size_by_property_ref) == null)) {
+            _size_by_property_ref = null;
+            _size_legend_offset = null;
+            _size_legend_bounds = null;
+        }
+        rebuildPropertyDisplays();
+        if ((_control_panel != null) && (getMainPanel() != null) && (getMainPanel().getCurrentTreePanel() == this)) {
+            _control_panel.populateColorByPropertyBox();
+            _control_panel.populateSizeByPropertyBox();
+        }
+    }
+
+    /**
      * (Re)builds the property color scheme from the currently displayed (visible) tree for the
      * active "Color by" ref, if any. Called whenever the displayed phylogeny changes -- moving
      * into or out of a subtree, collapsing a clade, or deleting nodes -- so the leaf colors and
@@ -7826,6 +7875,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_color_by_property_ref == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
             _property_color_scheme = null;
         } else {
+            // the field's CANDIDATE decides how its values group and whether it is numeric -- decided on the tree,
+            // never re-decided by this view; the view only re-summarizes it (null for a ref that is not a candidate,
+            // e.g. one a figure spec set: that keeps the plain per-view detection)
+            final PropertyColorScheme.VisCandidate candidate = visualizationCandidate(_color_by_property_ref);
             Map<String, Color> memory = _property_color_memory.get(_color_by_property_ref);
             int[] next = _property_color_memory_next.get(_color_by_property_ref);
             if (memory == null) {
@@ -7837,15 +7890,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // the three-band default + the user's per-field [colors]/[gradient] choice decide the mode; the
             // band is computed from the VISIBLE tips, so a subtree of a wide numeric field can become
             // switchable colors (JS parity: bands are per view)
-            final PropertyColorScheme.ModeBand band = PropertyColorScheme.colorModeBand(
-                    PropertyColorScheme.visibleExternalNodes(_phylogeny), _color_by_property_ref);
+            final java.util.List<PhylogenyNode> view_tips = PropertyColorScheme.visibleExternalNodes(_phylogeny);
+            final PropertyColorScheme.ModeBand band = (candidate != null)
+                    ? PropertyColorScheme.colorModeBand(candidate, view_tips)
+                    : PropertyColorScheme.colorModeBand(view_tips, _color_by_property_ref);
             _color_by_switchable = band.isSwitchable();
             final Boolean chosen = _color_mode_overrides.get(_color_by_property_ref);
             final Boolean forced = Boolean.valueOf(band.isSwitchable() && (chosen != null)
                     ? chosen.booleanValue() : band.defaultsToGradient());
             _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref,
                     _property_color_overrides.get(_color_by_property_ref), _color_palette_name, memory, next,
-                    forced);
+                    forced, candidate);
         }
     }
 
@@ -7871,6 +7926,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     boolean isColorByProperty() {
         return (_property_color_scheme != null) && !_property_color_scheme.isEmpty();
+    }
+
+    /** Whether a Color-by field is CHOSEN, and so has a legend -- even when no tip on screen carries it: a view never
+     *  un-chooses a field, so its legend is then just the "no value" row (JS-authoritative). Node COLOURING still
+     *  follows {@link #isColorByProperty()}, which is false for such an empty view, so nothing is coloured. */
+    boolean hasColorByPropertyLegend() {
+        return _property_color_scheme != null;
     }
 
     PropertyColorScheme getPropertyColorScheme() {
@@ -8164,12 +8226,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Draws a capped value-to-color legend; draggable (recorded for hit-testing) on screen. */
     private void drawPropertyColorLegend(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
-        if ((_property_color_scheme == null) || _property_color_scheme.isEmpty()) {
+        if (_property_color_scheme == null) {
+            return;
+        }
+        if (_property_color_scheme.isEmpty()) {
+            // the chosen field has no value on any tip on screen: it stays chosen, and its legend is just the "no
+            // value" row -- not an error, and not a fall back to the default
+            noteLegendSubject("prop:" + _property_color_scheme.getRef());
+            drawCategoricalLegend(g, bounds, draggable, "Color by: " + visualizationLabel(_property_color_scheme.getRef()),
+                    new java.util.LinkedHashMap<String, Color>(), new java.util.HashMap<String, Integer>(), 0,
+                    _property_color_scheme.missingCount(), false);
             return;
         }
         if (_property_color_scheme.isGradient()) {
             drawPropertyColorGradientLegend(g, bounds, draggable,
-                    "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef()),
+                    "Color by: " + visualizationLabel(_property_color_scheme.getRef()),
                     _property_color_scheme, _property_color_scheme.missingCount(), isColorBySwitchable());
             return;
         }
@@ -8177,7 +8248,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Map<String, Integer> counts = _property_color_scheme.getValueCounts();
         final Map<String, Color> values = orderedLegend(_property_color_scheme.getValueColors(), counts);
         final int more = _property_color_scheme.numberOfValues() - values.size();
-        final String title = "Color by: " + PropertyColorScheme.displayName(_property_color_scheme.getRef());
+        final String title = "Color by: " + visualizationLabel(_property_color_scheme.getRef());
         drawCategoricalLegend(g, bounds, draggable, title, values, counts, more,
                 _property_color_scheme.missingCount(), isColorBySwitchable());
     }
@@ -8644,7 +8715,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_size_legend_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _size_legend_offset, box_w, box_h);
         }
-        final boolean color_legend_present = isColorByProperty() || hasRankLegend() || hasAnnotationColumnLegend();
+        final boolean color_legend_present = hasColorByPropertyLegend() || hasRankLegend()
+                || hasAnnotationColumnLegend();
         if (!color_legend_present) {
             return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // the shared top-right default
         }
@@ -8730,7 +8802,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // which legend actually holds the top-right slot: the color/annotation legends are SUPPRESSED radially (see
         // the legend tail), so only the rank legend (which draws in every layout) occupies it there
         final boolean top_right_taken = hasRankLegend()
-                || (!isRadialLayout() && isColorByProperty()) || annotationLegendVisible();
+                || (!isRadialLayout() && hasColorByPropertyLegend()) || annotationLegendVisible();
         if (top_right_taken) {
             return new Point(Math.max(bounds.x, bounds.x + 10),
                     Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
@@ -8988,8 +9060,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * Colorizes subtrees by taxonomic {@code rank} and builds the movable taxon-&gt;color legend
-     * (sorted by taxon name). UI-free; returns the number of colorized subtrees. {@link #colorRank}
-     * wraps this with the user-facing result dialogs.
+     * (sorted by taxon name). UI-free; returns the number of colorized subtrees.
      */
     final int colorByRank(final String rank) {
         if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
@@ -9573,7 +9644,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             recalculateMaxDistanceToRoot();
             resetPreferredSize();
             clearRankLegend(); // the branch rank-colorization legend is UI state, not in the snapshot -- drop it
-            rebuildPropertyDisplays(); // color+size schemes summarize the tree -- recompute for the restored one
+            // an undo/redo is an EDIT: re-derive the candidates for the restored tree, keeping the chosen fields
+            // (this also rebuilds the color+size schemes)
+            rederiveVisualizationCandidates();
             rebuildAnnotationColumns();
             rebuildCladeBands();
             if (getControlPanel() != null) {
@@ -9650,7 +9723,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_focused_annotation_column >= 0) && columnLegendReady(_focused_annotation_column)) {
             return _focused_annotation_column;
         }
-        if (isColorByProperty() || hasRankLegend()) {
+        if (hasColorByPropertyLegend() || hasRankLegend()) {
             return -1; // an active color/rank legend owns the slot; do not usurp it with the always-on matrix legend
         }
         for (int i = 0; i < _annotation_columns.size(); ++i) {
@@ -14452,7 +14525,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // aren't drawn (its bounds nulled so a stale hit region from a prior paint isn't clickable). The RANK legend
         // keys BRANCH colors, which render in every layout.
         final boolean draw_annotation_legend = annotationLegendVisible();
-        final boolean draw_color_legend = isColorByProperty();
+        final boolean draw_color_legend = hasColorByPropertyLegend();
         if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
             final boolean to_screen = !(to_pdf || to_graphics_file);
             final Rectangle legend_bounds = to_screen
