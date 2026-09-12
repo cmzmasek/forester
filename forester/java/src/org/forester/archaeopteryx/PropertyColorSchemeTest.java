@@ -57,7 +57,8 @@ public final class PropertyColorSchemeTest {
                 && testColorIdentityMemory() && testSynonymDictionary() && testElementSlots()
                 && testCandidateOrdering() && testModeBands() && testExcludedRefs()
                 && testUniquenessTiersAndOpening() && testNumericGrammarAndFolding() && testMultiValuedAndAppliesTo()
-                && testViewSummarizesNotReclassifies() && testEditKeepsValuedChoice() && testContractFixtures();
+                && testViewSummarizesNotReclassifies() && testEditKeepsValuedChoice() && testFoldToEmptyIsNoValue()
+                && testContractFixtures();
     }
 
     // ---- orderLegendEntries edge cases (formerly covered via legendValues/capEntries) ----
@@ -1523,7 +1524,7 @@ public final class PropertyColorSchemeTest {
     /**
      * THE ACCEPTANCE TEST: both Archaeopteryx.js contract fixtures, run through the desktop's own phyloXML parser and
      * classifier -- the NAMES (vis-contract.tsv: verdict, label, deprioritization) and the DATA (vis-trees.tsv +
-     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at c757959) into
+     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at 635741b) into
      * forester/test_data/vis_contract/. When they regenerate, recopy; never edit a row to make this pass. The row
      * counts are pinned so a truncated copy cannot pass.
      */
@@ -1601,13 +1602,72 @@ public final class PropertyColorSchemeTest {
                     }
                 }
             }
-            if ( data_rows != 35 ) {
-                return fail( "data fixture: expected 35 rows, read " + data_rows );
+            if ( data_rows != 39 ) {
+                return fail( "data fixture: expected 39 rows, read " + data_rows );
             }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
             return false;
+        }
+        return true;
+    }
+
+    /**
+     * A property value that folds to NOTHING -- "_", "___", a host that is only its ";" qualifier -- is NO VALUE,
+     * everywhere, exactly like an empty string (Christian, 2026-09-12; forester.js 635741b): the tip is not covered, no
+     * group or legend row is made, it does not make the ref "carried twice", and a field of nothing else is no
+     * candidate.
+     */
+    private static boolean testFoldToEmptyIsNoValue() {
+        final Phylogeny t = fieldTree( 30, refs( "x:Blanks", "x:Host", "x:Void", "x:Beside" ),
+                                       i -> ( i < 12 ) ? ( ( ( i % 2 ) == 0 ) ? "_" : "___" )
+                                               : ( ( ( i % 2 ) == 0 ) ? "A" : "B" ),
+                                       i -> ( i < 12 ) ? "; cell culture" : ( ( ( i % 2 ) == 0 ) ? "Human; male" : "Pig" ),
+                                       i -> "_",
+                                       i -> ( i == 0 ) ? new String[] { "_", "Human" }
+                                               : ( ( ( i % 2 ) == 0 ) ? "Human" : "Pig" ) );
+        final PropertyColorScheme.VisCandidate blanks = cand( t, "x:Blanks" );
+        if ( ( blanks == null ) || ( blanks._coverage != 18 ) || !blanks._sparse || ( blanks._values.size() != 2 ) ) {
+            return fail( "12 of 30 tips of \"_\"/\"___\" must leave 18 covered, sparse, 2 values; got "
+                    + ( ( blanks == null ) ? null : ( blanks._coverage + " " + blanks._values ) ) );
+        }
+        final PropertyColorScheme.VisCandidate host = cand( t, "x:Host" );
+        if ( ( host == null ) || ( host._coverage != 18 ) || !host._sparse
+                || !host._values.equals( java.util.Arrays.asList( "Human", "Pig" ) ) ) {
+            return fail( "a host that is only its ';' qualifier must be no value; got "
+                    + ( ( host == null ) ? null : ( host._coverage + " " + host._values ) ) );
+        }
+        if ( cand( t, "x:Void" ) != null ) {
+            return fail( "a field whose every value folds to nothing must not be a candidate" );
+        }
+        final PropertyColorScheme.VisCandidate beside = cand( t, "x:Beside" );
+        if ( ( beside == null ) || ( beside._coverage != 30 ) ) {
+            return fail( "\"_\" beside \"Human\" on one tip must not make the ref carried twice" );
+        }
+        PhylogenyNode t0 = null;
+        for( final PhylogenyNode n : t.getExternalNodes() ) {
+            if ( "t0".equals( n.getName() ) ) {
+                t0 = n;
+            }
+        }
+        if ( !"Human".equals( PropertyColorScheme.visualizationNodeValue( t0, beside ) ) ) {
+            return fail( "the node value must skip \"_\" and read the tip's real value; got "
+                    + PropertyColorScheme.visualizationNodeValue( t0, beside ) );
+        }
+        if ( PropertyColorScheme.visualizationNodeValue( t0, blanks ) != null ) {
+            return fail( "a tip carrying only \"_\" must read as no value" );
+        }
+        final PropertyColorScheme.VisSummary sum = PropertyColorScheme
+                .visualizationSummary( blanks, PropertyColorScheme.allExternalNodes( t ) );
+        if ( ( sum._coverage != 18 ) || sum._counts.containsKey( "" ) ) {
+            return fail( "the summary must not cover a fold-to-empty tip or give it a row; got " + sum._counts );
+        }
+        final PropertyColorScheme s = new PropertyColorScheme( t, "x:Blanks", null, PropertyColorScheme.DEFAULT_PALETTE_NAME,
+                                                               null, null, Boolean.FALSE, blanks );
+        if ( ( s.getValueColors().size() != 2 ) || ( s.missingCount() != 12 ) ) {
+            return fail( "the legend must have 2 rows and 12 'no value' tips; got " + s.getValueCounts() + ", missing "
+                    + s.missingCount() );
         }
         return true;
     }

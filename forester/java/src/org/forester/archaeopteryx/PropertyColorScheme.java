@@ -1269,23 +1269,33 @@ final class PropertyColorScheme {
             }
             for( final Map.Entry<String, List<String>> e : per_node.entrySet() ) {
                 final String id = e.getKey();
+                final boolean slot = !id.startsWith( "prop:" );
+                final String ref = slot ? id : id.substring( 5 );
+                final char cut = slot ? 0 : truncationDelimiter( ref );
+                // properties group under their normalized display form; element slots are curated, verbatim. A value
+                // that folds to NOTHING ("_", a host that is only its ";" qualifier) is NO VALUE, exactly like an empty
+                // string: it does not cover the tip, makes no group, and does not count as "carried twice"
+                // (Christian, 2026-09-12; forester.js 635741b)
+                final List<String> displays = new ArrayList<String>( e.getValue().size() );
+                for( final String v : e.getValue() ) {
+                    final String display = slot ? v : visDisplayLabel( v, cut );
+                    if ( !display.isEmpty() ) {
+                        displays.add( display );
+                    }
+                }
+                if ( displays.isEmpty() ) {
+                    continue;
+                }
                 VisStats s = stats.get( id );
                 if ( s == null ) {
-                    final boolean slot = !id.startsWith( "prop:" );
-                    final String ref = slot ? id : id.substring( 5 );
-                    s = new VisStats( ref, slot, slot ? 0 : truncationDelimiter( ref ) );
+                    s = new VisStats( ref, slot, cut );
                     stats.put( id, s );
                 }
                 s._nodes++;
-                if ( e.getValue().size() > 1 ) {
+                if ( displays.size() > 1 ) {
                     s._multi = true;
                 }
-                for( final String v : e.getValue() ) {
-                    // properties group under their normalized display form; element slots are curated, verbatim
-                    final String display = s._element_slot ? v : visDisplayLabel( v, s._cut );
-                    if ( display.isEmpty() ) {
-                        continue;
-                    }
+                for( final String display : displays ) {
                     final String key = s._element_slot ? display : display.toLowerCase( Locale.ROOT );
                     VisGroup g = s._keys.get( key );
                     if ( g == null ) {
@@ -1501,8 +1511,8 @@ final class PropertyColorScheme {
      * reads "1"); an element slot is verbatim, except that a numeric slot folds its spellings too. Null when the node
      * has none.
      * <p>
-     * ONE DELIBERATE DIFFERENCE, reported to the JS side: a value that folds to EMPTY ("_") reads as no value here,
-     * where forester.js returns "" and so gives it a blank legend row of its own.
+     * A value that folds to NOTHING ("_", a host that is only its ";" qualifier) is no value, and the scan moves on to
+     * the next property with the ref, so "_" beside "Human" on one tip reads "Human" (forester.js 635741b).
      */
     static String visualizationNodeValue( final PhylogenyNode node, final VisCandidate c ) {
         final NodeData nd = node.getNodeData();
@@ -1520,7 +1530,7 @@ final class PropertyColorScheme {
                             }
                             final String display = visDisplayLabel( v, c._cut );
                             if ( display.isEmpty() ) {
-                                return null;
+                                continue; // folds to nothing: no value, as the classifier counted it -- keep looking
                             }
                             final String r = c._canon.get( display.toLowerCase( Locale.ROOT ) );
                             return ( r != null ) ? r : display;
