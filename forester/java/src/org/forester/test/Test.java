@@ -305,6 +305,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Domain track width in radial layouts (d+/d- step the radial width): ");
+        if (org.forester.archaeopteryx.DomainRadialWidthTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node hover card: ");
         if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
             System.out.println("OK.");

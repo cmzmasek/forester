@@ -333,6 +333,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private ControlPanel _control_panel = null;
     private int _domain_structure_e_value_thr_exp = AptxConstants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
     private double _domain_structure_width = AptxConstants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
+    // The radial layouts' own track width, unset (<= 0) until first used there: it starts at the smaller of the
+    // rectangular width and a fifth of the radius, so the first sight is unchanged, and the d+ / d- buttons then step
+    // it on its own. Until 2026-09-13 the rectangular width was CAPPED at that fifth on every redraw, so the buttons
+    // stepped a number the cap discarded and did nothing in circular / unrooted (Christian: "follow the JS fix").
+    private double _domain_structure_radial_width = -1;
+    private final static double DOMAIN_WIDTH_MIN = 20;   // the track width stops shrinking / growing at these
+    private final static double DOMAIN_WIDTH_MAX = 2000;
+    private final static double DOMAIN_WIDTH_GROW = 1.2;   // one d+ press
+    private final static double DOMAIN_WIDTH_SHRINK = 0.8; // one d- press
     private int _dynamic_hiding_factor = 0;
     private boolean _edited = false;
     private final Ellipse2D _ellipse = new Ellipse2D.Float();
@@ -1076,9 +1085,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return alignedPhylogramDomainColumnX() + (float) (effectiveDomainStructureWidth() * 0.9);
     }
 
-    /** Test hook: the user's domain-track width (the "+"/"-" domain zoom). */
+    /** Test hook: the user's RECTANGULAR domain-track width (the "+"/"-" domain zoom in a rectangular layout). */
     final double domainStructureWidthForTest() {
         return _domain_structure_width;
+    }
+
+    /** Test hook: the radial layouts' own track width, or -1 while it has never been used. */
+    final double radialDomainStructureWidthForTest() {
+        return _domain_structure_radial_width;
+    }
+
+    /** Test hook: the track width the CURRENT layout draws with. */
+    final double effectiveDomainStructureWidthForTest() {
+        return effectiveDomainStructureWidth();
     }
 
     /** Test hook: the depth cache getMaxDistanceToRoot() (includes the root branch only when drawn to scale). */
@@ -10985,18 +11004,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && (!isRadialLayout() || (getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL));
     }
 
-    /** The domain-structure target width to use for the CURRENT layout: the user's {@code _domain_structure_width}
-     *  in a rectangular layout, but capped in a radial layout to a fraction of the canvas half-radius (the rectangular
-     *  ~0.25*viewport width extends ~half the circular radius and clips). Used consistently by the reservation
-     *  ({@code calculateLongestExtNodeInfo}) and the draw factor ({@code initNodeData}) so they agree. */
+    /** The domain-track width the CURRENT layout draws with: the user's {@code _domain_structure_width} in a rectangular
+     *  layout; in a radial layout the radial layouts' own width, which starts -- the first time it is needed -- at the
+     *  smaller of the rectangular width and {@link #RADIAL_DOMAIN_MAX_FRACTION} of the canvas half-radius (the
+     *  rectangular ~0.25*viewport width would extend ~half the circular radius and clip), and is stepped by the d+ /
+     *  d- buttons from there. Used consistently by the reservation ({@code calculateLongestExtNodeInfo}) and the draw
+     *  factor ({@code initNodeData}) so they agree. The same rule as Archaeopteryx.js (1439b5a). */
     private double effectiveDomainStructureWidth() {
         if (!isRadialLayout()) {
             return _domain_structure_width;
         }
-        // the radial canvas is the SQUARE radialDiameter (what circularRadius / the preferred size use), NOT getSize()
-        // (the panel's actual size, which after a fit is the possibly-large preferred size) -> cap to its half-radius
-        final double half = radialDiameter() / 2.0;
-        return Math.min(_domain_structure_width, half * RADIAL_DOMAIN_MAX_FRACTION);
+        if (_domain_structure_radial_width <= 0) {
+            // the radial canvas is the SQUARE radialDiameter (what circularRadius / the preferred size use), NOT
+            // getSize() (the panel's actual size, which after a fit is the possibly-large preferred size)
+            final double half = radialDiameter() / 2.0;
+            _domain_structure_radial_width = Math.max(DOMAIN_WIDTH_MIN,
+                    Math.min(_domain_structure_width, half * RADIAL_DOMAIN_MAX_FRACTION));
+        }
+        return _domain_structure_radial_width;
     }
 
     /** The maximum pixel reach a tip label may extend outward in a radial (circular/unrooted) layout: a fraction of
@@ -15638,14 +15663,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void zoomInDomainStructure() {
-        if (_domain_structure_width < 2000) {
-            _domain_structure_width *= 1.2;
-        }
+        stepDomainStructureWidth(true);
     }
 
     final void zoomOutDomainStructure() {
-        if (_domain_structure_width > 20) {
-            _domain_structure_width *= 0.8;
+        stepDomainStructureWidth(false);
+    }
+
+    /** d+ / d-: the width the CURRENT layout draws with grows by 1.2 while under the maximum, shrinks by 0.8 while
+     *  over the minimum (one press can carry it past a limit; the next is refused). A radial press steps the radial
+     *  layouts' own width and leaves the rectangular one alone, and vice versa. */
+    private void stepDomainStructureWidth(final boolean grow) {
+        final double w = effectiveDomainStructureWidth();
+        if (grow ? (w >= DOMAIN_WIDTH_MAX) : (w <= DOMAIN_WIDTH_MIN)) {
+            return;
+        }
+        final double next = w * (grow ? DOMAIN_WIDTH_GROW : DOMAIN_WIDTH_SHRINK);
+        if (isRadialLayout()) {
+            _domain_structure_radial_width = next;
+        } else {
+            _domain_structure_width = next;
         }
     }
 

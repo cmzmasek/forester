@@ -459,10 +459,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     displayedPhylogenyMightHaveChanged(false);
                 } else if (e.getSource() == _zoom_in_domain_structure) {
                     _mainpanel.getCurrentTreePanel().zoomInDomainStructure();
-                    displayedPhylogenyMightHaveChanged(true);
+                    afterDomainWidthStep();
                 } else if (e.getSource() == _zoom_out_domain_structure) {
                     _mainpanel.getCurrentTreePanel().zoomOutDomainStructure();
-                    displayedPhylogenyMightHaveChanged(true);
+                    afterDomainWidthStep();
                 } else if (e.getSource() == _decr_domain_structure_evalue_thr) {
                     _mainpanel.getCurrentTreePanel().decreaseDomainStructureEvalueThresholdExp();
                     reRunSearches();
@@ -1608,9 +1608,24 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_domain_architectures != null) && _show_domain_architectures.isSelected());
     }
 
+    /** After a d+ / d- press: a rectangular layout re-reserves the tracks' column; a radial layout has no column to
+     *  reserve, but the fit must take the new track length into account, so it is refitted (JS parity). */
+    private void afterDomainWidthStep() {
+        if (isRadialLayout()) {
+            showWhole();
+        } else {
+            displayedPhylogenyMightHaveChanged(true);
+        }
+    }
+
     /** Test hook: the "+" button that widens the domain track, so a test can drive the real click. */
     JButton zoomInDomainButtonForTest() {
         return _zoom_in_domain_structure;
+    }
+
+    /** Test hook: the "-" button that narrows the domain track. */
+    JButton zoomOutDomainButtonForTest() {
+        return _zoom_out_domain_structure;
     }
 
     /** Test hook: the widget behind a display option, so a test can drive a REAL user click (flip it, then fire
@@ -4199,8 +4214,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         final double hc = (hsb.getMaximum() - hsb.getMinimum()) / (hsb.getValue() + (hsb.getVisibleAmount() / 2.0));
         final double vc = (vsb.getMaximum() - vsb.getMinimum()) / (vsb.getValue() + (vsb.getVisibleAmount() / 2.0));
         tp.multiplyRadialDiameter(factor);
-        // recompute the layout params against the NEW diameter -- the domain-width cap (effectiveDomainStructureWidth),
-        // the domain/label reservation and the label truncation are all radialDiameter-based and are set only here, so
+        // recompute the layout params against the NEW diameter -- the domain/label reservation and the label truncation
+        // are radialDiameter-based (the radial domain-track width is NOT: once set it stays, so a radial zoom keeps the
+        // tracks' pixel width) and are set only here, so
         // without this an incremental +/- zoom leaves them stale (domains sized for the old diameter -> clip/misalign)
         tp.calcParametersForPainting(getMainPanel().getSizeOfViewport().width, getMainPanel().getSizeOfViewport().height);
         getMainPanel().adjustJScrollPane();
