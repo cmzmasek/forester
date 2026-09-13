@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
@@ -61,7 +62,8 @@ import javax.swing.SwingUtilities;
  * <li>Only the TERM being typed is completed: {@code ','} is OR and {@code '+'} is AND in the plain-text modes, so the
  * term is whatever follows the last of those, and a pick replaces just that term.</li>
  * <li>Values are matched the way the box's MODE will match them -- a prefix for "starts with", a suffix for "ends
- * with", a substring otherwise -- always ignoring case.</li>
+ * with", a substring otherwise -- honouring the box's "Match case" checkbox (Christian, 2026-09-13: a JOINT rule, both
+ * viewers respect it).</li>
  * <li>At most {@link #MAX_ROWS} rows, in the values' sorted order, the matched part in bold accent; when there are more,
  * a final "N more — keep typing" row.</li>
  * <li>Nothing is shown when nothing matches, or when the one match is exactly what is typed.</li>
@@ -99,6 +101,7 @@ final class SearchValueAutocomplete {
     private final JTextField           _field;
     private final Supplier<List<String>> _values; // recompute-on-open; empty => suggestions are off right now
     private final Supplier<SearchMode> _mode;     // how the box will match, so the list filters the same way
+    private final BooleanSupplier      _case_sensitive; // the "Match case" checkbox: suggestions honour it too
     private final Runnable             _on_accept;
 
     private JWindow                    _popup;
@@ -110,10 +113,12 @@ final class SearchValueAutocomplete {
     private boolean                    _adjusting;      // guard: our own setText must not re-trigger us
 
     SearchValueAutocomplete( final JTextField field, final Supplier<List<String>> values,
-                             final Supplier<SearchMode> mode, final Runnable on_accept ) {
+                             final Supplier<SearchMode> mode, final BooleanSupplier case_sensitive,
+                             final Runnable on_accept ) {
         _field = field;
         _values = values;
         _mode = mode;
+        _case_sensitive = case_sensitive;
         _on_accept = on_accept;
         install();
     }
@@ -173,14 +178,20 @@ final class SearchValueAutocomplete {
         return ( text == null ) ? "" : text.substring( termStart( text ) ).trim();
     }
 
+    /** {@code s} as compared: itself when matching case, else lower-cased. */
+    private static String fold( final String s, final boolean case_sensitive ) {
+        return case_sensitive ? s : s.toLowerCase( Locale.ROOT );
+    }
+
     /** Whether {@code value} admits {@code term} the way {@code mode} will match it: a prefix for STARTS_WITH, a suffix
-     *  for ENDS_WITH, a substring otherwise -- ignoring case. An empty term admits everything. */
-    static boolean matches( final String value, final String term, final SearchMode mode ) {
+     *  for ENDS_WITH, a substring otherwise -- ignoring case unless {@code case_sensitive}. An empty term admits
+     *  everything. */
+    static boolean matches( final String value, final String term, final SearchMode mode, final boolean case_sensitive ) {
         if ( term.isEmpty() ) {
             return true;
         }
-        final String lv = value.toLowerCase( Locale.ROOT );
-        final String needle = term.toLowerCase( Locale.ROOT );
+        final String lv = fold( value, case_sensitive );
+        final String needle = fold( term, case_sensitive );
         if ( mode == SearchMode.STARTS_WITH ) {
             return lv.startsWith( needle );
         }
@@ -191,10 +202,11 @@ final class SearchValueAutocomplete {
     }
 
     /** The values admitting {@code term}, in the order given (the values' sorted order -- no re-ranking). */
-    static List<String> matches( final List<String> values, final String term, final SearchMode mode ) {
+    static List<String> matches( final List<String> values, final String term, final SearchMode mode,
+                                 final boolean case_sensitive ) {
         final List<String> out = new ArrayList<>();
         for ( final String v : values ) {
-            if ( matches( v, term, mode ) ) {
+            if ( matches( v, term, mode, case_sensitive ) ) {
                 out.add( v );
             }
         }
@@ -204,13 +216,14 @@ final class SearchValueAutocomplete {
     /**
      * What the list shows for the box text: the first {@link #MAX_ROWS} matches of the term being typed, and the count
      * of the rest. Empty -- nothing to offer -- when nothing matches, or when the one match is exactly what is typed
-     * (case ignored).
+     * (compared the way the box matches: case ignored unless {@code case_sensitive}).
      */
-    static Model model( final List<String> values, final String text, final SearchMode mode ) {
+    static Model model( final List<String> values, final String text, final SearchMode mode,
+                        final boolean case_sensitive ) {
         final String term = currentTerm( text );
-        final List<String> all = matches( values, term, mode );
+        final List<String> all = matches( values, term, mode, case_sensitive );
         if ( all.isEmpty()
-                || ( ( all.size() == 1 ) && all.get( 0 ).toLowerCase( Locale.ROOT ).equals( term.toLowerCase( Locale.ROOT ) ) ) ) {
+                || ( ( all.size() == 1 ) && fold( all.get( 0 ), case_sensitive ).equals( fold( term, case_sensitive ) ) ) ) {
             return new Model( Collections.<String>emptyList(), 0 );
         }
         final List<String> rows = new ArrayList<>( all.subList( 0, Math.min( MAX_ROWS, all.size() ) ) );
@@ -222,14 +235,14 @@ final class SearchValueAutocomplete {
         return more + " more — keep typing";
     }
 
-    /** The part of {@code value} the typed term matched -- its FIRST occurrence, case ignored -- as {@code {at, length}},
-     *  or {@code null} when the term is empty or does not occur. (The JS list bolds the first occurrence whatever
-     *  the mode, even for "ends with".) */
-    static int[] matchSpan( final String value, final String term ) {
+    /** The part of {@code value} the typed term matched -- its FIRST occurrence, compared the way the box matches --
+     *  as {@code {at, length}}, or {@code null} when the term is empty or does not occur. (The JS list bolds the
+     *  first occurrence whatever the mode, even for "ends with".) */
+    static int[] matchSpan( final String value, final String term, final boolean case_sensitive ) {
         if ( term.isEmpty() ) {
             return null;
         }
-        final int at = value.toLowerCase( Locale.ROOT ).indexOf( term.toLowerCase( Locale.ROOT ) );
+        final int at = fold( value, case_sensitive ).indexOf( fold( term, case_sensitive ) );
         return ( at < 0 ) ? null : new int[] { at, term.length() };
     }
 
@@ -241,8 +254,8 @@ final class SearchValueAutocomplete {
     }
 
     /** A row as HTML: the value, escaped, with the matched part in bold {@code accent} (a CSS colour). */
-    static String rowHtml( final String value, final String term, final String accent ) {
-        final int[] span = matchSpan( value, term );
+    static String rowHtml( final String value, final String term, final String accent, final boolean case_sensitive ) {
+        final int[] span = matchSpan( value, term, case_sensitive );
         if ( span == null ) {
             return "<html>" + escape( value );
         }
@@ -297,13 +310,17 @@ final class SearchValueAutocomplete {
         return ( m == null ) ? SearchMode.CONTAINS : m;
     }
 
+    private boolean caseSensitive() {
+        return ( _case_sensitive != null ) && _case_sensitive.getAsBoolean();
+    }
+
     /** Filters the cached session values by the term being typed and (re)shows the popup. */
     private void renderFiltered() {
         if ( _session_values == null ) {
             return;
         }
         _term = currentTerm( _field.getText() );
-        _model = model( _session_values, _field.getText(), currentMode() );
+        _model = model( _session_values, _field.getText(), currentMode(), caseSensitive() );
         if ( _model.isEmpty() ) {
             hideWindow();
             return;
@@ -520,7 +537,7 @@ final class SearchValueAutocomplete {
                 c.setBackground( accent );
                 c.setForeground( Color.WHITE );
             }
-            setText( rowHtml( String.valueOf( value ), _term, hex( selected ? Color.WHITE : accent ) ) );
+            setText( rowHtml( String.valueOf( value ), _term, hex( selected ? Color.WHITE : accent ), caseSensitive() ) );
             return c;
         }
     }
@@ -535,7 +552,7 @@ final class SearchValueAutocomplete {
         if ( _session_values == null ) {
             return new Model( Collections.<String>emptyList(), 0 );
         }
-        return model( _session_values, _field.getText(), currentMode() );
+        return model( _session_values, _field.getText(), currentMode(), caseSensitive() );
     }
 
     /** Simulates picking {@code value} from the popup (replaces the current term + runs the search). */

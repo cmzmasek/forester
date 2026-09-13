@@ -3582,7 +3582,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_reset_button_0.addActionListener(action_listener);
         _search_tf_0.addKeyListener(key_adapter);
         _search_autocomplete_0 = new SearchValueAutocomplete(_search_tf_0, () -> autocompleteValues(true),
-                () -> currentSearchMode(true), this::search0);
+                () -> currentSearchMode(true),
+                () -> (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected(), this::search0);
         addJTextField(_search_tf_0, s_panel_1);
         s_panel_2.add(_search_found_label_0);
         addJButton(_search_reset_button_0, s_panel_2);
@@ -3642,7 +3643,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_reset_button_1.addActionListener(action_listener);
         _search_tf_1.addKeyListener(key_adapter);
         _search_autocomplete_1 = new SearchValueAutocomplete(_search_tf_1, () -> autocompleteValues(false),
-                () -> currentSearchMode(false), this::search1);
+                () -> currentSearchMode(false),
+                () -> (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected(), this::search1);
         addJTextField(_search_tf_1, s_panel_1);
         s_panel_2.add(_search_found_label_1);
         addJButton(_search_reset_button_1, s_panel_2);

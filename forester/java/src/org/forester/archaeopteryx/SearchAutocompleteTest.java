@@ -57,6 +57,7 @@ public final class SearchAutocompleteTest {
         try {
             termOfAQuery();
             matchingFollowsTheMode();
+            matchCaseIsHonoured();
             tenRowsThenMore();
             nothingToOffer();
             matchedPartIsMarked();
@@ -95,19 +96,41 @@ public final class SearchAutocompleteTest {
     private static void matchingFollowsTheMode() {
         final List<String> all = Arrays.asList( "Homo sapiens", "Pan", "Sapporo virus", "sapiens" );
         // contains (and whole word / exact): a substring, case ignored, in the values' own order -- no re-ranking
-        ck( SearchValueAutocomplete.matches( all, "sap", SearchMode.CONTAINS )
+        ck( SearchValueAutocomplete.matches( all, "sap", SearchMode.CONTAINS, false )
                 .equals( Arrays.asList( "Homo sapiens", "Sapporo virus", "sapiens" ) ),
             "contains should admit every substring match, in the list's order" );
-        ck( SearchValueAutocomplete.matches( all, "SAP", SearchMode.WHOLE_WORD )
+        ck( SearchValueAutocomplete.matches( all, "SAP", SearchMode.WHOLE_WORD, false )
                 .equals( Arrays.asList( "Homo sapiens", "Sapporo virus", "sapiens" ) ),
             "matching always ignores case" );
-        ck( SearchValueAutocomplete.matches( all, "sap", SearchMode.STARTS_WITH )
+        ck( SearchValueAutocomplete.matches( all, "sap", SearchMode.STARTS_WITH, false )
                 .equals( Arrays.asList( "Sapporo virus", "sapiens" ) ), "starts-with should admit prefixes only" );
-        ck( SearchValueAutocomplete.matches( all, "ens", SearchMode.ENDS_WITH )
+        ck( SearchValueAutocomplete.matches( all, "ens", SearchMode.ENDS_WITH, false )
                 .equals( Arrays.asList( "Homo sapiens", "sapiens" ) ), "ends-with should admit suffixes only" );
-        ck( SearchValueAutocomplete.matches( all, "", SearchMode.STARTS_WITH ).equals( all ),
+        ck( SearchValueAutocomplete.matches( all, "", SearchMode.STARTS_WITH, false ).equals( all ),
             "an empty term admits everything" );
-        ck( SearchValueAutocomplete.matches( all, "zzz", SearchMode.CONTAINS ).isEmpty(), "no match -> empty" );
+        ck( SearchValueAutocomplete.matches( all, "zzz", SearchMode.CONTAINS, false ).isEmpty(), "no match -> empty" );
+    }
+
+    /** The "Match case" checkbox reaches the suggestions too -- Christian, 2026-09-13, a JOINT rule with Archaeopteryx.js:
+     *  matching, the "what is typed already" suppression and the marked part all compare the way the search will. */
+    private static void matchCaseIsHonoured() {
+        final List<String> all = Arrays.asList( "Homo sapiens", "Pan", "Sapporo virus", "sapiens" );
+        ck( SearchValueAutocomplete.matches( all, "Sap", SearchMode.CONTAINS, true ).equals( Arrays.asList( "Sapporo virus" ) ),
+            "with Match case on, 'Sap' admits only the capitalised value" );
+        ck( SearchValueAutocomplete.matches( all, "sap", SearchMode.STARTS_WITH, true ).equals( Arrays.asList( "sapiens" ) ),
+            "with Match case on, a prefix must match case too" );
+        ck( SearchValueAutocomplete.matches( all, "SAP", SearchMode.CONTAINS, false ).size() == 3,
+            "with Match case off, case is ignored as before" );
+        final List<String> places = Arrays.asList( "Africa", "Asia", "Europe" );
+        ck( SearchValueAutocomplete.matches( places, "europe", SearchMode.CONTAINS, true ).isEmpty()
+                && SearchValueAutocomplete.model( places, "europe", SearchMode.CONTAINS, true ).isEmpty(),
+            "with Match case on, 'europe' matches nothing (not Europe), so nothing is offered" );
+        ck( SearchValueAutocomplete.model( places, "Europe", SearchMode.CONTAINS, true ).isEmpty(),
+            "with Match case on, the exact 'Europe' is what is typed already -> nothing" );
+        ck( SearchValueAutocomplete.matchSpan( "sapiens sapiens", "Sap", true ) == null,
+            "with Match case on, the marked part must match case" );
+        ck( Arrays.equals( SearchValueAutocomplete.matchSpan( "Homo Sapiens", "Sap", true ), new int[] { 5, 3 } ),
+            "with Match case on, the marked part is the case-exact occurrence" );
     }
 
     private static void tenRowsThenMore() {
@@ -115,47 +138,47 @@ public final class SearchAutocompleteTest {
         for ( int i = 1; i <= 25; ++i ) {
             many.add( String.format( "v%02d", i ) );
         }
-        final SearchValueAutocomplete.Model m = SearchValueAutocomplete.model( many, "v", SearchMode.CONTAINS );
+        final SearchValueAutocomplete.Model m = SearchValueAutocomplete.model( many, "v", SearchMode.CONTAINS, false );
         ck( m._rows.size() == SearchValueAutocomplete.MAX_ROWS, "at most ten rows are shown" );
         ck( m._rows.equals( many.subList( 0, 10 ) ), "the ten are the first matches in order" );
         ck( m._more == 15, "the rest are counted: 25 - 10 = 15, got " + m._more );
         ck( SearchValueAutocomplete.moreText( 15 ).equals( "15 more — keep typing" ),
             "the last row says how many more, with an em dash" );
-        final SearchValueAutocomplete.Model few = SearchValueAutocomplete.model( many, "v1", SearchMode.CONTAINS );
+        final SearchValueAutocomplete.Model few = SearchValueAutocomplete.model( many, "v1", SearchMode.CONTAINS, false );
         ck( ( few._rows.size() == 10 ) && ( few._more == 0 ), "v1 matches exactly v10..v19: ten rows and none more" );
-        final SearchValueAutocomplete.Model exact = SearchValueAutocomplete.model( many, "v2", SearchMode.CONTAINS );
+        final SearchValueAutocomplete.Model exact = SearchValueAutocomplete.model( many, "v2", SearchMode.CONTAINS, false );
         ck( ( exact._rows.size() == 6 ) && ( exact._more == 0 ), "within ten rows there is no more row" );
         // the whole browse list when the term is empty
-        final SearchValueAutocomplete.Model browse = SearchValueAutocomplete.model( many, "", SearchMode.CONTAINS );
+        final SearchValueAutocomplete.Model browse = SearchValueAutocomplete.model( many, "", SearchMode.CONTAINS, false );
         ck( ( browse._rows.size() == 10 ) && ( browse._more == 15 ), "an empty term browses the first ten" );
     }
 
     private static void nothingToOffer() {
         final List<String> all = Arrays.asList( "Africa", "Asia", "Europe" );
-        ck( SearchValueAutocomplete.model( all, "zzz", SearchMode.CONTAINS ).isEmpty(), "no match -> nothing" );
-        ck( SearchValueAutocomplete.model( all, "europe", SearchMode.CONTAINS ).isEmpty(),
+        ck( SearchValueAutocomplete.model( all, "zzz", SearchMode.CONTAINS, false ).isEmpty(), "no match -> nothing" );
+        ck( SearchValueAutocomplete.model( all, "europe", SearchMode.CONTAINS, false ).isEmpty(),
             "the one match being what is typed (case ignored) -> nothing" );
-        ck( SearchValueAutocomplete.model( all, "Asia, EUROPE", SearchMode.CONTAINS ).isEmpty(),
+        ck( SearchValueAutocomplete.model( all, "Asia, EUROPE", SearchMode.CONTAINS, false ).isEmpty(),
             "...and that is judged on the term being typed, not the whole box" );
-        ck( SearchValueAutocomplete.model( all, "a", SearchMode.CONTAINS )._rows.equals( Arrays.asList( "Africa", "Asia" ) ),
+        ck( SearchValueAutocomplete.model( all, "a", SearchMode.CONTAINS, false )._rows.equals( Arrays.asList( "Africa", "Asia" ) ),
             "two matches are offered even if one equals the term" );
-        ck( SearchValueAutocomplete.model( Collections.<String>emptyList(), "", SearchMode.CONTAINS ).isEmpty(),
+        ck( SearchValueAutocomplete.model( Collections.<String>emptyList(), "", SearchMode.CONTAINS, false ).isEmpty(),
             "no values -> nothing" );
     }
 
     private static void matchedPartIsMarked() {
-        ck( Arrays.equals( SearchValueAutocomplete.matchSpan( "Homo sapiens", "SAP" ), new int[] { 5, 3 } ),
+        ck( Arrays.equals( SearchValueAutocomplete.matchSpan( "Homo sapiens", "SAP", false ), new int[] { 5, 3 } ),
             "the matched part is the term's first occurrence, case ignored" );
-        ck( Arrays.equals( SearchValueAutocomplete.matchSpan( "sapiens sapiens", "sap" ), new int[] { 0, 3 } ),
+        ck( Arrays.equals( SearchValueAutocomplete.matchSpan( "sapiens sapiens", "sap", false ), new int[] { 0, 3 } ),
             "the FIRST occurrence, even when a later one exists" );
-        ck( SearchValueAutocomplete.matchSpan( "Pan", "sap" ) == null, "no occurrence -> no mark" );
-        ck( SearchValueAutocomplete.matchSpan( "Pan", "" ) == null, "an empty term marks nothing" );
-        final String html = SearchValueAutocomplete.rowHtml( "Homo sapiens", "sap", "#2675bf" );
+        ck( SearchValueAutocomplete.matchSpan( "Pan", "sap", false ) == null, "no occurrence -> no mark" );
+        ck( SearchValueAutocomplete.matchSpan( "Pan", "", false ) == null, "an empty term marks nothing" );
+        final String html = SearchValueAutocomplete.rowHtml( "Homo sapiens", "sap", "#2675bf", false );
         ck( html.equals( "<html>Homo <b><font color=\"#2675bf\">sap</font></b>iens" ),
             "the row marks the matched part in bold accent, got " + html );
-        ck( SearchValueAutocomplete.rowHtml( "a<b>&c", "b", "#000000" )
+        ck( SearchValueAutocomplete.rowHtml( "a<b>&c", "b", "#000000", false )
                 .equals( "<html>a&lt;<b><font color=\"#000000\">b</font></b>&gt;&amp;c" ), "values are HTML-escaped" );
-        ck( SearchValueAutocomplete.rowHtml( "Pan", "sap", "#000000" ).equals( "<html>Pan" ),
+        ck( SearchValueAutocomplete.rowHtml( "Pan", "sap", "#000000", false ).equals( "<html>Pan" ),
             "an unmarked row is the plain escaped value" );
     }
 
@@ -260,7 +283,7 @@ public final class SearchAutocompleteTest {
         final JTextField tf = new JTextField();
         final boolean[] ran = { false };
         final SearchValueAutocomplete ac = new SearchValueAutocomplete( tf,
-                () -> Arrays.asList( "Africa", "Asia", "Europe" ), () -> SearchMode.CONTAINS, () -> ran[ 0 ] = true );
+                () -> Arrays.asList( "Africa", "Asia", "Europe" ), () -> SearchMode.CONTAINS, () -> false, () -> ran[ 0 ] = true );
         tf.setText( "Europe,a" ); // the field is unfocused, so this must NOT trigger the popup (guarded document listener)
         final SearchValueAutocomplete.Model shown = ac.modelForTest();
         ck( shown._rows.equals( Arrays.asList( "Africa", "Asia" ) ),
@@ -270,7 +293,7 @@ public final class SearchAutocompleteTest {
         ck( ran[ 0 ], "accepting a suggestion runs the search" );
         // an empty value supplier (N/A field: Any-text / numeric / regex) offers nothing -> no popup
         final SearchValueAutocomplete none = new SearchValueAutocomplete( new JTextField(),
-                () -> Collections.<String>emptyList(), () -> SearchMode.CONTAINS, () -> {} );
+                () -> Collections.<String>emptyList(), () -> SearchMode.CONTAINS, () -> false, () -> {} );
         ck( none.modelForTest().isEmpty(), "an empty value supplier yields no suggestions" );
     }
 
@@ -284,7 +307,7 @@ public final class SearchAutocompleteTest {
                 final JTextField tf = new JTextField( 20 );
                 final SearchValueAutocomplete ac = new SearchValueAutocomplete( tf,
                         () -> Arrays.asList( "Africa", "Antarctica", "Asia", "Europe" ), () -> SearchMode.CONTAINS,
-                        () -> {} );
+                        () -> false, () -> {} );
                 frame[ 0 ] = new JFrame( "suggest" );
                 final JPanel p = new JPanel();
                 p.add( tf );
@@ -334,7 +357,7 @@ public final class SearchAutocompleteTest {
                     many.add( String.format( "v%02d", i ) );
                 }
                 final SearchValueAutocomplete ac2 = new SearchValueAutocomplete( tf2, () -> many, () -> SearchMode.CONTAINS,
-                                                                                 () -> {} );
+                                                                                 () -> false, () -> {} );
                 p.add( tf2 );
                 frame[ 0 ].pack();
                 tf2.setText( "v" );
