@@ -253,8 +253,9 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
             final ProteinDomain d = _domain_structure.getDomain( i );
             if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
-                final float xa = start + ( d.getFrom() * f );
-                final float xb = xa + ( d.getLength() * f );
+                final float[] extent = domainExtent( start, d.getFrom(), d.getTo(), f );
+                final float xa = extent[ 0 ];
+                final float xb = extent[ 1 ];
                 final Color base = colorFor( d.getName() );
                 drawDomainFlat( xa, y1, xb - xa, _rendering_height, base, glow, g );
                 if ( on_domain_labels && ( d.getName() != null ) ) { // a nameless domain still draws its box, just no label
@@ -271,6 +272,20 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
             }
         }
         g.setStroke( s );
+    }
+
+    /**
+     * The x extent {@code [x0, x1]} of a domain {@code from..to} (1-based, inclusive) on a track whose residue 1 starts
+     * at {@code start}, at {@code f} px per residue. Residue r covers {@code [start + (r-1) f, start + r f]}, so the
+     * domain spans {@code [start + (from-1) f, start + to f]}: a domain {@code 1..L} covers the backbone
+     * {@code [start, start + L f]} exactly, and adjacent domains meet without overlap.
+     * <p>
+     * JOINT rule with Archaeopteryx.js (Christian, 2026-09-12: "fix it on both sides together"). Until 7ee0116d the
+     * desktop placed a domain at {@code from x f}, one residue to the right of where it belongs.
+     */
+    static float[] domainExtent( final float start, final int from, final int to, final float f ) {
+        final float x0 = start + ( ( from - 1 ) * f );
+        return new float[] { x0, x0 + ( ( ( to - from ) + 1 ) * f ) };
     }
 
     @Override

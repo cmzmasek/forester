@@ -289,6 +289,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Domain placement (residue r covers [(r-1)f, rf]): ");
+        if (org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitectureTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node hover card: ");
         if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
             System.out.println("OK.");
