@@ -7402,6 +7402,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _domain_legend_bounds;
     }
 
+    /** Test hook: the domain legend's rows, "NAME (count)", in the order the legend lists them. */
+    java.util.List<String> domainLegendRowsForTest() {
+        final LinkedHashMap<String, Color> values = new LinkedHashMap<String, Color>();
+        final Map<String, Integer> counts = new HashMap<String, Integer>();
+        collectDisplayedDomains(values, counts);
+        final java.util.List<String> rows = new java.util.ArrayList<String>();
+        for (final String name : values.keySet()) {
+            rows.add(name + " (" + counts.get(name) + ")");
+        }
+        return rows;
+    }
+
     /** Test hook: draw the domain legend directly (records the bounds when {@code draggable}). */
     void drawDomainLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         drawDomainLegend(g, bounds, draggable);
@@ -8918,11 +8930,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return clipToWidth(name + ((c != null) ? (" (" + c + ")") : ""), fm, max_text);
     }
 
-    /** Collect the DISPLAYED domain names passing the E-value threshold -> box colour, ordered by first appearance,
-     *  plus per-name instance counts (the number of drawn boxes). */
+    /** Collect the DISPLAYED domain names passing the E-value threshold -> box colour, ordered by first appearance with
+     *  the tips taken in DISPLAY order (top to bottom), plus per-name instance counts (the number of drawn boxes). The
+     *  "Reverse Tip Order" mirror draws every node's children in reverse, which reverses the whole tip sequence, so the
+     *  legend walks the tips reversed too -- it follows what is on screen, not the stored child order (Christian,
+     *  2026-09-12; the rule Archaeopteryx.js uses). */
     private void collectDisplayedDomains(final LinkedHashMap<String, Color> values, final Map<String, Integer> counts) {
         final double thr = Math.pow(10, _domain_structure_e_value_thr_exp);
-        for (final PhylogenyNode n : _phylogeny.getExternalNodes()) {
+        final java.util.List<PhylogenyNode> tips = new java.util.ArrayList<PhylogenyNode>(_phylogeny.getExternalNodes());
+        if (getOptions().isReverseTipOrder()) {
+            java.util.Collections.reverse(tips);
+        }
+        for (final PhylogenyNode n : tips) {
             if (isHiddenUnderCollapse(n)) {
                 continue; // a tip hidden under a collapsed clade draws no boxes, so it is not in the legend/counts
             }

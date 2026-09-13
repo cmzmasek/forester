@@ -297,6 +297,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Domain legend order (follows the display, incl. Reverse Tip Order): ");
+        if (org.forester.archaeopteryx.DomainLegendOrderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node hover card: ");
         if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
             System.out.println("OK.");
