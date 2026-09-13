@@ -110,42 +110,6 @@ public final class AptxUtil {
     // "register the bundled fonts before AptxUtil is loaded" ordering.
     private static String[] _available_font_families_sorted;
 
-    final public static Color calculateColorFromString(final String str, final boolean is_taxonomy) {
-        final String my_str = str.toUpperCase();
-        char first = my_str.charAt(0);
-        char second = ' ';
-        char third = ' ';
-        if (my_str.length() > 1) {
-            if (is_taxonomy) {
-                second = my_str.charAt(1);
-            } else {
-                second = my_str.charAt(my_str.length() - 1);
-            }
-            if (is_taxonomy) {
-                if (my_str.length() > 2) {
-                    if (my_str.indexOf(" ") > 0) {
-                        third = my_str.charAt(my_str.indexOf(" ") + 1);
-                    } else {
-                        third = my_str.charAt(2);
-                    }
-                }
-            } else if (my_str.length() > 2) {
-                third = my_str.charAt((my_str.length() - 1) / 2);
-            }
-        }
-        first = normalizeCharForRGB(first);
-        second = normalizeCharForRGB(second);
-        third = normalizeCharForRGB(third);
-        if ((first > 200) && (second > 200) && (third > 200)) {
-            first = 0;
-        } else if ((first < 60) && (second < 60) && (third < 60)) {
-            second = 255;
-        } else if (Math.abs(first - second) < 40 && Math.abs(second - third) < 40) {
-            third = 255;
-        }
-        return new Color(first, second, third);
-    }
-
     /**
      * Assigns each taxon a visually distinct color from a qualitative palette: hues spread evenly
      * around the wheel with a slight saturation/brightness alternation so adjacent entries separate
@@ -178,6 +142,12 @@ public final class AptxUtil {
         final double f = Math.min( 0.55, 0.2 * cycle );
         return ( ( cycle % 2 ) == 1 ) ? TreePanelUtil.blend( c, Color.WHITE, f )
                                       : TreePanelUtil.blend( c, Color.BLACK, f );
+    }
+
+    /** The qualitative palette colour at index {@code i} ({@link #qualitativeColor} over Tableau 10) -- public for the
+     *  domain renderer, which lives in another package. */
+    public static Color paletteColor(final int i) {
+        return qualitativeColor(TABLEAU_10, i);
     }
 
     final static Map<String, Color> assignDistinctColors(final SortedSet<String> taxa) {
@@ -336,11 +306,11 @@ public final class AptxUtil {
     }
 
     /**
-     * Assign an aesthetically distinct colour to every protein-domain NAME present in {@code phy} -- the modern
-     * palette the flat domain renderer uses, replacing the old name-hash colours ({@link #calculateColorFromString}).
-     * Colours are spread evenly over the sorted set of names (the same helper the rank colouriser uses), so similar
-     * names no longer collide. Display-only, recomputed on each load; a domain first seen after this (e.g. a later
-     * node edit) still gets a deterministic hash colour on demand ({@code RenderableDomainArchitecture.colorFor}).
+     * Assign an aesthetically distinct colour to every protein-domain NAME present in {@code phy} -- the palette the
+     * flat domain renderer uses. Colours are spread over the sorted set of names (the same helper the rank colouriser
+     * uses), so similar names never collide. Display-only, recomputed on each load; a domain name first seen after
+     * this takes the NEXT unused palette colour on demand ({@code RenderableDomainArchitecture.colorFor}). No domain
+     * colour is ever computed from the characters of its name.
      */
     static void assignDomainPalette(final Phylogeny loading_phy, final MainPanel main_panel) {
         // Assign scattered colours over the DRAWN domains of every open tree (plus the just-loaded one), so a domain
@@ -1183,14 +1153,6 @@ public final class AptxUtil {
 
 
 
-
-    final private static char normalizeCharForRGB(char c) {
-        c -= 65;
-        c *= 10.2;
-        c = c > 255 ? 255 : c;
-        c = c < 0 ? 0 : c;
-        return c;
-    }
 
     final private static void openUrlInWebBrowser(final String url)
             throws IOException, ClassNotFoundException, SecurityException, NoSuchMethodException,

@@ -23,7 +23,6 @@ package org.forester.archaeopteryx;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
@@ -55,7 +54,6 @@ public final class Configuration {
     // and {@link DisplayOption} (they replaced the old positional String[][] clickto_options /
     // display_options arrays and their parallel int index constants).
 
-    private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;
     private static String DEFAULT_FONT_FAMILY = "";
 
@@ -111,13 +109,6 @@ public final class Configuration {
 
     SortedMap<String, Color> getDisplayColors() {
         return _display_colors;
-    }
-
-    Map<String, Color> getDomainColors() {
-        if (_domain_colors == null) {
-            _domain_colors = new Hashtable<String, Color>();
-        }
-        return _domain_colors;
     }
 
     static int getGuiFontSize() {

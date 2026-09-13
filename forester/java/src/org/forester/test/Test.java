@@ -282,6 +282,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Domain palette (no name-hash colours; a second window keeps them): ");
+        if (org.forester.archaeopteryx.DomainPaletteTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node hover card: ");
         if (org.forester.archaeopteryx.NodeHoverCardTest.test()) {
             System.out.println("OK.");

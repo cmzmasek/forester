@@ -26,9 +26,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +39,6 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
@@ -409,7 +406,6 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     void setupTreeGraphic(final Configuration config_settings, final ControlPanel control) {
         control.setSpeciesColors(config_settings.getSpeciesColors());
-        RenderableDomainArchitecture.setColorMap(config_settings.getDomainColors());
     }
 
     void terminate() {

@@ -133,23 +133,21 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     }
 
     /**
-     * The colour the renderer uses for a domain NAME: the palette entry (see
-     * {@code AptxUtil.assignDomainPalette}) if present, else a deterministic fallback colour, cached. Public + static
-     * so a legend (painted by the {@code TreePanel}) can match the drawn boxes exactly.
+     * The colour the renderer uses for a domain NAME: its palette entry (see {@code AptxUtil.assignDomainPalette}), or,
+     * for a name the palette has not met, the NEXT unused palette colour, remembered from then on. Never a colour
+     * computed from the name's characters: that let different names collide (SH2 and SH3 got the same colour). Public +
+     * static so a legend (painted by the {@code TreePanel}) can match the drawn boxes exactly.
      */
     public static Color colorFor( final String name ) {
         if ( name == null ) {
-            return Color.GRAY; // a nameless domain (guards calculateColorFromString(null) -> NPE)
+            return Color.GRAY; // a nameless domain
         }
         if ( _domain_colors == null ) {
-            _domain_colors = new java.util.HashMap<String, Color>();
+            _domain_colors = new java.util.LinkedHashMap<String, Color>();
         }
         Color c = _domain_colors.get( name );
         if ( c == null ) {
-            c = AptxUtil.calculateColorFromString( name, false );
-            if ( c == null ) {
-                c = Color.GRAY;
-            }
+            c = AptxUtil.paletteColor( _domain_colors.size() ); // the palette holds indices 0..size-1, so this one is unused
             _domain_colors.put( name, c );
         }
         return c;
