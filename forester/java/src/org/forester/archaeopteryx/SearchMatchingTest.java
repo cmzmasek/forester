@@ -63,6 +63,7 @@ public final class SearchMatchingTest {
             wholeTreeSearch();
             availableFieldsScan();
             structuralFields();
+            noFieldPrefixInQuery();
             return true;
         }
         catch ( final AssertionError e ) {
@@ -410,6 +411,42 @@ public final class SearchMatchingTest {
         no_bl.externalNodesHaveChanged();
         ck( byLabel( SearchField.availableFields( no_bl ), "Structure: Distance from Root" ) == null,
             "distance-from-root should NOT be offered without branch lengths" );
+    }
+
+    /**
+     * A typed query is LITERAL TEXT: nothing the user types selects a field (Christian, 2026-09-12: "No more searches
+     * like 'GN:gene1'!"). Fields are chosen from the menus. The legacy "NN:alpha" prefix syntax went with the legacy
+     * search, and the fields no longer carry two-letter codes -- the same change Archaeopteryx.js made (8f66122).
+     */
+    private static void noFieldPrefixInQuery() {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( "alpha" );
+        n.getNodeData().setTaxonomy( sci( "gamma" ) );
+        final SearchField[] fields = { SearchField.anyText(), SearchField.ofNdf( NDF.NodeName ),
+                SearchField.ofNdf( NDF.TaxonomyScientificName ), SearchField.ofNdf( NDF.SequenceName ),
+                SearchField.ofNdf( NDF.GeneName ) };
+        final SearchMode[] modes = { SearchMode.CONTAINS, SearchMode.STARTS_WITH, SearchMode.ENDS_WITH,
+                SearchMode.WHOLE_WORD, SearchMode.REGEX };
+        for( final SearchField f : fields ) {
+            for( final SearchMode m : modes ) {
+                for( final String q : new String[] { "NN:alpha", "SN:gamma", "TS:gamma", "alpha:NN", "ANY:alpha" } ) {
+                    ck( !pos( f, m, q, n ), "'" + q + "' is literal text and must match nothing (" + f.label() + ", " + m
+                            + ")" );
+                }
+            }
+        }
+        // ...while the plain values still match where they live
+        ck( pos( SearchField.anyText(), SearchMode.CONTAINS, "alpha", n ), "'alpha' should match via Any text" );
+        ck( pos( SearchField.ofNdf( NDF.NodeName ), SearchMode.CONTAINS, "alpha", n ), "'alpha' should match the name" );
+        ck( pos( SearchField.ofNdf( NDF.TaxonomyScientificName ), SearchMode.CONTAINS, "gamma", n ),
+            "'gamma' should match the scientific name" );
+        // and no field identifier carries a code any more: no fromString, no code payload
+        for( final java.lang.reflect.Method m : NDF.class.getDeclaredMethods() ) {
+            ck( !"fromString".equals( m.getName() ), "NDF must not parse field codes (fromString is gone)" );
+        }
+        for( final java.lang.reflect.Field fl : NDF.class.getDeclaredFields() ) {
+            ck( fl.isEnumConstant() || fl.isSynthetic(), "NDF must carry no payload such as a field code: " + fl.getName() );
+        }
     }
 
     private static PhylogenyNode named( final String name ) {
