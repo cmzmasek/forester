@@ -92,7 +92,7 @@ public final class ImportAnnotationsToolTest {
                     if ( tip( live, "isolate_01" ).getNodeData().getProperties() != null ) {
                         fail( ok, "the failed (taxonomy) match must not have written any property" );
                     }
-                    // POSITIVE: match by tip name, with a ColumnPlan that RENAMES the "reads" column -> data:depth
+                    // POSITIVE: match by tip name, with a ColumnPlan that RENAMES the "reads" column -> meta:depth
                     // (headers: name,host,country,reads -> column 3), exercising the plan through the refit
                     final NodeDataImporter.ColumnPlan plan = NodeDataImporter.ColumnPlan.importAll( table );
                     plan.setHeader( 3, "depth" );
@@ -102,27 +102,27 @@ public final class ImportAnnotationsToolTest {
                         fail( ok, "a tip-name join should annotate all 12 tips, got " + res.getTipsAnnotated() );
                     }
                     final PhylogenyNode t1 = tip( live, "isolate_01" );
-                    if ( !"mosquito".equals( propertyValue( t1, "data:host" ) )
-                            || !"1200".equals( propertyValue( t1, "data:depth" ) )
-                            || ( propertyValue( t1, "data:reads" ) != null ) ) {
+                    if ( !"mosquito".equals( propertyValue( t1, "meta:host" ) )
+                            || !"1200".equals( propertyValue( t1, "meta:depth" ) )
+                            || ( propertyValue( t1, "meta:reads" ) != null ) ) {
                         fail( ok, "isolate_01 should carry data:host=mosquito and the RENAMED data:depth=1200 (not data:reads)" );
                     }
                     // the binary 'resistant' column (last col) imported too, and a BLANK cell is left ABSENT
                     // (never-clobber) -- which is exactly what makes it render as a "nothing" Symbol mark
-                    if ( !"yes".equals( propertyValue( t1, "data:resistant" ) ) ) {
+                    if ( !"yes".equals( propertyValue( t1, "meta:resistant" ) ) ) {
                         fail( ok, "isolate_01 should carry the imported data:resistant=yes" );
                     }
-                    if ( propertyValue( tip( live, "isolate_04" ), "data:resistant" ) != null ) {
+                    if ( propertyValue( tip( live, "isolate_04" ), "meta:resistant" ) != null ) {
                         fail( ok, "isolate_04's blank 'resistant' cell must import NO data:resistant property" );
                     }
                     // the quoted CSV field with an embedded comma survived the parse + join
-                    if ( !"Congo, DR".equals( propertyValue( tip( live, "isolate_07" ), "data:country" ) ) ) {
+                    if ( !"Congo, DR".equals( propertyValue( tip( live, "isolate_07" ), "meta:country" ) ) ) {
                         fail( ok, "the quoted country with an embedded comma should import intact: "
-                                + propertyValue( tip( live, "isolate_07" ), "data:country" ) );
+                                + propertyValue( tip( live, "isolate_07" ), "meta:country" ) );
                     }
                     // the imported columns are now offered in the "Color by" dropdown (immediately usable)
                     final List<String> refs = tp.getControlPanel().colorByPropertyRefs();
-                    if ( !refs.contains( "data:host" ) || !refs.contains( "data:depth" ) ) {
+                    if ( !refs.contains( "meta:host" ) || !refs.contains( "meta:depth" ) ) {
                         fail( ok, "the Color-by dropdown should now offer the imported columns: " + refs );
                     }
                     // a provenance sentence was appended to the tree description
@@ -146,8 +146,8 @@ public final class ImportAnnotationsToolTest {
                         if ( re.getTipsAnnotated() != 12 ) {
                             fail( ok, "Re-import should re-annotate all 12 tips, got " + re.getTipsAnnotated() );
                         }
-                        if ( !"1200".equals( propertyValue( tip( live, "isolate_01" ), "data:coverage" ) ) ) {
-                            fail( ok, "Re-import should re-read the file and honor the profile's rename (reads->data:coverage)" );
+                        if ( !"1200".equals( propertyValue( tip( live, "isolate_01" ), "meta:coverage" ) ) ) {
+                            fail( ok, "Re-import should re-read the file and honor the profile's rename (reads->meta:coverage)" );
                         }
                     }
                     catch ( final java.io.IOException e ) {
@@ -237,10 +237,10 @@ public final class ImportAnnotationsToolTest {
 
     /** Pure: MainFrame.importProvenance formats the append sentence (plural/singular, source, match-by, columns). */
     private static boolean provenanceOk() {
-        final String p = MainFrame.importProvenance( java.util.List.of( "data:host", "data:reads" ), 3, 5, "t.csv",
+        final String p = MainFrame.importProvenance( java.util.List.of( "meta:host", "meta:reads" ), 3, 5, "t.csv",
                 NodeDataImporter.MatchBy.TIP_NAME );
         if ( !p.contains( "\"t.csv\"" ) || !p.contains( "onto 3 of 5 tips" ) || !p.contains( "matched by tip name" )
-                || !p.contains( "Columns: data:host, data:reads" ) ) {
+                || !p.contains( "Columns: meta:host, meta:reads" ) ) {
             return fail( "importProvenance format wrong: " + p );
         }
         final String p1 = MainFrame.importProvenance( java.util.List.of(), 1, 1, "x",

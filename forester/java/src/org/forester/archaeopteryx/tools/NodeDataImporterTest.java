@@ -20,6 +20,7 @@
 
 package org.forester.archaeopteryx.tools;
 
+import java.io.File;
 import java.util.List;
 
 import org.forester.archaeopteryx.tools.NodeDataImporter.ImportProfile;
@@ -64,7 +65,7 @@ public final class NodeDataImporterTest {
                     && embeddedNewlineCsv() && explicitDelimiter() && columnPlan()
                     && nodeIdColumnSkipped() && leadingBlankLine() && emptyRenameSkipped() && dryRunValidatesKeyCol()
                     && userMatchOptionsAndSummary() && defaultKeyPrefersName() && importProfile()
-                    && importProfilePersistence() && importProfileMigration();
+                    && importProfilePersistence() && importProfileMigration() && jointTableConventions();
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -109,13 +110,13 @@ public final class NodeDataImporterTest {
         return true;
     }
 
-    /** A non-reserved column becomes a node property; a colon-less header is namespaced with data:. */
+    /** A non-reserved column becomes a node property; a colon-less header is namespaced with meta: (the JS rule). */
     private static boolean customColumns() throws Exception {
         final Phylogeny phy = bareTree();
         final String tsv = "name\tcountry\tdata:host\n" + "A\tBrazil\tAedes\n" + "B\tUSA\t\n";
         final ImportResult res = NodeDataImporter.apply( phy, tsv );
-        if ( !"Brazil".equals( propertyValue( tip( phy, "A" ), "data:country" ) ) ) {
-            return fail( "colon-less custom column should become data:country" );
+        if ( !"Brazil".equals( propertyValue( tip( phy, "A" ), "meta:country" ) ) ) {
+            return fail( "colon-less custom column should become meta:country" );
         }
         if ( !"Aedes".equals( propertyValue( tip( phy, "A" ), "data:host" ) ) ) {
             return fail( "namespaced custom column should be used verbatim" );
@@ -125,7 +126,7 @@ public final class NodeDataImporterTest {
             return fail( "a blank custom cell must not create a property" );
         }
         final List<String> cols = res.getPropertyColumns();
-        if ( !cols.contains( "data:country" ) || !cols.contains( "data:host" ) ) {
+        if ( !cols.contains( "meta:country" ) || !cols.contains( "data:host" ) ) {
             return fail( "property columns should be reported for coloring: " + cols );
         }
         if ( !res.summary().contains( "coloring" ) ) {
@@ -486,19 +487,19 @@ public final class NodeDataImporterTest {
         final Table t = NodeDataImporter.parseTable( "name,keepme,dropme,raw\nA,yes,no,7\n" );
         final NodeDataImporter.ColumnPlan plan = NodeDataImporter.ColumnPlan.importAll( t );
         plan.setIncluded( 2, false );   // drop "dropme"
-        plan.setHeader( 3, "score" );   // rename "raw" -> a data:score property
+        plan.setHeader( 3, "score" );   // rename "raw" -> a meta:score property
         final ImportResult res = NodeDataImporter.apply( phy, t, 0, MatchBy.TIP_NAME, plan );
         final PhylogenyNode a = tip( phy, "A" );
-        if ( !"yes".equals( propertyValue( a, "data:keepme" ) ) ) {
+        if ( !"yes".equals( propertyValue( a, "meta:keepme" ) ) ) {
             return fail( "an included column should import" );
         }
         if ( propertyValue( a, "data:dropme" ) != null ) {
             return fail( "a de-selected column must NOT import" );
         }
-        if ( !"7".equals( propertyValue( a, "data:score" ) ) || ( propertyValue( a, "data:raw" ) != null ) ) {
+        if ( !"7".equals( propertyValue( a, "meta:score" ) ) || ( propertyValue( a, "data:raw" ) != null ) ) {
             return fail( "a renamed column should import under the new ref only" );
         }
-        if ( ( res.getPropertyColumns().size() != 2 ) || !res.getPropertyColumns().contains( "data:score" ) ) {
+        if ( ( res.getPropertyColumns().size() != 2 ) || !res.getPropertyColumns().contains( "meta:score" ) ) {
             return fail( "the result should report the included/renamed property columns: " + res.getPropertyColumns() );
         }
         final MatchReport rep = NodeDataImporter.dryRun( phy, t, 0, MatchBy.TIP_NAME, plan );
@@ -554,7 +555,7 @@ public final class NodeDataImporterTest {
         plan.setHeader( 2, "" ); // blank the effective header of "blankme"
         NodeDataImporter.apply( phy, t, 0, MatchBy.TIP_NAME, plan );
         final PhylogenyNode a = tip( phy, "A" );
-        if ( !"yes".equals( propertyValue( a, "data:keepme" ) ) ) {
+        if ( !"yes".equals( propertyValue( a, "meta:keepme" ) ) ) {
             return fail( "an included column should import" );
         }
         if ( ( propertyValue( a, "data:" ) != null ) || ( propertyValue( a, "data:blankme" ) != null ) ) {
@@ -644,8 +645,8 @@ public final class NodeDataImporterTest {
         final Phylogeny phy = bareTree(); // A, B, C
         NodeDataImporter.apply( phy, t2, prof.keyColumn( t2 ), prof.getMatchBy(), p2 );
         final PhylogenyNode b = tip( phy, "B" );
-        if ( !"dog".equals( propertyValue( b, "data:host" ) ) || !"9".equals( propertyValue( b, "data:depth" ) )
-                || !"new".equals( propertyValue( b, "data:extra" ) ) || ( propertyValue( b, "data:country" ) != null ) ) {
+        if ( !"dog".equals( propertyValue( b, "meta:host" ) ) || !"9".equals( propertyValue( b, "meta:depth" ) )
+                || !"new".equals( propertyValue( b, "meta:extra" ) ) || ( propertyValue( b, "meta:country" ) != null ) ) {
             return fail( "re-resolved profile wrote the wrong properties onto B" );
         }
         // a source that lost the key header falls back to the table's default key column
@@ -827,6 +828,90 @@ public final class NodeDataImporterTest {
         final Taxonomy t = new Taxonomy();
         t.setScientificName( sci_name );
         return t;
+    }
+
+    /**
+     * The table-join conventions shared with Archaeopteryx.js (Christian, 2026-09-13: "follow the JS"): a header that
+     * is not already a ref becomes {@code meta:} + the header with its whitespace as {@code _}; every filled cell an
+     * integer -> xsd:integer, every filled cell a number -> xsd:double, else xsd:string; the delimiter is whichever of
+     * tab, comma and semicolon the header uses most; blank lines and {@code #} lines are skipped; quotes work for every
+     * delimiter; a key is matched exactly, then case-insensitively. And the defect that prompted it: a header with a
+     * space used to give {@code data:Collection Date}, which the desktop's own validating parser refused on reopen.
+     */
+    private static boolean jointTableConventions() throws Exception {
+        // the ref rule
+        if ( !"meta:Collection_Date".equals( NodeDataImporter.propertyRef( "Collection Date" ) )
+                || !"meta:a_b_c".equals( NodeDataImporter.propertyRef( " a  b\tc " ) )
+                || !"meta:host".equals( NodeDataImporter.propertyRef( "host" ) )
+                || !"BVBRC:host_group".equals( NodeDataImporter.propertyRef( "BVBRC:host_group" ) )
+                || !"meta:x:_y".equals( NodeDataImporter.propertyRef( "x: y" ) ) ) {
+            return fail( "the ref rule: meta: + whitespace as _, an existing ns:local kept; got "
+                    + NodeDataImporter.propertyRef( "Collection Date" ) + " / " + NodeDataImporter.propertyRef( "x: y" ) );
+        }
+        // ...and the saved tree reopens under the strict, XSD-validating parser (it used to be refused)
+        final Phylogeny phy = bareTree();
+        NodeDataImporter.apply( phy, "name\tCollection Date\tCount\tScore\tMixed\nA\t2020-01-01\t12\t1.5\t7\nB\t2021-06-30\t-7\t2e3\tseven\n" );
+        final PhylogenyNode a = tip( phy, "A" );
+        if ( !"2020-01-01".equals( propertyValue( a, "meta:Collection_Date" ) ) ) {
+            return fail( "a header with a space must land under meta:Collection_Date" );
+        }
+        final File f = File.createTempFile( "joint-table", ".xml" );
+        f.deleteOnExit();
+        new PhylogenyWriter().toPhyloXML( phy, 0, f );
+        try {
+            final Phylogeny back = ParserBasedPhylogenyFactory.getInstance()
+                    .create( f, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
+            if ( !"2020-01-01".equals( propertyValue( tip( back, "A" ), "meta:Collection_Date" ) ) ) {
+                return fail( "the reopened tree must carry the imported property" );
+            }
+        }
+        catch ( final Exception e ) {
+            return fail( "the saved tree must reopen under the validating parser: " + e.getMessage() );
+        }
+        // the datatype rule, judged over every row of the column
+        if ( !"xsd:integer".equals( datatype( a, "meta:Count" ) ) || !"xsd:double".equals( datatype( a, "meta:Score" ) )
+                || !"xsd:string".equals( datatype( a, "meta:Mixed" ) )
+                || !"xsd:string".equals( datatype( a, "meta:Collection_Date" ) ) ) {
+            return fail( "datatypes: Count integer, Score double, Mixed string (a word in another row), Date string; got "
+                    + datatype( a, "meta:Count" ) + " " + datatype( a, "meta:Score" ) + " " + datatype( a, "meta:Mixed" ) );
+        }
+        // the delimiter: the character the header uses most; a semicolon table parses
+        if ( ( NodeDataImporter.detectDelimiter( "name;host;country\n" ) != ';' )
+                || ( NodeDataImporter.detectDelimiter( "name,host;x\n" ) != ',' )
+                || ( NodeDataImporter.detectDelimiter( "a b c\n" ) != '\t' ) ) {
+            return fail( "the delimiter is whichever of tab, comma and semicolon the header uses most" );
+        }
+        final Phylogeny semi = bareTree();
+        NodeDataImporter.apply( semi, "# a comment line\nname;host\n\nA;\"cat; tabby\"\n# another\nb;dog\n" );
+        if ( !"cat; tabby".equals( propertyValue( tip( semi, "A" ), "meta:host" ) ) ) {
+            return fail( "a semicolon table with a quoted field must parse; got " + propertyValue( tip( semi, "A" ), "meta:host" ) );
+        }
+        // '#' lines and blank lines are skipped; the key "b" matched tip "B" case-insensitively
+        if ( !"dog".equals( propertyValue( tip( semi, "B" ), "meta:host" ) ) ) {
+            return fail( "a key is matched exactly, then case-insensitively; got " + propertyValue( tip( semi, "B" ), "meta:host" ) );
+        }
+        // quotes are honoured in a tab table too (they used to be literal there)
+        final Phylogeny tabs = bareTree();
+        NodeDataImporter.apply( tabs, "name\tnote\nA\t\"said \"\"hi\"\"\"\n" );
+        if ( !"said \"hi\"".equals( propertyValue( tip( tabs, "A" ), "meta:note" ) ) ) {
+            return fail( "a quoted tab-table field must unquote; got " + propertyValue( tip( tabs, "A" ), "meta:note" ) );
+        }
+        // an exact match wins over a case-insensitive one
+        final Phylogeny both = bareTree();
+        final PhylogenyNode lower = new PhylogenyNode();
+        lower.setName( "a" );
+        both.getRoot().addAsChild( lower );
+        both.externalNodesHaveChanged();
+        NodeDataImporter.apply( both, "name\thost\na\tlowercase\n" );
+        if ( ( propertyValue( lower, "meta:host" ) == null ) || ( propertyValue( tip( both, "A" ), "meta:host" ) != null ) ) {
+            return fail( "an exact key must take precedence over a case-insensitive one" );
+        }
+        return true;
+    }
+
+    private static String datatype( final PhylogenyNode n, final String ref ) {
+        final List<Property> ps = n.getNodeData().getProperties().getPropertiesWithGivenRef( ref );
+        return ( ( ps != null ) && !ps.isEmpty() ) ? ps.get( 0 ).getDataType() : null;
     }
 
     private static Phylogeny bareTree() {

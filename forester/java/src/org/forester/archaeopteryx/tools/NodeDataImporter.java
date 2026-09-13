@@ -21,6 +21,9 @@
 package org.forester.archaeopteryx.tools;
 
 import java.util.ArrayList;
+import org.forester.archaeopteryx.AptxUtil;
+import java.util.HashMap;
+import java.util.regex.Pattern;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -63,8 +66,12 @@ import org.forester.util.ForesterUtil;
  */
 public final class NodeDataImporter {
 
-    /** Namespace prepended to a custom column header that is not already a valid (contains {@code ':'}) property ref. */
-    private static final String DATA_PREFIX = "data:";
+    /** Namespace of a property made from a table column whose header is not already a phyloXML ref -- the JS
+     *  {@code forester.METADATA_NAMESPACE}. JOINT with Archaeopteryx.js (Christian, 2026-09-13: "follow the JS"): a table
+     *  joined in either viewer gives the same tree. */
+    public static final String METADATA_NAMESPACE = "meta";
+    private static final Pattern REF_PATTERN = Pattern.compile( "[A-Za-z0-9_]+:\\S+" );
+    private static final Pattern INTEGER_PATTERN = Pattern.compile( "[+-]?\\d+" );
     /** Column headers (lower-cased) that map to model fields rather than to a custom property. */
     private static final Set<String> RESERVED = Set.of( "node_id", "name", "taxonomy_scientific_name",
                                                         "taxonomy_common_name", "taxonomy_code", "taxonomy_id",
@@ -363,8 +370,9 @@ public final class NodeDataImporter {
         if ( text.startsWith( "﻿" ) ) {
             text = text.substring( 1 ); // strip a UTF-8 byte-order mark (Excel-exported files often carry one)
         }
+        text = withoutCommentLines( text );
         final char delim = ( forced_delimiter != null ) ? forced_delimiter.charValue() : detectDelimiter( text );
-        final List<String[]> records = ( delim == ',' ) ? tokenizeCsv( text ) : tokenizeTsv( text );
+        final List<String[]> records = tokenizeQuoted( text, delim );
         // the header is the FIRST non-blank record (so a leading blank line does not break the parse); the data rows
         // follow it, blank records skipped
         int header_idx = 0;
@@ -389,17 +397,36 @@ public final class NodeDataImporter {
         return new Table( headers, lc_headers, rows, delim );
     }
 
-    /** Auto-detect the delimiter from the first NON-BLANK line: TAB if it carries a tab, else comma, else TAB. */
-    private static char detectDelimiter( final String text ) {
+    /** Auto-detect the delimiter from the first NON-BLANK line: whichever of TAB, comma and semicolon occurs most in it
+     *  (TAB when none does; on a tie the earlier of the three) -- the JS rule. */
+    static char detectDelimiter( final String text ) {
         for( final String line : text.split( "\\R", -1 ) ) {
             if ( !ForesterUtil.isEmpty( line ) ) {
-                if ( line.indexOf( '\t' ) >= 0 ) {
-                    return '\t';
+                char delimiter = '\t';
+                int best = -1;
+                for( final char d : new char[] { '\t', ',', ';' } ) {
+                    final int n = line.length() - line.replace( String.valueOf( d ), "" ).length();
+                    if ( n > best ) {
+                        best = n;
+                        delimiter = d;
+                    }
                 }
-                return ( line.indexOf( ',' ) >= 0 ) ? ',' : '\t';
+                return delimiter;
             }
         }
         return '\t';
+    }
+
+    /** Drops the lines a table never carries data in: blank lines and lines starting with {@code #} (the JS rule). */
+    static String withoutCommentLines( final String text ) {
+        final StringBuilder sb = new StringBuilder( text.length() );
+        for( final String line : text.split( "\\R", -1 ) ) {
+            if ( line.trim().isEmpty() || line.startsWith( "#" ) ) {
+                continue;
+            }
+            sb.append( line ).append( '\n' );
+        }
+        return sb.toString();
     }
 
     private static boolean isBlankRecord( final String[] record ) {
@@ -411,20 +438,12 @@ public final class NodeDataImporter {
         return true;
     }
 
-    /** Tab-delimited: one record per line (any Unicode break), each split literally on tabs (no quote handling). */
-    private static List<String[]> tokenizeTsv( final String text ) {
-        final List<String[]> records = new ArrayList<>();
-        for( final String line : text.split( "\\R", -1 ) ) {
-            records.add( line.split( "\t", -1 ) );
-        }
-        return records;
-    }
-
     /**
-     * RFC-4180 comma tokenizer over the WHOLE text: a double-quoted field may contain commas, doubled {@code ""}
-     * quotes, and newlines (so a value can span lines); an unquoted CR/LF/CRLF ends the record.
+     * Tokenizer over the WHOLE text for any delimiter (tab, comma or semicolon): a double-quoted field may contain the
+     * delimiter, doubled {@code ""} quotes, and newlines (so a value can span lines); an unquoted CR/LF/CRLF ends the
+     * record. Quotes are honoured for every delimiter, as the JS parser does (a tab table used to be split literally).
      */
-    private static List<String[]> tokenizeCsv( final String text ) {
+    private static List<String[]> tokenizeQuoted( final String text, final char delim ) {
         final List<String[]> records = new ArrayList<>();
         List<String> record = new ArrayList<>();
         final StringBuilder cur = new StringBuilder();
@@ -445,7 +464,7 @@ public final class NodeDataImporter {
                     }
                 }
                 else {
-                    cur.append( c ); // commas and newlines are literal inside quotes
+                    cur.append( c ); // delimiters and newlines are literal inside quotes
                     i++;
                 }
             }
@@ -453,7 +472,7 @@ public final class NodeDataImporter {
                 in_quotes = true;
                 i++;
             }
-            else if ( c == ',' ) {
+            else if ( c == delim ) {
                 record.add( cur.toString() );
                 cur.setLength( 0 );
                 i++;
@@ -463,10 +482,7 @@ public final class NodeDataImporter {
                 cur.setLength( 0 );
                 records.add( record.toArray( new String[ 0 ] ) );
                 record = new ArrayList<>();
-                i++;
-                if ( ( c == '\r' ) && ( i < n ) && ( text.charAt( i ) == '\n' ) ) {
-                    i++; // consume the LF of a CRLF pair
-                }
+                i += ( ( c == '\r' ) && ( ( i + 1 ) < n ) && ( text.charAt( i + 1 ) == '\n' ) ) ? 2 : 1;
             }
             else {
                 cur.append( c );
@@ -474,7 +490,7 @@ public final class NodeDataImporter {
             }
         }
         if ( ( cur.length() > 0 ) || !record.isEmpty() ) {
-            record.add( cur.toString() ); // flush the last field/record when there is no trailing newline
+            record.add( cur.toString() );
             records.add( record.toArray( new String[ 0 ] ) );
         }
         return records;
@@ -499,11 +515,12 @@ public final class NodeDataImporter {
             throw new IllegalArgumentException( "the key column is out of range" );
         }
         final Map<String, List<PhylogenyNode>> by_key = indexTips( phy, match_by );
+        final Map<String, List<PhylogenyNode>> by_lower_key = lowerCased( by_key );
         int matched = 0, ambiguous = 0, unmatched = 0;
         final Set<String> matched_keys = new LinkedHashSet<>();
         for( int r = 0; r < table.getRowCount(); r++ ) {
             final String key = table.getCell( r, key_col );
-            final List<PhylogenyNode> targets = key.isEmpty() ? null : by_key.get( key );
+            final List<PhylogenyNode> targets = targetsFor( key, by_key, by_lower_key );
             if ( ( targets == null ) || targets.isEmpty() ) {
                 unmatched++;
             }
@@ -818,6 +835,11 @@ public final class NodeDataImporter {
             throw new IllegalArgumentException( "the key column is out of range" );
         }
         final Map<String, List<PhylogenyNode>> by_key = indexTips( phy, match_by );
+        final Map<String, List<PhylogenyNode>> by_lower_key = lowerCased( by_key );
+        final String[] datatypes = new String[ table.getColumnCount() ];
+        for( int c = 0; c < datatypes.length; c++ ) {
+            datatypes[ c ] = columnDatatype( table, c );
+        }
 
         final Set<Long> annotated_ids = new LinkedHashSet<>();
         final Set<String> matched_keys = new LinkedHashSet<>();
@@ -828,7 +850,7 @@ public final class NodeDataImporter {
 
         for( int r = 0; r < table.getRowCount(); r++ ) {
             final String key = table.getCell( r, key_col );
-            final List<PhylogenyNode> targets = key.isEmpty() ? null : by_key.get( key );
+            final List<PhylogenyNode> targets = targetsFor( key, by_key, by_lower_key );
             if ( ( targets == null ) || targets.isEmpty() ) {
                 unmatched_row_keys.add( key.isEmpty() ? "(blank)" : key );
                 continue;
@@ -859,7 +881,7 @@ public final class NodeDataImporter {
                             applyReservedField( n, lc, value );
                         }
                         else {
-                            setProperty( n, prop_ref, value );
+                            setProperty( n, prop_ref, value, datatypes[ c ] );
                         }
                         annotated_ids.add( n.getId() );
                     }
@@ -931,6 +953,25 @@ public final class NodeDataImporter {
             }
         }
         return by_key;
+    }
+
+    /** The same index keyed by lower-cased key; on a clash the FIRST key wins (the JS rule). */
+    private static Map<String, List<PhylogenyNode>> lowerCased( final Map<String, List<PhylogenyNode>> by_key ) {
+        final Map<String, List<PhylogenyNode>> lower = new HashMap<>();
+        for( final Map.Entry<String, List<PhylogenyNode>> e : by_key.entrySet() ) {
+            lower.putIfAbsent( e.getKey().toLowerCase(), e.getValue() );
+        }
+        return lower;
+    }
+
+    /** The tips a row key addresses: matched exactly, then case-insensitively (the JS rule); null for none. */
+    private static List<PhylogenyNode> targetsFor( final String key, final Map<String, List<PhylogenyNode>> by_key,
+                                                   final Map<String, List<PhylogenyNode>> by_lower_key ) {
+        if ( key.isEmpty() ) {
+            return null;
+        }
+        final List<PhylogenyNode> exact = by_key.get( key );
+        return ( exact != null ) ? exact : by_lower_key.get( key.toLowerCase() );
     }
 
     private static String trimmed( final String s ) {
@@ -1029,8 +1070,9 @@ public final class NodeDataImporter {
         return true;
     }
 
-    /** Set (overwrite) the custom property {@code ref} on the tip, replacing any existing property with that ref. */
-    private static void setProperty( final PhylogenyNode n, final String ref, final String value ) {
+    /** Set (overwrite) the custom property {@code ref} on the tip, replacing any existing property with that ref (the
+     *  table wins). */
+    private static void setProperty( final PhylogenyNode n, final String ref, final String value, final String datatype ) {
         PropertiesList props = n.getNodeData().getProperties();
         if ( props == null ) {
             props = new PropertiesList();
@@ -1042,12 +1084,47 @@ public final class NodeDataImporter {
                 it.remove();
             }
         }
-        props.addProperty( new Property( ref, value, "", "xsd:string", AppliesTo.NODE ) );
+        props.addProperty( new Property( ref, value, "", datatype, AppliesTo.NODE ) );
     }
 
-    /** A legal property ref for a custom column: the header verbatim if it already namespaces with {@code ':'}, else prefixed. */
-    private static String propertyRef( final String header ) {
-        return ( header.indexOf( ':' ) >= 1 ) ? header : DATA_PREFIX + header;
+    /**
+     * The property ref for a column (the JS {@code forester.metadataColumnRef}): a header that already reads as a
+     * phyloXML ref ({@code ns:local}, no whitespace) is kept as it is; any other becomes {@code meta:} plus the header
+     * with its whitespace runs as {@code _} -- the display name prettifies that back to spaces, so "Collection Date"
+     * stays "Collection Date" in every menu. Until 2026-09-13 the header was used verbatim under {@code data:}, so a
+     * header with a space made a ref the phyloXML schema forbids and the desktop's own File > Open refused the saved
+     * tree.
+     */
+    public static String propertyRef( final String header ) {
+        final String h = header.trim();
+        if ( REF_PATTERN.matcher( h ).matches() ) {
+            return h;
+        }
+        return METADATA_NAMESPACE + ":" + h.replaceAll( "\\s+", "_" );
+    }
+
+    /**
+     * The datatype a column's values are written with (the JS rule): {@code xsd:integer} when every filled cell is an
+     * integer, {@code xsd:double} when every filled cell is a number by the visualization grammar, else
+     * {@code xsd:string}. Judged over every row of the table, matched or not.
+     */
+    static String columnDatatype( final Table table, final int col ) {
+        boolean any = false;
+        boolean all_int = true;
+        boolean all_num = true;
+        for( int r = 0; r < table.getRowCount(); r++ ) {
+            final String v = table.getCell( r, col );
+            if ( v.isEmpty() ) {
+                continue;
+            }
+            any = true;
+            all_int &= INTEGER_PATTERN.matcher( v ).matches();
+            all_num &= AptxUtil.isNumberByVisGrammar( v );
+        }
+        if ( !any ) {
+            return "xsd:string";
+        }
+        return all_int ? "xsd:integer" : ( all_num ? "xsd:double" : "xsd:string" );
     }
 
     /** Reserved columns that are recognized but NEVER written by an import: {@code node_id} (identity key, no model

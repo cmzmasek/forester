@@ -144,6 +144,13 @@ public final class AptxUtil {
                                       : TreePanelUtil.blend( c, Color.BLACK, f );
     }
 
+    /** Whether {@code s} is a number under the JOINT visualization grammar ({@code PropertyColorScheme.isVisNumber}):
+     *  an optional sign, digits with an optional fraction, an optional exponent -- not Java's parseDouble (which takes
+     *  "Infinity" and "NaN"). Public for the annotation importer, which lives in another package. */
+    public static boolean isNumberByVisGrammar(final String s) {
+        return PropertyColorScheme.isVisNumber((s == null) ? null : s.trim());
+    }
+
     /** The qualitative palette colour at index {@code i} ({@link #qualitativeColor} over Tableau 10) -- public for the
      *  domain renderer, which lives in another package. */
     public static Color paletteColor(final int i) {
