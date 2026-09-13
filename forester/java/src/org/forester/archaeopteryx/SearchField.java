@@ -21,6 +21,9 @@
 package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
+import java.text.Collator;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -30,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods.NDF;
@@ -367,6 +369,22 @@ final class SearchField {
      * preorder pass -- the popup recomputes this on open rather than caching it, so it can never go stale against a
      * tree edit.
      */
+    /** The most values the suggestion list is built from -- the JS {@code SEARCH_AUTOCOMPLETE_CAP}. */
+    static final int AUTOCOMPLETE_VALUE_CAP = 2000;
+
+    /** The order the suggestion list shows values in: locale-aware and case-insensitive first ("apple" before
+     *  "Banana"), like the JS {@code localeCompare}; ties broken by plain string order so it is a total order. */
+    static final Comparator<String> SUGGESTION_ORDER = new Comparator<String>() {
+
+        private final Collator _collator = Collator.getInstance( Locale.ENGLISH );
+
+        @Override
+        public int compare( final String a, final String b ) {
+            final int c = _collator.compare( a, b );
+            return ( c != 0 ) ? c : a.compareTo( b );
+        }
+    };
+
     static List<String> distinctValues( final Phylogeny phy, final SearchField field ) {
         if ( ( phy == null ) || phy.isEmpty() || ( field == null ) || field._numeric
                 || ( field._kind == Kind.ANY_TEXT ) ) {
@@ -377,7 +395,7 @@ final class SearchField {
         if ( ( field._kind == Kind.NDF_FIELD ) && ( field._ndf == NDF.MolecularSequence ) ) {
             return new ArrayList<>();
         }
-        final Set<String> set = new TreeSet<>();
+        final Set<String> set = new HashSet<>();
         for ( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             for ( final String v : field.stringValues( it.next() ) ) {
                 if ( ( v != null ) && !v.trim().isEmpty() ) {
@@ -385,7 +403,10 @@ final class SearchField {
                 }
             }
         }
-        return new ArrayList<>( set );
+        // sorted like the JS list (localeCompare), then capped to the first AUTOCOMPLETE_VALUE_CAP (JS parity)
+        final List<String> out = new ArrayList<>( set );
+        Collections.sort( out, SUGGESTION_ORDER );
+        return ( out.size() > AUTOCOMPLETE_VALUE_CAP ) ? new ArrayList<>( out.subList( 0, AUTOCOMPLETE_VALUE_CAP ) ) : out;
     }
 
     /** The numeric value(s) of this field on {@code node} (empty for a string field or when the node has no

@@ -806,6 +806,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
+    /** The match mode a box is set to, so its suggestion list filters the way the search will match (JS parity). */
+    private SearchMode currentSearchMode(final boolean box_a) {
+        final JComboBox<SearchMode> mc = box_a ? _search_mode_0 : _search_mode_1;
+        final Object m = (mc == null) ? null : mc.getSelectedItem();
+        return (m instanceof SearchMode) ? (SearchMode) m : SearchMode.CONTAINS;
+    }
+
     /** Test hook: the value-autocomplete candidate list for a box (see {@link #autocompleteValues(boolean)}). */
     List<String> autocompleteValuesForTest(final boolean box_a) {
         return autocompleteValues(box_a);
@@ -3575,7 +3582,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_reset_button_0.addActionListener(action_listener);
         _search_tf_0.addKeyListener(key_adapter);
         _search_autocomplete_0 = new SearchValueAutocomplete(_search_tf_0, () -> autocompleteValues(true),
-                () -> (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected(), this::search0);
+                () -> currentSearchMode(true), this::search0);
         addJTextField(_search_tf_0, s_panel_1);
         s_panel_2.add(_search_found_label_0);
         addJButton(_search_reset_button_0, s_panel_2);
@@ -3635,7 +3642,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_reset_button_1.addActionListener(action_listener);
         _search_tf_1.addKeyListener(key_adapter);
         _search_autocomplete_1 = new SearchValueAutocomplete(_search_tf_1, () -> autocompleteValues(false),
-                () -> (_search_case_sensitive_cb != null) && _search_case_sensitive_cb.isSelected(), this::search1);
+                () -> currentSearchMode(false), this::search1);
         addJTextField(_search_tf_1, s_panel_1);
         s_panel_2.add(_search_found_label_1);
         addJButton(_search_reset_button_1, s_panel_2);
