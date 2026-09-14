@@ -803,6 +803,34 @@ public class PhylogenyMethods {
 
     private static final double MAD_EPSILON = 1e-9;
 
+    // tip pairs closer than this fraction of the tree diameter are left out of madRoot's sums (see madRoot)
+    private static final double MAD_NEAR_ZERO_FRACTION = 1e-5;
+
+    // The longest tip-to-tip path (negative branch lengths count as 0), in one post-order pass: at each node, the two
+    // longest paths down through its children.
+    private static double treeDiameter(final Phylogeny phylogeny) {
+        final Map<Long, Double> height = new HashMap<>();
+        double diameter = 0;
+        for (final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            double first = 0;
+            double second = 0;
+            for (final PhylogenyNode c : node.getDescendants()) {
+                final double down = height.get(c.getId()) + nonNegative(c.getDistanceToParent());
+                if (down > first) {
+                    second = first;
+                    first = down;
+                }
+                else if (down > second) {
+                    second = down;
+                }
+            }
+            height.put(node.getId(), first);
+            diameter = Math.max(diameter, first + second);
+        }
+        return diameter;
+    }
+
     /**
      * Roots the tree using the Minimal Ancestor Deviation (MAD) method of Tria, Landan and Dagan
      * (Nature Ecology &amp; Evolution 1, 0193, 2017; doi:10.1038/s41559-017-0193).
@@ -813,7 +841,9 @@ public class PhylogenyMethods {
      * position minimizing the sum of squared deviations of all tip pairs is found analytically, and
      * the branch and position yielding the smallest overall deviation become the new root. Tip pairs
      * at zero distance (identical tips on zero-length branches) have no defined deviation and are left
-     * out of every sum.
+     * out of every sum, and so are pairs closer than 1e-5 times the tree's diameter (the longest
+     * tip-to-tip path): a numerical guard, since their 1/d^2 terms would cancel catastrophically and
+     * make the result depend on the current rooting.
      * <p>
      * Requires branch lengths and at least three external nodes; otherwise it is a no-op (use
      * {@link #midpointRoot(Phylogeny)} for trees without branch lengths). Runs in O(n^2) time and
@@ -858,6 +888,13 @@ public class PhylogenyMethods {
         for (int i = 0; i < n; ++i) {
             tip_depth[i] = depth.get(tips.get(i).getId());
         }
+        // Pairs closer than a tiny fraction of the tree's diameter are left out of every sum, like pairs at zero
+        // distance. Their 1/d^2 terms (FastTree's "zero" branch of 5e-9 gives ~1e16) would otherwise swamp the
+        // per-subtree sums and cancel catastrophically in b_k = a_k - w_k and in the expanded quadratic, so every
+        // branch's value would depend on the current rooting (a second MAD run moved the root on 9 of 10 Flavivirus
+        // gene trees). The diameter does not depend on the rooting, so neither does this cut-off. Joint rule with
+        // Archaeopteryx.js (2026-09-14).
+        final double near_zero = Math.max(MAD_EPSILON, MAD_NEAR_ZERO_FRACTION * treeDiameter(phylogeny));
         // Pass 1 (post-order): fill the tip-to-tip distance matrix d[][] at each pair's LCA, and the
         // "within-subtree" deviation sums. For a pair whose common ancestor m is at depth depth[m],
         // d[i][j] = depth[i] + depth[j] - 2*depth[m] and the deviation is 2*(depth[i]-depth[m])/d - 1.
@@ -900,7 +937,7 @@ public class PhylogenyMethods {
                             final double dij = (di - dm) + (dj - dm); // depth[i] + depth[j] - 2*depth[m]
                             d[i][j] = dij;
                             d[j][i] = dij;
-                            if (dij > MAD_EPSILON) {
+                            if (dij > near_zero) {
                                 final double inv = 1.0 / dij;
                                 final double inv2 = inv * inv;
                                 final double dev = (2.0 * (di - dm) * inv) - 1.0;
@@ -929,14 +966,14 @@ public class PhylogenyMethods {
         // between-set cross sums for a branch are then b_k = a_k - w_k).
         final double[] colsum0 = new double[n]; // sum_{i!=j} 1/d^2
         final double[] colsum_inv = new double[n]; // sum_{i!=j} 1/d
-        final int[] partners = new int[n]; // number of i!=j with d > MAD_EPSILON
+        final int[] partners = new int[n]; // number of i!=j with d > near_zero
         for (int j = 0; j < n; ++j) {
             double s0 = 0, sinv = 0;
             int count = 0;
             final double[] dj = d[j];
             for (int i = 0; i < n; ++i) {
                 final double dij = dj[i];
-                if ((i != j) && (dij > MAD_EPSILON)) {
+                if ((i != j) && (dij > near_zero)) {
                     final double inv = 1.0 / dij;
                     s0 += inv * inv;
                     sinv += inv;

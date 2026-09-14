@@ -7884,7 +7884,7 @@ public final class Test {
         try {
             return testMADexactCases() && testMADguards() && testMADbranchSupport()
                     && testMADbruteForceEquiv() && testMADdeterminismEtc() && testMADzeroDistances()
-                    && testMADnotWrittenAsSupport() && testMADnotReadAsSupport();
+                    && testMADnearZeroDistances() && testMADnotWrittenAsSupport() && testMADnotReadAsSupport();
         } catch (final Exception e) {
             e.printStackTrace(System.out);
             return false;
@@ -8080,6 +8080,83 @@ public final class Test {
         return (trees > 60) && (with_zero_pairs > (trees / 2)); // the fixture really exercises zero pairs
     }
 
+    // Branch lengths near zero but not zero (FastTree writes 5e-9 for "zero") put tip pairs ~1e-8 apart, whose 1/d^2
+    // terms used to cancel catastrophically in the fast DP: every per-branch value depended on the current rooting,
+    // and a second MAD run moved the root (9 of 10 Flavivirus gene trees). madRoot now leaves out pairs closer than
+    // 1e-5 x the tree diameter (a joint rule with Archaeopteryx.js), as the brute force does.
+    private static boolean testMADnearZeroDistances() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        // pins the cut-off: the (0, 2e-5) cherry A,B lies closer than 1e-5 x the diameter (~4.5), so it is left out --
+        // counted, its pair would add a deviation of 1 -- and the brute force with the same rule agrees
+        if (!validateMadAgainstBruteForce(
+                factory.create("(((A:0,B:0.00002):1,C:1):1,(D:1,E:1.5):1)", new NHXParser())[0])) {
+            return false;
+        }
+        for (final long seed : new long[] { 1, 2, 3, 4, 5, 6, 7, 8 }) {
+            for (final int n : new int[] { 5, 9, 14, 20 }) {
+                if (!validateMadAgainstBruteForce(randomZeroDistanceTree(n, seed, 5e-9))) {
+                    return false; // tiny cherries AND tiny internal branches
+                }
+            }
+        }
+        // a second MAD run lands on the same root (tiny cherries only, so no near-tie between neighbouring branches)
+        for (final long seed : new long[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }) {
+            final Phylogeny once = randomTinyCherryTree(40 + (int) (seed * 6), seed);
+            PhylogenyMethods.madRoot(once);
+            final Phylogeny twice = once.copy();
+            PhylogenyMethods.madRoot(twice);
+            if (!rootSplit(once).equals(rootSplit(twice))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // the root's children as sets of tip names
+    private static java.util.Set<java.util.Set<String>> rootSplit(final Phylogeny phy) {
+        final java.util.Set<java.util.Set<String>> sides = new HashSet<>();
+        for (final PhylogenyNode child : phy.getRoot().getDescendants()) {
+            sides.add(tipNamesUnder(child));
+        }
+        return sides;
+    }
+
+    // a random binary tree with ordinary branch lengths in which about half of the tips come as cherries of two
+    // near-identical sequences on 5e-9 branches (FastTree's "zero")
+    private static Phylogeny randomTinyCherryTree(final int n_units, final long seed) {
+        final java.util.Random r = new java.util.Random(seed);
+        final List<PhylogenyNode> active = new ArrayList<>();
+        for (int i = 0; i < n_units; ++i) {
+            if (r.nextBoolean()) {
+                final PhylogenyNode cherry = new PhylogenyNode();
+                cherry.addAsChild(madTestLeaf("T" + i + "a", 5e-9));
+                cherry.addAsChild(madTestLeaf("T" + i + "b", 5e-9));
+                cherry.setDistanceToParent(0.05 + r.nextDouble());
+                active.add(cherry);
+            }
+            else {
+                active.add(madTestLeaf("T" + i, 0.05 + r.nextDouble()));
+            }
+        }
+        while (active.size() > 2) {
+            final PhylogenyNode x = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode y = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode parent = new PhylogenyNode();
+            parent.addAsChild(x);
+            parent.addAsChild(y);
+            parent.setDistanceToParent(0.05 + r.nextDouble());
+            active.add(parent);
+        }
+        final PhylogenyNode root = new PhylogenyNode();
+        for (final PhylogenyNode nd : active) {
+            root.addAsChild(nd);
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(root);
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
     // Newick, Nexus and NHX write the first NON-MAD confidence as a branch's support value (a joint
     // rule with Archaeopteryx.js): a MAD ancestor deviation is not support, and must not displace a
     // bootstrap value. phyloXML keeps writing every confidence with its type.
@@ -8199,14 +8276,19 @@ public final class Test {
     // of the n units are cherries of two duplicates on zero-length branches, and about a quarter of
     // the remaining branches have length zero too (so zero-distance pairs also span internal branches).
     private static Phylogeny randomZeroDistanceTree(final int n_units, final long seed) {
+        return randomZeroDistanceTree(n_units, seed, 0);
+    }
+
+    // the same shape with the "zero" branches set to {@code tiny} (0, or e.g. FastTree's 5e-9)
+    private static Phylogeny randomZeroDistanceTree(final int n_units, final long seed, final double tiny) {
         final java.util.Random r = new java.util.Random(seed);
         final List<PhylogenyNode> active = new ArrayList<>();
         final java.util.Set<PhylogenyNode> duplicates = new HashSet<>();
         for (int i = 0; i < n_units; ++i) {
             if (r.nextBoolean()) {
                 final PhylogenyNode cherry = new PhylogenyNode();
-                final PhylogenyNode a = madTestLeaf("T" + i + "a", 0);
-                final PhylogenyNode b = madTestLeaf("T" + i + "b", 0);
+                final PhylogenyNode a = madTestLeaf("T" + i + "a", tiny);
+                final PhylogenyNode b = madTestLeaf("T" + i + "b", tiny);
                 cherry.addAsChild(a);
                 cherry.addAsChild(b);
                 duplicates.add(a);
@@ -8234,7 +8316,7 @@ public final class Test {
         phy.externalNodesHaveChanged();
         for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(phy)) {
             if (!nd.isRoot() && !duplicates.contains(nd)) {
-                nd.setDistanceToParent((r.nextInt(4) == 0) ? 0 : (0.05 + r.nextDouble()));
+                nd.setDistanceToParent((r.nextInt(4) == 0) ? tiny : (0.05 + r.nextDouble()));
             }
         }
         return phy;
@@ -8245,6 +8327,7 @@ public final class Test {
     private static double madScoreSsd(final Phylogeny phy) {
         final List<PhylogenyNode> tips = phy.getExternalNodes();
         final int n = tips.size();
+        final double near_zero = madNearZero(phy);
         double ssd = 0;
         for (int a = 0; a < n; ++a) {
             final double di = distToRoot(tips.get(a));
@@ -8252,13 +8335,28 @@ public final class Test {
                 final double dj = distToRoot(tips.get(b));
                 final double dl = distToRoot(PhylogenyMethods.calculateLCA(tips.get(a), tips.get(b)));
                 final double dij = (di - dl) + (dj - dl);
-                if (dij > 1e-9) {
+                if (dij > near_zero) {
                     final double dev = ((2.0 * (di - dl)) / dij) - 1.0;
                     ssd += dev * dev;
                 }
             }
         }
         return ssd;
+    }
+
+    // madRoot's cut-off for pairs left out of the sums, computed independently of it: max(1e-9, 1e-5 x the longest
+    // tip-to-tip path, found here over all tip pairs through their LCA)
+    private static double madNearZero(final Phylogeny phy) {
+        final List<PhylogenyNode> tips = phy.getExternalNodes();
+        double diameter = 0;
+        for (int a = 0; a < tips.size(); ++a) {
+            final double da = distToRoot(tips.get(a));
+            for (int b = a + 1; b < tips.size(); ++b) {
+                final double dl = distToRoot(PhylogenyMethods.calculateLCA(tips.get(a), tips.get(b)));
+                diameter = Math.max(diameter, (da - dl) + (distToRoot(tips.get(b)) - dl));
+            }
+        }
+        return Math.max(1e-9, 1e-5 * diameter);
     }
 
     private static java.util.Set<String> tipNamesUnder(final PhylogenyNode node) {
@@ -8307,6 +8405,7 @@ public final class Test {
     private static java.util.Map<String, Double> bruteForceBipToSsd(final Phylogeny original) {
         final java.util.Map<String, Double> map = new java.util.HashMap<>();
         final List<PhylogenyNode> tips = original.getExternalNodes();
+        final double near_zero = madNearZero(original);
         for (final PhylogenyNode c : PhylogenyMethods.obtainAllNodesAsList(original)) {
             if (c.isRoot()) {
                 continue;
@@ -8325,7 +8424,7 @@ public final class Test {
                     }
                     final double dl = distToRoot(PhylogenyMethods.calculateLCA(in, jn));
                     final double dij = (distToRoot(in) - dl) + (distToRoot(jn) - dl);
-                    if (dij > 1e-9) {
+                    if (dij > near_zero) {
                         final double inv = 1.0 / dij;
                         sum_inv += inv;
                         sum_inv_sq += inv * inv;
