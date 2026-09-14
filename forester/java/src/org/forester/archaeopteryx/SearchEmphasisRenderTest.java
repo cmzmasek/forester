@@ -139,8 +139,10 @@ public final class SearchEmphasisRenderTest {
                         fail( ok, "a non-hit confidence value should fade when Dim is on (dark px off=" + cf_off
                                 + " on=" + cf_on + ")" );
                     }
-                    // Dim must NOT engage when NO hit is VISIBLE (the only hit hidden under a collapse) -- else the
-                    // whole tree washes out with nothing emphasised. "insulin" (a different clade) stays visible.
+                    // A hit hidden inside a collapsed clade still counts as on screen (Archaeopteryx.js 7e6cb68; Christian:
+                    // "less confusing to users"): the clade stays bright and counts it, and the rest keeps fading. Only a
+                    // search with NO hit dims nothing -- that is what keeps a fruitless search from washing the tree out.
+                    // "insulin" (a different clade) stays visible throughout.
                     final PhylogenyNode other2 = tipNamed( phy, "insulin" );
                     if ( other2 == null ) {
                         fail( ok, "demo must contain insulin" );
@@ -148,9 +150,15 @@ public final class SearchEmphasisRenderTest {
                     }
                     final int insulin_dim = darkInk( render( frame, tp, o, false, true, w, h ), other2 ); // hit visible
                     tp.collapse( found.getParent() ); // hide the only found tip (AKT1_kinase) under a collapsed clade
-                    final int insulin_free = darkInk( render( frame, tp, o, false, true, w, h ), other2 ); // no vis. hit
-                    if ( insulin_free <= ( insulin_dim + 30 ) ) {
-                        fail( ok, "dim must lift when the only hit is hidden (insulin dark px hidden-hit=" + insulin_free
+                    final int insulin_hidden_hit = darkInk( render( frame, tp, o, false, true, w, h ), other2 );
+                    if ( insulin_hidden_hit > ( insulin_dim + 30 ) ) {
+                        fail( ok, "dim must stay on when the only hit is inside a collapsed clade (insulin dark px "
+                                + "hidden-hit=" + insulin_hidden_hit + " visible-hit=" + insulin_dim + ")" );
+                    }
+                    tp.setFoundNodes0( null ); // no hit at all
+                    final int insulin_no_hit = darkInk( render( frame, tp, o, false, true, w, h ), other2 );
+                    if ( insulin_no_hit <= ( insulin_dim + 30 ) ) {
+                        fail( ok, "a search with no hit must dim nothing (insulin dark px no-hit=" + insulin_no_hit
                                 + " visible-hit=" + insulin_dim + ")" );
                     }
                 }

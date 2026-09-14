@@ -490,7 +490,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final List<Rectangle> _found_halo_bounds = new ArrayList<>();
     private boolean _has_visible_found_halo = false;
     // Next/previous "step through search hits": the current position in the ordered hit list (-1 = not positioned)
-    // and the last node centered on (a collapsed hit's drawn triangle, else the hit itself) -- for tests.
+    // and the last node centered on (a collapsed hit's drawn wedge, else the hit itself) -- for tests.
     private int          _search_hit_index = -1;
     private PhylogenyNode _last_step_target;
     private double _scale_distance = 0.0;
@@ -968,7 +968,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _break_cap = TreePanelUtil.longBranchBreakCap(_phylogeny, LONG_BRANCH_BREAK_MULTIPLIER);
             // collapse-aware, matching the collapse-aware calculateHeight the non-break depth scale uses
             _break_capped_height = (_break_cap > 0) ? TreePanelUtil.cappedTreeHeight(_phylogeny, _break_cap,
-                    !_options.isCollapsedWithAverageHeigh()) : 0;
+                    false) : 0;
             _break_capped_radial_max = (_break_cap > 0)
                     ? TreePanelUtil.cappedMaxDistanceToRoot(_phylogeny, _break_cap) : 0;
             _break_cap_for = _phylogeny;
@@ -1010,7 +1010,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  makes corr large while the uncapped height stays huge -> a hugely oversized scroll extent -> clipping). */
     private double displayedTreeHeight() {
         double h = breakLongBranchesActive() ? breakCappedHeight()
-                : getPhylogeny().calculateHeight(!_options.isCollapsedWithAverageHeigh());
+                : getPhylogeny().calculateHeight(false);
         // a subtree's root branch is drawn as a fixed stub (see displayedRootBranchLength), so its length is NOT part
         // of the depth -- exclude it (BOTH calculateHeight AND breakCappedHeight fold in the (capped) root branch) or
         // the extent over-reserves depth by a stub-sized empty margin
@@ -1818,8 +1818,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         for (final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            // cheap found-set lookup first, so the O(depth) hidden-under-collapse walk runs only for actual hits
-            if (isInFoundNodes(n) && !isHiddenUnderCollapse(n)) {
+            // cheap found-set lookup first, so the O(depth) hidden-under-collapse walk runs only for actual hits. A hit
+            // TIP hidden in a collapsed clade counts too: the clade is on screen, bright and counting it
+            // (Archaeopteryx.js 7e6cb68)
+            if (isInFoundNodes(n) && (n.isExternal() || !isHiddenUnderCollapse(n))) {
                 return true;
             }
         }
@@ -1842,7 +1844,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Centers the NEXT ({@code dir}=+1) or PREVIOUS ({@code dir}=-1) search/selection hit in the viewport, wrapping
-     *  around. A hit hidden under a collapse scrolls to its (drawn) collapsed-clade triangle instead. Updates the
+     *  around. A hit hidden under a collapse scrolls to its (drawn) collapsed-clade wedge instead. Updates the
      *  left panel's "k / N" navigator. Called by the panel's arrow buttons and the View-menu Find Next/Previous. */
     final void stepToFoundNode(final int dir) {
         final List<PhylogenyNode> hits = orderedFoundNodes();
@@ -2793,121 +2795,414 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void paintCollapsedNode(final Graphics2D g,
-                                          final PhylogenyNode node,
-                                          final boolean to_graphics_file,
-                                          final boolean to_pdf,
-                                          final boolean is_in_found_nodes) {
-        Color c = null;
+    // ---- collapsed clades: a PORT of Archaeopteryx.js drawCollapsedClades (archaeopteryx.js 407f204) --------------
+    // Christian, 2026-09-13: the collapsed-subtree display is the same in both viewers. A collapsed clade is a leaf
+    // that takes CollapsedClade.rows rows; it is drawn as a wedge from its node, one edge to the clade's nearest tip
+    // and the other to its farthest (one depth step in a cladogram), filled in the colour most of its tips wear under
+    // Color-by; its label stands where a tip's would and names the clade (CollapsedClade.name / label). The pure rules
+    // live in CollapsedClade; this is the geometry and the paint, for all five display types.
+
+    /** The JS ring radius is 0.42 of the canvas side and its cluster (row) axis spans about the side, so a radial row
+     *  is the ring radius / 0.42 over the rows -- the same wedge proportions as the JS circular layout. */
+    private final static double JS_RING_RADIUS_OF_ROW_AXIS = 0.42;
+
+    /** The extra breadth, in rows, each subtree takes because of the collapsed clades in it: a collapsed clade weighs
+     *  {@link CollapsedClade#rowWeight} rows against a tip's 1, so it and every ancestor carry the difference. Only
+     *  nodes at or above a collapsed clade are present. Refreshed at the start of every paint and layout computation
+     *  ({@link #refreshCollapsedRowWeights}), so collapsing, undo and tree swaps need no bookkeeping of their own. */
+    private final Map<PhylogenyNode, Double> _collapsed_row_extra = new java.util.IdentityHashMap<>();
+
+    private void refreshCollapsedRowWeights() {
+        _collapsed_row_extra.clear();
+        for (final PhylogenyNode clade : displayedCollapsedClades()) {
+            final double extra = CollapsedClade.rowWeight(clade.getAllExternalDescendants().size()) - 1;
+            for (PhylogenyNode a = clade; a != null; a = a.getParent()) {
+                _collapsed_row_extra.merge(a, extra, Double::sum);
+            }
+        }
+    }
+
+    /** The collapsed clades on screen: every collapsed node that is not hidden inside another. */
+    private List<PhylogenyNode> displayedCollapsedClades() {
+        final List<PhylogenyNode> out = new ArrayList<>();
+        if ((_phylogeny == null) || _phylogeny.isEmpty()) {
+            return out;
+        }
+        final java.util.ArrayDeque<PhylogenyNode> stack = new java.util.ArrayDeque<>();
+        stack.push(_phylogeny.getRoot());
+        while (!stack.isEmpty()) {
+            final PhylogenyNode n = stack.pop();
+            if (n.isExternal()) {
+                continue;
+            }
+            if (n.isCollapse()) {
+                out.add(n);
+                continue;
+            }
+            for (int i = 0; i < n.getNumberOfDescendants(); ++i) {
+                stack.push(n.getChildNode(i));
+            }
+        }
+        return out;
+    }
+
+    /** The rows {@code node}'s subtree takes in the breadth layout: its displayed tips, a collapsed clade counting
+     *  {@link CollapsedClade#rowWeight} rows. Equals the displayed tip count when nothing below is collapsed. */
+    double rowWeight(final PhylogenyNode node) {
+        final Double extra = _collapsed_row_extra.get(node);
+        return (extra == null) ? node.getNumberOfExternalNodes() : (node.getNumberOfExternalNodes() + extra);
+    }
+
+    /** The rows around the circular ring (and the unrooted fan): the displayed tree's {@link #rowWeight}. */
+    private double circularRowUnits() {
+        return ((_phylogeny == null) || _phylogeny.isEmpty()) ? 0 : rowWeight(_phylogeny.getRoot());
+    }
+
+    /** The angle of the next displayed row around the ring: two neighbours sit the mean of their weights apart, so a
+     *  collapsed clade's row is as wide as its weight. {@code angle} = {current angle, previous row's weight or -1}. */
+    private static double nextCircularRowAngle(final double weight, final double row_angle, final double[] angle) {
+        if (angle[1] >= 0) {
+            angle[0] += ((angle[1] + weight) / 2.0) * row_angle;
+        }
+        angle[1] = weight;
+        return angle[0];
+    }
+
+    /** How a collapsed clade is drawn right now: its tip and hit counts, colours, label. */
+    static final class CollapsedLook {
+
+        int     tips;
+        int     found;
+        boolean full;
+        Color   fill;
+        Color   stroke;
+        float   stroke_width;
+        Color   ink;
+        String  label;
+    }
+
+    /**
+     * The look of a collapsed clade (Archaeopteryx.js collapsedColor / collapsedMarkColor / collapsedFullyMarked):
+     * the wedge is filled in the colour most of its tips wear under Color-by (a hit tip votes with its hit colour; the
+     * branch colour when nothing is coloured); outlined in the colour of its first hit, thicker, while a search hits
+     * inside; filled in that colour, and its label set bold in it, when every tip is a hit. It dims with the non-hits
+     * unless it holds a hit.
+     */
+    private CollapsedLook collapsedLook(final PhylogenyNode clade, final boolean to_pdf, final boolean to_graphics_file) {
+        final List<PhylogenyNode> tips = new ArrayList<>(clade.getAllExternalDescendants());
+        // Archaeopteryx.js walks the children in REVERSE, so its "first" tip is the last one drawn; the tie-breaks
+        // (the dominant colour, the first hit's colour) follow it
+        Collections.reverse(tips);
+        final CollapsedLook look = new CollapsedLook();
+        look.tips = tips.size();
+        final boolean coloured = isColorByProperty();
+        final List<Color> votes = new ArrayList<>(tips.size());
+        Color mark = null;
+        for (final PhylogenyNode t : tips) {
+            final boolean hit = isInFoundNodes(t);
+            if (hit) {
+                ++look.found;
+                if (mark == null) {
+                    mark = getColorForFoundNode(t);
+                }
+            }
+            if (coloured) {
+                votes.add(hit ? getColorForFoundNode(t) : _property_color_scheme.colorFor(t));
+            }
+        }
+        look.full = CollapsedClade.fullyMarked(look.found, look.tips);
         final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
-        // A collapsed clade's tips are hidden, so signal any selection/search hits ON the triangle itself:
-        // fill it in the found colour when EVERY tip is a hit (reads as "this whole group is selected"), or just
-        // outline it (below) when only some are. Selection is clade-wide (collapse is a view state), so a
-        // clade-select shows here even though the individual tips are not drawn. Skipped in black-and-white.
-        final int[] fc = collapsedCladeFoundCounts(node); // {hits in set 0, hits in set 1, tips hit, total tips}
-        Color found_c = null;
-        if (!bw && (fc[2] > 0)) {
-            found_c = ((fc[0] > 0) && (fc[1] > 0)) ? getTreeColorSet().getFoundColor0and1()
-                    : (fc[0] > 0) ? getTreeColorSet().getFoundColor0() : getTreeColorSet().getFoundColor1();
+        Color base = coloured ? CollapsedClade.mostFrequent(votes) : null;
+        if (base == null) {
+            base = to_pdf ? getTreeColorSet().getBranchColorForPdf() : getTreeColorSet().getBranchColor();
         }
-        final boolean all_tips_found = (found_c != null) && (fc[2] == fc[3]);
         if (bw) {
-            c = Color.BLACK;
+            base = Color.BLACK;
+            mark = (mark == null) ? null : Color.BLACK;
         }
-        else if (all_tips_found) {
-            c = found_c; // the whole collapsed clade is selected -> paint the triangle in the found colour
-        }
-        else if (getOptions().isColorLabelsSameAsParentBranch() && shows(DisplayOption.USE_STYLE)
-                && (PhylogenyMethods.getBranchColorValue(node) != null)) {
-            c = PhylogenyMethods.getBranchColorValue(node);
-        } else if (to_pdf) {
-            g.setColor(getTreeColorSet().getBranchColorForPdf());
-        } else {
-            c = getTreeColorSet().getCollapseFillColor();
-        }
-        double d = fc[3];
-        float xxx;
-        double s = 0;
-        if (getControlPanel().isDrawPhylogram()) {
-            if (d > 1000) {
-                d = 0.75 * _y_distance;
-            } else {
-                d = 0.25 * Math.log10(d) * _y_distance;
+        final boolean holds_hit = look.found > 0;
+        look.fill = withAlpha(dimNonMatch(look.full ? mark : base, holds_hit, bw),
+                look.full ? CollapsedClade.FILL_ALPHA_MARKED : CollapsedClade.FILL_ALPHA);
+        look.stroke = withAlpha(dimNonMatch((mark != null) ? mark : base, holds_hit, bw), CollapsedClade.STROKE_ALPHA);
+        look.stroke_width = (mark != null) ? CollapsedClade.STROKE_WIDTH_MARKED : CollapsedClade.STROKE_WIDTH;
+        final Color ink = bw ? Color.BLACK
+                : (look.full ? mark : (to_pdf ? Color.BLACK : getTreeColorSet().getSequenceColor()));
+        look.ink = dimNonMatch(ink, holds_hit, bw);
+        look.label = CollapsedClade.label(collapsedCladeName(clade, tips), look.tips, look.found);
+        return look;
+    }
+
+    private static Color withAlpha(final Color c, final double alpha) {
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) Math.round(alpha * 255));
+    }
+
+    /** The clade's name (Archaeopteryx.js collapsedName): its node's name, else the chosen Color-by value at least 95%
+     *  of its tips share, else its tips' common name prefix. */
+    private String collapsedCladeName(final PhylogenyNode clade, final List<PhylogenyNode> tips) {
+        List<String> values = null;
+        final PropertyColorScheme.VisCandidate c = (_color_by_property_ref == null) ? null
+                : visualizationCandidate(_color_by_property_ref);
+        if (c != null) {
+            values = new ArrayList<>(tips.size());
+            for (final PhylogenyNode t : tips) {
+                values.add(PropertyColorScheme.visualizationNodeValue(t, c));
             }
-            final float half_box_size = 0.5f * getOptions().getDefaultNodeShapeSize();
-            if (d < half_box_size) {
-                d = half_box_size;
-            }
-            _polygon.reset();
-            final float xx = node.getXcoord() - (getOptions().getDefaultNodeShapeSize());
-            xxx = xx > (node.getParent().getXcoord() + 1) ? xx : node.getParent().getXcoord() + 1;
-            _polygon.moveTo(xxx, node.getYcoord() + 0.5);
-            _polygon.lineTo(xxx, node.getYcoord() - 0.5);
-            s = _options.isCollapsedWithAverageHeigh()
-                    ? PhylogenyMethods.calculateAverageTreeHeight(node) * _x_correction_factor
-                    : 1;
-            _polygon.lineTo(node.getXcoord() + s, node.getYcoord() - d);
-            _polygon.lineTo(node.getXcoord() + s, node.getYcoord() + d);
-            _polygon.closePath();
-        } else {
-            if (d > 1000) {
-                d = _y_distance;
-            } else {
-                d = (Math.log10(d) * _y_distance) / 2.5;
-            }
-            final int box_size = getOptions().getDefaultNodeShapeSize() + 1;
-            if (d < box_size) {
-                d = box_size;
-            }
-            final float xx = node.getXcoord() - (2 * box_size);
-            xxx = xx > (node.getParent().getXcoord() + 1) ? xx : node.getParent().getXcoord() + 1;
-            _polygon.reset();
-            _polygon.moveTo(xxx, node.getYcoord());
-            _polygon.lineTo(node.getXcoord() + 1, node.getYcoord() - d);
-            _polygon.lineTo(node.getXcoord() + 1, node.getYcoord() + d);
-            _polygon.closePath();
         }
-        if (getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID) {
-            g.setColor(c);
-            g.fill(_polygon);
-        } else if (getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.NONE) {
-            g.setColor(getBackground());
-            g.fill(_polygon);
-            g.setColor(c);
-            g.draw(_polygon);
-        } else if (getOptions().getDefaultNodeFill() == NodeFill.GRADIENT) {
-            g.setPaint(new GradientPaint(xxx,
-                    node.getYcoord(),
-                    getBackground(),
-                    node.getXcoord(),
-                    (float) (node.getYcoord() - d),
-                    c,
-                    false));
-            g.fill(_polygon);
-            g.setPaint(c);
-            g.draw(_polygon);
+        return CollapsedClade.name(clade.getName(), CollapsedClade.dominantValue(values, tips.size()),
+                AptxUtil.commonNamePrefix(clade));
+    }
+
+    private Font collapsedLabelFont(final boolean bold) {
+        final Font large = getTreeFontSet().getLargeFont();
+        return bold ? large.deriveFont(Font.BOLD) : large;
+    }
+
+    /** Test hook: the look of a collapsed clade as the screen paints it. */
+    CollapsedLook collapsedLookForTest(final PhylogenyNode clade) {
+        return collapsedLook(clade, false, false);
+    }
+
+    /** Test hook: whether the last paint found a hit on screen (the "Dim Non-Matches" gate). */
+    boolean hasVisibleFoundNodeForTest() {
+        return _has_visible_found_node;
+    }
+
+    /** Test hook: a displayed tip's (or collapsed clade's) angle around the circular ring, from the last paint. */
+    Double circularAngleForTest(final PhylogenyNode node) {
+        return _urt_nodeid_angle_map.get(node.getId());
+    }
+
+    /** The logical x a collapsed clade's wedge reaches in the rectangular layouts: {nearest tip, farthest tip}. In a
+     *  phylogram the clade's own tips measured as they would be drawn (long branches capped as drawn); in a cladogram one
+     *  step past the node. Never closer than 2 px to the node. */
+    private double[] collapsedReachRectangular(final PhylogenyNode clade) {
+        final double x0 = clade.getXcoord();
+        if (!getControlPanel().isDrawPhylogram()) {
+            final double r = x0 + getXdistance();
+            return new double[] { r, r };
         }
-        if ((found_c != null) && !all_tips_found) {
-            // only SOME of the clade's tips are selected/found -> outline the triangle in the found colour as a
-            // partial hint (a full fill would over-state it, an omitted mark would hide it -- see also the
-            // "[found/total]" count in the collapsed label)
-            final Color saved = g.getColor();
-            g.setColor(found_c);
-            g.draw(_polygon);
-            g.setColor(saved);
+        final double[] d = collapsedTipDistances(clade, false);
+        if (d == null) {
+            return new double[] { x0 + 2, x0 + 2 };
         }
-        if (isVerticalOrientation()) {
-            // a collapsed clade reads as a tip: tilt its label 45deg, and (aligned mode) draw its leader as vertical
-            // geometry + pivot the label at the aligned column -- like the external-tip labels
-            final double sf = s; // capture for the lambda (s is reassigned above)
-            if (isAlignedTipLabel(node)) {
-                drawConnection(node.getXcoord(), labelTextStartX(node), node.getYcoord(), 5, 20, g);
+        return new double[] { Math.max(x0 + 2, x0 + d[0]), Math.max(x0 + 2, x0 + d[1]) };
+    }
+
+    /** The distance along a spoke a collapsed clade's wedge reaches in the circular layout: {nearest, farthest}. */
+    private double[] collapsedReachCircular(final PhylogenyNode clade) {
+        final double r0 = circularRadiusFraction(clade) * _circular_radius;
+        if (!isCircularPhylogram()) {
+            final double d = Math.max(2, _circular_radius - r0);
+            return new double[] { d, d };
+        }
+        double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+        for (final PhylogenyNode t : clade.getAllExternalDescendants()) {
+            final double r = circularRadiusFraction(t) * _circular_radius;
+            min = Math.min(min, r);
+            max = Math.max(max, r);
+        }
+        if (min == Double.POSITIVE_INFINITY) {
+            return new double[] { 2, 2 };
+        }
+        return new double[] { Math.max(2, min - r0), Math.max(2, max - r0) };
+    }
+
+    /** The distance along its spoke a collapsed clade's wedge reaches in the unrooted layout: {nearest, farthest}. */
+    private double[] collapsedReachUnrooted(final PhylogenyNode clade) {
+        if (!(isPhyHasBranchLengths() && getControlPanel().isDrawPhylogram())) {
+            final double step = getUrtFactor();
+            return new double[] { step, step };
+        }
+        final double[] d = collapsedTipDistances(clade, true);
+        if (d == null) {
+            return new double[] { 2, 2 };
+        }
+        return new double[] { Math.max(2, d[0]), Math.max(2, d[1]) };
+    }
+
+    /** The shortest and longest drawn path (px) from a collapsed clade's node to its tips, on the rectangular phylogram
+     *  scale or ({@code unrooted}) on the unrooted spoke scale. Null when the clade has no tips. */
+    private double[] collapsedTipDistances(final PhylogenyNode clade, final boolean unrooted) {
+        double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+        final java.util.ArrayDeque<PhylogenyNode> nodes = new java.util.ArrayDeque<>();
+        final java.util.ArrayDeque<Double> dists = new java.util.ArrayDeque<>();
+        nodes.push(clade);
+        dists.push(0.0);
+        while (!nodes.isEmpty()) {
+            final PhylogenyNode n = nodes.pop();
+            final double d = dists.pop();
+            if (n.isExternal()) {
+                min = Math.min(min, d);
+                max = Math.max(max, d);
+                continue;
             }
-            withNodeTextFrame(g, labelTextStartX(node), node.getYcoord(), tipLabelAngle(),
-                    () -> paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, sf));
-        } else {
-            paintNodeData(g, node, to_graphics_file, to_pdf, is_in_found_nodes, s);
+            for (int i = 0; i < n.getNumberOfDescendants(); ++i) {
+                final PhylogenyNode c = n.getChildNode(i);
+                nodes.push(c);
+                dists.push(d + (unrooted ? unrootedSpokeLength(c) : calculateBranchLengthToParent(c, 0)));
+            }
         }
+        return (min == Double.POSITIVE_INFINITY) ? null : new double[] { min, max };
+    }
+
+    /** A branch's drawn length in the unrooted phylogram, capped as paintUnrooted caps it. */
+    private double unrootedSpokeLength(final PhylogenyNode desc) {
+        double dtp = desc.getDistanceToParent();
+        if (dtp < 0) {
+            dtp = 0;
+        } else if (breakLongBranchesActiveUnrooted() && (dtp > breakLongBranchCap())) {
+            dtp = breakLongBranchCap();
+        }
+        return dtp * getUrtFactor();
+    }
+
+    /** One row (px) for a wedge's height in a radial layout (see {@link #JS_RING_RADIUS_OF_ROW_AXIS}). */
+    private double radialRowUnit(final double ring_radius) {
+        final double rows = circularRowUnits();
+        return (rows > 0) ? ((ring_radius / JS_RING_RADIUS_OF_ROW_AXIS) / rows) : ring_radius;
+    }
+
+    /** Where a collapsed clade's label starts in the rectangular layouts: exactly where a tip's would -- past the
+     *  annotation columns, or on the aligned label column -- else just past its wedge's farthest reach. */
+    private float collapsedLabelStartX(final PhylogenyNode clade, final double far_x) {
+        final int half_box = effectiveNodeHalfBoxSize(clade);
+        if (tipLabelsBelowColumns()) {
+            return labelSegmentStartX(annotationColumnsEndX(), half_box, 0);
+        }
+        if (isAlignedTipLabel(clade)) {
+            return labelSegmentStartX(alignedLabelColumnX(), half_box, 0);
+        }
+        return labelSegmentStartX((float) far_x, half_box, 0);
+    }
+
+    /** The wedge of a collapsed clade in the rectangular layouts' logical frame: {apex x, apex y, nearest x, farthest
+     *  x, half height}. The wedge's upper edge ends at the nearest tip, its lower edge at the farthest. */
+    double[] collapsedWedgeRectangular(final PhylogenyNode clade) {
+        final double[] reach = collapsedReachRectangular(clade);
+        final double half_h = CollapsedClade.height(clade.getAllExternalDescendants().size(), 2.0 * _y_distance) / 2.0;
+        return new double[] { clade.getXcoord(), clade.getYcoord(), reach[0], reach[1], half_h };
+    }
+
+    /** Test hook: the wedge a radial layout draws for a collapsed clade: {nearest, farthest} along the spoke, and the
+     *  half height. */
+    double[] collapsedWedgeRadialForTest(final PhylogenyNode clade) {
+        final boolean circular = _graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR;
+        final double[] reach = circular ? collapsedReachCircular(clade) : collapsedReachUnrooted(clade);
+        final double ring = circular ? _circular_radius : (radialDiameter() / 2.0);
+        return new double[] { reach[0], reach[1],
+                CollapsedClade.height(clade.getAllExternalDescendants().size(), radialRowUnit(ring)) / 2.0 };
+    }
+
+    /** A collapsed clade in the rectangular layouts (all three orientations -- the geometry rides the rotation, the
+     *  label the tip-label frame): its wedge, the aligned leader, and its label. */
+    private void paintCollapsedClade(final Graphics2D g, final PhylogenyNode clade, final boolean to_pdf,
+                                     final boolean to_graphics_file) {
+        final CollapsedLook look = collapsedLook(clade, to_pdf, to_graphics_file);
+        final double[] w = collapsedWedgeRectangular(clade);
+        final java.awt.geom.Path2D.Double wedge = new java.awt.geom.Path2D.Double();
+        wedge.moveTo(w[0], w[1]);
+        wedge.lineTo(w[2], w[1] - w[4]); // the upper edge ends at the nearest tip
+        wedge.lineTo(w[3], w[1] + w[4]); // the lower edge at the farthest
+        wedge.closePath();
+        paintCollapsedWedge(g, wedge, look);
+        final float label_x = collapsedLabelStartX(clade, w[3]);
+        final float y = (float) w[1];
+        if (isAlignedTipLabel(clade) && !tipLabelsBelowColumns()) {
+            drawConnection((float) w[3], label_x, y, 5, 20, g); // the tips' leader, from past the wedge to the column
+        }
+        withNodeTextFrame(g, label_x, y, isVerticalOrientation() ? tipLabelAngle() : 0.0, () -> {
+            final Font saved_font = g.getFont();
+            final Color saved_color = g.getColor();
+            final Font font = collapsedLabelFont(look.full);
+            g.setFont(font);
+            g.setColor(look.ink);
+            TreePanel.drawString(look.label, label_x, y + (getFontMetrics(font).getAscent() / 3.0f), g);
+            g.setFont(saved_font);
+            g.setColor(saved_color);
+        });
+    }
+
+    /** A collapsed clade in the circular and unrooted layouts: its wedge along the spoke at {@code angle}, and its label
+     *  where a tip's would stand -- on the ring in the aligned circular phylogram (with the tips' leader), else just past
+     *  the wedge. */
+    private void paintCollapsedCladeRadial(final Graphics2D g, final PhylogenyNode clade, final double angle,
+                                           final boolean radial_labels, final boolean to_pdf,
+                                           final boolean to_graphics_file) {
+        final boolean circular = _graphics_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR;
+        final CollapsedLook look = collapsedLook(clade, to_pdf, to_graphics_file);
+        final double[] reach = circular ? collapsedReachCircular(clade) : collapsedReachUnrooted(clade);
+        final double ring = circular ? _circular_radius : (radialDiameter() / 2.0);
+        final double half_h = CollapsedClade.height(look.tips, radialRowUnit(ring)) / 2.0;
+        final double x = clade.getXcoord();
+        final double y = clade.getYcoord();
+        final AffineTransform saved = g.getTransform();
+        g.rotate(angle, x, y); // +x runs out along the spoke
+        final java.awt.geom.Path2D.Double wedge = new java.awt.geom.Path2D.Double();
+        wedge.moveTo(x, y);
+        wedge.lineTo(x + reach[0], y - half_h);
+        wedge.lineTo(x + reach[1], y + half_h);
+        wedge.closePath();
+        paintCollapsedWedge(g, wedge, look);
+        g.setTransform(saved);
+        final double cos = Math.cos(angle);
+        final double sin = Math.sin(angle);
+        final double far_x = x + (cos * reach[1]);
+        final double far_y = y + (sin * reach[1]);
+        double ax = far_x;
+        double ay = far_y;
+        if (circular && isAlignedCircularPhylogram() && (_circular_radius > 0)) {
+            ax = _circular_center_x + (_circular_radius * cos);
+            ay = _circular_center_y + (_circular_radius * sin);
+            if (Math.hypot(ax - far_x, ay - far_y) >= 1) {
+                final java.awt.Stroke saved_stroke = g.getStroke();
+                final Color saved_color = g.getColor();
+                g.setStroke(LEADER_STROKE);
+                g.setColor(connectorColor());
+                drawLine(far_x, far_y, ax, ay, g);
+                g.setStroke(saved_stroke);
+                g.setColor(saved_color);
+            }
+        }
+        final Font font = collapsedLabelFont(look.full);
+        final FontMetrics fm = getFontMetrics(font);
+        final String text = TreePanelUtil.truncateToPixelWidth(fm, look.label, Math.max(0, radialMaxLabelWidth()));
+        final float gap = effectiveNodeHalfBoxSize(clade) + 3f;
+        final double total_w = gap + fm.stringWidth(text);
+        double m = angle % TWO_PI;
+        if (m < 0) {
+            m += TWO_PI;
+        }
+        final boolean left = (m > HALF_PI) && (m < ONEHALF_PI);
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        // placed and flipped exactly as a radial tip label is (paintNodeDataUnrootedCirc)
+        if (radial_labels) {
+            g.rotate(left ? (m - PI) : m, ax, ay);
+            if (left) {
+                g.translate(-(total_w + gap), 0);
+            }
+        } else if (left) {
+            g.translate(-(total_w + gap), 0);
+        }
+        g.setFont(font);
+        g.setColor(look.ink);
+        TreePanel.drawString(text, (float) (ax + gap), (float) (ay + (fm.getAscent() / 3.0f)), g);
+        g.setTransform(saved);
+        g.setFont(saved_font);
+        g.setColor(saved_color);
+    }
+
+    private static void paintCollapsedWedge(final Graphics2D g, final java.awt.Shape wedge, final CollapsedLook look) {
+        final java.awt.Paint saved_paint = g.getPaint();
+        final java.awt.Stroke saved_stroke = g.getStroke();
+        g.setPaint(look.fill);
+        g.fill(wedge);
+        g.setPaint(look.stroke);
+        g.setStroke(new java.awt.BasicStroke(look.stroke_width, java.awt.BasicStroke.CAP_ROUND,
+                java.awt.BasicStroke.JOIN_ROUND));
+        g.draw(wedge);
+        g.setStroke(saved_stroke);
+        g.setPaint(saved_paint);
     }
 
     /**
@@ -3106,104 +3401,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             TreePanel.drawString(length, x, baseline, g);
         }
         g.setTransform(saved);
-    }
-
-    /** Draws a collapse marker for a collapsed clade-root in a radial (CIRCULAR/UNROOTED) layout: a filled triangle
-     *  whose apex is AT the node and which opens OUTWARD along {@code out_angle} (the radial/branch direction, away
-     *  from the root), plus the hidden-tip count "(N)" riding the branch just beyond it -- the radial analogue of the
-     *  rectangular collapsed-clade triangle ({@link #paintCollapsedNode}). The node box is skipped for collapsed nodes
-     *  ({@link #paintNodeBox}), so this IS the marker. Fill + found-state coloring mirror paintCollapsedNode: filled in
-     *  the found colour when EVERY hidden tip is selected, outlined when only some are. The triangle's size grows with
-     *  the tip count on a log scale, like the rectangular triangle. */
-    private void paintRadialCollapsedMarker(final Graphics2D g, final PhylogenyNode node, final double out_angle,
-                                            final boolean to_pdf, final boolean to_graphics_file) {
-        final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
-        final int[] fc = collapsedCladeFoundCounts(node); // {hits set 0, hits set 1, tips hit, total tips}
-        Color found_c = null;
-        if (!bw && (fc[2] > 0)) {
-            found_c = ((fc[0] > 0) && (fc[1] > 0)) ? getTreeColorSet().getFoundColor0and1()
-                    : (fc[0] > 0) ? getTreeColorSet().getFoundColor0() : getTreeColorSet().getFoundColor1();
-        }
-        final boolean all_tips_found = (found_c != null) && (fc[2] == fc[3]);
-        final Color fill;
-        if (bw) {
-            fill = Color.BLACK;
-        } else if (all_tips_found) {
-            fill = found_c; // the whole collapsed clade is selected -> paint the triangle in the found colour
-        } else if (getOptions().isColorLabelsSameAsParentBranch() && shows(DisplayOption.USE_STYLE)
-                && (PhylogenyMethods.getBranchColorValue(node) != null)) {
-            fill = PhylogenyMethods.getBranchColorValue(node);
-        } else if (to_pdf) {
-            fill = getTreeColorSet().getBranchColorForPdf();
-        } else {
-            fill = getTreeColorSet().getCollapseFillColor();
-        }
-        // triangle: apex AT the node, opening OUTWARD; depth (and base half-width) grow gently with the hidden-tip
-        // count on a log scale (as in paintCollapsedNode), with a visible floor and a cap so a huge clade stays sane
-        final int tips = Math.max(fc[3], 2);
-        final float base = getOptions().getDefaultNodeShapeSize() + 2f;
-        double depth = base * (2.2 + Math.log10(tips));
-        final double cap = base * 5.0;
-        if (depth > cap) {
-            depth = cap;
-        }
-        final double half_w = depth * 0.45;
-        final double cos = Math.cos(out_angle), sin = Math.sin(out_angle);
-        final double px = node.getXcoord(), py = node.getYcoord();
-        final double bx = px + (cos * depth), by = py + (sin * depth); // base centre, outward along the branch
-        final double perp_x = -sin, perp_y = cos; // unit perpendicular to the branch
-        _polygon.reset();
-        _polygon.moveTo((float) px, (float) py); // apex at the node (toward the root)
-        _polygon.lineTo((float) (bx + (perp_x * half_w)), (float) (by + (perp_y * half_w)));
-        _polygon.lineTo((float) (bx - (perp_x * half_w)), (float) (by - (perp_y * half_w)));
-        _polygon.closePath();
-        final Color saved = g.getColor();
-        // fill respecting the node-fill mode, mirroring paintCollapsedNode: SOLID = fill; NONE = fill the background
-        // first (cut out any branches showing through), then outline; GRADIENT = background->fill along the branch
-        final NodeVisualData.NodeFill node_fill = getOptions().getDefaultNodeFill();
-        if (node_fill == NodeVisualData.NodeFill.NONE) {
-            g.setColor(getBackground());
-            g.fill(_polygon);
-            g.setColor(fill);
-            g.draw(_polygon);
-        } else if (node_fill == NodeVisualData.NodeFill.GRADIENT) {
-            g.setPaint(new GradientPaint((float) px, (float) py, getBackground(), (float) bx, (float) by, fill, false));
-            g.fill(_polygon);
-            g.setPaint(fill);
-            g.draw(_polygon);
-        } else {
-            g.setColor(fill);
-            g.fill(_polygon);
-        }
-        if ((found_c != null) && !all_tips_found) {
-            // only SOME tips selected -> outline in the found colour (partial hint; matches paintCollapsedNode)
-            g.setColor(found_c);
-            g.draw(_polygon);
-        }
-        // the "(N)" hidden-tip count, centred on a point just beyond the base and riding the branch (rotated upright
-        // on both halves of the fan -- centring on the anchor keeps the position flip-independent)
-        final String label = "(" + fc[3] + ")";
-        g.setFont(getTreeFontSet().getSmallFont());
-        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
-        final double anchor = depth + 3 + (fm.stringWidth(label) / 2.0); // near text edge clears the base
-        final double lx = px + (cos * anchor), ly = py + (sin * anchor);
-        double m = out_angle % TWO_PI;
-        if (m < 0) {
-            m += TWO_PI;
-        }
-        if ((m > HALF_PI) && (m < ONEHALF_PI)) {
-            m -= PI; // keep the count upright on the far half of the fan
-        }
-        final AffineTransform saved_t = g.getTransform();
-        g.rotate(m, lx, ly);
-        // dim the count only when the clade holds NO hit -- a hit-containing collapsed clade keeps its count vivid
-        // (tip-based, matching the triangle's found fill; the collapsed ROOT is never itself in the found set)
-        g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getSequenceColor()),
-                fc[2] > 0, bw));
-        TreePanel.drawString(label, (float) (lx - (fm.stringWidth(label) / 2.0)),
-                (float) (ly + (fm.getAscent() / 2.0) - (fm.getDescent() / 2.0)), g);
-        g.setTransform(saved_t);
-        g.setColor(saved);
     }
 
     /** Internal-node label for a VERTICAL orientation: horizontal, RIGHT-ALIGNED so it ends just LEFT of the branch,
@@ -3603,69 +3800,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor());
         _sb.setLength(0);
         nodeDataAsSB(node, _sb);
-        if (node.isCollapse() && ((!node.isRoot() && !node.getParent().isCollapse()) || node.isRoot())) {
-            if ((_sb.length() == 0) && !saw_species) {
-                if (getOptions().isShowAbbreviatedLabelsForCollapsedNodes()
-                        && (shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
-                        || shows(DisplayOption.SHOW_SEQ_NAMES) || shows(DisplayOption.SHOW_NODE_NAMES))) {
-                    // prefer the clade's COMMON taxon (deepest shared among its tips) when taxonomy is shown -- more
-                    // informative than the boundary tip names; falls back to first...last when none is derivable
-                    final String common = (shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
-                            || shows(DisplayOption.SHOW_TAX_CODE)) ? collapsedCommonTaxon(node) : "";
-                    final PhylogenyNode first = PhylogenyMethods.getFirstExternalNode(node);
-                    final PhylogenyNode last = PhylogenyMethods.getLastExternalNode(node);
-                    if (!ForesterUtil.isEmpty(common)) {
-                        addLabelForCollapsedCommonTaxon(common, node.getAllExternalDescendants().size(), node);
-                    } else if (shows(DisplayOption.SHOW_TAX_CODE) && first.getNodeData().isHasTaxonomy()
-                            && last.getNodeData().isHasTaxonomy()
-                            && !ForesterUtil.isEmpty(first.getNodeData().getTaxonomy().getTaxonomyCode())
-                            && !ForesterUtil.isEmpty(last.getNodeData().getTaxonomy().getTaxonomyCode())) {
-                        addLabelForCollapsed(first.getNodeData().getTaxonomy().getTaxonomyCode(),
-                                last.getNodeData().getTaxonomy().getTaxonomyCode(),
-                                node.getAllExternalDescendants().size(),
-                                node);
-                    } else if (shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES) && first.getNodeData().isHasTaxonomy()
-                            && last.getNodeData().isHasTaxonomy()
-                            && !ForesterUtil.isEmpty(first.getNodeData().getTaxonomy().getScientificName())
-                            && !ForesterUtil.isEmpty(last.getNodeData().getTaxonomy().getScientificName())) {
-                        addLabelForCollapsed(first.getNodeData().getTaxonomy().getScientificName(),
-                                last.getNodeData().getTaxonomy().getScientificName(),
-                                node.getAllExternalDescendants().size(),
-                                node);
-                    } else if (shows(DisplayOption.SHOW_SEQ_NAMES) && first.getNodeData().isHasSequence()
-                            && last.getNodeData().isHasSequence()
-                            && !ForesterUtil.isEmpty(first.getNodeData().getSequence().getName())
-                            && !ForesterUtil.isEmpty(last.getNodeData().getSequence().getName())) {
-                        addLabelForCollapsed(first.getNodeData().getSequence().getName(),
-                                last.getNodeData().getSequence().getName(),
-                                node.getAllExternalDescendants().size(),
-                                node);
-                    } else if (shows(DisplayOption.SHOW_NODE_NAMES) && !ForesterUtil.isEmpty(first.getName())
-                            && !ForesterUtil.isEmpty(last.getName())) {
-                        addLabelForCollapsed(first.getName(),
-                                last.getName(),
-                                node.getAllExternalDescendants().size(),
-                                node);
-                    }
-                }
-            } else if ((_sb.length() > 0) || saw_species) {
-                _sb.append(" [");
-                _sb.append(node.getAllExternalDescendants().size());
-                _sb.append("]");
-                if ((_found_nodes_0 != null) || (_found_nodes_1 != null)) {
-                    final int[] res = calcFoundNodesInSubtree(node);
-                    if (res[0] > 0) {
-                        _sb.append(" [");
-                        _sb.append(res[0]);
-                        _sb.append("/");
-                        _sb.append(res[1]);
-                        _sb.append("]");
-                    }
-                }
-            }
-        } else {
-            // _sb.setLength( 0 );
-        }
         // nodeDataAsSB( node, _sb );
         final boolean using_visual_font = setFont(g, node);
         float down_shift_factor = 3.0f;
@@ -3849,79 +3983,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return CONNECTOR_GUIDE_COLOR;
     }
 
-    // collapsed-clade common-taxon labels: the deepest taxon shared by a collapsed clade's tips (from their cached /
-    // stored lineages). _tip_lineages is the whole-tree tip->lineage map (cache-only, built lazily); both caches are
-    // rebuilt whenever _phylogeny is REPLACED (identity change -- covers setTree/subTree/superTree/paste/restore in
-    // one place, no per-call-site clearing). Keyed by node identity.
-    private Map<PhylogenyNode, org.forester.ws.seqdb.TaxonLineage> _tip_lineages          = null;
-    private Phylogeny                                              _tip_lineages_for      = null;
-    private final Map<PhylogenyNode, String>                       _collapsed_taxon_cache = new java.util.IdentityHashMap<>();
-
-    /**
-     * The clade's COMMON taxon (the deepest taxon shared by ALL its tips, from their cached / stored lineages) for a
-     * collapsed-node label, or "" when none is derivable. Cached per node; the whole-tree tip lineages are built
-     * lazily and cache-only (no network at paint) and rebuilt when the displayed tree is replaced. A collapse /
-     * uncollapse does not change a node's tips, so the per-node cache stays valid across those.
-     */
-    private String collapsedCommonTaxon(final PhylogenyNode node) {
-        if ((_tip_lineages == null) || (_tip_lineages_for != _phylogeny)) {
-            _tip_lineages = TreePanelUtil.tipLineages(_phylogeny, TreePanelUtil.getDefaultLineageService());
-            _tip_lineages_for = _phylogeny;
-            _collapsed_taxon_cache.clear();
-        }
-        final String cached = _collapsed_taxon_cache.get(node);
-        if (cached != null) {
-            return cached;
-        }
-        final org.forester.ws.seqdb.TaxonLineage.Ancestor a = org.forester.analysis.AncestralTaxonomyInference
-                .commonTaxonOf(node, _tip_lineages);
-        final String label = (a == null) ? "" : a.getName();
-        _collapsed_taxon_cache.put(node, label);
-        return label;
-    }
-
-    /** Test hook: the computed common-taxon label for a collapsed clade rooted at {@code node} (see
-     *  {@link #collapsedCommonTaxon}), "" when none is derivable. */
-    String collapsedCommonTaxonForTest(final PhylogenyNode node) {
-        return collapsedCommonTaxon(node);
-    }
-
-    /** Appends a collapsed-clade label built from its COMMON taxon: e.g. "Carnivora (23)" + the found-count suffix. */
-    private void addLabelForCollapsedCommonTaxon(final String taxon, final int size, final PhylogenyNode node) {
-        _sb.append(taxon);
-        _sb.append(" (" + size + ")");
-        if ((_found_nodes_0 != null) || (_found_nodes_1 != null)) {
-            final int[] res = calcFoundNodesInSubtree(node);
-            if (res[0] > 0) {
-                _sb.append(" [" + res[0] + "/" + res[1] + "]");
-            }
-        }
-    }
-
-    private final void addLabelForCollapsed(final String first,
-                                            final String last,
-                                            final int size,
-                                            final PhylogenyNode node) {
-        _sb.append(first.length() < AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME ? first
-                : first.substring(0, AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME - 1));
-        _sb.append(" ... ");
-        _sb.append(last.length() < AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME ? last
-                : last.substring(0, AptxConstants.MAX_LENGTH_FOR_COLLAPSED_NAME - 1));
-        _sb.append(" (" + size + ")");
-        if ((_found_nodes_0 != null) || (_found_nodes_1 != null)) {
-            /////
-            /////
-            final int[] res = calcFoundNodesInSubtree(node);
-            if (res[0] > 0) {
-                _sb.append(" [");
-                _sb.append(res[0]);
-                _sb.append("/");
-                _sb.append(res[1]);
-                _sb.append("]");
-            }
-        }
-    }
-
     /**
      * How many of a collapsed clade's (hidden) external tips are currently selected/found, so the triangle can
      * signal it: {@code {hits in found set 0, hits in found set 1, tips in either set, total external tips}}.
@@ -3944,25 +4005,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return new int[] { h0, h1, any, tips.size() };
-    }
-
-    private final int[] calcFoundNodesInSubtree(final PhylogenyNode node) {
-        final List<PhylogenyNode> all_descs = PhylogenyMethods.getAllDescendants(node);
-        final int res[] = new int[2];
-        int found = 0;
-        int total = 0;
-        for (final PhylogenyNode desc : all_descs) {
-            if (desc.isHasNodeData()) {
-                if (((_found_nodes_0 != null) && _found_nodes_0.contains(desc.getId()))
-                        || ((_found_nodes_1 != null) && _found_nodes_1.contains(desc.getId()))) {
-                    ++found;
-                }
-                ++total;
-            }
-        }
-        res[0] = found;
-        res[1] = total;
-        return res;
     }
 
 
@@ -4156,10 +4198,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
                 if (first_child) {
                     first_child = false;
-                    y2 = node.getYSecondary() - (getOvYDistance()
-                            * (node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes()));
+                    y2 = node.getYSecondary() - (float) (getOvYDistance() * (rowWeight(node) - rowWeight(child_node)));
                 } else {
-                    y2 += getOvYDistance() * child_node.getNumberOfExternalNodes();
+                    y2 += (float) (getOvYDistance() * rowWeight(child_node));
                 }
                 final float x2 = calculateOvBranchLengthToParent(child_node, factor_x);
                 new_x = x2 + node.getXSecondary();
@@ -4170,7 +4211,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 child_node.setXSecondary(new_x);
                 child_node.setYSecondary(y2);
-                y2 += getOvYDistance() * child_node.getNumberOfExternalNodes();
+                y2 += (float) (getOvYDistance() * rowWeight(child_node));
             }
         }
     }
@@ -4186,7 +4227,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final boolean vertical = isVerticalOrientation();
         if (node.isCollapse()) {
             if ((!node.isRoot() && !node.getParent().isCollapse())) {
-                paintCollapsedNode(g, node, to_graphics_file, to_pdf, is_in_found_nodes);
+                paintCollapsedClade(g, node, to_pdf, to_graphics_file);
                 // A collapsed clade is still an internal node: show the support (and length) on its incoming branch.
                 if (vertical) {
                     paintBranchDataRightVertical(g, node, to_pdf, to_graphics_file);
@@ -4233,15 +4274,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             for (int i = 0; i < child_count; ++i) {
                 final PhylogenyNode child_node = node.getChildNode(flip ? ((child_count - 1) - i) : i);
                 final int factor_x = node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes();
+                // the breadth is laid out in ROWS, where a collapsed clade weighs more than a tip (rowWeight); the
+                // cladogram depth above still steps by tip count
                 if (first_child) {
                     first_child = false;
-                    y2 = node.getYcoord() - (_y_distance
-                            * (node.getNumberOfExternalNodes() - child_node.getNumberOfExternalNodes()));
+                    y2 = node.getYcoord() - (float) (_y_distance * (rowWeight(node) - rowWeight(child_node)));
                 } else {
-                    y2 += _y_distance * child_node.getNumberOfExternalNodes();
+                    y2 += (float) (_y_distance * rowWeight(child_node));
                 }
                 final float x2 = calculateBranchLengthToParent(child_node, factor_x);
                 new_x = x2 + node.getXcoord();
+                if (child_node.isCollapse() && !getControlPanel().isDrawPhylogram() && !isNonLinedUpCladogram()) {
+                    // a lined-up cladogram puts a collapsed clade on the tip column like a tip; its wedge's apex steps
+                    // back one step so the wedge ends where its tips would (Archaeopteryx.js)
+                    new_x -= getXdistance();
+                }
                 if (dynamically_hide && (x2 < new_x_min)) {
                     new_x_min = x2;
                 }
@@ -4260,7 +4307,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 child_node.setXcoord(new_x);
                 child_node.setYcoord(y2);
-                y2 += _y_distance * child_node.getNumberOfExternalNodes();
+                y2 += (float) (_y_distance * rowWeight(child_node));
             }
             paintNodeBox(node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file);
         }
@@ -4944,7 +4991,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final float origin_x = _phylogeny.getRoot().getXcoord();
         // the ruler sits at the OUTER edge of the reserved breadth band (2 px inside it). Deriving it from the breadth
-        // EXTENT -- not from max(visible tip Ycoord) -- keeps it robust to collapsed clades (a collapsed triangle is an
+        // EXTENT -- not from max(visible tip Ycoord) -- keeps it robust to collapsed clades (a collapsed wedge is an
         // internal row counted by treeBreadthExtent() but absent from visibleExternalTips()) and needs no tip walk.
         final double ruler_ly = treeBreadthExtent() - 2.0;
         final Font saved_font = g.getFont();
@@ -6384,9 +6431,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintBranchDataRadial(g, desc, (x + new_x) / 2.0, (y + new_y) / 2.0, mid_angle, to_pdf, to_graphics_file);
             paintNodeBox(new_x, new_y, desc, g, to_pdf, to_graphics_file);
             if (desc.isCollapse()) {
-                // collapsed clade-root stub (paintUnrooted returned early for it -> no subtree): draw its collapse
-                // marker (triangle + count) opening outward along this branch's direction (mid_angle)
-                paintRadialCollapsedMarker(g, desc, mid_angle, to_pdf, to_graphics_file);
+                // collapsed clade-root stub (paintUnrooted returned early for it -> no subtree): its wedge opens
+                // outward along this branch's direction (mid_angle), its label past the wedge
+                paintCollapsedCladeRadial(g, desc, mid_angle, radial_labels, to_pdf, to_graphics_file);
             }
         }
         if (n.isRoot()) {
@@ -6879,6 +6926,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // it actually extends along, so the breadth no longer overflows nor the depth over-reserve (see the F fit).
             final int depth_label = depthLabelReserve();
             final int breadth_label = breadthLabelReserve();
+            refreshCollapsedRowWeights();
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             final int max_depth = PhylogenyMethods.calculateMaxDepthConsiderCollapsed(_phylogeny) + 1;
             if (ext_nodes == 1) {
@@ -6887,6 +6935,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     ext_nodes = 1;
                 }
             }
+            // the breadth is laid out in ROWS, where a collapsed clade weighs more than a tip (rowWeight)
+            final double breadth_rows = (_phylogeny.getRoot().getNumberOfExternalNodes() == 1) ? ext_nodes
+                    : rowWeight(_phylogeny.getRoot());
             updateOvSizes();
             float xdist = 0;
             float ov_xdist = 0;
@@ -6908,7 +6959,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int axis_reserve = verticalScaleAxisReserve() + scaleAxisBottomReserve() + msaRulerReserve()
                     + msaConservationReserve();
             float ydist = (float) ((y - TreePanel.MOVE - (2 * verticalBreadthPad()) - top_reserve - breadth_label
-                    - axis_reserve) / (ext_nodes * 2.0));
+                    - axis_reserve) / (breadth_rows * 2.0));
             if (xdist < 0.0) {
                 xdist = 0.0f;
             }
@@ -6921,7 +6972,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setXdistance(xdist);
             setYdistance(ydist);
             setOvXDistance(ov_xdist);
-            double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
+            double height = _phylogeny.calculateHeight(false);
             //final double height = PhylogenyMethods.calculateMaxDepth( _phylogeny );
             // "Break Long Branches": derive the depth scale from the CAPPED height so the informative part reclaims the
             // width a broken outlier branch would otherwise consume (the branch itself is drawn capped, both here for
@@ -7060,6 +7111,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (sum > longest) {
                 longest = sum;
             }
+        }
+        // a collapsed clade's label stands where a tip's would, so it is reserved like one -- measured bold and with the
+        // found count at its widest ("[N/N]"), because a search does not re-measure
+        for (final PhylogenyNode clade : displayedCollapsedClades()) {
+            final List<PhylogenyNode> tips = clade.getAllExternalDescendants();
+            final String widest = CollapsedClade.label(collapsedCladeName(clade, tips), tips.size(), tips.size());
+            int w = getFontMetrics(collapsedLabelFont(true)).stringWidth(widest);
+            if (isRadialLayout()) {
+                w = Math.min(w, radialMaxLabelWidth());
+            }
+            longest_text_only = Math.max(longest_text_only, w);
+            longest = Math.max(longest, w);
         }
         _ext_node_with_longest_txt_info = longest_txt_node;
         _length_of_longest_text_only = longest_text_only;
@@ -10921,7 +10984,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * Zebra striping: a faint alternating background band behind every other visible tip row, spanning the full
      * width, so a label is easy to track across a wide tree to its annotation columns (the iTOL row-shading aid).
      * Theme-aware and translucent (branches/labels show through); drawn after the node loop (coords are set there).
-     * Rectangular layouts only (this is called from the rectangular paint branch). Collapsed-clade triangles count
+     * Rectangular layouts only (this is called from the rectangular paint branch). Collapsed-clade wedges count
      * as one row; nodes hidden under a collapse are skipped so the alternation matches the DRAWN rows.
      */
     private void paintZebraStripes(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file,
@@ -10969,7 +11032,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || (radius <= 0)) {
             return; // suppressed on a transparent-PNG export, like the rectangular path
         }
-        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        final double displayed = circularRowUnits();
         if (displayed <= 0) {
             return;
         }
@@ -10987,7 +11050,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ((row % 2) == 1) {
                 final Double a = _urt_nodeid_angle_map.get(node.getId());
                 if (a != null) {
-                    g.fill(annularSector(cx, cy, 0, r_outer, a - half_step, a + half_step)); // full pie wedge
+                    // a collapsed clade's row is as wide as its weight in rows
+                    final double half = node.isCollapse() ? (half_step * rowWeight(node)) : half_step;
+                    g.fill(annularSector(cx, cy, 0, r_outer, a - half, a + half)); // full pie wedge
                 }
             }
             row++;
@@ -11047,7 +11112,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!domainBoxesDrawnInCurrentLayout() || (_phylogeny == null) || (radius <= 0)) {
             return;
         }
-        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        final double displayed = circularRowUnits();
         if (displayed <= 0) {
             return;
         }
@@ -11552,7 +11617,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // just past the tips + labels AND any annotation rings (so the clade marks sit outside the ring stack)
         final double base = radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve() + CLADE_BAND_RIGHT_PAD;
-        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        final double displayed = circularRowUnits();
         final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
         double r_outer = base; // the radius cursor: each level's ring sits outside the one before it
         for (final CladeLevel level : drawableCladeLevels()) {
@@ -11726,7 +11791,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final java.util.List<PhylogenyNode> tips = visibleExternalTips();
-        final int displayed = countCircularDisplayedTips(_phylogeny.getRoot());
+        final double displayed = circularRowUnits();
         final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
         final Color fg = getTreeColorSet().getSequenceColor();
         final Color saved_color = g.getColor();
@@ -13941,9 +14006,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 to_graphics_file);
         paintNodeBox(c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file);
         if (c.isCollapse()) {
-            // a collapsed clade-root is a stub here (no box/subtree); draw its collapse marker (triangle + count),
-            // opening outward along the node's ring angle. paintNodeDataUnrootedCirc below returns early for it.
-            paintRadialCollapsedMarker(g, c, angle, to_pdf, to_graphics_file);
+            // a collapsed clade-root is a stub here (no box/subtree): its wedge opens outward along the node's ring
+            // angle, its label where a tip's would stand. paintNodeDataUnrootedCirc below returns early for it.
+            paintCollapsedCladeRadial(g, c, angle, radial_labels, to_pdf, to_graphics_file);
         }
         final boolean is_in_found_nodes = isInFoundNodes0(c) || isInFoundNodes1(c);
         if (c.isExternal()) {
@@ -14006,25 +14071,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // is skipped by the paintCirculars pass below -- without it, reading its angle later NPE'd (the long-standing
         // circular-collapse crash). Hidden externals under a collapse are never reached (the walk stops at the
         // collapsed root), so they get no angle, as intended.
-        final int num_tips = countCircularDisplayedTips(_root);
-        final double angle_increment = (num_tips > 0) ? (TWO_PI / num_tips) : TWO_PI;
-        assignCircularDisplayedTipAngles(_root, center_x, center_y, radius, angle_increment,
-                new double[] { starting_angle }, new int[] { 0 });
+        // the tips are spaced in ROWS around the ring: a collapsed clade weighs more than a tip (rowWeight), and two
+        // neighbours sit the mean of their weights apart -- the angular form of the rectangular breadth layout
+        final double rows = rowWeight(_root);
+        final double row_angle = (rows > 0) ? (TWO_PI / rows) : TWO_PI;
+        assignCircularDisplayedTipAngles(_root, center_x, center_y, radius, row_angle,
+                new double[] { starting_angle, -1 }, new int[] { 0 });
         paintCirculars(phy.getRoot(), phy, center_x, center_y, radius, radial_labels, g, to_pdf, to_graphics_file);
         paintNodeBox(_root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file);
-    }
-
-    /** Number of DISPLAYED tips in a circular layout: a visible external, or a collapsed clade-root (a pseudo-tip;
-     *  the walk stops there, so its hidden descendants are not counted). */
-    private int countCircularDisplayedTips(final PhylogenyNode node) {
-        if (node.isCollapse() || node.isExternal()) {
-            return 1;
-        }
-        int n = 0;
-        for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
-            n += countCircularDisplayedTips(node.getChildNode(i));
-        }
-        return n;
     }
 
     /** Whether the CIRCULAR layout is drawn as a PHYLOGRAM: a node's ring RADIUS then encodes its distance-from-root
@@ -14088,6 +14142,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double f = (max > 0) ? (dist / max) : 0;
             return (f < 0) ? 0 : ((f > 1) ? 1 : f); // clamp a root-branch / rounding overshoot onto the ring
         }
+        if (node.isCollapse() && !node.isExternal()) {
+            // a collapsed clade stands one depth step inside the ring, its wedge ending on it (Archaeopteryx.js)
+            return (_circ_max_depth > 0) ? Math.max(0, 1.0 - (1.0 / _circ_max_depth)) : 1.0;
+        }
         if (node.isExternal()) {
             return 1.0; // cladogram: all tips on the outer ring
         }
@@ -14097,27 +14155,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Assigns each displayed tip its ring angle (advancing {@code angle[0]} by {@code angle_inc}), in tree order:
      *  a visible external goes on the outer ring (or its distance radius in a phylogram); a collapsed clade-root is
      *  positioned at its own depth/distance radius (its incoming branch ends there, where its collapse marker is
-     *  drawn -- see {@link #paintRadialCollapsedMarker}). {@code index[0]} is the external ordinal used for
+     *  drawn -- see {@link #paintCollapsedCladeRadial}). {@code angle} is {current angle, the previous row's weight
+     *  (-1 before the first)}, advanced by {@link #nextCircularRowAngle}. {@code index[0]} is the external ordinal used for
      *  dynamic-hiding. */
     private void assignCircularDisplayedTipAngles(final PhylogenyNode node, final int cx, final int cy,
                                                   final int radius, final double angle_inc, final double[] angle,
                                                   final int[] index) {
         if (node.isCollapse()) {
-            final double m = angle[0];
+            final double m = nextCircularRowAngle(rowWeight(node), angle_inc, angle);
             final double r = circularRadiusFraction(node); // collapsed clade-root at its depth/distance radius
             node.setXcoord((float) (cx + (r * radius * Math.cos(m))));
             node.setYcoord((float) (cy + (r * radius * Math.sin(m))));
             _urt_nodeid_angle_map.put(node.getId(), m);
-            angle[0] += angle_inc;
         }
         else if (node.isExternal()) {
-            final double m = angle[0];
+            final double m = nextCircularRowAngle(rowWeight(node), angle_inc, angle);
             final double r = circularRadiusFraction(node); // cladogram: outer ring (1); phylogram: distance-to-root
             node.setXcoord((float) (cx + (r * radius * Math.cos(m))));
             node.setYcoord((float) (cy + (r * radius * Math.sin(m))));
             _urt_nodeid_angle_map.put(node.getId(), m);
             _urt_nodeid_index_map.put(node.getId(), index[0]++);
-            angle[0] += angle_inc;
         }
         else {
             for (int i = 0; i < node.getNumberOfDescendants(); ++i) {
@@ -14164,6 +14221,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
         }
+        refreshCollapsedRowWeights(); // collapsing, undo and tree swaps all change the rows; one refresh per paint
         // The support scale ceiling (a single preorder scan) feeds both the support symbols and the "min.
         // confidence shown" label filter (a fraction of this ceiling). Skip the scan -- keeping the cheap 1.0
         // fallback -- when neither consumer is active (the default), so plain repaints on the hot hover/scroll/
@@ -14217,7 +14275,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _phylogeny.getRoot().setXcoord(TreePanel.MOVE + getXdistance());
             }
             // Position starting Y of tree (shifted down by the same header reserve used in calcParametersForPainting)
-            _phylogeny.getRoot().setYcoord((getYdistance() * _phylogeny.getRoot().getNumberOfExternalNodes())
+            _phylogeny.getRoot().setYcoord((float) (getYdistance() * rowWeight(_phylogeny.getRoot()))
                     + (TreePanel.MOVE / 2.0f) + verticalBreadthPad() + annotationHeaderTopReserve());
             final int dynamic_hiding_factor = calcDynamicHidingFactor();
             if (shows(DisplayOption.DYNAMICALLY_HIDE_DATA)) {
@@ -14796,6 +14854,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((getPhylogeny() == null) || getPhylogeny().isEmpty()) {
             return;
         }
+        refreshCollapsedRowWeights();
         if (isRadialLayout()) {
             // radial layouts use a SQUARE canvas of _radial_diameter (the single radial-zoom knob), decoupled from the
             // rectangular x/y-distance extent -- the circle is sized to it (see the CIRCULAR paint block), and the
@@ -14899,7 +14958,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 + scaleAxisBottomReserve() // horizontal-orientation bottom axis band (0 in vertical; mutually exclusive)
                 + msaRulerReserve() // the MSA column ruler's bottom band (root-left only; 0 otherwise)
                 + msaConservationReserve() // ...and the conservation/consensus band just above it
-                + ForesterUtil.roundToInt(getYdistance() * getPhylogeny().getRoot().getNumberOfExternalNodes() * 2);
+                + ForesterUtil.roundToInt(getYdistance() * rowWeight(getPhylogeny().getRoot()) * 2);
     }
 
     /** The per-side breadth reserve for a fitted vertical (root-top/bottom) tree: a small aesthetic margin so the tree
@@ -15079,6 +15138,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  on the end of its (vertical) leader instead of being pushed diagonally off it. Matches the label anchors in
      *  {@link #paintNodeData} / {@link #paintTaxonomy}. */
     private float labelTextStartX(final PhylogenyNode node) {
+        if (node.isCollapse() && !node.isExternal()) {
+            return collapsedLabelStartX(node, collapsedReachRectangular(node)[1]);
+        }
         final int half_box = effectiveNodeHalfBoxSize(node);
         // clustergram "labels below columns": tip/collapsed labels are drawn past the tip-aligned columns (aligned at
         // the far edge), so the dendrogram sits directly on the grid and the sample labels run along the bottom
@@ -15590,7 +15652,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float w_ratio = getOvMaxWidth() / getWidth();
             l *= w_ratio;
             final int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
-            setOvYDistance(getOvMaxHeight() / (2 * ext_nodes));
+            setOvYDistance((float) (getOvMaxHeight() / (2 * rowWeight(_phylogeny.getRoot()))));
             float ov_xdist = 0;
             if (!isNonLinedUpCladogram()) {
                 ov_xdist = ((getOvMaxWidth() - l) / (ext_nodes));
@@ -15605,7 +15667,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 ydist = 0.0f;
             }
             setOvXDistance(ov_xdist);
-            double height = _phylogeny.calculateHeight(!_options.isCollapsedWithAverageHeigh());
+            double height = _phylogeny.calculateHeight(false);
             // keep the overview x-scale consistent with the capped main view (see calcParametersForPainting)
             if (breakLongBranchesActive() && (breakCappedHeight() > 0)) {
                 height = breakCappedHeight();

@@ -87,7 +87,6 @@ public final class AptxConstants {
     final static double EXPORT_SIZE_DIM_MAX             = 20000;  // max width/height, in the selected unit
     final static double EXPORT_SIZE_WIDTH_MM_DEFAULT    = 170;    // double-column journal figure width (mm)
     final static double EXPORT_SIZE_HEIGHT_MM_DEFAULT   = 120;
-    static final int MAX_LENGTH_FOR_COLLAPSED_NAME = 8;
     // External node names longer than this (e.g. whole UniProt/NCBI FASTA-header descriptions pasted in
     // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that
     // Diameters (in tree coordinate space, so they scale with zoom like node shapes) of the

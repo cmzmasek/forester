@@ -551,8 +551,21 @@ public final class AptxUtil {
         if ((phy == null) || phy.isEmpty()) {
             return "";
         }
+        return commonNamePrefix(tipNames(phy.iteratorPreorder()), min_fraction);
+    }
+
+    /** The same prefix over the tips of ONE clade -- a collapsed clade's name when nothing better names it
+     *  (Archaeopteryx.js {@code collapsedName} calls {@code forester.commonNamePrefix} on the clade's node). */
+    static String commonNamePrefix(final PhylogenyNode clade) {
+        return (clade == null) ? ""
+                : commonNamePrefix(tipNames(new org.forester.phylogeny.iterators.PreorderTreeIterator(clade)),
+                        MIN_PREFIX_TIP_FRACTION);
+    }
+
+    /** The trimmed, non-empty external node names in iteration order. */
+    private static List<String> tipNames(final PhylogenyNodeIterator it) {
         final List<String> names = new ArrayList<>();
-        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+        while (it.hasNext()) {
             final PhylogenyNode n = it.next();
             if (!n.isExternal() || (n.getName() == null)) {
                 continue;
@@ -562,6 +575,10 @@ public final class AptxUtil {
                 names.add(name);
             }
         }
+        return names;
+    }
+
+    private static String commonNamePrefix(final List<String> names, final double min_fraction) {
         if (names.size() < 2) {
             return "";
         }

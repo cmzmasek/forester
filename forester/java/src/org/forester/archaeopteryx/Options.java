@@ -327,8 +327,6 @@ final public class Options {
     private boolean _show_tree_name;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
     private boolean _parse_beast_style_extended_nexus_tags;
-    private boolean _collapsed_with_average_height;
-    private boolean _show_abbreviated_labels_for_collapsed_nodes;
 
     private boolean _search_properties;
     private float _default_branch_width;
@@ -490,8 +488,6 @@ final public class Options {
         _show_confidence_stddev = false;
         _show_mad_confidence = false;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _collapsed_with_average_height = true;
-        _show_abbreviated_labels_for_collapsed_nodes = true;
         _search_properties = true;
         _default_branch_width = 1.5f; // a touch bolder than a hairline -> a more solid, publication-ready line
     }
@@ -1094,22 +1090,6 @@ final public class Options {
 
     final void setParseBeastStyleExtendedNexusTags(final boolean parse_beast_style_extended_nexus_tags) {
         _parse_beast_style_extended_nexus_tags = parse_beast_style_extended_nexus_tags;
-    }
-
-    final boolean isCollapsedWithAverageHeigh() {
-        return _collapsed_with_average_height;
-    }
-
-    final void setCollapsedWithAverageHeigh(final boolean collapsed_with_average_height) {
-        _collapsed_with_average_height = collapsed_with_average_height;
-    }
-
-    final boolean isShowAbbreviatedLabelsForCollapsedNodes() {
-        return _show_abbreviated_labels_for_collapsed_nodes;
-    }
-
-    final void setShowAbbreviatedLabelsForCollapsedNodes(final boolean show_abbreviated_labels_for_collapsed_nodes) {
-        _show_abbreviated_labels_for_collapsed_nodes = show_abbreviated_labels_for_collapsed_nodes;
     }
 
 

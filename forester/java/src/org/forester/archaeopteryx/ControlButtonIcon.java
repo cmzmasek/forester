@@ -371,7 +371,7 @@ final class ControlButtonIcon implements Icon {
         }
     }
 
-    /** The collapsed-clade triangle Archaeopteryx actually draws, with the tips it opens back out into. */
+    /** A collapsed clade's mark (the wedge Archaeopteryx draws, simplified), with the tips it opens back out into. */
     private void paintUncollapse( final Graphics2D g2, final int x, final int y ) {
         g2.setStroke( new BasicStroke( Math.max( 1.0f, _size * 0.085f ), BasicStroke.CAP_ROUND,
                                        BasicStroke.JOIN_ROUND ) );

@@ -146,7 +146,7 @@ public final class DomainSubtreeFitTest {
                     }
                     // 4. the depth height feeding the extent excludes the stubbed root branch (no under-fill), break OFF
                     if ( !break_long_branches ) {
-                        final double h_excl = tp.getPhylogeny().calculateHeight( !o.isCollapsedWithAverageHeigh() )
+                        final double h_excl = tp.getPhylogeny().calculateHeight( false )
                                 - root_branch;
                         if ( Math.abs( tp.displayedTreeHeightForTest() - h_excl ) > 1e-4 ) {
                             fail( ok, tag + "subtree depth height must exclude the root branch (" + h_excl + "), got "

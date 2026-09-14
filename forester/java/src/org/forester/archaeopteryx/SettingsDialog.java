@@ -227,9 +227,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._label_direction_cbmi ) );
         add( c, cb( _mf._reverse_tip_order_cbmi ) );
         add( c, cb( _mf._break_long_branches_cbmi ) );
-        c.add( header( "Collapsed Subtrees & Domains" ) );
-        add( c, cb( _mf._collapsed_with_average_height_cbmi ) );
-        add( c, cb( _mf._show_abbreviated_labels_for_collapsed_nodes_cbmi ) );
+        c.add( header( "Domains" ) );
         add( c, labeled( "Domain labels:", enumCombo( Options.DOMAIN_LABEL_MODE.values(),
                                                       _mf.getOptions().getDomainLabelMode(),
                                                       v -> { _mf.getOptions().setDomainLabelMode( v ); repaintTree(); } ) ) );

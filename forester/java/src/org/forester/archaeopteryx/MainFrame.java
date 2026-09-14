@@ -339,8 +339,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _show_default_node_shapes_for_marked_cbmi;
     JCheckBoxMenuItem _show_confidence_stddev_cbmi;
     JCheckBoxMenuItem _show_mad_confidence_cbmi;
-    JCheckBoxMenuItem _collapsed_with_average_height_cbmi;
-    JCheckBoxMenuItem _show_abbreviated_labels_for_collapsed_nodes_cbmi;
     // _  export
     JCheckBoxMenuItem _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem _antialias_export_cbmi;
@@ -629,16 +627,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().updateOvSizes();
             }
-        } else if (o == _collapsed_with_average_height_cbmi) {
-            if (_collapsed_with_average_height_cbmi.isSelected()) {
-                _collapsed_with_average_height_cbmi.setSelected(true);
-            }
-            updateOptions(getOptions());
-        } else if (o == _show_abbreviated_labels_for_collapsed_nodes_cbmi) {
-            if (_show_abbreviated_labels_for_collapsed_nodes_cbmi.isSelected()) {
-                _show_abbreviated_labels_for_collapsed_nodes_cbmi.setSelected(true);
-            }
-            updateOptions(getOptions());
         } else if ((o == _rectangular_type_cbmi) || (o == _triangular_type_cbmi)
                 || (o == _euro_type_cbmi) || (o == _rounded_type_cbmi)
                 || (o == _unrooted_type_cbmi) || (o == _circular_type_cbmi)) {
@@ -3305,12 +3293,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((_parse_beast_style_extended_nexus_tags_cbmi != null) && _parse_beast_style_extended_nexus_tags_cbmi.isEnabled()) {
             options.setParseBeastStyleExtendedNexusTags(_parse_beast_style_extended_nexus_tags_cbmi.isSelected());
         }
-        if ((_collapsed_with_average_height_cbmi != null) && _collapsed_with_average_height_cbmi.isEnabled()) {
-            options.setCollapsedWithAverageHeigh(_collapsed_with_average_height_cbmi.isSelected());
-        }
-        if ((_show_abbreviated_labels_for_collapsed_nodes_cbmi != null) && _show_abbreviated_labels_for_collapsed_nodes_cbmi.isEnabled()) {
-            options.setShowAbbreviatedLabelsForCollapsedNodes(_show_abbreviated_labels_for_collapsed_nodes_cbmi.isSelected());
-        }
 
     }
 
@@ -3362,9 +3344,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_allow_errors_in_distance_to_parent_cbmi, options.isAllowErrorsInDistanceToParent());
         setSelected(_graphics_export_visible_only_cbmi, options.isGraphicsExportVisibleOnly());
         setSelected(_parse_beast_style_extended_nexus_tags_cbmi, options.isParseBeastStyleExtendedNexusTags());
-        setSelected(_collapsed_with_average_height_cbmi, options.isCollapsedWithAverageHeigh());
-        setSelected(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
-                options.isShowAbbreviatedLabelsForCollapsedNodes());
         setSelected(_label_direction_cbmi, options.getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL);
         // radio groups / tri-states (not simple checkboxes)
         if (_internal_labels_above_branch_rbmi != null) {

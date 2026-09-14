@@ -1803,8 +1803,6 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_internal_labels.add(_internal_labels_right_of_node_rbmi);
         _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem(DISPLAY_NODE_BOXES_LABEL_EXT);
         _show_default_node_shapes_for_marked_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_NODE_BOXES_LABEL_MARKED);
-        _collapsed_with_average_height_cbmi = new JCheckBoxMenuItem("Proportional Height of Collapsed Subtrees");
-        _show_abbreviated_labels_for_collapsed_nodes_cbmi = new JCheckBoxMenuItem("Add Abbreviated Labels to Collapsed Subtrees");
         _show_confidence_stddev_cbmi = new JCheckBoxMenuItem(SHOW_CONF_STDDEV_LABEL);
         _show_mad_confidence_cbmi = new JCheckBoxMenuItem(MainFrame.SHOW_MAD_CONF_LABEL);
         _color_labels_same_as_parent_branch = new JCheckBoxMenuItem(COLOR_LABELS_LABEL);
@@ -1869,9 +1867,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_dim_non_matches_cbmi, getOptions().isDimNonMatches());
         customizeCheckBoxMenuItem(_pulse_found_nodes_cbmi, getOptions().isPulseFoundNodes());
         customizeCheckBoxMenuItem(_check_for_updates_cbmi, getOptions().isCheckForUpdatesAtLaunch());
-        customizeCheckBoxMenuItem(_collapsed_with_average_height_cbmi, getOptions().isCollapsedWithAverageHeigh());
-        customizeCheckBoxMenuItem(_show_abbreviated_labels_for_collapsed_nodes_cbmi,
-                getOptions().isShowAbbreviatedLabelsForCollapsedNodes());
         customizeRadioButtonMenuItem(_non_lined_up_cladograms_rbmi,
                 getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP);
         customizeRadioButtonMenuItem(_ext_node_dependent_cladogram_rbmi,
