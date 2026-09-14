@@ -502,6 +502,52 @@ final class PropertyColorScheme {
         return lookup;
     }
 
+    /** The key {@code node}'s value is coloured under, exactly as the constructor groups it; null when the node has
+     *  no value, or one that folds to nothing. */
+    String colorKeyOf( final PhylogenyNode node ) {
+        final String v = nodeValue( node );
+        if ( ForesterUtil.isEmpty( v ) ) {
+            return null;
+        }
+        final String label = displayLabel( v );
+        if ( label.isEmpty() ) {
+            return null;
+        }
+        return _element_slot ? label : label.toLowerCase( Locale.ROOT );
+    }
+
+    /**
+     * Remembers a colour for every value {@code tips} carry that {@code memory} does not know yet -- in practice the
+     * values carried only by tips hidden in collapsed clades, which the on-screen scheme never meets -- in the next
+     * free palette slots, most frequent first (ties by key). A categorical field only; a gradient has no identities.
+     * So a collapsed clade keeps the colour its tips wore, even for a value with no legend row on screen (Christian,
+     * 2026-09-13, option (b); Archaeopteryx.js keeps one remembered colour per value from launch).
+     */
+    void rememberValuesOf( final List<PhylogenyNode> tips, final Map<String, Color> memory, final int[] memory_next ) {
+        if ( _gradient || ( memory == null ) || ( memory_next == null ) ) {
+            return;
+        }
+        final Map<String, Integer> counts = new HashMap<String, Integer>();
+        for( final PhylogenyNode t : tips ) {
+            final String key = colorKeyOf( t );
+            if ( ( key != null ) && !memory.containsKey( key ) ) {
+                counts.merge( key, 1, Integer::sum );
+            }
+        }
+        final List<String> keys = new ArrayList<String>( counts.keySet() );
+        Collections.sort( keys, new Comparator<String>() {
+
+            @Override
+            public int compare( final String a, final String b ) {
+                final int by_count = Integer.compare( counts.get( b ), counts.get( a ) );
+                return ( by_count != 0 ) ? by_count : String.CASE_INSENSITIVE_ORDER.compare( a, b );
+            }
+        } );
+        for( final String key : keys ) {
+            memory.put( key, AptxUtil.qualitativeColor( _palette, memory_next[ 0 ]++ ) );
+        }
+    }
+
     /** The normalized key a value is grouped/colored by: its display label, case-folded -- except for an
      *  element slot, whose values (hence keys) are verbatim (JS parity: "verbatim for element slots"). */
     private String groupKey( final String v ) {

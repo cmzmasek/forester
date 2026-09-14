@@ -2883,8 +2883,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * The look of a collapsed clade (Archaeopteryx.js collapsedColor / collapsedMarkColor / collapsedFullyMarked):
-     * the wedge is filled in the colour most of its tips wear under Color-by (a hit tip votes with its hit colour; the
-     * branch colour when nothing is coloured); outlined in the colour of its first hit, thicker, while a search hits
+     * the wedge is filled in the colour most of its tips wear under Color-by (a hit tip votes with its hit colour; a
+     * value only hidden tips carry votes with its remembered colour -- Christian's option (b); the branch colour when
+     * nothing is coloured); outlined in the colour of its first hit, thicker, while a search hits
      * inside; filled in that colour, and its label set bold in it, when every tip is a hit. It dims with the non-hits
      * unless it holds a hit.
      */
@@ -2907,7 +2908,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
             if (coloured) {
-                votes.add(hit ? getColorForFoundNode(t) : _property_color_scheme.colorFor(t));
+                final Color on_screen = hit ? getColorForFoundNode(t) : _property_color_scheme.colorFor(t);
+                votes.add((on_screen != null) ? on_screen : rememberedPropertyColor(t));
             }
         }
         look.full = CollapsedClade.fullyMarked(look.found, look.tips);
@@ -7977,7 +7979,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _property_color_scheme = new PropertyColorScheme(_phylogeny, _color_by_property_ref,
                     _property_color_overrides.get(_color_by_property_ref), _color_palette_name, memory, next,
                     forced, candidate);
+            // tips hidden in collapsed clades still get a remembered colour per value, so a collapsed clade keeps
+            // the colour its tips wore (no legend row for a value that is only hidden) -- see collapsedLook
+            final java.util.List<PhylogenyNode> all_tips = _phylogeny.getExternalNodes();
+            if (all_tips.size() > view_tips.size()) {
+                _property_color_scheme.rememberValuesOf(all_tips, memory, next);
+            }
         }
+    }
+
+    /** The colour a tip's Color-by value is remembered under -- the user's override, else the identity memory -- for
+     *  a value with no colour on screen (only hidden tips carry it). Null for a gradient or a tip without a value. */
+    private Color rememberedPropertyColor(final PhylogenyNode tip) {
+        if ((_property_color_scheme == null) || _property_color_scheme.isGradient() || (_color_by_property_ref == null)) {
+            return null;
+        }
+        final String key = _property_color_scheme.colorKeyOf(tip);
+        if (key == null) {
+            return null;
+        }
+        final Map<String, Color> overrides = _property_color_overrides.get(_color_by_property_ref);
+        if ((overrides != null) && overrides.containsKey(key)) {
+            return overrides.get(key);
+        }
+        final Map<String, Color> memory = _property_color_memory.get(_color_by_property_ref);
+        return (memory == null) ? null : memory.get(key);
     }
 
     /** Test hook: the [colors]/[gradient] chip's clickable bounds from the last SCREEN legend draw. */

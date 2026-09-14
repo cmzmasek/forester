@@ -165,7 +165,7 @@ public final class CollapsedCladeRenderTest {
             "then the tips' common name prefix, its trailing separator dropped, got " + tp.collapsedLookForTest( c ).label );
 
         // ---- colours: the dominant Color-by colour, 22% fill, 90% outline ------------------------------------------
-        final Color omicron = tp.getPropertyBasedColor( phy.getNode( "d1" ) );
+        Color omicron = tp.getPropertyBasedColor( phy.getNode( "d1" ) );
         TreePanel.CollapsedLook look = tp.collapsedLookForTest( c );
         ck( sameRgb( look.fill, omicron ), "3 Omicron + 1 Delta fills in the Omicron colour, got " + look.fill + " vs " + omicron );
         ck( look.fill.getAlpha() == 56 && look.stroke.getAlpha() == 230, "fill 22% / outline 90% opaque, got "
@@ -185,17 +185,30 @@ public final class CollapsedCladeRenderTest {
         tp.setColorByPropertyRef( null );
         ck( sameRgb( tp.collapsedLookForTest( c ).fill, tp.getTreeColorSet().getBranchColor() ),
             "without Color-by the wedge takes the branch colour" );
-        // a value that only the hidden tips carry has no colour on screen (the legend describes the tips on screen), so
-        // those tips cast no vote: here none does, and the wedge keeps the branch colour
+        // a value that only the hidden tips carry has no legend row on screen, but it keeps its REMEMBERED colour, so
+        // the wedge keeps the colour its tips wore (Christian, 2026-09-13, option (b))
         lineage( phy.getNode( "d1" ), "Delta" );
         lineage( phy.getNode( "SARS_CoV_2/human/x3" ), "Omicron" );
         tp.setColorByPropertyRef( "data:lineage" );
-        ck( sameRgb( tp.collapsedLookForTest( c ).fill, tp.getTreeColorSet().getBranchColor() ),
-            "a value carried only by hidden tips has no colour on screen and casts no vote, got "
-                    + tp.collapsedLookForTest( c ).fill );
-        lineage( phy.getNode( "d1" ), "Omicron" );
-        tp.setColorByPropertyRef( null );
+        ck( !tp.getPropertyColorScheme().getValueColors().containsKey( "Omicron" ),
+            "precondition: Omicron is only hidden, so the legend has no row for it" );
+        ck( sameRgb( tp.collapsedLookForTest( c ).fill, omicron ),
+            "a value carried only by hidden tips keeps its remembered colour, got " + tp.collapsedLookForTest( c ).fill
+                    + " vs " + omicron );
+        // ...also a value that was NEVER on screen: after Reset forgets the memory, re-choosing the field remembers
+        // every value the whole tree carries, so the hidden-only value still gets a colour of its own
+        tp.resetColorStateToDefaults();
         tp.setColorByPropertyRef( "data:lineage" );
+        final Color delta = tp.getPropertyColorScheme().getValueColors().get( "Delta" );
+        final Color never = tp.collapsedLookForTest( c ).fill;
+        ck( ( delta != null ) && !sameRgb( never, delta ) && !sameRgb( never, tp.getTreeColorSet().getBranchColor() ),
+            "a never-shown hidden value gets its own remembered colour (not Delta's, not the branch colour), got "
+                    + never + " (Delta " + delta + ")" );
+        ck( !tp.getPropertyColorScheme().getValueColors().containsKey( "Omicron" ), "...still without a legend row" );
+        lineage( phy.getNode( "d1" ), "Omicron" );
+        tp.resetColorStateToDefaults();
+        tp.setColorByPropertyRef( "data:lineage" );
+        omicron = tp.getPropertyBasedColor( phy.getNode( "d1" ) ); // the fresh assignment follows the tips on screen
 
         // ---- a search hit inside: outline + count; all tips hits: filled, bold, in the hit colour -----------------
         final Color found = tp.getTreeColorSet().getFoundColor0();
