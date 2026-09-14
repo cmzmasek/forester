@@ -6804,7 +6804,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_hover_card != null) && (_hover_card_node == node)) {
             return;
         }
-        final java.util.List<NodeHoverText.Row> rows = NodeHoverText.rows(node);
+        final java.util.List<NodeHoverText.Row> rows = NodeHoverText.rows(node, hidesRootDependentValues());
         if (rows.isEmpty()) {
             hideNodeDataPopup();
             return;
@@ -13665,9 +13665,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
             return;
         }
-        if (!_phylogeny.isRerootable()) {
-            JOptionPane
-                    .showMessageDialog(this, "This is not rerootable", "Not rerootable", JOptionPane.WARNING_MESSAGE);
+        if (refuseReroot() || !confirmRerootDespiteNodeData(PhylogenyMethods::midpointRoot)) {
             return;
         }
         pushUndoCheckpoint("Midpoint-Root");
@@ -13684,6 +13682,64 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    // Test hooks for the re-root dialogs: when set, a refusal goes to the message sink and the node-data warning is
+    // answered by the predicate, instead of a modal dialog a GUI test would block on.
+    private java.util.function.Consumer<String>  _reroot_message_for_test = null;
+    private java.util.function.Predicate<String> _reroot_confirm_for_test = null;
+
+    void setRerootDialogsForTest(final java.util.function.Consumer<String> message,
+                                 final java.util.function.Predicate<String> confirm) {
+        _reroot_message_for_test = message;
+        _reroot_confirm_for_test = confirm;
+    }
+
+    /** Why the current tree must not be re-rooted ({@link Rerooting#refusal}), or null when it may be. */
+    String rerootRefusal() {
+        return Rerooting.refusal(_phylogeny);
+    }
+
+    /** Whether root-dependent values are hidden for this tab ({@link Rerooting#hidesRootDependentValues}). */
+    boolean hidesRootDependentValues() {
+        return Rerooting.hidesRootDependentValues(getPhylogenyGraphicsType(), _phylogeny);
+    }
+
+    // Tells the user why the tree cannot be re-rooted (the controls are greyed out, so this is the backstop for a
+    // re-root reached another way, e.g. a "Root/Reroot" click mode chosen on another tab). True when refused.
+    private boolean refuseReroot() {
+        final String why = rerootRefusal();
+        if (why == null) {
+            return false;
+        }
+        if (_reroot_message_for_test != null) {
+            _reroot_message_for_test.accept(why);
+        } else {
+            JOptionPane.showMessageDialog(this, why, "Cannot re-root", JOptionPane.WARNING_MESSAGE);
+        }
+        return true;
+    }
+
+    // Before re-rooting a tree whose internal nodes carry data: re-roots a COPY the same way and, when that changes
+    // the clade of any data-carrying node, warns with the counts (Re-root / Cancel). True to go ahead.
+    private boolean confirmRerootDespiteNodeData(final java.util.function.Consumer<Phylogeny> reroot) {
+        final int with_data = Rerooting.internalNodesWithData(_phylogeny);
+        if (with_data == 0) {
+            return true;
+        }
+        final Phylogeny copy = _phylogeny.copy();
+        reroot.accept(copy);
+        final int affected = Rerooting.dataNodesWhoseCladeChanges(_phylogeny, copy);
+        if (affected == 0) {
+            return true;
+        }
+        final String warning = Rerooting.dataWarning(with_data, affected);
+        if (_reroot_confirm_for_test != null) {
+            return _reroot_confirm_for_test.test(warning);
+        }
+        final Object[] options = { "Re-root", "Cancel" };
+        return JOptionPane.showOptionDialog(this, warning, "Re-root tree", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.WARNING_MESSAGE, null, options, options[1]) == 0;
+    }
+
     // Appends a provenance sentence to the tree's description, never overwriting it. Callers push their undo
     // checkpoint first, so Undo restores the previous description along with the tree.
     private void appendProvenance(final String sentence) {
@@ -13695,9 +13751,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
             return;
         }
-        if (!_phylogeny.isRerootable()) {
-            JOptionPane
-                    .showMessageDialog(this, "This is not rerootable", "Not rerootable", JOptionPane.WARNING_MESSAGE);
+        if (refuseReroot() || !confirmRerootDespiteNodeData(PhylogenyMethods::madRoot)) {
             return;
         }
         pushUndoCheckpoint("MAD-Root");
@@ -14853,9 +14907,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void reRoot(final PhylogenyNode node) {
-        if (!getPhylogeny().isRerootable()) {
-            JOptionPane
-                    .showMessageDialog(this, "This is not rerootable", "Not rerootable", JOptionPane.WARNING_MESSAGE);
+        if (refuseReroot()) {
             return;
         }
         if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
@@ -14863,6 +14915,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     "Cannot reroot in unrooted display type",
                     "Attempt to reroot tree in unrooted display",
                     JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        final long target_id = node.getId();
+        if (!node.isRoot() && !confirmRerootDespiteNodeData(copy -> copy.reRoot(copy.getNode(target_id)))) {
             return;
         }
         pushUndoCheckpoint("Re-Root");

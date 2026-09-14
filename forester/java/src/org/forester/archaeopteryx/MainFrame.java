@@ -1505,6 +1505,29 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _undo_item.setText(can_undo ? ("Undo " + tp.undoLabel()) : "Undo");
         _redo_item.setEnabled(can_redo);
         _redo_item.setText(can_redo ? ("Redo " + tp.redoLabel()) : "Redo");
+        updateRootingControls(tp);
+    }
+
+    private final Map<JMenuItem, String> _rooting_item_tooltips = new HashMap<>();
+
+    /** Greys out what re-roots the current tree -- MAD-Root, Midpoint-Root, GSDIR and its NCBI-taxonomy variant, and
+     *  the "Root/Reroot" click option -- when it must not be re-rooted ({@link Rerooting#refusal}), with the reason as
+     *  the tooltip. Runs with every Edit-menu sync: tab switch, edit, undo/redo. */
+    void updateRootingControls(final TreePanel tp) {
+        final String why = (tp != null) ? tp.rerootRefusal() : null;
+        for (final JMenuItem item : new JMenuItem[] { _mad_root_item, _midpoint_root_item, _gsdir_item,
+                _gsdir_taxonomy_item }) {
+            if (item != null) {
+                if (!_rooting_item_tooltips.containsKey(item)) {
+                    _rooting_item_tooltips.put(item, item.getToolTipText());
+                }
+                item.setEnabled(why == null);
+                item.setToolTipText((why == null) ? _rooting_item_tooltips.get(item) : why);
+            }
+        }
+        if ((tp != null) && (tp.getControlPanel() != null)) {
+            tp.getControlPanel().setRerootRefusal(why);
+        }
     }
 
     /** Refreshes the menu-bar "Found / Selected: N" counter from the current tree's highlighted (found + selected)
@@ -2525,6 +2548,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+        // GSDI re-roots a gene tree whose root has three children
+        final String why = Rerooting.refusal(_mainpanel.getCurrentPhylogeny());
+        if ((why != null) && (_mainpanel.getCurrentPhylogeny().getRoot().getNumberOfDescendants() == 3)) {
+            JOptionPane.showMessageDialog(this,
+                    "GSDI would re-root this gene tree (its root has three children).\n" + why,
+                    "Cannot execute GSDI",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants(false);
@@ -2583,8 +2615,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    // GSDIR's whole job is to choose a new root, so it refuses a tree that must not be re-rooted (its menu items are
+    // greyed out for such a tree; this is the backstop). True when refused.
+    private boolean refuseGsdirReroot() {
+        final String why = (_mainpanel.getCurrentPhylogeny() != null)
+                ? Rerooting.refusal(_mainpanel.getCurrentPhylogeny()) : null;
+        if (why == null) {
+            return false;
+        }
+        JOptionPane.showMessageDialog(this, "GSDIR re-roots the gene tree.\n" + why, "Cannot execute GSDIR",
+                JOptionPane.ERROR_MESSAGE);
+        return true;
+    }
+
     void executeGSDIR() {
-        if (!isOKforSDI(false, false)) {
+        if (!isOKforSDI(false, false) || refuseGsdirReroot()) {
             return;
         }
         final int p = PhylogenyMethods.countNumberOfPolytomies(_mainpanel.getCurrentPhylogeny());
@@ -2660,6 +2705,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * (NCBI taxonomy is a classification, not a phylogeny) -- caveated up front.
      */
     void executeGSDIRwithTaxonomySpeciesTree() {
+        if (refuseGsdirReroot()) {
+            return;
+        }
         final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny();
         if ((gene_tree == null) || gene_tree.isEmpty()) {
             return;
@@ -3118,6 +3166,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             // set the panel's new type FIRST: setDrawPhylogramEnabled decides whether "A" (aligned phylogram) is
             // live by asking the panel what layout it is in, and in UNROOTED there is nothing to align labels to
             getCurrentTreePanel().setPhylogenyGraphicsType(getOptions().getPhylogenyGraphicsType());
+            // entering/leaving the unrooted layout adds/removes the root-dependent search fields for a tree declared
+            // unrooted (a no-op for every other tree: the field list is unchanged)
+            getCurrentTreePanel().getControlPanel().rebuildSearchFields(false);
             getCurrentTreePanel().getControlPanel().setDrawPhylogramEnabled(getCurrentTreePanel().isPhyHasBranchLengths());
             // switching TO a radial layout with domains on: auto-enable "Radial Labels" so the domains show (a
             // spoke-riding domain bar needs radial labels; horizontal labels suppress it)

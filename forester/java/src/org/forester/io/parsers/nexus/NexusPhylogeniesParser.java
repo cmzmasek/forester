@@ -214,6 +214,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         }
         if ( rooted_info_present ) {
             p.setRooted( is_rooted );
+            p.setRootednessDeclared( true );
         }
         if ( ( _taxlabels.size() > 0 ) || ( _translate_map.size() > 0 )
                 || ( _add_sequences && !_seqs.isEmpty() ) ) {

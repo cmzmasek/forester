@@ -133,6 +133,9 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "root-on-top.xml", 8 );
         ok &= hasBranchLengths( "root-on-top.xml" );
         ok &= hasInternalConfidence( "root-on-top.xml" );
+        // re-rooting rules: a tree its file marks not re-rootable, and a declared-unrooted tree whose internal nodes
+        // carry data (the root-free unrooted view + the warning before re-rooting)
+        ok &= rootingDemosOk();
         // search emphasis: enough tips + a searchable token shared by a subset (so a search highlights several) +
         // internal confidence values (so "Dim Non-Matches" fading the support numbers too is demonstrable)
         ok &= hasAtLeastTips( "domain-architectures.xml", 6 );
@@ -626,6 +629,25 @@ public final class DemoTreesTest {
         }
         if ( !dated_event ) {
             return note( file_name + " needs a dated internal node with an event" );
+        }
+        return true;
+    }
+
+    private static boolean rootingDemosOk() {
+        final Phylogeny locked = load( "not-rerootable.xml" );
+        if ( ( locked == null ) || locked.isRerootable() || ( Rerooting.refusal( locked ) != Rerooting.NOT_REROOTABLE ) ) {
+            return note( "not-rerootable.xml must be marked rerootable=\"false\"" );
+        }
+        final Phylogeny unrooted = load( "unrooted-node-data.xml" );
+        if ( ( unrooted == null ) || !unrooted.isDeclaredUnrooted() || ( Rerooting.refusal( unrooted ) != null )
+                || ( Rerooting.internalNodesWithData( unrooted ) < 3 ) ) {
+            return note( "unrooted-node-data.xml must be declared unrooted, re-rootable, with data on >= 3 internal nodes" );
+        }
+        // ... and midpoint-rooting it changes the clade of at least one annotated node, so the warning is demonstrable
+        final Phylogeny rooted = unrooted.copy();
+        org.forester.phylogeny.PhylogenyMethods.midpointRoot( rooted );
+        if ( Rerooting.dataNodesWhoseCladeChanges( unrooted, rooted ) < 1 ) {
+            return note( "midpoint-rooting unrooted-node-data.xml must change the clade of an annotated node" );
         }
         return true;
     }

@@ -173,6 +173,15 @@ final class SearchField {
      * is what makes the selector self-documenting -- the user sees exactly what is searchable in this tree.
      */
     static List<SearchField> availableFields( final Phylogeny phy ) {
+        return availableFields( phy, false );
+    }
+
+    /**
+     * The fields worth offering for {@code phy}. With {@code root_free} ({@link Rerooting#hidesRootDependentValues})
+     * the fields that only mean something relative to a root -- clade size, depth, distance from root -- are left
+     * out.
+     */
+    static List<SearchField> availableFields( final Phylogeny phy, final boolean root_free ) {
         final List<SearchField> out = new ArrayList<>();
         out.add( anyText() );
         out.add( ofNdf( NDF.NodeName ) );
@@ -262,11 +271,15 @@ final class SearchField {
         }
         // topological fields -- always available (every non-empty tree has structure), offered last; the metric
         // distance-from-root is offered only when the tree carries branch lengths
-        out.add( cladeSize() );
+        if ( !root_free ) {
+            out.add( cladeSize() );
+        }
         out.add( numChildren() );
-        out.add( depth() );
-        if ( has_branch_length ) {
-            out.add( distanceToRoot() );
+        if ( !root_free ) {
+            out.add( depth() );
+            if ( has_branch_length ) {
+                out.add( distanceToRoot() );
+            }
         }
         out.add( nodeType() );
         return out;

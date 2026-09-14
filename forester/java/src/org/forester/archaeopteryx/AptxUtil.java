@@ -775,6 +775,31 @@ public final class AptxUtil {
         return TIME_TREE_KIND.NONE;
     }
 
+    /**
+     * CROSS-IMPLEMENTATION CONTRACT with Archaeopteryx.js ({@code forester.isTimeTree}, agreed 2026-09-14): a tree
+     * whose branch lengths are times -- a strict majority, and at least two, of its INTERNAL nodes (the root included)
+     * carry a {@code <date>} value (a chronogram, a BEAST MCC tree, a Nextstrain tree). Such a tree is never
+     * re-rooted. Tip dates alone do not count: re-rooting a tip-dated divergence tree is a normal step (root-to-tip
+     * regression). This is the internal-node half of {@link #detectTimeTree}. Pure.
+     */
+    public final static boolean isTimeTree(final Phylogeny phy) {
+        if ((phy == null) || phy.isEmpty()) {
+            return false;
+        }
+        int internal = 0;
+        int dated = 0;
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.isInternal()) {
+                internal++;
+                if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null)) {
+                    dated++;
+                }
+            }
+        }
+        return (dated >= 2) && ((dated * 2) > internal);
+    }
+
     /** True when the tree has branch lengths and every tip is (within {@link #ULTRAMETRIC_TOLERANCE_FRACTION} of the
      *  deepest) the same distance from the root -- the geometric signature of a time tree with contemporaneous tips
      *  (also true of UPGMA distance trees, hence only suggestive). */

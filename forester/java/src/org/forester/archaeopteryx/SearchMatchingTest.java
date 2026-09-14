@@ -344,6 +344,16 @@ public final class SearchMatchingTest {
         mad_phy.externalNodesHaveChanged();
         ck( byLabel( SearchField.availableFields( mad_phy ), "Support / Confidence" ) == null,
             "MAD values alone are not support, so the confidence field must not be offered" );
+        // root-free (a declared-unrooted tree shown unrooted): the root-dependent structure fields are not offered
+        final List<SearchField> free = SearchField.availableFields( phy, true );
+        ck( byLabel( fields, "Structure: Depth from Root (edges)" ) != null
+            && byLabel( fields, "Structure: Distance from Root" ) != null
+            && byLabel( fields, "Structure: Clade Size (tips)" ) != null, "the rooted view offers the root-dependent fields" );
+        ck( byLabel( free, "Structure: Depth from Root (edges)" ) == null, "root-free: no Depth from Root" );
+        ck( byLabel( free, "Structure: Distance from Root" ) == null, "root-free: no Distance from Root" );
+        ck( byLabel( free, "Structure: Clade Size (tips)" ) == null, "root-free: no Clade Size" );
+        ck( byLabel( free, "Structure: Number of Children" ) != null && byLabel( free, "Branch Length" ) != null,
+            "root-free keeps the other fields" );
         ck( byLabel( fields, "Gene Name" ) == null, "an absent gene name should not be offered" );
         ck( byLabel( fields, "Domain" ) == null, "an absent domain should not be offered" );
         final SearchField host = byLabel( fields, "data:host" );

@@ -65,6 +65,7 @@ public class Phylogeny {
     private Confidence                                          _confidence;
     private Identifier                                          _identifier;
     private boolean                                             _rerootable;
+    private boolean                                             _rootedness_declared;
     private HashMap<Long, PhylogenyNode>                        _id_to_node_map;
     private List<PhylogenyNode>                                 _external_nodes_set;
     private Collection<Sequence>                                _sequenceRelationQueries;
@@ -182,6 +183,7 @@ public class Phylogeny {
             return tree;
         }
         tree._rooted = _rooted;
+        tree._rootedness_declared = _rootedness_declared;
         tree._name = new String( _name );
         tree._description = new String( _description );
         tree._type = new String( _type );
@@ -224,6 +226,7 @@ public class Phylogeny {
             return tree;
         }
         tree._rooted = _rooted;
+        tree._rootedness_declared = _rootedness_declared;
         tree._name = _name;
         tree._description = _description;
         tree._type = _type;
@@ -765,6 +768,7 @@ public class Phylogeny {
     public void init() {
         _root = null;
         _rooted = false;
+        _rootedness_declared = false;
         _name = "";
         _description = "";
         _type = "";
@@ -1181,6 +1185,24 @@ public class Phylogeny {
      */
     public void setRooted( final boolean b ) {
         _rooted = b;
+    }
+
+    /**
+     * Records whether the source file DECLARED this tree's rootedness (phyloXML {@code rooted="..."}, Nexus
+     * {@code [&R]}/{@code [&U]}). A plain Newick tree declares nothing, so its {@link #isRooted()} false means
+     * "unknown", not "unrooted".
+     */
+    public void setRootednessDeclared( final boolean declared ) {
+        _rootedness_declared = declared;
+    }
+
+    public boolean isRootednessDeclared() {
+        return _rootedness_declared;
+    }
+
+    /** True only when the file declared this tree unrooted (and it has not been rooted since). */
+    public boolean isDeclaredUnrooted() {
+        return _rootedness_declared && !_rooted;
     }
 
     public void setSequenceRelationQueries( final Collection<Sequence> sequencesByName ) {

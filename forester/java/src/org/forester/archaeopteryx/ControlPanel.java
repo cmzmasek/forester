@@ -205,6 +205,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     private boolean           _order_ascending          = false;
     private int _paste_subtree_item;
     private int _reroot_cb_item;
+    private String _reroot_refusal = null; // why the current tree must not be re-rooted, or null (MainFrame keeps it current)
+    private int _last_allowed_click_to_index = 0;
+    private boolean _search_fields_root_free = false;
     private JButton _return_to_whole_tree;
     private JButton _return_to_super_tree;
     // Search
@@ -365,8 +368,14 @@ final class ControlPanel extends JPanel implements ActionListener {
                         ? BranchLengthLayout.MODE.DIVERGENCE
                         : BranchLengthLayout.MODE.TIME);
             } else if (e.getSource() == _click_to_combobox) {
-                setClickToAction(_click_to_combobox.getSelectedIndex());
-                getCurrentTreePanel().repaint();
+                if ((_click_to_combobox.getSelectedIndex() == _reroot_cb_item) && (_reroot_refusal != null)) {
+                    // "Root/Reroot" is greyed out for this tree: fall back to the previous choice (which fires again)
+                    _click_to_combobox.setSelectedIndex(_last_allowed_click_to_index);
+                } else {
+                    _last_allowed_click_to_index = _click_to_combobox.getSelectedIndex();
+                    setClickToAction(_click_to_combobox.getSelectedIndex());
+                    getCurrentTreePanel().repaint();
+                }
             } else if (e.getSource() == _show_domain_architectures) {
                 reRunSearches();
                 // When the user switches domains ON, re-fit the (now wider) tree horizontally so the
@@ -870,6 +879,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         // Set default selection and its action
         _click_to_combobox.setSelectedIndex(selected_index);
+        _last_allowed_click_to_index = selected_index;
         setClickToAction(selected_index);
     }
 
@@ -2182,6 +2192,28 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
+    /** Greys out the "Root/Reroot" click option (tooltip: {@code why}), or re-enables it when {@code why} is null. */
+    void setRerootRefusal(final String why) {
+        _reroot_refusal = why;
+        if (_click_to_combobox != null) {
+            _click_to_combobox.repaint();
+        }
+    }
+
+    /** The click-to dropdown entry at {@code index} as its renderer draws it -- for tests of the greyed-out entry. */
+    java.awt.Component clickToEntryForTest(final int index) {
+        return _click_to_combobox.getRenderer().getListCellRendererComponent(new javax.swing.JList<String>(),
+                _click_to_combobox.getItemAt(index), index, false, false);
+    }
+
+    int rerootClickToIndexForTest() {
+        return _reroot_cb_item;
+    }
+
+    javax.swing.JComboBox<String> clickToComboForTest() {
+        return _click_to_combobox;
+    }
+
     void setClickToAction(final int action) {
         // Set click-to action
         if (action == _show_data_item) {
@@ -2869,10 +2901,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             return;
         }
         final Phylogeny phy = _mainpanel.getCurrentPhylogeny();
-        if (!force && (phy == _search_fields_tree)) {
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        final boolean root_free = (tp != null) && tp.hidesRootDependentValues();
+        if (!force && (phy == _search_fields_tree) && (root_free == _search_fields_root_free)) {
             return;
         }
-        final List<SearchField> fields = SearchField.availableFields(phy);
+        _search_fields_root_free = root_free;
+        final List<SearchField> fields = SearchField.availableFields(phy, root_free);
         // the signature includes each field's KIND (numeric vs string), not just its label, so a custom property
         // that flips numeric<->string (e.g. re-import changes its values) repopulates rather than keeping a stale
         // field of the wrong kind.
@@ -4101,6 +4136,18 @@ final class ControlPanel extends JPanel implements ActionListener {
         _click_to_combobox.setFocusable(false);
         _click_to_combobox.setMaximumRowCount(14);
         _click_to_combobox.setFont(ControlPanel.js_font);
+        // "Root/Reroot" is drawn greyed out, with the reason as its tooltip, when the tree must not be re-rooted
+        final javax.swing.ListCellRenderer<? super String> click_to_renderer = _click_to_combobox.getRenderer();
+        _click_to_combobox.setRenderer((list, value, index, selected, focused) -> {
+            final java.awt.Component c = click_to_renderer.getListCellRendererComponent(list, value, index, selected,
+                    focused);
+            final boolean refused = (_reroot_refusal != null) && ClickToOption.REROOT.title().equals(value);
+            c.setEnabled(!refused);
+            if (c instanceof javax.swing.JComponent) {
+                ((javax.swing.JComponent) c).setToolTipText(refused ? _reroot_refusal : null);
+            }
+            return c;
+        });
         // don't add listener until all items are set (or each one will trigger
         // an event)
         // click_to_list.addActionListener(this);

@@ -410,6 +410,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
                 if ( element.isHasAttribute( PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR ) ) {
                     getCurrentPhylogeny().setRooted( Boolean.parseBoolean( element
                                                                            .getAttribute( PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR ) ) );
+                    getCurrentPhylogeny().setRootednessDeclared( true );
                 }
                 if ( element.isHasAttribute( PhyloXmlMapping.PHYLOGENY_TYPE_ATTR ) ) {
                     getCurrentPhylogeny().setType( ( element.getAttribute( PhyloXmlMapping.PHYLOGENY_TYPE_ATTR ) ) );

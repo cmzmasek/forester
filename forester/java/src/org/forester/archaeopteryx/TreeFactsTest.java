@@ -64,7 +64,7 @@ public final class TreeFactsTest {
     public static boolean test() {
         try {
             return structure() && branchLengths() && support() && coverage() && timeAxis() && histogram()
-                    && fileFacts() && helpers() && edgeCases();
+                    && fileFacts() && helpers() && edgeCases() && rootFreeStructure();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -256,6 +256,24 @@ public final class TreeFactsTest {
             return TestFail.here();
         }
         return ok || TestFail.here();
+    }
+
+    /** Root-free (a declared-unrooted tree shown unrooted): the root-dependent Depth and Height are left out, the rest
+     *  of the structure group stays. */
+    private static boolean rootFreeStructure() {
+        final Phylogeny phy = ultrametric();
+        final Group rooted = group( TreeFacts.compute( phy, null, false, null ), TreeFacts.STRUCTURE );
+        final Group free = group( TreeFacts.compute( phy, null, false, null, true ), TreeFacts.STRUCTURE );
+        if ( ( rooted.value( "Depth" ) == null ) || ( rooted.value( "Height" ) == null ) ) {
+            return TestFail.here( "the rooted view shows Depth and Height" );
+        }
+        if ( ( free.value( "Depth" ) != null ) || ( free.value( "Height" ) != null ) ) {
+            return TestFail.here( "the root-free view must leave out Depth and Height" );
+        }
+        if ( ( free.value( "Tips" ) == null ) || ( free.value( "Branching" ) == null ) ) {
+            return TestFail.here( "the root-free view keeps the root-independent facts" );
+        }
+        return true;
     }
 
     private static Phylogeny ultrametric() {

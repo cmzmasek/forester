@@ -82,13 +82,28 @@ final class NodeHoverText {
 
     /** The card's rows for {@code n}; empty when there is nothing worth a card. */
     static List<Row> rows( final PhylogenyNode n ) {
+        return rows( n, false );
+    }
+
+    /**
+     * The card's rows. With {@code root_free} (a tree declared unrooted, shown unrooted --
+     * {@link Rerooting#hidesRootDependentValues}) nothing that depends on where the tree is stored as rooted is shown:
+     * an internal node lists the tips on each of its sides instead of its distance to parent, depth and tips below,
+     * and a tip shows its (single) branch length but no depth.
+     */
+    static List<Row> rows( final PhylogenyNode n, final boolean root_free ) {
         final List<Row> rows = new ArrayList<>();
         final NodeData nd = n.getNodeData();
         if ( !ForesterUtil.isEmpty( n.getName() ) ) {
             rows.add( Row.line( "Name", n.getName() ) );
         }
         if ( n.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
-            rows.add( Row.line( "Distance to parent", NodeDataDraft.formatNumber( n.getDistanceToParent() ) ) );
+            if ( !root_free ) {
+                rows.add( Row.line( "Distance to parent", NodeDataDraft.formatNumber( n.getDistanceToParent() ) ) );
+            }
+            else if ( n.isExternal() ) {
+                rows.add( Row.line( "Branch length", NodeDataDraft.formatNumber( n.getDistanceToParent() ) ) );
+            }
         }
         if ( nd.isHasDate() ) {
             final String date = dateText( nd.getDate() );
@@ -99,9 +114,14 @@ final class NodeHoverText {
         if ( nd.isHasDistribution() && !ForesterUtil.isEmpty( nd.getDistribution().getDesc() ) ) {
             rows.add( Row.line( "Distribution", nd.getDistribution().getDesc() ) );
         }
-        rows.add( Row.line( "Depth", String.valueOf( n.calculateDepth() ) ) );
-        if ( !n.isExternal() ) {
-            rows.add( Row.line( "Tips below", String.valueOf( countTips( n ) ) ) );
+        if ( !root_free ) {
+            rows.add( Row.line( "Depth", String.valueOf( n.calculateDepth() ) ) );
+            if ( !n.isExternal() ) {
+                rows.add( Row.line( "Tips below", String.valueOf( countTips( n ) ) ) );
+            }
+        }
+        else if ( !n.isExternal() ) {
+            rows.add( Row.line( "Tips around", Rerooting.tipsAroundText( n ) ) );
         }
         if ( n.getBranchData().isHasConfidences() ) {
             for( final Confidence c : n.getBranchData().getConfidences() ) {

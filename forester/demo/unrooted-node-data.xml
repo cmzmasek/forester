@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="false" branch_length_unit="substitutions/site" rerootable="true">
+  <name>Unrooted tree with node data (demo)</name>
+  <description>Synthetic 8-tip mammal phylogram declared UNROOTED, whose internal nodes carry the taxonomy of their order. Show it in the Unrooted layout and hover an internal node: it lists the tips on each of its sides (&quot;Tips around&quot;) rather than a depth or tips below, and the root-dependent search fields and Tree Properties values are left out. Tools &gt; Midpoint-Root first warns that re-rooting changes the clade of some of the annotated nodes.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <confidence type="bootstrap">90</confidence>
+      <taxonomy>
+        <scientific_name>Euarchontoglires</scientific_name>
+        <rank>superorder</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.08</branch_length>
+        <confidence type="bootstrap">98</confidence>
+        <taxonomy>
+          <scientific_name>Primates</scientific_name>
+          <rank>order</rank>
+        </taxonomy>
+        <clade>
+          <name>Human</name>
+          <branch_length>0.06</branch_length>
+        </clade>
+        <clade>
+          <name>Chimpanzee</name>
+          <branch_length>0.05</branch_length>
+        </clade>
+        <clade>
+          <name>Macaque</name>
+          <branch_length>0.6</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.12</branch_length>
+        <confidence type="bootstrap">100</confidence>
+        <taxonomy>
+          <scientific_name>Rodentia</scientific_name>
+          <rank>order</rank>
+        </taxonomy>
+        <clade>
+          <name>Mouse</name>
+          <branch_length>0.1</branch_length>
+        </clade>
+        <clade>
+          <name>Rat</name>
+          <branch_length>0.09</branch_length>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.09</branch_length>
+      <confidence type="bootstrap">97</confidence>
+      <taxonomy>
+        <scientific_name>Carnivora</scientific_name>
+        <rank>order</rank>
+      </taxonomy>
+      <clade>
+        <name>Dog</name>
+        <branch_length>0.07</branch_length>
+      </clade>
+      <clade>
+        <name>Cat</name>
+        <branch_length>0.08</branch_length>
+      </clade>
+    </clade>
+    <clade>
+      <name>Opossum</name>
+      <branch_length>0.2</branch_length>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

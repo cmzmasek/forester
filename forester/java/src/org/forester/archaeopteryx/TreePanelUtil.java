@@ -1780,6 +1780,8 @@ public class TreePanelUtil {
     final static Phylogeny subTree( final PhylogenyNode new_root, final Phylogeny source_phy ) {
         final Phylogeny new_phy = new Phylogeny();
         new_phy.setRooted( true );
+        // the subtree view shares its nodes with the full tree, so it must not be re-rootable when the full tree isn't
+        new_phy.setRerootable( source_phy.isRerootable() );
         new_phy.setName( source_phy.getName() );
         new_phy.setDescription( source_phy.getDescription() );
         new_phy.setType( source_phy.getType() );

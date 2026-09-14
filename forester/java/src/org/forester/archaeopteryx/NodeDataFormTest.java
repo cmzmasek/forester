@@ -268,6 +268,22 @@ public final class NodeDataFormTest {
         ok = ok && eq( "label falls back to the scientific name", "Homo sapiens", NodeDataForm.nodeLabel( n ) )
                 && eq( "data label falls back to the scientific name", "Homo sapiens", NodeDataForm.nodeDataLabel( n ) );
         n.getNodeData().getTaxonomy().setScientificName( "" );
+        // root-free (a declared-unrooted tree shown unrooted): r <- (i <- (t1, t2), t3, t4)
+        final PhylogenyNode r = new PhylogenyNode();
+        final PhylogenyNode i = new PhylogenyNode();
+        final PhylogenyNode t1 = new PhylogenyNode();
+        i.addAsChild( t1 );
+        i.addAsChild( new PhylogenyNode() );
+        r.addAsChild( i );
+        r.addAsChild( new PhylogenyNode() );
+        r.addAsChild( new PhylogenyNode() );
+        ok = ok && eq( "root-free internal", "Internal node · 3 neighbours · tips around 1 · 1 · 2",
+                       NodeDataForm.headerSubtitle( i, true ) )
+                && eq( "root-free stored root is not called Root", "Internal node · 3 neighbours · tips around 1 · 1 · 2",
+                       NodeDataForm.headerSubtitle( r, true ) )
+                && eq( "root-free tip", "External node", NodeDataForm.headerSubtitle( t1, true ) )
+                && eq( "the one-argument form is the rooted view", NodeDataForm.headerSubtitle( i, false ),
+                       NodeDataForm.headerSubtitle( i ) );
         return ok && eq( "then the taxonomy code", "HUMAN", NodeDataForm.nodeLabel( n ) );
     }
 

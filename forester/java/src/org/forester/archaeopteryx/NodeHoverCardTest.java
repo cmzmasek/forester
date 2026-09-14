@@ -145,6 +145,33 @@ public final class NodeHoverCardTest {
         t.setName( "t" );
         t.getNodeData().addTaxonomy( new org.forester.phylogeny.data.Taxonomy() );
         ok = ok && eq( "empty taxonomy -> no heading", List.of( "Name: t", "Depth: 0" ), strings( NodeHoverText.rows( t ) ) );
+        // root-free (a declared-unrooted tree shown unrooted): root <- (x:0.3 <- (a:0.1, b:0.2), c:0.4, d:0.5)
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode x = new PhylogenyNode();
+        x.setName( "x" );
+        x.setDistanceToParent( 0.3 );
+        final PhylogenyNode a = new PhylogenyNode();
+        a.setName( "a" );
+        a.setDistanceToParent( 0.1 );
+        x.addAsChild( a );
+        final PhylogenyNode b = new PhylogenyNode();
+        b.setDistanceToParent( 0.2 );
+        x.addAsChild( b );
+        root.addAsChild( x );
+        final PhylogenyNode c = new PhylogenyNode();
+        c.setDistanceToParent( 0.4 );
+        root.addAsChild( c );
+        root.addAsChild( new PhylogenyNode() );
+        ok = ok && eq( "rooted internal node", List.of( "Name: x", "Distance to parent: 0.3", "Depth: 1", "Tips below: 2" ),
+                       strings( NodeHoverText.rows( x, false ) ) );
+        ok = ok && eq( "root-free internal node: tips around, no distance / depth / tips below",
+                       List.of( "Name: x", "Tips around: 1 · 1 · 2" ), strings( NodeHoverText.rows( x, true ) ) );
+        ok = ok && eq( "root-free stored root: its children's sides", List.of( "Tips around: 1 · 1 · 2" ),
+                       strings( NodeHoverText.rows( root, true ) ) );
+        ok = ok && eq( "root-free tip: branch length, no depth", List.of( "Name: a", "Branch length: 0.1" ),
+                       strings( NodeHoverText.rows( a, true ) ) );
+        ok = ok && eq( "the one-argument form is the rooted view", strings( NodeHoverText.rows( x, false ) ),
+                       strings( NodeHoverText.rows( x ) ) );
         return ok;
     }
 

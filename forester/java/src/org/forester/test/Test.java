@@ -1653,6 +1653,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Rooting guards (GUI): ");
+        if (org.forester.archaeopteryx.RootingGuardsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Sub/super tree buttons: ");
         if (org.forester.archaeopteryx.SubSuperTreeButtonsTest.test()) {
             System.out.println("OK.");
@@ -2193,6 +2201,22 @@ public final class Test {
         }
         System.out.print("Mipoint rooting: ");
         if (Test.testMidpointrooting()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Rootedness declared by the file: ");
+        if (Test.testRootednessDeclared()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Re-rooting rules: ");
+        if (org.forester.archaeopteryx.RerootingTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -7801,6 +7825,61 @@ public final class Test {
     //   - testMADzeroDistances:     brute-force agreement on trees full of zero-distance tip pairs
     //   - testMADnotWrittenAsSupport: Newick/Nexus/NHX never write a MAD value as the support value
     //   - testMADnotReadAsSupport:  nor do the support helpers read one, or setConfidence overwrite one
+    // Rootedness is DECLARED only by phyloXML rooted="..." and Nexus [&R]/[&U]; a plain Newick tree declares nothing,
+    // so its isRooted() false is "unknown", not "unrooted". The flag survives copy(); rooting the tree ends "declared
+    // unrooted".
+    private static boolean testRootednessDeclared() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final File dir = java.nio.file.Files.createTempDirectory("rootedness").toFile();
+            final File xml_unrooted = new File(dir, "u.xml");
+            final File xml_rooted = new File(dir, "r.xml");
+            final File xml_silent = new File(dir, "s.xml");
+            final String body = "<clade><clade><name>A</name><branch_length>1</branch_length></clade>"
+                    + "<clade><name>B</name><branch_length>1</branch_length></clade>"
+                    + "<clade><name>C</name><branch_length>2</branch_length></clade></clade></phylogeny></phyloxml>";
+            final String head = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><phyloxml xmlns=\"http://www.phyloxml.org\">";
+            java.nio.file.Files.writeString(xml_unrooted.toPath(), head + "<phylogeny rooted=\"false\">" + body);
+            java.nio.file.Files.writeString(xml_rooted.toPath(), head + "<phylogeny rooted=\"true\">" + body);
+            java.nio.file.Files.writeString(xml_silent.toPath(), head + "<phylogeny>" + body);
+            final Phylogeny pu = factory.create(xml_unrooted, PhyloXmlParser.createPhyloXmlParser())[0];
+            final Phylogeny pr = factory.create(xml_rooted, PhyloXmlParser.createPhyloXmlParser())[0];
+            final Phylogeny ps = factory.create(xml_silent, PhyloXmlParser.createPhyloXmlParser())[0];
+            if (!pu.isRootednessDeclared() || !pu.isDeclaredUnrooted() || !pr.isRootednessDeclared()
+                    || pr.isDeclaredUnrooted() || ps.isRootednessDeclared() || ps.isDeclaredUnrooted()) {
+                return false;
+            }
+            final File nex_u = new File(dir, "u.nex");
+            final File nex_r = new File(dir, "r.nex");
+            final File nex_s = new File(dir, "s.nex");
+            java.nio.file.Files.writeString(nex_u.toPath(), "#NEXUS\nBEGIN TREES;\nTREE t = [&U] ((A:1,B:1):1,C:2);\nEND;\n");
+            java.nio.file.Files.writeString(nex_r.toPath(), "#NEXUS\nBEGIN TREES;\nTREE t = [&R] ((A:1,B:1):1,C:2);\nEND;\n");
+            java.nio.file.Files.writeString(nex_s.toPath(), "#NEXUS\nBEGIN TREES;\nTREE t = ((A:1,B:1):1,C:2);\nEND;\n");
+            final Phylogeny nu = factory.create(nex_u, new NexusPhylogeniesParser())[0];
+            final Phylogeny nr = factory.create(nex_r, new NexusPhylogeniesParser())[0];
+            final Phylogeny ns = factory.create(nex_s, new NexusPhylogeniesParser())[0];
+            if (!nu.isDeclaredUnrooted() || !nr.isRootednessDeclared() || nr.isDeclaredUnrooted()
+                    || ns.isRootednessDeclared()) {
+                return false;
+            }
+            final Phylogeny newick = factory.create("((A:1,B:1):1,C:2)", new NHXParser())[0];
+            if (newick.isRootednessDeclared() || newick.isDeclaredUnrooted()) {
+                return false; // plain Newick declares nothing
+            }
+            if (!pu.copy().isDeclaredUnrooted() || !pu.copyShallow().isDeclaredUnrooted()) {
+                return false;
+            }
+            pu.reRoot(pu.getNode("C"));
+            if (pu.isDeclaredUnrooted() || !pu.isRootednessDeclared()) {
+                return false; // rooting it ends "declared unrooted"
+            }
+            return true;
+        } catch (final Exception e) {
+            e.printStackTrace(System.out);
+            return false;
+        }
+    }
+
     private static boolean testMADrooting() {
         try {
             return testMADexactCases() && testMADguards() && testMADbranchSupport()

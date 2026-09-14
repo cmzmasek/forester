@@ -140,7 +140,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         _internal = !node.isExternal();
         _baseline = NodeDataDraft.from( node );
         _label_width = getFontMetrics( getFont() ).stringWidth( "Scientific name" ) + 12;
-        _header = new Header( nodeLabel( _node ), headerSubtitle( _node ) );
+        _header = new Header( nodeLabel( _node ), headerSubtitle( _node, rootFree() ) );
         add( _header, BorderLayout.NORTH );
         final JPanel page = newPage();
         buildSections( page, _baseline );
@@ -194,7 +194,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         _internal = !restored.isExternal();
         _baseline = NodeDataDraft.from( restored );
         _header.setTitle( nodeLabel( restored ) );
-        _header.setSubtitle( headerSubtitle( restored ) );
+        _header.setSubtitle( headerSubtitle( restored, rootFree() ) );
         final List<Sequence> seqs = restored.getNodeData().isHasSequence() ? restored.getNodeData().getSequences()
                 : java.util.Collections.emptyList();
         if ( was_dirty && !kind_changed ) {
@@ -216,7 +216,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
     void refreshHeader() {
         _detached = false;
         _header.setTitle( nodeLabel( _node ) );
-        _header.setSubtitle( headerSubtitle( _node ) );
+        _header.setSubtitle( headerSubtitle( _node, rootFree() ) );
         fireChanged();
     }
 
@@ -300,7 +300,9 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
     private NodeDataDraft readWidgets() {
         final NodeDataDraft d = new NodeDataDraft();
         d.name = text( NodeDataDraft.NAME );
-        d.branchLength = text( NodeDataDraft.BRANCH_LENGTH );
+        // the branch-length field is absent for an internal node of a root-free view: keep the node's value as it is
+        d.branchLength = _fields.containsKey( NodeDataDraft.BRANCH_LENGTH ) ? text( NodeDataDraft.BRANCH_LENGTH )
+                : ( ( _baseline != null ) ? _baseline.branchLength : "" );
         d.branchWidth = text( NodeDataDraft.BRANCH_WIDTH );
         for( final ConfidenceRow r : _confidence_rows ) {
             d.confidences.add( r.toDraft() );
@@ -401,6 +403,11 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         return true;
     }
 
+    // whether this window's tree hides root-dependent values (Rerooting.hidesRootDependentValues)
+    private boolean rootFree() {
+        return ( _tree_panel != null ) && _tree_panel.hidesRootDependentValues();
+    }
+
     /** What the window title / header calls this node. */
     static String nodeLabel( final PhylogenyNode n ) {
         final String data_label = nodeDataLabel( n );
@@ -433,6 +440,23 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     /** The muted line under the header title: what kind of node this is and where it sits. Pure. */
     static String headerSubtitle( final PhylogenyNode n ) {
+        return headerSubtitle( n, false );
+    }
+
+    /**
+     * The header's subtitle. With {@code root_free} ({@link Rerooting#hidesRootDependentValues}) it says nothing that
+     * depends on where the tree is stored as rooted: "External node", or "Internal node · 3 neighbours · tips around
+     * 2 · 3 · 5" -- the stored root included, which is not called "Root" then.
+     */
+    static String headerSubtitle( final PhylogenyNode n, final boolean root_free ) {
+        if ( root_free ) {
+            if ( n.isExternal() ) {
+                return "External node";
+            }
+            final int neighbours = n.getNumberOfDescendants() + ( n.isRoot() ? 0 : 1 );
+            return "Internal node · " + neighbours + ( neighbours == 1 ? " neighbour" : " neighbours" )
+                    + " · tips around " + Rerooting.tipsAroundText( n );
+        }
         final StringBuilder sb = new StringBuilder();
         if ( n.isRoot() ) {
             sb.append( "Root" );
@@ -553,8 +577,15 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         {
             final Grid g = new Grid( _label_width );
             addText( g, "Name", NodeDataDraft.NAME, d.name, null );
-            addText( g, "Branch length", NodeDataDraft.BRANCH_LENGTH, d.branchLength,
-                     _node.isRoot() ? "none (root)" : null, "Width", NodeDataDraft.BRANCH_WIDTH, d.branchWidth, "1" );
+            if ( !_node.isExternal() && rootFree() ) {
+                // unrooted: an internal node has several branches, and which one would be "its" branch depends only
+                // on where the tree is stored as rooted -- so its branch length is not offered
+                addText( g, "Width", NodeDataDraft.BRANCH_WIDTH, d.branchWidth, "1" );
+            }
+            else {
+                addText( g, "Branch length", NodeDataDraft.BRANCH_LENGTH, d.branchLength,
+                         _node.isRoot() ? "none (root)" : null, "Width", NodeDataDraft.BRANCH_WIDTH, d.branchWidth, "1" );
+            }
             if ( isEditable() || !d.confidences.isEmpty() ) {
                 _confidence_list = new JPanel();
                 _confidence_list.setOpaque( false );

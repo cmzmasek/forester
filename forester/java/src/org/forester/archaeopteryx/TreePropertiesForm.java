@@ -341,7 +341,8 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
         _fact_sections.clear();
         final File file = ( _tree_panel != null ) ? _tree_panel.getTreeFile() : null;
         final boolean edited = ( _tree_panel != null ) && _tree_panel.isEdited();
-        _groups = TreeFacts.compute( _phylogeny, file, edited, timeAxis() );
+        _groups = TreeFacts.compute( _phylogeny, file, edited, timeAxis(),
+                                     ( _tree_panel != null ) && _tree_panel.hidesRootDependentValues() );
         for( final Group group : _groups ) {
             final Grid g = new Grid( _label_width );
             for( final Fact f : group.facts ) {

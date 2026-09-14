@@ -181,13 +181,20 @@ final class TreeFacts {
      * (no branch lengths, no support values, no time axis) are left out.
      */
     static List<Group> compute( final Phylogeny phy, final File file, final boolean edited, final TimeAxis time ) {
+        return compute( phy, file, edited, time, false );
+    }
+
+    /** With {@code root_free} ({@link Rerooting#hidesRootDependentValues}) the root-dependent Depth and Height are
+     *  left out. */
+    static List<Group> compute( final Phylogeny phy, final File file, final boolean edited, final TimeAxis time,
+                                final boolean root_free ) {
         final List<Group> out = new ArrayList<>();
         out.add( fileGroup( file, edited ) );
         if ( ( phy == null ) || phy.isEmpty() ) {
             return out;
         }
         final Scan scan = new Scan( phy );
-        out.add( structureGroup( phy, scan ) );
+        out.add( structureGroup( phy, scan, root_free ) );
         final Group bl = branchLengthGroup( phy, scan );
         if ( bl != null ) {
             out.add( bl );
@@ -367,6 +374,10 @@ final class TreeFacts {
     }
 
     static Group structureGroup( final Phylogeny phy, final Scan s ) {
+        return structureGroup( phy, s, false );
+    }
+
+    static Group structureGroup( final Phylogeny phy, final Scan s, final boolean root_free ) {
         final List<Fact> f = new ArrayList<>();
         final int internal = s.nodes - s.tips;
         f.add( new Fact( "Tips", INT.format( s.tips ) ) );
@@ -378,8 +389,10 @@ final class TreeFacts {
         final int poly = PhylogenyMethods.countNumberOfPolytomies( phy );
         f.add( new Fact( "Branching", ( poly == 0 ) ? "fully binary"
                 : ( INT.format( poly ) + ( poly == 1 ? " polytomy" : " polytomies" ) ) ) );
-        f.add( new Fact( "Depth", INT.format( PhylogenyMethods.calculateMaxDepth( phy ) ) + " (root to deepest tip)" ) );
-        if ( s.branches_with_length > 0 ) {
+        if ( !root_free ) {
+            f.add( new Fact( "Depth", INT.format( PhylogenyMethods.calculateMaxDepth( phy ) ) + " (root to deepest tip)" ) );
+        }
+        if ( ( s.branches_with_length > 0 ) && !root_free ) {
             f.add( new Fact( "Height", DEC.format( PhylogenyMethods.calculateMaxDistanceToRoot( phy ) )
                     + " (longest root-to-tip path)" ) );
         }

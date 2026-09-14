@@ -74,7 +74,7 @@ public final class TreePanelUtilTest {
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
                 && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance()
-                && testRootingProvenance() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
+                && testRootingProvenance() && testSubTreeKeepsRerootable() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
     }
 
     private static boolean testScientificNameIsItalic() {
@@ -149,6 +149,26 @@ public final class TreePanelUtilTest {
         final String noname = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.TRUE, "", 5 );
         if ( noname.contains( "named" ) || !noname.contains( "5 tips" ) ) {
             return false;
+        }
+        return true;
+    }
+
+    /** A subtree view shares its nodes with the full tree, so it inherits the full tree's rerootable flag. */
+    private static boolean testSubTreeKeepsRerootable() {
+        for( final boolean rerootable : new boolean[] { false, true } ) {
+            final Phylogeny full = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode inner = new PhylogenyNode();
+            inner.addAsChild( new PhylogenyNode() );
+            inner.addAsChild( new PhylogenyNode() );
+            root.addAsChild( inner );
+            root.addAsChild( new PhylogenyNode() );
+            full.setRoot( root );
+            full.externalNodesHaveChanged();
+            full.setRerootable( rerootable );
+            if ( TreePanelUtil.subTree( inner, full ).isRerootable() != rerootable ) {
+                return fail( "a subtree view must inherit rerootable=" + rerootable );
+            }
         }
         return true;
     }

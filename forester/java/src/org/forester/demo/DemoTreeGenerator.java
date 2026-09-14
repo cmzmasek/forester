@@ -102,6 +102,8 @@ public final class DemoTreeGenerator {
         write( dir, "zebra-stripes.xml", zebraStripesTree() );
         write( dir, "reverse-tip-order.xml", reverseTipOrderTree() );
         write( dir, "root-on-top.xml", rootOnTopTree() );
+        write( dir, "not-rerootable.xml", notRerootableTree() );
+        write( dir, "unrooted-node-data.xml", unrootedNodeDataTree() );
         write( dir, "domain-architectures.xml", domainArchitecturesTree() );
         write( dir, "heatmap-matrix.xml", heatmapMatrixTree() );
         write( dir, "import-annotations.xml", importAnnotationsTree() );
@@ -1869,6 +1871,51 @@ public final class DemoTreeGenerator {
         t.setRank( "species" );
         n.getNodeData().setTaxonomy( t );
         return n;
+    }
+
+    // ----- "Not re-rootable": a small gene-family phylogram whose file marks it rerootable="false" (as a reconciled
+    //       gene tree is, whose root is part of the result). Tools > MAD-Root, Midpoint-Root, GSDIR and the
+    //       "Root/Reroot" click option are greyed out, with the reason as their tooltip.
+    private static Phylogeny notRerootableTree() {
+        final PhylogenyNode root = clade( 0,
+                conf( clade( 0.10, blLeaf( "GENE_A_HUMAN", 0.05 ), blLeaf( "GENE_A_MOUSE", 0.07 ) ), 95 ),
+                conf( clade( 0.12, blLeaf( "GENE_B_HUMAN", 0.06 ), blLeaf( "GENE_B_MOUSE", 0.08 ) ), 88 ),
+                clade( 0.25, blLeaf( "GENE_C_FLY", 0.20 ), blLeaf( "GENE_C_WORM", 0.22 ) ) );
+        final Phylogeny phy = tree( root, "Not re-rootable (demo)",
+                "Synthetic 6-tip gene-family phylogram marked rerootable=\"false\" in its phyloXML file. Tools > "
+                        + "MAD-Root and Midpoint-Root, Analysis > GSDIR, and the \"Root/Reroot\" click option are greyed "
+                        + "out, and their tooltip says why." );
+        phy.setRerootable( false );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
+    }
+
+    // ----- "Unrooted tree with node data": a mammal phylogram DECLARED unrooted (rooted="false") whose internal nodes
+    //       carry their order's taxonomy. In the Unrooted layout, hovering an internal node lists the tips on each of
+    //       its sides instead of a depth or tips-below, and root-dependent search fields and Tree Properties values are
+    //       left out. Re-rooting it (Tools > Midpoint-Root) first warns that the clade of some annotated nodes changes.
+    private static Phylogeny unrootedNodeDataTree() throws PhyloXmlDataFormatException {
+        // the long Macaque branch puts the midpoint root inside Primates, so re-rooting changes the clade of Primates
+        // and Euarchontoglires -- the warning has something to say
+        final PhylogenyNode primates = conf( clade( 0.08, blLeaf( "Human", 0.06 ), blLeaf( "Chimpanzee", 0.05 ),
+                                                    blLeaf( "Macaque", 0.60 ) ), 98 );
+        taxon( primates, "Primates", "order" );
+        final PhylogenyNode rodents = conf( clade( 0.12, blLeaf( "Mouse", 0.10 ), blLeaf( "Rat", 0.09 ) ), 100 );
+        taxon( rodents, "Rodentia", "order" );
+        final PhylogenyNode carnivores = conf( clade( 0.09, blLeaf( "Dog", 0.07 ), blLeaf( "Cat", 0.08 ) ), 97 );
+        taxon( carnivores, "Carnivora", "order" );
+        final PhylogenyNode euarchontoglires = conf( clade( 0.04, primates, rodents ), 90 );
+        taxon( euarchontoglires, "Euarchontoglires", "superorder" );
+        final PhylogenyNode root = clade( 0, euarchontoglires, carnivores, blLeaf( "Opossum", 0.20 ) );
+        final Phylogeny phy = tree( root, "Unrooted tree with node data (demo)",
+                "Synthetic 8-tip mammal phylogram declared UNROOTED, whose internal nodes carry the taxonomy of their "
+                        + "order. Show it in the Unrooted layout and hover an internal node: it lists the tips on each of "
+                        + "its sides (\"Tips around\") rather than a depth or tips below, and the root-dependent search "
+                        + "fields and Tree Properties values are left out. Tools > Midpoint-Root first warns that "
+                        + "re-rooting changes the clade of some of the annotated nodes." );
+        phy.setRooted( false );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
     }
 
     private static Phylogeny tree( final PhylogenyNode root, final String name, final String description ) {
