@@ -403,6 +403,16 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     /** What the window title / header calls this node. */
     static String nodeLabel( final PhylogenyNode n ) {
+        final String data_label = nodeDataLabel( n );
+        return ( data_label != null ) ? data_label : ( "node " + n.getId() );
+    }
+
+    /**
+     * The node's own label -- its name, else its scientific name or taxonomy code, else its sequence name -- or
+     * null when it has none (so a caller that persists the label, e.g. a provenance sentence, never records a
+     * session-only node id).
+     */
+    static String nodeDataLabel( final PhylogenyNode n ) {
         if ( !ForesterUtil.isEmpty( n.getName() ) ) {
             return n.getName();
         }
@@ -418,7 +428,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
             return n.getNodeData().getSequence().getName();
         }
-        return "node " + n.getId();
+        return null;
     }
 
     /** The muted line under the header title: what kind of node this is and where it sits. Pure. */

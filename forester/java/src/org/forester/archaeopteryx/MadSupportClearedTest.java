@@ -32,11 +32,14 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.util.ForesterUtil;
 
 /**
  * Integration test that the per-branch MAD support added by {@link TreePanel#madRoot()} is removed
  * when the tree is rerooted by another means: {@link TreePanel#midpointRoot()} (Tools menu) and
- * {@link TreePanel#reRoot(PhylogenyNode)} (clicking a non-root node). Guarded to a no-op on a
+ * {@link TreePanel#reRoot(PhylogenyNode)} (clicking a non-root node); and that each of the three rootings
+ * appends its provenance sentence to the tree description, while a no-op rooting (no branch lengths,
+ * re-rooting on the root) appends none. Guarded to a no-op on a
  * headless box. Needs FlatLaf on the classpath (via {@code MainFrameApplication.createInstance}), so
  * it is run standalone, not as part of the headless suite.
  */
@@ -66,9 +69,19 @@ public final class MadSupportClearedTest {
                 if ( !hasMad( tp.getPhylogeny() ) ) {
                     ok[ 0 ] = TestFail.here(); // MAD rooting adds the support
                 }
+                final String mad_sentence = TreePanelUtil.rootingProvenanceSentence( TreePanelUtil.MAD_ROOTING, "",
+                                                                                     4 );
+                if ( !mad_sentence.equals( tp.getPhylogeny().getDescription() ) ) {
+                    ok[ 0 ] = TestFail.here(); // ... and records its provenance
+                }
                 tp.midpointRoot();
                 if ( hasMad( tp.getPhylogeny() ) ) {
                     ok[ 0 ] = TestFail.here(); // midpoint rooting clears it
+                }
+                if ( !( mad_sentence + " "
+                        + TreePanelUtil.rootingProvenanceSentence( TreePanelUtil.MIDPOINT_ROOTING, "", 4 ) )
+                                .equals( tp.getPhylogeny().getDescription() ) ) {
+                    ok[ 0 ] = TestFail.here(); // appended, never overwritten
                 }
                 tp.madRoot();
                 if ( !hasMad( tp.getPhylogeny() ) ) {
@@ -83,6 +96,27 @@ public final class MadSupportClearedTest {
                     if ( hasMad( tp.getPhylogeny() ) ) {
                         ok[ 0 ] = TestFail.here();
                     }
+                    final String desc = tp.getPhylogeny().getDescription();
+                    if ( ( desc == null ) || !desc.endsWith( " Manually re-rooted a tree with 4 tips." ) ) {
+                        ok[ 0 ] = TestFail.here(); // the manual re-root records its provenance too
+                    }
+                    tp.reRoot( tp.getPhylogeny().getRoot() ); // re-rooting on the root changes nothing
+                    if ( !desc.equals( tp.getPhylogeny().getDescription() ) ) {
+                        ok[ 0 ] = TestFail.here(); // ... so it adds no sentence
+                    }
+                }
+                ( (JFrame) mf[ 0 ] ).dispose();
+            } );
+            // a no-op rooting (no branch lengths) writes no provenance sentence
+            final Phylogeny no_lengths = factory.create( "((A,B),(C,D))", new NHXParser() )[ 0 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { no_lengths }, conf, "mad-noop" ) );
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                tp.madRoot();
+                tp.midpointRoot();
+                if ( !ForesterUtil.isEmpty( tp.getPhylogeny().getDescription() ) ) {
+                    ok[ 0 ] = TestFail.here();
                 }
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );

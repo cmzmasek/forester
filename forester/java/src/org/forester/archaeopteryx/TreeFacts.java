@@ -264,7 +264,7 @@ final class TreeFacts {
                     }
                     if ( n.getBranchData().isHasConfidences() ) {
                         for( final Confidence c : n.getBranchData().getConfidences() ) {
-                            if ( ( c != null ) && ( c.getValue() >= 0 ) ) {
+                            if ( ( c != null ) && ( c.getValue() >= 0 ) && !PhylogenyMethods.isMadConfidence( c ) ) {
                                 final String type = ForesterUtil.isEmpty( c.getType() ) ? "" : c.getType().trim();
                                 DescriptiveStatistics s = support.get( type );
                                 if ( s == null ) {

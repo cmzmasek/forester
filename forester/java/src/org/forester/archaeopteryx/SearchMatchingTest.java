@@ -160,6 +160,13 @@ public final class SearchMatchingTest {
         // confidence + numeric property share the numeric path
         ck( pos( SearchField.confidence(), SearchMode.GE, "90", n ), "confidence GE should match" );
         ck( !pos( SearchField.confidence(), SearchMode.LT, "90", n ), "confidence LT should not match here" );
+        // a MAD ancestor deviation is not a support value: the confidence field never matches it
+        final PhylogenyNode mad = new PhylogenyNode();
+        mad.getBranchData().addConfidence(
+                new org.forester.phylogeny.data.Confidence( 0.4, PhylogenyMethods.MAD_CONFIDENCE_TYPE ) );
+        ck( !pos( SearchField.confidence(), SearchMode.GE, "0", mad ), "a MAD value must not match the confidence field" );
+        mad.getBranchData().addConfidence( new org.forester.phylogeny.data.Confidence( 70, "bootstrap" ) );
+        ck( !pos( SearchField.confidence(), SearchMode.LT, "1", mad ), "only the bootstrap value is searched, not MAD" );
         ck( pos( SearchField.property( "aptx:reads", true ), SearchMode.GT, "500", n ),
             "a numeric property GT should match" );
         ck( !pos( SearchField.property( "aptx:reads", true ), SearchMode.LT, "500", n ),
@@ -326,6 +333,17 @@ public final class SearchMatchingTest {
         ck( byLabel( fields, "Taxonomy Scientific" ) != null, "a present scientific name should be offered" );
         ck( byLabel( fields, "Branch Length" ) != null, "a present branch length should be offered" );
         ck( byLabel( fields, "Support / Confidence" ) != null, "a present confidence should be offered" );
+        final PhylogenyNode mad_root = new PhylogenyNode();
+        final PhylogenyNode mad_leaf = new PhylogenyNode();
+        mad_leaf.setName( "m" );
+        mad_leaf.getBranchData().addConfidence(
+                new org.forester.phylogeny.data.Confidence( 0.4, PhylogenyMethods.MAD_CONFIDENCE_TYPE ) );
+        mad_root.addAsChild( mad_leaf );
+        final Phylogeny mad_phy = new Phylogeny();
+        mad_phy.setRoot( mad_root );
+        mad_phy.externalNodesHaveChanged();
+        ck( byLabel( SearchField.availableFields( mad_phy ), "Support / Confidence" ) == null,
+            "MAD values alone are not support, so the confidence field must not be offered" );
         ck( byLabel( fields, "Gene Name" ) == null, "an absent gene name should not be offered" );
         ck( byLabel( fields, "Domain" ) == null, "an absent domain should not be offered" );
         final SearchField host = byLabel( fields, "data:host" );

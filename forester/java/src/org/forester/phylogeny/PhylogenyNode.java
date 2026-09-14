@@ -916,11 +916,12 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                                         final NH_CONVERSION_SUPPORT_VALUE_STYLE svs,
                                         final boolean forse_seq_ids) {
         String data = "";
+        // the support value is never a MAD ancestor deviation (BranchData.getSupportConfidence)
+        final Confidence support = isExternal() ? null : getBranchData().getSupportConfidence();
         if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES ) && !isExternal() ) {
-            if ( getBranchData().isHasConfidences()
-                    && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+            if ( ( support != null ) && ( support.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
                 data = Confidence.FORMATTER.format( ForesterUtil
-                                                    .round( getBranchData().getConfidence( 0 ).getValue(),
+                                                    .round( support.getValue(),
                                                             PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) );
             }
         }
@@ -959,12 +960,11 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             sb.append( ":" );
             sb.append( getDistanceToParent() );
         }
-        if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ) && !isExternal()
-                && getBranchData().isHasConfidences()
-                && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+        if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ) && ( support != null )
+                && ( support.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
             sb.append( "[" );
             sb.append( Confidence.FORMATTER.format( ForesterUtil
-                                                    .round( getBranchData().getConfidence( 0 ).getValue(),
+                                                    .round( support.getValue(),
                                                             PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
             sb.append( "]" );
         }

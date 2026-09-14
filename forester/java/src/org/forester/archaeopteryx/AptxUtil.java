@@ -1432,9 +1432,10 @@ public final class AptxUtil {
     }
 
     /**
-     * Internal, non-root branches whose (maximum) confidence is below {@code threshold} -- the
+     * Internal, non-root branches whose (maximum) support value is below {@code threshold} -- the
      * branches the "Collapse Weakly-Supported Branches" tool would permanently collapse into
-     * polytomies. External nodes and the root are never candidates.
+     * polytomies. External nodes and the root are never candidates. MAD ancestor deviations are not
+     * support, so a branch carrying only those is not a candidate either.
      */
     final static List<PhylogenyNode> branchesToCollapseByConfidence(final Phylogeny phy, final double threshold) {
         final List<PhylogenyNode> result = new ArrayList<PhylogenyNode>();
@@ -1442,17 +1443,18 @@ public final class AptxUtil {
             for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode n = it.next();
                 if (!n.isExternal() && !n.isRoot()) {
-                    final List<Confidence> confidences = n.getBranchData().getConfidences();
-                    if ((confidences != null) && !confidences.isEmpty()) {
-                        double max = 0;
-                        for (final Confidence c : confidences) {
+                    boolean has_support = false;
+                    double max = 0;
+                    for (final Confidence c : n.getBranchData().getConfidences()) {
+                        if (!PhylogenyMethods.isMadConfidence(c)) {
+                            has_support = true;
                             if (c.getValue() > max) {
                                 max = c.getValue();
                             }
                         }
-                        if (max < threshold) {
-                            result.add(n);
-                        }
+                    }
+                    if (has_support && (max < threshold)) {
+                        result.add(n);
                     }
                 }
             }

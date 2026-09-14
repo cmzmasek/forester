@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.NDF;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
@@ -285,11 +286,17 @@ final class SearchField {
             return false;
         }
         for ( final Confidence c : node.getBranchData().getConfidences() ) {
-            if ( ( c != null ) && ( c.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+            if ( isSupportValue( c ) ) {
                 return true;
             }
         }
         return false;
+    }
+
+    // a real support value: set, and not a MAD ancestor deviation (low is good there, so it is not support)
+    private static boolean isSupportValue( final Confidence c ) {
+        return ( c != null ) && ( c.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE )
+                && !PhylogenyMethods.isMadConfidence( c );
     }
 
     // ---- description ----------------------------------------------------------------------------------------
@@ -462,7 +469,7 @@ final class SearchField {
         }
         final List<Double> vals = new ArrayList<>();
         for ( final Confidence c : node.getBranchData().getConfidences() ) {
-            if ( ( c != null ) && ( c.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+            if ( isSupportValue( c ) ) {
                 vals.add( c.getValue() );
             }
         }

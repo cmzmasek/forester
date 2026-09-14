@@ -9378,9 +9378,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int n = TreePanelUtil.writeCladeTaxonomies(_phylogeny, rank, TreePanelUtil.getDefaultLineageService(),
                 overwrite);
         if (n > 0) {
-            final String sentence = TreePanelUtil.cladeTaxonomyProvenance(_phylogeny, rank, n, overwrite);
-            final String existing = _phylogeny.getDescription();
-            _phylogeny.setDescription(ForesterUtil.isEmpty(existing) ? sentence : existing + " " + sentence);
+            appendProvenance(TreePanelUtil.cladeTaxonomyProvenance(_phylogeny, rank, n, overwrite));
             setEdited(true);
         }
         return n;
@@ -13675,12 +13673,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         pushUndoCheckpoint("Midpoint-Root");
         setNodeInPreorderToNull();
         setWaitCursor();
-        PhylogenyMethods.midpointRoot(_phylogeny);
+        if (PhylogenyMethods.midpointRoot(_phylogeny)) {
+            appendProvenance(TreePanelUtil.rootingProvenanceSentence(TreePanelUtil.MIDPOINT_ROOTING,
+                    _phylogeny.getName(), _phylogeny.getNumberOfExternalNodes()));
+        }
         PhylogenyMethods.removeMadConfidences(_phylogeny); // a different rooting; MAD support is stale
         resetNodeIdToDistToLeafMap();
         setArrowCursor();
         setEdited(true);
         repaint();
+    }
+
+    // Appends a provenance sentence to the tree's description, never overwriting it. Callers push their undo
+    // checkpoint first, so Undo restores the previous description along with the tree.
+    private void appendProvenance(final String sentence) {
+        final String existing = _phylogeny.getDescription();
+        _phylogeny.setDescription(ForesterUtil.isEmpty(existing) ? sentence : existing + " " + sentence);
     }
 
     final void madRoot() {
@@ -13695,7 +13703,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         pushUndoCheckpoint("MAD-Root");
         setNodeInPreorderToNull();
         setWaitCursor();
-        PhylogenyMethods.madRoot(_phylogeny);
+        if (PhylogenyMethods.madRoot(_phylogeny)) {
+            appendProvenance(TreePanelUtil.rootingProvenanceSentence(TreePanelUtil.MAD_ROOTING, _phylogeny.getName(),
+                    _phylogeny.getNumberOfExternalNodes()));
+        }
         resetNodeIdToDistToLeafMap();
         setArrowCursor();
         setEdited(true);
@@ -14855,12 +14866,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         pushUndoCheckpoint("Re-Root");
-        if (!node.isRoot()) {
+        final boolean rerooted = !node.isRoot();
+        if (rerooted) {
             // a different rooting was chosen manually; any MAD root support is now stale
             PhylogenyMethods.removeMadConfidences(getPhylogeny());
         }
         getPhylogeny().reRoot(node);
         getPhylogeny().recalculateNumberOfExternalDescendants(true);
+        if (rerooted) {
+            appendProvenance(TreePanelUtil.manualRerootProvenanceSentence(NodeDataForm.nodeDataLabel(node),
+                    getPhylogeny().getName(), getPhylogeny().getNumberOfExternalNodes()));
+        }
         resetNodeIdToDistToLeafMap();
         setNodeInPreorderToNull();
         resetPreferredSize();
@@ -15606,10 +15622,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         pushUndoCheckpoint("Ladderize Subtree");
         PhylogenyMethods.orderAppearanceX(node, true, pri);
-        final String prov = TreePanelUtil.ladderizeProvenanceSentence(false, null, getPhylogeny().getName(),
-                getPhylogeny().getNumberOfExternalNodes());
-        final String existing = getPhylogeny().getDescription();
-        getPhylogeny().setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
+        appendProvenance(TreePanelUtil.ladderizeProvenanceSentence(false, null, getPhylogeny().getName(),
+                getPhylogeny().getNumberOfExternalNodes()));
         setNodeInPreorderToNull();
         getPhylogeny().externalNodesHaveChanged();
         getPhylogeny().clearHashIdToNodeMap();

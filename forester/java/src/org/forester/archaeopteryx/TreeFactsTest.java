@@ -274,6 +274,20 @@ public final class TreeFactsTest {
     }
 
     private static boolean support() {
+        // a MAD ancestor deviation is not a support value: no "(MAD)" group, the other groups unchanged
+        final Phylogeny with_mad = fixture();
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = with_mad.iteratorPreorder(); it.hasNext(); ) {
+            final org.forester.phylogeny.PhylogenyNode nd = it.next();
+            if ( nd.isInternal() && !nd.isRoot() ) {
+                nd.getBranchData().addConfidence(
+                        new Confidence( 0.25, org.forester.phylogeny.PhylogenyMethods.MAD_CONFIDENCE_TYPE ) );
+            }
+        }
+        final List<Group> gm = TreeFacts.compute( with_mad, null, false, null );
+        if ( ( group( gm, "Support values (MAD)" ) != null )
+                || !is( group( gm, "Support values (bootstrap)" ), "Branches with support", "2" ) ) {
+            return TestFail.here( "MAD values must not form a support group" );
+        }
         final List<Group> gs = TreeFacts.compute( fixture(), null, false, null );
         final Group boot = group( gs, "Support values (bootstrap)" );
         final Group prob = group( gs, "Support values (probability)" );

@@ -7629,7 +7629,18 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny t0 = factory.create("(A:1,B:4,C:2,D:2,E:6,F:1,G:1,H:1)", new NHXParser())[0];
-            PhylogenyMethods.midpointRoot(t0);
+            if (!PhylogenyMethods.midpointRoot(t0)) {
+                return false; // rooted -> true
+            }
+            // the no-ops (no branch lengths; a single tip) report false and leave the tree as it was
+            final Phylogeny no_lengths = factory.create("((A,B),(C,D))", new NHXParser())[0];
+            if (PhylogenyMethods.midpointRoot(no_lengths)
+                    || !no_lengths.toNewHampshire().equals("((A,B),(C,D));")) {
+                return false;
+            }
+            if (PhylogenyMethods.midpointRoot(factory.create("(A:1)", new NHXParser())[0])) {
+                return false;
+            }
             if (!isEqual(t0.getNode("E").getDistanceToParent(), 5)) {
                 return false;
             }
@@ -7787,10 +7798,14 @@ public final class Test {
     //                               force on the chosen root AND every per-branch value, over many
     //                               tree shapes (binary, multifurcating, caterpillar, star) and sizes
     //   - testMADdeterminismEtc:    determinism, structural validity, and finiteness on clock trees
+    //   - testMADzeroDistances:     brute-force agreement on trees full of zero-distance tip pairs
+    //   - testMADnotWrittenAsSupport: Newick/Nexus/NHX never write a MAD value as the support value
+    //   - testMADnotReadAsSupport:  nor do the support helpers read one, or setConfidence overwrite one
     private static boolean testMADrooting() {
         try {
             return testMADexactCases() && testMADguards() && testMADbranchSupport()
-                    && testMADbruteForceEquiv() && testMADdeterminismEtc();
+                    && testMADbruteForceEquiv() && testMADdeterminismEtc() && testMADzeroDistances()
+                    && testMADnotWrittenAsSupport() && testMADnotReadAsSupport();
         } catch (final Exception e) {
             e.printStackTrace(System.out);
             return false;
@@ -7802,7 +7817,9 @@ public final class Test {
         // 3-taxon unrooted star with one long branch: the clock root sits 2.5 from C, leaving every
         // tip 2.5 from the root (an exact, hand-verifiable minimal-deviation rooting).
         final Phylogeny t0 = factory.create("(A:1,B:1,C:4)", new NHXParser())[0];
-        PhylogenyMethods.madRoot(t0);
+        if (!PhylogenyMethods.madRoot(t0)) {
+            return false; // rooted -> true
+        }
         if (t0.getRoot().getNumberOfDescendants() != 2) {
             return false;
         }
@@ -7833,20 +7850,23 @@ public final class Test {
     private static boolean testMADguards() throws Exception {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         // no-op (no exception, topology intact) for < 3 tips and for trees without branch lengths
+        // (each no-op reports false, so the GUI writes no provenance sentence for it)
         final Phylogeny t2 = factory.create("(A:1,B:1)", new NHXParser())[0];
-        PhylogenyMethods.madRoot(t2);
-        if (t2.getNumberOfExternalNodes() != 2) {
+        if (PhylogenyMethods.madRoot(t2) || (t2.getNumberOfExternalNodes() != 2)) {
             return false;
         }
         final Phylogeny t3 = factory.create("((A,B),(C,D))", new NHXParser())[0];
-        PhylogenyMethods.madRoot(t3);
-        if ((t3.getNumberOfExternalNodes() != 4) || hasConfidenceOfType(t3, "MAD")) {
+        if (PhylogenyMethods.madRoot(t3) || (t3.getNumberOfExternalNodes() != 4)
+                || hasConfidenceOfType(t3, "MAD")) {
             return false; // no branch lengths -> no rooting and no MAD annotations
         }
         final Phylogeny two = randomTree(2, 1, 2); // below the 3-tip minimum
-        PhylogenyMethods.madRoot(two);
-        if ((two.getNumberOfExternalNodes() != 2) || (madConfidenceCount(two) != 0)) {
+        if (PhylogenyMethods.madRoot(two) || (two.getNumberOfExternalNodes() != 2)
+                || (madConfidenceCount(two) != 0)) {
             return false; // a no-op: tree intact, no MAD annotations
+        }
+        if (PhylogenyMethods.madRoot(null)) {
+            return false;
         }
         return true;
     }
@@ -7951,6 +7971,194 @@ public final class Test {
             }
         }
         return true;
+    }
+
+    // Tip pairs at zero distance (identical sequences on zero-length branches) have no defined
+    // deviation and are left out of every sum; the fast DP once still counted them in one constant
+    // term, skewing the per-branch values near duplicates (found by the Archaeopteryx.js port).
+    private static boolean testMADzeroDistances() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        if (!validateMadAgainstBruteForce(factory.create("((A:0,B:0):0,(C:0,D:1):0)", new NHXParser())[0])) {
+            return false;
+        }
+        int with_zero_pairs = 0;
+        int trees = 0;
+        for (final long seed : new long[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }) {
+            for (final int n : new int[] { 3, 4, 5, 7, 10, 14 }) {
+                final Phylogeny phy = randomZeroDistanceTree(n, seed);
+                if (PhylogenyMethods.calculateMaxDistanceToRoot(phy) <= 0) {
+                    continue; // madRoot's documented no-op
+                }
+                ++trees;
+                if (hasZeroDistanceTipPair(phy)) {
+                    ++with_zero_pairs;
+                }
+                if (!validateMadAgainstBruteForce(phy)) {
+                    return false;
+                }
+            }
+        }
+        return (trees > 60) && (with_zero_pairs > (trees / 2)); // the fixture really exercises zero pairs
+    }
+
+    // Newick, Nexus and NHX write the first NON-MAD confidence as a branch's support value (a joint
+    // rule with Archaeopteryx.js): a MAD ancestor deviation is not support, and must not displace a
+    // bootstrap value. phyloXML keeps writing every confidence with its type.
+    private static boolean testMADnotWrittenAsSupport() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final Phylogeny mad_only = factory.create("((A:1,B:1)ab:1,C:1)", new NHXParser())[0];
+        final PhylogenyNode ab = mad_only.getNode("ab");
+        if (ab.getBranchData().getSupportConfidence() != null) {
+            return false; // no confidences at all
+        }
+        ab.getBranchData().addConfidence(new Confidence(0.17, PhylogenyMethods.MAD_CONFIDENCE_TYPE));
+        if (ab.getBranchData().getSupportConfidence() != null) {
+            return false;
+        }
+        if (!mad_only.toNewHampshire(NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS)
+                .equals("((A:1.0,B:1.0)ab:1.0,C:1.0);")) {
+            return false;
+        }
+        if (!mad_only.toNewHampshire(NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES)
+                .equals("((A:1.0,B:1.0):1.0,C:1.0);")) {
+            return false;
+        }
+        if (mad_only.toNewHampshireX().contains("B=")
+                || mad_only.toNexus(NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS).contains("0.17")) {
+            return false;
+        }
+        if (!PhylogenyWriter.createPhylogenyWriter().toPhyloXML(mad_only, 0).toString().contains("0.17")) {
+            return false; // phyloXML still carries the MAD value
+        }
+        for (final boolean mad_first : new boolean[] { true, false }) {
+            final Phylogeny both = factory.create("((A:1,B:1)ab:1,C:1)", new NHXParser())[0];
+            final Confidence mad = new Confidence(0.17, PhylogenyMethods.MAD_CONFIDENCE_TYPE);
+            final Confidence bootstrap = new Confidence(88, "bootstrap");
+            both.getNode("ab").getBranchData().addConfidence(mad_first ? mad : bootstrap);
+            both.getNode("ab").getBranchData().addConfidence(mad_first ? bootstrap : mad);
+            if (both.getNode("ab").getBranchData().getSupportConfidence() != bootstrap) {
+                return false;
+            }
+            if (!both.toNewHampshire(NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS)
+                    .equals("((A:1.0,B:1.0)ab:1.0[88],C:1.0);")) {
+                return false;
+            }
+            if (!both.toNewHampshire(NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES)
+                    .equals("((A:1.0,B:1.0)88:1.0,C:1.0);")) {
+                return false;
+            }
+            final String nhx = both.toNewHampshireX();
+            final String nexus = both.toNexus(NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS);
+            if (!nhx.contains("B=88") || nhx.contains("0.17") || !nexus.contains("[88]") || nexus.contains("0.17")) {
+                return false;
+            }
+        }
+        // end to end: a MAD-rooted tree without bootstrap values writes no support at all
+        final Phylogeny rooted = factory.create("((A:1,B:1):1,(C:1,D:6):1)", new NHXParser())[0];
+        PhylogenyMethods.madRoot(rooted);
+        if (!hasConfidenceOfType(rooted, PhylogenyMethods.MAD_CONFIDENCE_TYPE)) {
+            return false;
+        }
+        if (rooted.toNewHampshire(NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS).contains("[")
+                || rooted.toNewHampshireX().contains("B=")) {
+            return false;
+        }
+        return true;
+    }
+
+    // Nor is a MAD ancestor deviation READ as a support value: getConfidenceValue, the maximum, the
+    // bootstrap normalization and setConfidence all act on the first non-MAD confidence and leave MAD
+    // values as they are (the desktop's support dots, colouring and scale detection read through these).
+    private static boolean testMADnotReadAsSupport() throws Exception {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final Phylogeny phy = factory.create("((A:1,B:1)ab:1,(C:1,D:1)cd:1)", new NHXParser())[0];
+        final PhylogenyNode ab = phy.getNode("ab");
+        final PhylogenyNode cd = phy.getNode("cd");
+        final Confidence mad_ab = new Confidence(0.4, PhylogenyMethods.MAD_CONFIDENCE_TYPE);
+        ab.getBranchData().addConfidence(mad_ab); // MAD only
+        final Confidence mad_cd = new Confidence(0.3, PhylogenyMethods.MAD_CONFIDENCE_TYPE);
+        cd.getBranchData().addConfidence(mad_cd); // MAD first, then a bootstrap value
+        cd.getBranchData().addConfidence(new Confidence(80, "bootstrap"));
+        if (!PhylogenyMethods.isMadConfidence(mad_ab) || PhylogenyMethods.isMadConfidence(null)
+                || PhylogenyMethods.isMadConfidence(new Confidence(0.4, "bootstrap"))) {
+            return false;
+        }
+        if ((PhylogenyMethods.getConfidenceValue(ab) != Confidence.CONFIDENCE_DEFAULT_VALUE)
+                || (PhylogenyMethods.getConfidenceValue(cd) != 80)) {
+            return false;
+        }
+        if (PhylogenyMethods.getMaximumConfidenceValue(phy) != 80) {
+            return false;
+        }
+        PhylogenyMethods.normalizeBootstrapValues(phy, 80, 100);
+        if ((PhylogenyMethods.getConfidenceValue(cd) != 100) || (mad_cd.getValue() != 0.3)
+                || !PhylogenyMethods.isMadConfidence(mad_cd) || (mad_ab.getValue() != 0.4)) {
+            return false; // the bootstrap value was normalized, the MAD values untouched
+        }
+        // setConfidence on a MAD-only branch adds a support confidence and keeps the MAD one
+        PhylogenyMethods.setConfidence(ab, 55);
+        if ((ab.getBranchData().getNumberOfConfidences() != 2) || (mad_ab.getValue() != 0.4)
+                || !PhylogenyMethods.isMadConfidence(mad_ab) || (PhylogenyMethods.getConfidenceValue(ab) != 55)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean hasZeroDistanceTipPair(final Phylogeny phy) {
+        final List<PhylogenyNode> tips = phy.getExternalNodes();
+        for (int a = 0; a < tips.size(); ++a) {
+            for (int b = a + 1; b < tips.size(); ++b) {
+                if (PhylogenyMethods.calculateDistance(tips.get(a), tips.get(b)) <= 1e-9) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // A random binary tree full of zero-distance tip pairs, as identical sequences produce: about half
+    // of the n units are cherries of two duplicates on zero-length branches, and about a quarter of
+    // the remaining branches have length zero too (so zero-distance pairs also span internal branches).
+    private static Phylogeny randomZeroDistanceTree(final int n_units, final long seed) {
+        final java.util.Random r = new java.util.Random(seed);
+        final List<PhylogenyNode> active = new ArrayList<>();
+        final java.util.Set<PhylogenyNode> duplicates = new HashSet<>();
+        for (int i = 0; i < n_units; ++i) {
+            if (r.nextBoolean()) {
+                final PhylogenyNode cherry = new PhylogenyNode();
+                final PhylogenyNode a = madTestLeaf("T" + i + "a", 0);
+                final PhylogenyNode b = madTestLeaf("T" + i + "b", 0);
+                cherry.addAsChild(a);
+                cherry.addAsChild(b);
+                duplicates.add(a);
+                duplicates.add(b);
+                active.add(cherry);
+            }
+            else {
+                active.add(madTestLeaf("T" + i, 0));
+            }
+        }
+        while (active.size() > 2) {
+            final PhylogenyNode x = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode y = active.remove(r.nextInt(active.size()));
+            final PhylogenyNode parent = new PhylogenyNode();
+            parent.addAsChild(x);
+            parent.addAsChild(y);
+            active.add(parent);
+        }
+        final PhylogenyNode root = new PhylogenyNode();
+        for (final PhylogenyNode nd : active) {
+            root.addAsChild(nd);
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot(root);
+        phy.externalNodesHaveChanged();
+        for (final PhylogenyNode nd : PhylogenyMethods.obtainAllNodesAsList(phy)) {
+            if (!nd.isRoot() && !duplicates.contains(nd)) {
+                nd.setDistanceToParent((r.nextInt(4) == 0) ? 0 : (0.05 + r.nextDouble()));
+            }
+        }
+        return phy;
     }
 
     // Sum of squared MAD ancestor deviations of the tree's CURRENT rooting (each pair's ancestor is

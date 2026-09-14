@@ -74,7 +74,7 @@ public final class TreePanelUtilTest {
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
                 && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance()
-                && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
+                && testRootingProvenance() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
     }
 
     private static boolean testScientificNameIsItalic() {
@@ -149,6 +149,27 @@ public final class TreePanelUtilTest {
         final String noname = TreePanelUtil.ladderizeProvenanceSentence( true, Boolean.TRUE, "", 5 );
         if ( noname.contains( "named" ) || !noname.contains( "5 tips" ) ) {
             return false;
+        }
+        return true;
+    }
+
+    private static boolean testRootingProvenance() {
+        final String mad = TreePanelUtil.rootingProvenanceSentence( TreePanelUtil.MAD_ROOTING, "mytree", 42 );
+        if ( !mad.equals( "Used the minimal ancestor deviation (MAD) rooting method (Tria, Landan & Dagan 2017) to root"
+                + " tree named \"mytree\" with 42 tips." ) ) {
+            return fail( "MAD rooting provenance is wrong: " + mad );
+        }
+        final String mid = TreePanelUtil.rootingProvenanceSentence( TreePanelUtil.MIDPOINT_ROOTING, "", 2 );
+        if ( !mid.equals( "Used the midpoint rooting method (Farris 1972) to root a tree with 2 tips." ) ) {
+            return fail( "unnamed midpoint rooting provenance is wrong: " + mid );
+        }
+        final String manual = TreePanelUtil.manualRerootProvenanceSentence( "Mus musculus", "t", 1 );
+        if ( !manual.equals( "Manually re-rooted tree named \"t\" with 1 tip on the branch leading to \"Mus musculus\"." ) ) {
+            return fail( "manual re-root provenance is wrong: " + manual );
+        }
+        final String unlabelled = TreePanelUtil.manualRerootProvenanceSentence( null, null, 7 );
+        if ( !unlabelled.equals( "Manually re-rooted a tree with 7 tips." ) ) {
+            return fail( "unlabelled manual re-root provenance is wrong: " + unlabelled );
         }
         return true;
     }
@@ -2203,6 +2224,12 @@ public final class TreePanelUtilTest {
         // a Bayesian tree (posterior probability 0.99) -> 0..1 scale
         if ( TreePanelUtil.detectConfidenceScaleMax( treeWithInternalConfidence( 0.99, "posterior" ) ) != 1.0 ) {
             return fail( "a tree with posterior probability 0.99 must be detected as the 0..1 scale" );
+        }
+        // a MAD ancestor deviation is not support: a MAD value ahead of a bootstrap 90 keeps the 0..100 scale
+        final Phylogeny mad_first = treeWithInternalConfidence( 0.4, PhylogenyMethods.MAD_CONFIDENCE_TYPE );
+        mad_first.getRoot().getChildNode( 0 ).getBranchData().addConfidence( new Confidence( 90.0, "bootstrap" ) );
+        if ( TreePanelUtil.detectConfidenceScaleMax( mad_first ) != 100.0 ) {
+            return fail( "a MAD value ahead of bootstrap support 90 must not change the 0..100 scale" );
         }
         // no confidences anywhere -> defaults to the 0..1 scale (harmless; nothing is drawn)
         final Phylogeny bare = new Phylogeny();

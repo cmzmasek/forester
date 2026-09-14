@@ -260,9 +260,13 @@ public final class NodeDataFormTest {
         final PhylogenyNode tip = n.getChildNode( 0 );
         tip.setName( "" );
         ok = ok && eq( "tip subtitle", "External node · depth 2 · 0.25 from root", NodeDataForm.headerSubtitle( tip ) )
-                && eq( "label falls back to the id", "node " + tip.getId(), NodeDataForm.nodeLabel( tip ) );
+                && eq( "label falls back to the id", "node " + tip.getId(), NodeDataForm.nodeLabel( tip ) )
+                && eq( "data label: the name", "BRCA1 clade", NodeDataForm.nodeDataLabel( n ) )
+                // a node without a label of its own has no data label (never the session-only id)
+                && eq( "no data label", null, NodeDataForm.nodeDataLabel( tip ) );
         n.setName( "" );
-        ok = ok && eq( "label falls back to the scientific name", "Homo sapiens", NodeDataForm.nodeLabel( n ) );
+        ok = ok && eq( "label falls back to the scientific name", "Homo sapiens", NodeDataForm.nodeLabel( n ) )
+                && eq( "data label falls back to the scientific name", "Homo sapiens", NodeDataForm.nodeDataLabel( n ) );
         n.getNodeData().getTaxonomy().setScientificName( "" );
         return ok && eq( "then the taxonomy code", "HUMAN", NodeDataForm.nodeLabel( n ) );
     }

@@ -583,13 +583,14 @@ public class PhylogenyMethods {
     }
 
     /**
-     * Convenience method
+     * The branch's support value: that of its first confidence which is not a MAD ancestor deviation
+     * ({@link org.forester.phylogeny.data.BranchData#getSupportConfidence()}), or
+     * {@link Confidence#CONFIDENCE_DEFAULT_VALUE} when it
+     * has none.
      */
     public static double getConfidenceValue(final PhylogenyNode node) {
-        if (!node.getBranchData().isHasConfidences()) {
-            return Confidence.CONFIDENCE_DEFAULT_VALUE;
-        }
-        return node.getBranchData().getConfidence(0).getValue();
+        final Confidence support = node.getBranchData().getSupportConfidence();
+        return (support == null) ? Confidence.CONFIDENCE_DEFAULT_VALUE : support.getValue();
     }
 
     /**
@@ -753,9 +754,15 @@ public class PhylogenyMethods {
         }
     }
 
-    public static void midpointRoot(final Phylogeny phylogeny) {
+    /**
+     * Midpoint-roots the tree (the root is placed halfway along the longest tip-to-tip path).
+     *
+     * @return false (and the tree untouched) when it has fewer than two tips or no branch lengths,
+     *         true otherwise
+     */
+    public static boolean midpointRoot(final Phylogeny phylogeny) {
         if ((phylogeny.getNumberOfExternalNodes() < 2) || (calculateMaxDistanceToRoot(phylogeny) <= 0)) {
-            return;
+            return false;
         }
         int counter = 0;
         final int total_nodes = phylogeny.getNodeCount();
@@ -791,6 +798,7 @@ public class PhylogenyMethods {
             phylogeny.reRoot(a, x);
         }
         phylogeny.recalculateNumberOfExternalDescendants(true);
+        return true;
     }
 
     private static final double MAD_EPSILON = 1e-9;
@@ -803,7 +811,9 @@ public class PhylogenyMethods {
      * both; the relative ancestor deviation of a pair {@code (i,j)} with common ancestor {@code a}
      * is {@code |2*dist(a,i)/dist(i,j) - 1|}. For every branch of the unrooted tree the root
      * position minimizing the sum of squared deviations of all tip pairs is found analytically, and
-     * the branch and position yielding the smallest overall deviation become the new root.
+     * the branch and position yielding the smallest overall deviation become the new root. Tip pairs
+     * at zero distance (identical tips on zero-length branches) have no defined deviation and are left
+     * out of every sum.
      * <p>
      * Requires branch lengths and at least three external nodes; otherwise it is a no-op (use
      * {@link #midpointRoot(Phylogeny)} for trees without branch lengths). Runs in O(n^2) time and
@@ -819,13 +829,15 @@ public class PhylogenyMethods {
      * This method is intricate; before changing it, note that {@code org.forester.test.Test}'s
      * {@code testMADrooting} validates the chosen root AND every per-branch value against an
      * independent brute force over many random tree shapes -- keep those tests green.
+     *
+     * @return true when the tree was rooted, false when it was left untouched (the no-op cases above)
      */
-    public static void madRoot(final Phylogeny phylogeny) {
+    public static boolean madRoot(final Phylogeny phylogeny) {
         if ((phylogeny == null) || (phylogeny.getNumberOfExternalNodes() < 3)) {
-            return;
+            return false;
         }
         if (calculateMaxDistanceToRoot(phylogeny) <= 0) {
-            return; // no usable branch lengths
+            return false; // no usable branch lengths
         }
         final List<PhylogenyNode> tips = phylogeny.getExternalNodes();
         final int n = tips.size();
@@ -917,8 +929,10 @@ public class PhylogenyMethods {
         // between-set cross sums for a branch are then b_k = a_k - w_k).
         final double[] colsum0 = new double[n]; // sum_{i!=j} 1/d^2
         final double[] colsum_inv = new double[n]; // sum_{i!=j} 1/d
+        final int[] partners = new int[n]; // number of i!=j with d > MAD_EPSILON
         for (int j = 0; j < n; ++j) {
             double s0 = 0, sinv = 0;
+            int count = 0;
             final double[] dj = d[j];
             for (int i = 0; i < n; ++i) {
                 final double dij = dj[i];
@@ -926,17 +940,21 @@ public class PhylogenyMethods {
                     final double inv = 1.0 / dij;
                     s0 += inv * inv;
                     sinv += inv;
+                    ++count;
                 }
             }
             colsum0[j] = s0;
             colsum_inv[j] = sinv;
+            partners[j] = count;
         }
         final double[] colsum1 = new double[n];
         final double[] colsum2 = new double[n];
         for (int j = 0; j < n; ++j) {
             colsum1[j] = (2.0 * tip_depth[j] * colsum0[j]) - colsum_inv[j];
+            // the constant term of (2*depth[j]/d - 1)^2 counts only the pairs every other sum counts:
+            // (n - 1) would add a spurious 1 per zero-distance pair (identical tips on zero branches)
             colsum2[j] = (4.0 * tip_depth[j] * tip_depth[j] * colsum0[j]) - (4.0 * tip_depth[j] * colsum_inv[j])
-                    + (n - 1);
+                    + partners[j];
         }
         final Map<Long, Double> b0 = new HashMap<>();
         final Map<Long, Double> b1 = new HashMap<>();
@@ -1052,11 +1070,21 @@ public class PhylogenyMethods {
                     }
                 }
             }
+            return true;
         }
+        return false;
     }
 
     /** The phyloXML/Newick confidence {@code type} used for per-branch MAD ancestor-deviation values. */
     public static final String MAD_CONFIDENCE_TYPE = "MAD";
+
+    /**
+     * Whether {@code c} is a MAD ancestor deviation (type {@value #MAD_CONFIDENCE_TYPE}) -- low is good
+     * there, so it is never read as a support value. False for null.
+     */
+    public static boolean isMadConfidence(final Confidence c) {
+        return (c != null) && MAD_CONFIDENCE_TYPE.equals(c.getType());
+    }
 
     // The bipartition induced by a branch, as the set of tip indices on the side NOT containing tip 0
     // (a fixed canonical orientation, so the same edge maps to the same key regardless of rooting).
@@ -1403,10 +1431,9 @@ public class PhylogenyMethods {
      * Sets value for the first confidence value (created if not present, values overwritten otherwise).
      */
     public static void setConfidence(final PhylogenyNode node, final double confidence_value, final String type) {
-        Confidence c = null;
-        if (node.getBranchData().getNumberOfConfidences() > 0) {
-            c = node.getBranchData().getConfidence(0);
-        } else {
+        // the support confidence -- never a MAD ancestor deviation, which is kept as it is
+        Confidence c = node.getBranchData().getSupportConfidence();
+        if (c == null) {
             c = new Confidence();
             node.getBranchData().addConfidence(c);
         }

@@ -991,6 +991,28 @@ public final class AptxUtilTest {
         if ( AptxUtil.branchesToCollapseByBranchLength( phy, 3.0 ).size() != 2 ) {
             return fail( "branch length < 3.0 must select both internal branches" );
         }
+        // MAD ancestor deviations are not support: a MAD-only branch is never a candidate, and a MAD value
+        // never lifts a weak support value above the threshold
+        final PhylogenyNode mad_only = internalBranch( 50.0, 0.1 );
+        mad_only.getBranchData().getConfidences().clear();
+        mad_only.getBranchData().addConfidence( new Confidence( 0.9, PhylogenyMethods.MAD_CONFIDENCE_TYPE ) );
+        final PhylogenyNode weak = internalBranch( 50.0, 0.1 );
+        weak.getBranchData().getConfidences().clear();
+        weak.getBranchData().addConfidence( new Confidence( 0.9, PhylogenyMethods.MAD_CONFIDENCE_TYPE ) );
+        weak.getBranchData().addConfidence( new Confidence( 0.2, "posterior" ) );
+        final Phylogeny mad_phy = new Phylogeny();
+        final PhylogenyNode mad_root = new PhylogenyNode();
+        mad_root.addAsChild( mad_only );
+        mad_root.addAsChild( weak );
+        mad_phy.setRoot( mad_root );
+        mad_phy.externalNodesHaveChanged();
+        for( final double threshold : new double[] { 0.5, 1.0 } ) {
+            final List<PhylogenyNode> by_support = AptxUtil.branchesToCollapseByConfidence( mad_phy, threshold );
+            if ( ( by_support.size() != 1 ) || ( by_support.get( 0 ) != weak ) ) {
+                return fail( "confidence < " + threshold + " must select only the weak posterior branch, never by MAD; got "
+                        + by_support.size() );
+            }
+        }
         // null / empty trees yield no candidates (no crash)
         if ( !AptxUtil.branchesToCollapseByConfidence( null, 50.0 ).isEmpty()
                 || !AptxUtil.branchesToCollapseByBranchLength( new Phylogeny(), 1.0 ).isEmpty() ) {

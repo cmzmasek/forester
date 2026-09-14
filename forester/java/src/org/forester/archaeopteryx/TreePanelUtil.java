@@ -2196,6 +2196,41 @@ public class TreePanelUtil {
         return "Ladderized " + scope + dir + " (tree" + name + " with " + num_ext_nodes + " tips).";
     }
 
+    /** The Tools &rarr; MAD-Root method, as named in its provenance sentence. */
+    final static String MAD_ROOTING = "minimal ancestor deviation (MAD) rooting method (Tria, Landan & Dagan 2017)";
+
+    /** The Tools &rarr; Midpoint-Root method, as named in its provenance sentence. */
+    final static String MIDPOINT_ROOTING = "midpoint rooting method (Farris 1972)";
+
+    /**
+     * Provenance sentence for a rooting algorithm ({@link #MAD_ROOTING}, {@link #MIDPOINT_ROOTING}), e.g. <i>Used
+     * the midpoint rooting method (Farris 1972) to root tree named "mammals" with 42 tips.</i> Pure/testable; the
+     * caller appends it to the phylogeny description, and only when the tree was actually rooted.
+     */
+    final static String rootingProvenanceSentence( final String method, final String tree_name,
+                                                   final int num_ext_nodes ) {
+        return "Used the " + method + " to root " + provenanceTreePhrase( tree_name, num_ext_nodes ) + ".";
+    }
+
+    /**
+     * Provenance sentence for a manual re-root (clicking a node in Re-Root mode), e.g. <i>Manually re-rooted tree
+     * named "mammals" with 42 tips on the branch leading to "Mus musculus".</i> An empty node label drops that
+     * clause. Pure/testable.
+     */
+    final static String manualRerootProvenanceSentence( final String node_label, final String tree_name,
+                                                        final int num_ext_nodes ) {
+        final String branch = ForesterUtil.isEmpty( node_label ) ? ""
+                : ( " on the branch leading to \"" + node_label + "\"" );
+        return "Manually re-rooted " + provenanceTreePhrase( tree_name, num_ext_nodes ) + branch + ".";
+    }
+
+    // "tree named "x" with N tips", or "a tree with N tips" when the tree has no name
+    private static String provenanceTreePhrase( final String tree_name, final int num_ext_nodes ) {
+        final String tips = num_ext_nodes + ( num_ext_nodes == 1 ? " tip" : " tips" );
+        return ForesterUtil.isEmpty( tree_name ) ? ( "a tree with " + tips )
+                : ( "tree named \"" + tree_name + "\" with " + tips );
+    }
+
     /**
      * The direction the subtree rooted at {@code root} is currently ladderized in -- used to sync the "order all"
      * toggle icon to the tree after an Undo/Redo or navigation. {@code TRUE} = larger clade drawn first at every

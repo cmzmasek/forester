@@ -25,6 +25,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forester.phylogeny.PhylogenyMethods;
+
 public class BranchData implements PhylogenyData {
 
     private BranchColor      _branch_color;
@@ -89,6 +91,23 @@ public class BranchData implements PhylogenyData {
         return getConfidences().size();
     }
 
+    /**
+     * The confidence that Newick, Nexus and NHX write as this branch's support value: the first one
+     * that is not a MAD ancestor deviation (type {@value PhylogenyMethods#MAD_CONFIDENCE_TYPE}, added
+     * by {@link PhylogenyMethods#madRoot}; low is good there, so it is not support). A joint rule with
+     * Archaeopteryx.js. Returns null when there is no such confidence.
+     */
+    public Confidence getSupportConfidence() {
+        if ( isHasConfidences() ) {
+            for( final Confidence confidence : getConfidences() ) {
+                if ( !PhylogenyMethods.isMadConfidence( confidence ) ) {
+                    return confidence;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean isEqual( final PhylogenyData data ) {
         throw new UnsupportedOperationException();
@@ -117,9 +136,10 @@ public class BranchData implements PhylogenyData {
     @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
-        if ( isHasConfidences() && ( getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+        final Confidence support = getSupportConfidence();
+        if ( ( support != null ) && ( support.getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
             sb.append( ":" );
-            sb.append( getConfidence( 0 ).toNHX() );
+            sb.append( support.toNHX() );
         }
         return sb;
     }
