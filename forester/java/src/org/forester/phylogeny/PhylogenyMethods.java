@@ -395,16 +395,38 @@ public class PhylogenyMethods {
         return nodes;
     }
 
+    /**
+     * Deletes the external nodes with the given ids, collapsing every node left with a single descendant.
+     * <p>
+     * The pruned tree's root keeps the ORIGINAL root's own branch length (normally none), so the result does not
+     * depend on deletion order. Without that, a two-child root hands the root role to the surviving child with that
+     * child's own length, while a deeper collapse first adds its parent's length to it -- and the order here is the
+     * set's iteration order (for a HashSet, the node ids assigned at load). Joint rule with Archaeopteryx.js
+     * (Christian, 2026-09-15).
+     */
     public static void deleteExternalNodesNegativeSelection(final Set<Long> to_delete, final Phylogeny phy) {
+        final double root_distance = phy.isEmpty() ? 0 : phy.getRoot().getDistanceToParent();
         for (final Long id : to_delete) {
             phy.deleteSubtree(phy.getNode(id), true);
         }
+        restoreRootDistance(phy, root_distance);
         phy.clearHashIdToNodeMap();
         phy.externalNodesHaveChanged();
     }
 
+    private static void restoreRootDistance(final Phylogeny phy, final double root_distance) {
+        if (!phy.isEmpty()) {
+            phy.getRoot().setDistanceToParent(root_distance);
+        }
+    }
+
+    /**
+     * Deletes the external nodes with the given names; as the id overload, the pruned root keeps the original root's
+     * own branch length whatever the order of the names.
+     */
     public static void deleteExternalNodesNegativeSelection(final String[] node_names_to_delete, final Phylogeny p)
             throws IllegalArgumentException {
+        final double root_distance = p.isEmpty() ? 0 : p.getRoot().getDistanceToParent();
         for (final String element : node_names_to_delete) {
             if (ForesterUtil.isEmpty(element)) {
                 continue;
@@ -420,6 +442,7 @@ public class PhylogenyMethods {
                 p.deleteSubtree(n, true);
             }
         }
+        restoreRootDistance(p, root_distance);
         p.clearHashIdToNodeMap();
         p.externalNodesHaveChanged();
     }

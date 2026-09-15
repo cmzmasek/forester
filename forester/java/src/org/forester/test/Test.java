@@ -837,6 +837,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("External node deletion (order-independent root length): ");
+        if (org.forester.phylogeny.ExternalNodeDeletionTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree app property (phylogeny-level storage): ");
         if (org.forester.archaeopteryx.tools.TreeAppPropertyTest.test()) {
             System.out.println("OK.");
