@@ -212,6 +212,11 @@ public final class DemoTreesTest {
         // BEAST / BEAST X output: a NEXUS tree whose [&...] annotations parse into HPD date intervals (Node Age
         // Bars), posterior confidences (support), and a numeric beast:rate property (Color-by)
         ok &= beastAnnotationsOk( "beast-annotations.nex" );
+        // what Nextstrain / TreeTime / MrBayes really write, each read exactly as File > Open reads it
+        ok &= nextstrainNexusOk( "nextstrain-nexus.nex" );
+        ok &= treeTimePairOk( "treetime-nexus.nex", "treetime-divergence.nex" );
+        ok &= treeTimeNewickOk( "treetime-tree.nwk" );
+        ok &= mrBayesConsensusOk( "mrbayes-consensus.con.tre" );
 
         // ancestral-state pie charts: a discrete-trait posterior (beast:location_set + _set_prob) on the internal
         // nodes, so the pie feature has a trait with a parseable multi-state distribution
@@ -706,10 +711,10 @@ public final class DemoTreesTest {
         if ( phy == null ) {
             return false;
         }
-        if ( AptxUtil.isHasAtLeastOneExternalNodeWithDateInterval( phy ) ) {
+        if ( AptxUtil.isHasFossilRanges( phy ) ) {
             return true;
         }
-        return note( file_name + " must carry an EXTERNAL-tip <date> with a min/max interval (for fossil range bars)" );
+        return note( file_name + " must carry an EXTERNAL-tip <date> with a min/max interval on a non-calendar tree (for fossil range bars)" );
     }
 
     /** Every external tip's {@code <date>} value is at least {@code min_ma} Ma -- i.e. the tree is FOSSIL-ONLY (no extant
@@ -1222,6 +1227,208 @@ public final class DemoTreesTest {
         }
         if ( rates < 5 ) {
             return note( file_name + " nodes must carry a numeric beast:rate property, got " + rates );
+        }
+        // FigTree colours: "#" + Java's SIGNED Color.getRGB() int, on a tip and LEADING an internal node's blob
+        int colours = 0;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getBranchData().getBranchColor() != null ) {
+                if ( n.getBranchData().getBranchColor().getValue().getRGB() != 0xFF801B39 ) {
+                    return note( file_name + " !color=#-8381639 must decode to 0x801B39" );
+                }
+                if ( !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
+                    return note( file_name + " a !color-led blob must keep its posterior" );
+                }
+                colours++;
+            }
+        }
+        if ( colours != 2 ) {
+            return note( file_name + " must carry two FigTree branch colours, got " + colours );
+        }
+        return true;
+    }
+
+    /** A demo file read exactly as File > Open (and aptx_render) reads it: parser by name / first line, the shared
+     *  reading options, the internal-label policy. */
+    private static Phylogeny loadAsOpened( final String file_name ) {
+        final File file = new File( DEMO_DIR + file_name );
+        if ( !file.exists() ) {
+            return fail( file_name + " is missing from the demo gallery (" + file.getAbsolutePath() + ")" );
+        }
+        try {
+            final Phylogeny[] phys = FigureRenderer.readTrees( file );
+            if ( ( phys.length != 1 ) || ( phys[ 0 ] == null ) || phys[ 0 ].isEmpty() ) {
+                return fail( file_name + " did not yield exactly one non-empty tree" );
+            }
+            return phys[ 0 ];
+        }
+        catch ( final Exception e ) {
+            return fail( file_name + " could not be read: " + e.getMessage() );
+        }
+    }
+
+    private static String propertyValue( final PhylogenyNode n, final String ref ) {
+        if ( ( n.getNodeData().getProperties() == null ) || n.getNodeData().getProperties().getProperties( ref ).isEmpty() ) {
+            return null;
+        }
+        return n.getNodeData().getProperties().getProperties( ref ).get( 0 ).getValue();
+    }
+
+    /** Auspice's "download Nexus" of a time tree opens like the same build's JSON: every node dated in calendar
+     *  years (so: Calendar axis, a time tree), intervals on INTERNAL nodes only, nextstrain:div for Time | Div, and
+     *  the unquoted values whole -- spaces, and the apostrophe that used to break the file. */
+    private static boolean nextstrainNexusOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int nodes = 0;
+        int dated = 0;
+        int div = 0;
+        int tip_intervals = 0;
+        int genuine_tip_intervals = 0;
+        int internal_intervals = 0;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            nodes++;
+            final org.forester.phylogeny.data.Date d = n.getNodeData().getDate();
+            if ( ( d != null ) && ( d.getValue() != null ) && "year".equals( d.getUnit() ) ) {
+                dated++;
+                if ( ( d.getMin() != null ) && ( d.getMax() != null ) ) {
+                    if ( n.isExternal() ) {
+                        tip_intervals++;
+                        genuine_tip_intervals += AptxUtil.isGenuineDateInterval( n ) ? 1 : 0;
+                    }
+                    else {
+                        internal_intervals++;
+                    }
+                }
+            }
+            if ( propertyValue( n, "nextstrain:div" ) != null ) {
+                div++;
+            }
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 6 ) || ( dated != nodes ) || ( div != nodes ) ) {
+            return note( file_name + " every node must be dated in years and carry nextstrain:div, got " + dated + " / " + div
+                    + " of " + nodes );
+        }
+        if ( ( tip_intervals != 6 ) || ( genuine_tip_intervals != 2 ) || ( internal_intervals != 5 ) ) {
+            return note( file_name + " every interval is kept: 5 internal, 6 on tips of which 2 genuine (dated only to the year), got "
+                    + internal_intervals + " / " + tip_intervals + " / " + genuine_tip_intervals );
+        }
+        // ...and they are SAMPLING-date uncertainty, for the Node Age Bars -- never fossil ranges
+        if ( AptxUtil.isHasFossilRanges( phy ) || !AptxUtil.isHasSampledTipWithDateUncertainty( phy ) ) {
+            return note( file_name + " a calendar tree's tip intervals must not read as fossil ranges" );
+        }
+        if ( ( AptxUtil.deriveTimeAxisType( phy ) != Options.TIME_AXIS_TYPE.CALENDAR ) || !AptxUtil.isTimeTree( phy ) ) {
+            return note( file_name + " must open as a time tree with the Calendar axis" );
+        }
+        if ( !"C\u00f4te d'Ivoire".equals( propertyValue( phy.getNode( "A/Abidjan/3/2015" ), "beast:country" ) )
+                || !"Democratic Republic of the Congo".equals( propertyValue( phy.getNode( "A/Kinshasa/2/2015" ), "beast:country" ) )
+                || !"West Africa".equals( propertyValue( phy.getNode( "NODE_0000002" ), "beast:region" ) ) ) {
+            return note( file_name + " unquoted values must survive whole: spaces, and an apostrophe" );
+        }
+        return true;
+    }
+
+    /** TreeTime writes the SAME date= on timetree.nexus and on divergence_tree.nexus. Only the tree whose branch
+     *  lengths ARE those date differences becomes a time tree; both are TreeTime's (treetime:mutations). */
+    private static boolean treeTimePairOk( final String time_file, final String divergence_file ) {
+        final Phylogeny time = loadAsOpened( time_file );
+        final Phylogeny div = loadAsOpened( divergence_file );
+        if ( ( time == null ) || ( div == null ) ) {
+            return false;
+        }
+        final java.util.SortedMap<String, String> time_descs = new java.util.TreeMap<String, String>();
+        final java.util.SortedMap<String, String> div_descs = new java.util.TreeMap<String, String>();
+        for( final Iterator<PhylogenyNode> it = time.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            final org.forester.phylogeny.data.Date d = n.getNodeData().getDate();
+            if ( ( d == null ) || ( d.getValue() == null ) || !"year".equals( d.getUnit() )
+                    || ( d.getValue().doubleValue() != Double.parseDouble( d.getDesc() ) ) ) {
+                return note( time_file + " every date= must be promoted to a value in years (desc kept), node " + n.getName() );
+            }
+            time_descs.put( n.getName(), d.getDesc() );
+        }
+        for( final Iterator<PhylogenyNode> it = div.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            final org.forester.phylogeny.data.Date d = n.getNodeData().getDate();
+            if ( ( d == null ) || ( d.getValue() != null ) || ForesterUtil.isEmpty( d.getDesc() ) ) {
+                return note( divergence_file + " the same dates must stay descriptions on a divergence tree, node " + n.getName() );
+            }
+            div_descs.put( n.getName(), d.getDesc() );
+        }
+        if ( ( time_descs.size() != 11 ) || !time_descs.equals( div_descs ) ) {
+            return note( "the TreeTime pair must carry IDENTICAL date= values on identical nodes -- that is its point" );
+        }
+        if ( ( AptxUtil.deriveTimeAxisType( time ) != Options.TIME_AXIS_TYPE.CALENDAR ) || !AptxUtil.isTimeTree( time ) ) {
+            return note( time_file + " must open as a time tree with the Calendar axis" );
+        }
+        if ( ( AptxUtil.deriveTimeAxisType( div ) != Options.TIME_AXIS_TYPE.NONE ) || AptxUtil.isTimeTree( div ) ) {
+            return note( divergence_file + " must NOT open as a time tree" );
+        }
+        for( final Phylogeny p : new Phylogeny[] { time, div } ) {
+            if ( !"C404T,A871G,T902C".equals( propertyValue( p.getNode( "A/Dakar/8/2016" ), "treetime:mutations" ) ) ) {
+                return note( "a TreeTime tree's mutations must survive whole, as treetime:mutations" );
+            }
+        }
+        return true;
+    }
+
+    /** TreeTime's Newick glues a node's name to its confidence; opened, they are apart again. */
+    private static boolean treeTimeNewickOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final double[] expected = { 0.98, 1.0, 0.81 };
+        final String[] names = { "NODE_0000001", "NODE_0000002", "NODE_0000004" };
+        for( int i = 0; i < names.length; ++i ) {
+            final java.util.List<PhylogenyNode> found = phy.getNodes( names[ i ] );
+            if ( ( found.size() != 1 ) || !found.get( 0 ).getBranchData().isHasConfidences()
+                    || ( found.get( 0 ).getBranchData().getConfidence( 0 ).getValue() != expected[ i ] ) ) {
+                return note( file_name + " " + names[ i ] + " must be restored, with confidence " + expected[ i ] );
+            }
+        }
+        if ( ( phy.getNodes( "NODE_0000003" ).size() != 1 ) || phy.getNodes( "NODE_0000003" ).get( 0 ).getBranchData().isHasConfidences()
+                || !"NODE_0000000".equals( phy.getRoot().getName() ) ) {
+            return note( file_name + " a node without a confidence keeps its clean name and gets none" );
+        }
+        return true;
+    }
+
+    /** MrBayes' consensus: tips named through TRANSLATE, prob (+ its standard deviation) as the posterior
+     *  probability, the file's LITERAL length (it stands between the node's two blobs), the rest as data, [&U]. */
+    private static boolean mrBayesConsensusOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 5 ) || ( phy.getNodes( "Homo_sapiens" ).size() != 1 ) ) {
+            return note( file_name + " five tips, named through the TRANSLATE table" );
+        }
+        if ( phy.isRooted() || !phy.isDeclaredUnrooted() ) {
+            return note( file_name + " [&U] declares the tree unrooted" );
+        }
+        final PhylogenyNode homo = phy.getNode( "Homo_sapiens" );
+        final PhylogenyNode hp = homo.getParent();
+        if ( Math.abs( homo.getDistanceToParent() - 0.0064 ) > 1e-12 ) {
+            return note( file_name + " the literal length between the two blobs is the branch length, got "
+                    + homo.getDistanceToParent() );
+        }
+        if ( ( hp.getBranchData().getNumberOfConfidences() != 1 ) || ( hp.getBranchData().getConfidence( 0 ).getValue() != 0.87 )
+                || ( hp.getBranchData().getConfidence( 0 ).getStandardDeviation() != 0.021 )
+                || !"posterior probability".equals( hp.getBranchData().getConfidence( 0 ).getType() ) ) {
+            return note( file_name + " prob + prob_stddev must be ONE posterior-probability confidence (0.87, sd 0.021)" );
+        }
+        for( final String ref : new String[] { "beast:prob_range", "beast:prob_percent", "beast:prob_sd", "beast:length_mean",
+                "beast:length_median", "beast:length_95_HPD" } ) {
+            if ( propertyValue( hp, ref ) == null ) {
+                return note( file_name + " must keep " + ref + " as data" );
+            }
+        }
+        if ( hp.getNodeData().getDate() != null ) {
+            return note( file_name + " length_95%HPD is a branch-length interval, never a date" );
         }
         return true;
     }

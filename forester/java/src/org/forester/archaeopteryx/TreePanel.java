@@ -6126,8 +6126,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setFont(getTreeFontSet().getSmallFont());
         g.setColor(scaleInkColor(to_pdf, to_graphics_file));
         final int tw = g.getFontMetrics().stringWidth(label);
-        // top-right, but never left of the left margin (a zero-width region falls back to the left)
-        final int x = Math.max(region_x + MOVE, (region_x + region_width) - tw - MOVE);
+        // top-right (of the TREE's region: left of a legend column), but never left of the left margin (a zero-width
+        // region falls back to the left)
+        final int x = Math.max(region_x + MOVE, (region_x + region_width) - legendColumnReserve() - tw - MOVE);
         final int y = region_y_top + g.getFontMetrics().getAscent() + 4;
         g.drawString(label, x, y);
         g.setFont(saved);
@@ -6893,6 +6894,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // spacing from y) stay unchanged; the paint-time transform R then rotates the logical layout into place.
         final int x = isVerticalOrientation() ? y_in : x_in;
         final int y = isVerticalOrientation() ? x_in : y_in;
+        _layout_width = x_in; // what legendColumnReserve() judges "too wide a legend" against
         // updateStyle(); not needed?
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             initNodeData();
@@ -7751,6 +7753,110 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    // FIGURE RENDERING (aptx_render): on screen a legend floats over the tree and the user drags it clear; in a
+    // rendered figure nobody can, and its default corner -- top right -- is exactly where a root-left tree puts its
+    // top tips. So there the legend gets a COLUMN of its own at the right, reserved like the annotation columns are.
+    private boolean             _reserve_legend_column = false;
+    private Dimension           _last_legend_box_size  = null;
+    private int                 _layout_width          = 0;
+    private final static int    LEGEND_EDGE_INSET      = 10; // the default corner's inset (legendTopLeftFor)
+    private final static int    LEGEND_COLUMN_GAP      = 12;
+    /** Beyond this share of the width the tree would be squeezed unreadable: no column, the legend floats as before. */
+    private final static double LEGEND_COLUMN_MAX_SHARE = 0.4;
+
+    final void setReserveLegendColumn(final boolean reserve_legend_column) {
+        _reserve_legend_column = reserve_legend_column;
+    }
+
+    /**
+     * The width reserved at the right for the legends that stand at the right edge, or 0. Only in figure rendering,
+     * only where that edge collides with the tree -- the rectangular ROOT-LEFT layout (a radial tree is a disc and
+     * leaves the corners free; the vertical orientations are not reachable from aptx_render).
+     */
+    final int legendColumnReserve() {
+        if (!_reserve_legend_column || isRadialLayout() || isVerticalOrientation()) {
+            return 0;
+        }
+        final int width = rightEdgeLegendWidth();
+        if (width <= 0) {
+            return 0;
+        }
+        final int reserve = width + LEGEND_EDGE_INSET + LEGEND_COLUMN_GAP;
+        // against the width this layout was computed FOR -- not the panel's current width, which a frame's own
+        // layout may change between the fit and the paint
+        return (reserve > (_layout_width * LEGEND_COLUMN_MAX_SHARE)) ? 0 : reserve;
+    }
+
+    final void setLegendOffsetForTest(final Point offset) {
+        _legend_offset = offset;
+    }
+
+    /** The widest of the legends standing at the right edge at their DEFAULT positions (a dragged legend is where the
+     *  user put it, and needs no column): the shared colour / rank / annotation legend (top right, unless the
+     *  clade-band rule sends it left), the Size-by legend (top right alone, bottom right beside a colour legend), and
+     *  the ancestral-pie legend when it holds the top right itself (else it goes bottom LEFT). */
+    private int rightEdgeLegendWidth() {
+        int width = 0;
+        if ((_legend_offset == null) && !defaultLegendGoesLeft()) {
+            final Dimension shared = measureSharedLegend();
+            if (shared != null) {
+                width = Math.max(width, shared.width);
+            }
+        }
+        final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
+        if (isSizeByProperty() && (_size_legend_offset == null)) {
+            final Dimension size = measureLegend(g -> drawSizeLegend(g, anywhere, false));
+            if (size != null) {
+                width = Math.max(width, size.width);
+            }
+        }
+        if (isShowAncestralPies() && (_ancestral_pie_legend_offset == null) && !sharedLegendHoldsTopRight()) {
+            final Dimension pies = measureLegend(g -> drawAncestralPieLegend(g, anywhere, false, false));
+            if (pies != null) {
+                width = Math.max(width, pies.width);
+            }
+        }
+        return width;
+    }
+
+    final Dimension sharedLegendSizeForTest() {
+        return measureSharedLegend();
+    }
+
+    /** The size of the legend the shared slot would draw now (null when it would draw none). */
+    private Dimension measureSharedLegend() {
+        final boolean annotation = annotationLegendVisible();
+        final boolean color = hasColorByPropertyLegend();
+        if (!annotation && !color && !hasRankLegend()) {
+            return null;
+        }
+        final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
+        return measureLegend(g -> {
+            if (annotation) {
+                drawAnnotationColumnLegend(g, anywhere, false);
+            } else if (color) {
+                drawPropertyColorLegend(g, anywhere, false);
+            } else {
+                drawRankLegend(g, anywhere, false);
+            }
+        });
+    }
+
+    /** A legend's box size, by drawing it once into a scratch image -- so the measurement IS the drawing code's own
+     *  and cannot drift from it (every legend box goes through drawLegendBox, which records its size). */
+    private Dimension measureLegend(final java.util.function.Consumer<Graphics2D> draw) {
+        final java.awt.image.BufferedImage scratch = new java.awt.image.BufferedImage(1, 1,
+                java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D g = scratch.createGraphics();
+        try {
+            _last_legend_box_size = null;
+            draw.accept(g);
+            return _last_legend_box_size;
+        } finally {
+            g.dispose();
+        }
+    }
+
     // Top-left corner at which to draw the legend box; honors a dragged position on screen AND in
     // exports (PDF/PNG/...), mapping it onto the export target by its viewport fraction.
     private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
@@ -8299,6 +8405,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int drawLegendBox(final Graphics2D g, final int x, final int y, final int box_w, final int box_h,
                               final int pad, final String title, final FontMetrics fm, final boolean draggable,
                               final boolean size_legend) {
+        _last_legend_box_size = new Dimension(box_w, box_h);
         if (draggable) {
             final Rectangle b = new Rectangle(x, y, box_w, box_h);
             if (size_legend) {
@@ -8897,15 +9004,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  overview thumbnail (top-left by default) and the tree name + scale (bottom-left). If a color/rank/annotation
      *  legend already holds the top-right slot, drop to the BOTTOM-LEFT so the two don't collide. Once dragged,
      *  _ancestral_pie_legend_offset maps fractionally like the other legends (so exports honor the moved position). */
+    /** Which legend actually holds the top-right slot: the color/annotation legends are SUPPRESSED radially (see the
+     *  legend tail), so only the rank legend (which draws in every layout) occupies it there. */
+    private boolean sharedLegendHoldsTopRight() {
+        return hasRankLegend() || (!isRadialLayout() && hasColorByPropertyLegend()) || annotationLegendVisible();
+    }
+
     private Point ancestralPieLegendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
         if (_ancestral_pie_legend_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _ancestral_pie_legend_offset, box_w, box_h);
         }
-        // which legend actually holds the top-right slot: the color/annotation legends are SUPPRESSED radially (see
-        // the legend tail), so only the rank legend (which draws in every layout) occupies it there
-        final boolean top_right_taken = hasRankLegend()
-                || (!isRadialLayout() && hasColorByPropertyLegend()) || annotationLegendVisible();
-        if (top_right_taken) {
+        if (sharedLegendHoldsTopRight()) {
             return new Point(Math.max(bounds.x, bounds.x + 10),
                     Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
         }
@@ -11220,7 +11329,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(new BasicStroke(HPD_BAR_HEIGHT, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         for (final java.util.Iterator<PhylogenyNode> it = _phylogeny.iteratorPreorder(); it.hasNext();) {
             final PhylogenyNode node = it.next();
-            if (node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
+            if (isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()
+                    || (node.isExternal() && !isSampledTipWithDateUncertainty(node))) {
                 continue;
             }
             final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
@@ -11302,7 +11412,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? HPD_BAR_COLOR_BW
                 : HPD_BAR_COLOR);
         for (final PhylogenyNode node : _nodes_in_preorder) {
-            if (node.isExternal() || isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()) {
+            if (isHiddenUnderCollapse(node) || !node.getNodeData().isHasDate()
+                    || (node.isExternal() && !isSampledTipWithDateUncertainty(node))) {
                 continue;
             }
             final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
@@ -11325,6 +11436,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         g.setColor(saved);
+    }
+
+    /** A tree on CALENDAR time: its tips are dated SAMPLES, not fossils. Decided by the tree's own date units (the
+     *  derived type, as AptxUtil.isHasFossilRanges decides the overlay's auto-enable) -- NOT by the Time Axis the user
+     *  shows: turning the axis Off or to Geologic is a display choice and must not turn a sampling-date uncertainty
+     *  into a fossil first/last-appearance range. */
+    final boolean isOnCalendarTime() {
+        return derivedTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR;
+    }
+
+    /**
+     * What a TIP's date interval means depends on the tree. On geologic time it is a FOSSIL RANGE (first to last
+     * appearance) and the Fossil Range Bars draw it. On CALENDAR time -- a Nextstrain / TreeTime tree -- the tip is a
+     * dated sample, and an interval says its sampling date is known only to the month or the year: that is an age
+     * uncertainty like an internal node's, so the Node Age Bars draw it, and the fossil bars never do. A ZERO-width
+     * interval (Auspice writes {d,d} for an exactly dated sample) says "no uncertainty" and draws nothing.
+     */
+    final boolean isSampledTipWithDateUncertainty(final PhylogenyNode tip) {
+        return isOnCalendarTime() && AptxUtil.isGenuineDateInterval(tip);
     }
 
     /** Fills a horizontal node-age SPINDLE (the tapered alternative to the flat HPD bar): a smooth lens from the older
@@ -11362,7 +11492,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private void paintFossilRangeBars(final Graphics2D g, final boolean to_pdf, final boolean to_graphics_file) {
         if (!getOptions().isShowFossilRangeBars() || !getControlPanel().isDrawPhylogram() || (_phylogeny == null)
-                || !isBranchLengthTimeCalibrated()) {
+                || !isBranchLengthTimeCalibrated() || isOnCalendarTime()) {
             return;
         }
         final double corr = getXcorrectionFactor();
@@ -11407,7 +11537,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void paintFossilRangeBarsCircular(final Graphics2D g, final int cx, final int cy, final int radius,
                                               final boolean to_pdf, final boolean to_graphics_file) {
         if (!getOptions().isShowFossilRangeBars() || !isCircularPhylogram() || (_phylogeny == null) || (radius <= 0)
-                || !isBranchLengthTimeCalibrated()) {
+                || !isBranchLengthTimeCalibrated() || isOnCalendarTime()) {
             return;
         }
         // while capping, use the CAPPED radial normalizer so the range-bar scale matches the (capped) r_node (parity
@@ -12706,7 +12836,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * label whose horizontal extent is the font height). 0 when neither columns nor bands are shown.
      */
     private int rightMarginExtraWidth() {
-        int extra = annotationColumnsWidth() + msaTrackWidth();
+        int extra = annotationColumnsWidth() + msaTrackWidth() + legendColumnReserve();
         if (hasCladeBands()) {
             if (_clade_bands_mode == CLADE_VIS.BOXES) {
                 extra += CLADE_BAND_RIGHT_PAD;

@@ -73,7 +73,8 @@ public final class TreePanelUtilTest {
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
-                && testTruncateToPixelWidth() && testAncestralPieData() && testLadderizeProvenance()
+                && testTruncateToPixelWidth() && testAncestralPieData() && testBeastStateSetsFromNewick()
+                && testLadderizeProvenance()
                 && testRootingProvenance() && testSubTreeKeepsRerootable() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
     }
 
@@ -321,6 +322,45 @@ public final class TreePanelUtilTest {
         p.externalNodesHaveChanged();
         p.recalculateNumberOfExternalDescendants( true );
         return p;
+    }
+
+    /**
+     * TreeAnnotator's discrete-trait DISTRIBUTION -- state.set={A,B} + state.set.prob={0.7,0.3} -- must reach the
+     * ancestral-state pies through the Newick/Nexus bracket path (as beast:state_set + beast:state_set_prob): no real
+     * MCC file here carries one, so nothing else exercises it. And the far commoner modal pair -- state="D" +
+     * state.prob=1.0, a single state with a scalar probability (379 nodes of HA_discrete_MCC.tre) -- is NOT a
+     * distribution and must not invent a trait.
+     */
+    private static boolean testBeastStateSetsFromNewick() {
+        try {
+            final org.forester.io.parsers.nhx.NHXParser p = new org.forester.io.parsers.nhx.NHXParser();
+            p.setParseBeastStyleExtendedTags( true );
+            p.setSource( "((A[&state=\"A\",state.prob=1.0]:1,B[&state=\"B\",state.prob=1.0]:1)"
+                    + "[&state=\"A\",state.prob=0.7,state.set={A,B},state.set.prob={0.7,0.3}]:1,C[&state=\"A\"]:2);" );
+            final Phylogeny phy = p.parse()[ 0 ];
+            final java.util.SortedSet<String> traits = TreePanelUtil.ancestralStateTraits( phy );
+            if ( ( traits.size() != 1 ) || !traits.contains( "state" ) ) {
+                return fail( "state.set + state.set.prob from a Newick blob must be exactly the trait 'state', got "
+                        + traits );
+            }
+            final List<TreePanelUtil.StateProbability> d = TreePanelUtil
+                    .stateDistribution( phy.getNode( "A" ).getParent(), "state" );
+            if ( ( d.size() != 2 ) || !d.get( 0 ).getState().equals( "A" )
+                    || ( Math.abs( d.get( 0 ).getProbability() - 0.7 ) > 1e-9 ) ) {
+                return fail( "the parsed distribution must be A=0.7, B=0.3, got " + d.size() + " states" );
+            }
+            final org.forester.io.parsers.nhx.NHXParser modal = new org.forester.io.parsers.nhx.NHXParser();
+            modal.setParseBeastStyleExtendedTags( true );
+            modal.setSource( "((A[&state=\"D\",state.prob=1.0]:1,B[&state=\"D\",state.prob=1.0]:1)"
+                    + "[&state=\"D\",state.prob=0.93]:1,C[&state=\"E\",state.prob=1.0]:2);" );
+            if ( !TreePanelUtil.ancestralStateTraits( modal.parse()[ 0 ] ).isEmpty() ) {
+                return fail( "a modal state + its scalar probability is not a distribution: no trait" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "BEAST state-set parse threw: " + e );
+        }
     }
 
     /**

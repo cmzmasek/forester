@@ -116,6 +116,11 @@ public final class DemoTreeGenerator {
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
         write( dir, "tree-properties.xml", treePropertiesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
+        writeText( dir, "nextstrain-nexus.nex", nextstrainNexus() );
+        writeText( dir, "treetime-nexus.nex", treeTimeNexus( true ) );
+        writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
+        writeText( dir, "treetime-tree.nwk", treeTimeNewick() );
+        writeText( dir, "mrbayes-consensus.con.tre", mrBayesConsensus() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
         write( dir, "tanglegram-tree-b.xml", tanglegramTreeB() );
@@ -138,11 +143,11 @@ public final class DemoTreeGenerator {
     //       (not phyloXML), written verbatim -- an ultrametric 5-tip tree (tip heights 0, root height 2.1).
     private static String beastAnnotationsNexus() {
         return "#NEXUS\n" + "BEGIN TREES;\n" + "\tTREE beast_demo = [&R] ("
-                + "(isolate_A[&height=0.0,rate=0.0031]:1.2,isolate_B[&height=0.0,rate=0.0028]:1.2)"
+                + "(isolate_A[&!color=#-8381639,height=0.0,rate=0.0031]:1.2,isolate_B[&height=0.0,rate=0.0028]:1.2)"
                 + "[&posterior=0.99,height=1.2,height_95%_HPD={0.95,1.5},rate=0.0030]:0.9,"
                 + "(isolate_C[&height=0.0,rate=0.0026]:0.8,"
                 + "(isolate_D[&height=0.0,rate=0.0035]:0.5,isolate_E[&height=0.0,rate=0.0033]:0.5)"
-                + "[&posterior=0.92,height=0.5,height_95%_HPD={0.35,0.7},rate=0.0034]:0.3)"
+                + "[&!color=#-8381639,posterior=0.92,height=0.5,height_95%_HPD={0.35,0.7},rate=0.0034]:0.3)"
                 + "[&posterior=0.81,height=0.8,height_95%_HPD={0.6,1.1},rate=0.0029]:1.3)"
                 + "[&posterior=1.0,height=2.1,height_95%_HPD={1.8,2.5},rate=0.0030];\n" + "END;\n";
     }
@@ -191,6 +196,117 @@ public final class DemoTreeGenerator {
         final PhylogenyNode n = leaf( name );
         cat( n, "beast:location", location );
         return n;
+    }
+
+    // ---- Nextstrain / TreeTime / MrBayes: the SHAPES the real producers write (verified against real files) -------
+
+    /** Auspice's "download Nexus" of a TIME tree: lower-case header, the blob BEFORE the length, NODE_ internals, a
+     *  __ROOT wrapper, unquoted values with spaces and an apostrophe, num_date + num_date_CI + div. The branch
+     *  lengths ARE the num_date differences (years) -- which is what lets the dates stand. */
+    private static String nextstrainNexus() {
+        final double clock = 0.003; // substitutions per site per year: div = (num_date - root) x clock
+        // {name, num_date, country, region, num_date_CI}: most samples are dated exactly (Auspice writes {d,d}); two are
+        // dated only to the YEAR, so their sampling date is an inferred value inside a year-wide interval
+        final String[][] tip = { { "A/Accra/11/2014", "2014.25", "Ghana", "West Africa", "{2014.25,2014.25}" },
+                { "A/Abidjan/3/2015", "2015.6", "C\u00f4te d'Ivoire", "West Africa", "{2015.001,2015.999}" },
+                { "A/Dakar/8/2016", "2016.3", "Senegal", "West Africa", "{2016.3,2016.3}" },
+                { "A/Nairobi/5/2013", "2013.75", "Kenya", "East Africa", "{2013.001,2013.999}" },
+                { "A/Kinshasa/2/2015", "2015.05", "Democratic Republic of the Congo", "Central Africa", "{2015.05,2015.05}" },
+                { "A/Kigali/9/2016", "2016.9", "Rwanda", "East Africa", "{2016.9,2016.9}" } };
+        final double root = 2010.0;
+        final StringBuilder sb = new StringBuilder( "#nexus\nbegin trees;\n  tree one = " );
+        sb.append( "(((" ).append( auspiceTip( tip[ 0 ], 2012.0, root, clock, "3c" ) ).append( ",(" )
+                .append( auspiceTip( tip[ 1 ], 2013.1, root, clock, "3c.2" ) ).append( ',' )
+                .append( auspiceTip( tip[ 2 ], 2013.1, root, clock, "3c.2" ) ).append( ')' )
+                .append( auspiceInternal( "NODE_0000002", 2013.1, 2012.0, root, clock, "{2012.6,2013.5}", "West Africa" ) ).append( ')' )
+                .append( auspiceInternal( "NODE_0000001", 2012.0, root, root, clock, "{2011.2,2012.7}", "West Africa" ) ).append( ",(" )
+                .append( auspiceTip( tip[ 3 ], 2011.5, root, clock, "3b" ) ).append( ",(" )
+                .append( auspiceTip( tip[ 4 ], 2012.8, root, clock, "3b" ) ).append( ',' )
+                .append( auspiceTip( tip[ 5 ], 2012.8, root, clock, "3b" ) ).append( ')' )
+                .append( auspiceInternal( "NODE_0000004", 2012.8, 2011.5, root, clock, "{2012.1,2013.4}", "East Africa" ) ).append( ')' )
+                .append( auspiceInternal( "NODE_0000003", 2011.5, root, root, clock, "{2010.6,2012.2}", "East Africa" ) ).append( ')' )
+                .append( "NODE_0000000[&num_date=2010,num_date_CI={2008.9,2010.8},div=0]:0)__ROOT[&num_date=2010,div=0]:0;\nend;\n" );
+        return sb.toString();
+    }
+
+    private static String auspiceTip( final String[] t, final double parent_date, final double root, final double clock,
+                                      final String clade ) {
+        final double date = Double.parseDouble( t[ 1 ] );
+        return t[ 0 ] + "[&num_date=" + t[ 1 ] + ",num_date_CI=" + t[ 4 ] + ",clade=" + clade + ",region=" + t[ 3 ]
+                + ",country=" + t[ 2 ] + ",div=" + plain( ( date - root ) * clock ) + "]:" + plain( date - parent_date );
+    }
+
+    private static String auspiceInternal( final String name, final double date, final double parent_date, final double root,
+                                           final double clock, final String ci, final String region ) {
+        return name + "[&num_date=" + plain( date ) + ",num_date_CI=" + ci + ",region=" + region + ",div="
+                + plain( ( date - root ) * clock ) + "]:" + plain( date - parent_date );
+    }
+
+    /** TreeTime's CLI Nexus: a Taxa block, the blob AFTER the length, mutations quoted, date to two decimals. It
+     *  writes the SAME date= on timetree.nexus (lengths in years) and on divergence_tree.nexus (substitutions) --
+     *  which is why a date= becomes a date value only where the tree confirms it. The pair is the demo AND the
+     *  regression fixture of that rule. */
+    private static String treeTimeNexus( final boolean time_tree ) {
+        final double f = time_tree ? 1.0 : 0.003; // years, or substitutions per site
+        final String[] names = { "A/Accra/11/2014", "A/Abidjan/3/2015", "A/Dakar/8/2016", "A/Nairobi/5/2013", "A/Kinshasa/2/2015",
+                "A/Kigali/9/2016" };
+        return "#NEXUS\nBegin Taxa;\n Dimensions NTax=" + names.length + ";\n TaxLabels " + String.join( " ", names )
+                + "\nEnd;\nBegin Trees;\n Tree tree1=((" + names[ 0 ] + ":" + tt( 2.25, f ) + "[&mutations=\"A112G,T530C\",date=2014.25],("
+                + names[ 1 ] + ":" + tt( 2.5, f ) + "[&mutations=\"G71A\",date=2015.60]," + names[ 2 ] + ":" + tt( 3.2, f )
+                + "[&mutations=\"C404T,A871G,T902C\",date=2016.30])NODE_0000002:" + tt( 1.1, f ) + "[&mutations=\"T233C\",date=2013.10])NODE_0000001:"
+                + tt( 2.0, f ) + "[&mutations=\"A45G,C610T\",date=2012.00],(" + names[ 3 ] + ":" + tt( 2.25, f ) + "[&mutations=\"G319A\",date=2013.75],("
+                + names[ 4 ] + ":" + tt( 2.25, f ) + "[&date=2015.05]," + names[ 5 ] + ":" + tt( 4.1, f )
+                + "[&mutations=\"T18C,G777A\",date=2016.90])NODE_0000004:" + tt( 1.3, f ) + "[&mutations=\"C502T\",date=2012.80])NODE_0000003:"
+                + tt( 1.5, f ) + "[&mutations=\"A690G\",date=2011.50])NODE_0000000:" + tt( 0.1, f ) + "[&date=2010.00];\nEnd;\n";
+    }
+
+    private static String tt( final double years, final double factor ) {
+        return String.format( java.util.Locale.ROOT, "%.8f", years * factor ).replaceAll( "0+$", "" ).replaceAll( "\\.$", ".0" );
+    }
+
+    /** TreeTime's Newick: an internal node's NAME glued to its "%1.2f" confidence (NODE_00000010.98 is node
+     *  NODE_0000001 with confidence 0.98); a node without a confidence keeps its clean name. */
+    private static String treeTimeNewick() {
+        return "((A/Accra/11/2014:0.00675,(A/Abidjan/3/2015:0.0075,A/Dakar/8/2016:0.0096)NODE_00000021.00:0.0033)NODE_00000010.98:0.006,"
+                + "(A/Nairobi/5/2013:0.00675,(A/Kinshasa/2/2015:0.00675,A/Kigali/9/2016:0.0123)NODE_00000040.81:0.0039)NODE_0000003:0.0045)"
+                + "NODE_0000000:0.0003;\n";
+    }
+
+    /** MrBayes 3.2 "sumt" consensus (.con.tre), conformat=figtree: [&U], a TRANSLATE table, TWO blobs per node with
+     *  the branch length BETWEEN them, prob(percent) and prob+-sd quoted, a basal trichotomy. */
+    private static String mrBayesConsensus() {
+        final String[] taxa = { "Homo_sapiens", "Pan_troglodytes", "Gorilla_gorilla", "Pongo_abelii", "Hylobates_lar" };
+        final StringBuilder sb = new StringBuilder( "#NEXUS\n[ID: 4719253806]\nbegin taxa;\n\tdimensions ntax=" + taxa.length
+                + ";\n\ttaxlabels\n" );
+        for( final String t : taxa ) {
+            sb.append( "\t\t" ).append( t ).append( '\n' );
+        }
+        sb.append( "\t\t;\nend;\nbegin trees;\n\ttranslate\n" );
+        for( int i = 0; i < taxa.length; ++i ) {
+            sb.append( "\t\t" ).append( i + 1 ).append( '\t' ).append( taxa[ i ] ).append( ( i < ( taxa.length - 1 ) ) ? ",\n" : "\n\t\t;\n" );
+        }
+        sb.append( "   tree con_50_majrule = [&U] (" ).append( mb( "5", 1.0, 0.0, 0.0521 ) ).append( ',' ).append( mb( "4", 1.0, 0.0, 0.0342 ) )
+                .append( ",(" ).append( mb( "3", 1.0, 0.0, 0.0178 ) ).append( ",(" ).append( mb( "1", 1.0, 0.0, 0.0064 ) ).append( ',' )
+                .append( mb( "2", 1.0, 0.0, 0.0071 ) ).append( ')' ).append( mb( "", 0.87, 0.021, 0.0042 ) ).append( ')' )
+                .append( mb( "", 1.0, 0.0, 0.0153 ) ).append( ");\nend;\n" );
+        return sb.toString();
+    }
+
+    private static String mb( final String label, final double prob, final double sd, final double length ) {
+        final int pct = ( int ) Math.round( prob * 100 );
+        final int sd_pct = ( int ) Math.round( sd * 100 );
+        return label + "[&prob=" + sci( prob ) + ",prob_stddev=" + sci( sd ) + ",prob_range={" + sci( Math.max( 0, prob - ( 2 * sd ) ) ) + ","
+                + sci( Math.min( 1, prob + ( 2 * sd ) ) ) + "},prob(percent)=\"" + pct + "\",prob+-sd=\"" + pct + "+-" + sd_pct + "\"]:" + sci( length )
+                + "[&length_mean=" + sci( length * 1.006 ) + ",length_median=" + sci( length ) + ",length_95%HPD={" + sci( length * 0.78 ) + ","
+                + sci( length * 1.22 ) + "}]";
+    }
+
+    private static String sci( final double d ) {
+        return String.format( java.util.Locale.ROOT, "%.8e", d );
+    }
+
+    private static String plain( final double d ) {
+        return new java.math.BigDecimal( d ).setScale( 6, java.math.RoundingMode.HALF_UP ).stripTrailingZeros().toPlainString();
     }
 
     /** Write a companion plain-text data file (e.g. a CSV to import onto a demo tree). */

@@ -20,14 +20,19 @@
 
 package org.forester.io.parsers.nhx;
 
+import java.awt.Color;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.forester.io.parsers.json.AuspiceJsonParser;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Date;
+import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
@@ -46,14 +51,35 @@ import org.forester.util.ForesterUtil;
  * <li>every other field ({@code rate}, {@code length_*}, discrete traits, {@code location}, ...) &rarr; a node
  *     {@link Property} {@code beast:<key>} (numeric &rarr; {@code xsd:decimal} so Color-by / Size-by / Annotation
  *     Columns pick it up; otherwise {@code xsd:string}).</li>
+ * <li>the Auspice / Nextstrain "download Nexus" vocabulary lands exactly where {@link AuspiceJsonParser} puts the
+ *     same dataset's JSON: {@code num_date} &rarr; the {@link Date} value with unit {@code "year"} (the unit, not the
+ *     value, is what derives the calendar axis) plus a numeric {@code nextstrain:num_date} property;
+ *     {@code num_date_CI={lo,hi}} &rarr; the date's min/max; {@code div} &rarr; {@code nextstrain:div} (the Time | Div
+ *     toggle). A {@code num_date} outranks every {@code height*} as the date value, and only it carries the unit.</li>
+ * <li>TreeTime's {@code mutations} / {@code mcc} are always text ({@code xsd:string}), never a number.</li>
+ * <li>MrBayes' {@code prob} (+ {@code prob_stddev}) &rarr; a confidence of type "posterior probability" with its
+ *     standard deviation; {@code bootstrap} &rarr; a confidence of type "bootstrap"; FigTree's {@code !color} &rarr;
+ *     the branch colour, written either as {@code #RRGGBB} or -- what FigTree really writes -- as {@code #} + Java's
+ *     SIGNED {@code Color.getRGB()} int ({@code #-8381639}). These are read wherever they stand in the blob: a
+ *     FigTree-coloured BEAST tree LEADS with {@code !color} and still carries its posterior, height and rates.</li>
  * </ul>
+ * Keys are compared lower-cased and without {@code %} and {@code _}, so {@code height_95%_HPD},
+ * {@code height_95%HPD} and {@code height95%HPD} are one key -- while {@code length_95%HPD}, a BRANCH-LENGTH interval,
+ * stays a different one and never becomes a date's interval.
+ * <p>
+ * {@code beast:} here means "came from a bracket annotation", not "produced by BEAST".
+ * <p>
  * The branch length lives on the Newick {@code :length} and is left untouched. Every {@code key=value} field is
  * preserved -- recognised ones as native structures, the rest as {@code beast:*} node properties. Robust: a
  * malformed field is skipped, never aborting the parse.
  */
 public final class BeastAnnotationParser {
 
-    private static final String HPD_SUFFIX = "_95%_hpd";
+    /** The type MrBayes' {@code prob} has always been given here. */
+    static final String         MRBAYES_CONFIDENCE_TYPE = "posterior probability";
+    private static final String BEAST_PREFIX = "beast:";
+    /** The unit of a {@code num_date}: decimal calendar years, as in {@link AuspiceJsonParser}. */
+    static final String         YEAR_UNIT  = "year";
 
     private BeastAnnotationParser() {
         // pure utility
@@ -62,6 +88,18 @@ public final class BeastAnnotationParser {
     /** Apply the annotation content {@code inner_blob} (e.g. {@code &posterior=0.99,height_95%_HPD={1.4,1.5}}) to
      *  {@code node}. A leading {@code &} is optional. No-op on null/empty input. */
     public static void apply( final String inner_blob, final PhylogenyNode node ) {
+        apply( inner_blob, node, false );
+    }
+
+    /** Apply the annotation a Nexus TAXLABELS entry carries ({@code 'NewYork_454'[&!color=#-8381639]}) to the tip of
+     *  that name. It is read like any other blob, with ONE difference: FigTree writes a taxon's colour there, and a
+     *  coloured TAXON is a coloured LABEL -- so {@code !color} becomes the tip's label (font) colour, not its branch
+     *  colour (which FigTree writes into the tree string). */
+    public static void applyTaxlabelAnnotation( final String inner_blob, final PhylogenyNode tip ) {
+        apply( inner_blob, tip, true );
+    }
+
+    private static void apply( final String inner_blob, final PhylogenyNode node, final boolean from_taxlabel ) {
         if ( ( inner_blob == null ) || ( node == null ) ) {
             return;
         }
@@ -77,19 +115,30 @@ public final class BeastAnnotationParser {
         String height = null;
         String[] hpd = null;
         String[] range = null;
+        String hpd_raw = null;
+        String range_raw = null;
         String date_desc = null;
+        String num_date = null;
+        String num_date_ci_raw = null;
+        String[] num_date_ci = null;
+        Double prob = null;
+        Double prob_stddev = null;
         for( final String token : splitTopLevel( blob ) ) {
             final int eq = token.indexOf( '=' );
             if ( eq <= 0 ) {
                 continue; // not a key=value field
             }
-            final String key = token.substring( 0, eq ).trim();
+            String key = token.substring( 0, eq ).trim();
+            if ( key.startsWith( "&" ) ) {
+                key = key.substring( 1 ).trim(); // "[&bootstrap=69,&!color=#FFFFFF]": some writers lead EVERY field with '&'
+            }
             // NHXParser's streaming pre-parse maps a ':' inside a quoted value to the BELL char (7); restore it
-            final String value = stripQuotes( token.substring( eq + 1 ).trim() ).replace( '\u0007', ':' );
+            final String value = stripQuotes( token.substring( eq + 1 ).trim() ).replace( '\u0007', ':' )
+                    .replace( NHXParser.BLOB_OPEN_BRACKET, '[' ).replace( NHXParser.BLOB_CLOSE_BRACKET, ']' );
             if ( ForesterUtil.isEmpty( key ) || ForesterUtil.isEmpty( value ) ) {
                 continue;
             }
-            final String kl = key.toLowerCase( Locale.ROOT );
+            final String kl = normalizedKey( key );
             try {
                 if ( kl.equals( "posterior" ) ) {
                     final Double d = parseNumber( value );
@@ -97,40 +146,110 @@ public final class BeastAnnotationParser {
                         PhylogenyMethods.setConfidence( node, d.doubleValue(), "posterior" );
                     }
                 }
-                else if ( kl.equals( "height_median" ) ) {
+                else if ( kl.equals( "heightmedian" ) ) {
                     height_median = value;
                 }
-                else if ( kl.equals( "height_mean" ) ) {
+                else if ( kl.equals( "heightmean" ) ) {
                     height_mean = value;
                 }
                 else if ( kl.equals( "height" ) ) {
                     height = value;
                 }
-                else if ( kl.equals( "height" + HPD_SUFFIX ) ) {
+                else if ( kl.equals( "height95hpd" ) ) {
                     hpd = parseInterval( value );
+                    hpd_raw = value;
                 }
-                else if ( kl.equals( "height_range" ) ) {
+                else if ( kl.equals( "heightrange" ) ) {
                     range = parseInterval( value );
+                    range_raw = value;
                 }
                 else if ( kl.equals( "date" ) ) {
                     date_desc = value;
                 }
+                else if ( kl.equals( "numdate" ) && ( parseNumber( value ) != null ) ) {
+                    num_date = value;
+                    addProperty( node, AuspiceJsonParser.PREFIX + "num_date", value, false );
+                }
+                else if ( kl.equals( "numdateci" ) && ( parseInterval( value ) != null ) ) {
+                    num_date_ci = parseInterval( value );
+                    num_date_ci_raw = value;
+                }
+                else if ( kl.equals( "div" ) && ( parseNumber( value ) != null ) ) {
+                    addProperty( node, AuspiceJsonParser.PREFIX + "div", value, false );
+                }
+                else if ( kl.equals( "prob" ) && ( parseNumber( value ) != null ) ) {
+                    prob = parseNumber( value );
+                }
+                else if ( kl.equals( "probstddev" ) && ( parseNumber( value ) != null ) ) {
+                    prob_stddev = parseNumber( value );
+                }
+                else if ( ( kl.equals( "bootstrap" ) || kl.equals( "boot" ) ) && ( parseNumber( value ) != null )
+                        && ( parseNumber( value ).doubleValue() >= 0 ) ) {
+                    node.getBranchData().addConfidence( new Confidence( parseNumber( value ).doubleValue(),
+                                                                        "bootstrap" ) );
+                }
+                else if ( ( kl.equals( "!color" ) || kl.equals( "!colour" ) || kl.equals( "color" )
+                        || kl.equals( "colour" ) ) && ( parseColor( value ) != null ) ) {
+                    if ( from_taxlabel ) {
+                        if ( node.getNodeData().getNodeVisualData() == null ) {
+                            node.getNodeData().setNodeVisualData( new NodeVisualData() );
+                        }
+                        node.getNodeData().getNodeVisualData().setFontColor( parseColor( value ) );
+                    }
+                    else {
+                        node.getBranchData().setBranchColor( new BranchColor( parseColor( value ) ) );
+                    }
+                }
+                else if ( kl.equals( "mutations" ) || kl.equals( "mcc" ) ) {
+                    addProperty( node, BEAST_PREFIX + refKey( key ), value, true );
+                }
                 else {
-                    addProperty( node, key, value );
+                    // A "!" key is one of FigTree's display DIRECTIVES (!color, !rotate, !collapse, ...), never a
+                    // measurement: kept, but as text -- a refused "!color=-8381639" typed as a decimal would be
+                    // offered by Color-by as a numeric trait with a gradient of its own.
+                    addProperty( node, BEAST_PREFIX + refKey( key ), value, key.startsWith( "!" ) );
                 }
             }
             catch ( final Exception e ) {
                 // a single malformed field must not abort the whole parse
             }
         }
-        applyDate( node, firstNonEmpty( height_median, height_mean, height ),
-                   ( hpd != null ) ? hpd : range, date_desc );
+        if ( ( prob != null ) && ( prob.doubleValue() >= 0 ) ) {
+            node.getBranchData().addConfidence( ( ( prob_stddev != null ) && ( prob_stddev.doubleValue() >= 0 ) )
+                    ? new Confidence( prob.doubleValue(), MRBAYES_CONFIDENCE_TYPE, prob_stddev.doubleValue() )
+                    : new Confidence( prob.doubleValue(), MRBAYES_CONFIDENCE_TYPE ) );
+        }
+        else if ( prob_stddev != null ) {
+            // a deviation with no probability to qualify: keep it as data rather than lose it
+            addProperty( node, BEAST_PREFIX + "prob_stddev", String.valueOf( prob_stddev ), false );
+        }
+        if ( num_date != null ) {
+            // a calendar date outranks every age, and brings its OWN interval: a height HPD is on the age scale
+            applyDate( node, num_date, num_date_ci, date_desc, YEAR_UNIT );
+            // the heights it outranked are kept as what they were written as, rather than dropped (no real file
+            // carries both, so nothing here is lost to a guess)
+            final String[][] outranked = { { "height_median", height_median }, { "height_mean", height_mean },
+                    { "height", height }, { "height_95_HPD", hpd_raw }, { "height_range", range_raw } };
+            for( final String[] o : outranked ) {
+                if ( o[ 1 ] != null ) {
+                    addProperty( node, BEAST_PREFIX + o[ 0 ], o[ 1 ], false );
+                }
+            }
+        }
+        else {
+            if ( num_date_ci_raw != null ) {
+                // an interval with no point date to hang on: keep it as data rather than lose it
+                addProperty( node, AuspiceJsonParser.PREFIX + "num_date_CI", num_date_ci_raw, true );
+            }
+            applyDate( node, firstNonEmpty( height_median, height_mean, height ), ( hpd != null ) ? hpd : range,
+                       date_desc, "" );
+        }
     }
 
     /** Attach a {@link Date} (age point value + younger/older HPD bounds + optional calendar desc) when any age
      *  information was present. min = lower/younger bound, max = upper/older bound (what the HPD bars expect). */
     private static void applyDate( final PhylogenyNode node, final String value, final String[] interval,
-                                   final String date_desc ) {
+                                   final String date_desc, final String unit ) {
         final boolean has_interval = ( interval != null ) && ( interval[ 0 ] != null ) && ( interval[ 1 ] != null );
         if ( ForesterUtil.isEmpty( value ) && !has_interval && ForesterUtil.isEmpty( date_desc ) ) {
             return;
@@ -142,7 +261,37 @@ public final class BeastAnnotationParser {
         if ( ( v == null ) && ( min == null ) && ( max == null ) && ForesterUtil.isEmpty( date_desc ) ) {
             return; // nothing usable survived
         }
-        node.getNodeData().setDate( new Date( ForesterUtil.isEmpty( date_desc ) ? "" : date_desc, v, min, max, "" ) );
+        // the unit belongs to the point VALUE: without one that parsed there is nothing for it to describe
+        node.getNodeData().setDate( new Date( ForesterUtil.isEmpty( date_desc ) ? "" : date_desc, v, min, max,
+                                              ( v != null ) ? unit : "" ) );
+    }
+
+    /** A key as it is COMPARED: lower-cased, without {@code %} and {@code _} (the HPD keys are spelled three ways
+     *  across BEAST 1 / BEAST 2 / MrBayes). The stored property ref keeps the key as written. */
+    static String normalizedKey( final String key ) {
+        return key.toLowerCase( Locale.ROOT ).replace( "%", "" ).replace( "_", "" );
+    }
+
+    /** A FigTree colour: {@code #RRGGBB}, or {@code #} + the signed int of Java's {@code Color.getRGB()} -- which is
+     *  what FigTree writes ({@code #-8381639} is 0xFF801B39, i.e. opaque 0x801B39). A branch colour has no alpha, so
+     *  the alpha byte is dropped. Null when it is neither. */
+    static Color parseColor( final String v ) {
+        if ( ( v == null ) || ( v.length() < 2 ) || ( v.charAt( 0 ) != '#' ) ) {
+            return null;
+        }
+        final String body = v.substring( 1 );
+        try {
+            if ( body.matches( "[0-9a-fA-F]{6}" ) ) {
+                return new Color( Integer.parseInt( body, 16 ) );
+            }
+            if ( body.matches( "-?[0-9]+" ) ) {
+                return new Color( Integer.parseInt( body ) ); // new Color(int) is opaque: the alpha byte is dropped
+            }
+        }
+        catch ( final NumberFormatException e ) {
+            // beyond an int: not a colour
+        }
+        return null;
     }
 
     private static BigDecimal toBigDecimal( final String s ) {
@@ -157,53 +306,42 @@ public final class BeastAnnotationParser {
         }
     }
 
-    /** Add a {@code beast:<key>} node property; numeric values are typed {@code xsd:decimal} (so Color-by picks
-     *  them up), everything else {@code xsd:string}. */
-    private static void addProperty( final PhylogenyNode node, final String key, final String value ) {
+    /** Add a node property under the complete ref {@code ref}; numeric values are typed {@code xsd:decimal} (so
+     *  Color-by picks them up) unless {@code always_text}, everything else {@code xsd:string}. */
+    private static void addProperty( final PhylogenyNode node, final String ref, final String value,
+                                     final boolean always_text ) {
         PropertiesList pl = node.getNodeData().getProperties();
         if ( pl == null ) {
             pl = new PropertiesList();
             node.getNodeData().setProperties( pl );
         }
-        final String datatype = ( parseNumber( value ) != null ) ? "xsd:decimal" : "xsd:string";
-        pl.addProperty( new Property( "beast:" + refKey( key ), value, "", datatype, AppliesTo.NODE ) );
+        final String datatype = ( !always_text && ( parseNumber( value ) != null ) ) ? "xsd:decimal" : "xsd:string";
+        pl.addProperty( new Property( ref, value, "", datatype, AppliesTo.NODE ) );
     }
 
-    /** Split on TOP-LEVEL commas only -- commas inside {@code {...}} sets or {@code "..."}/{@code '...'} quotes
-     *  are NOT separators (so {@code height_95%_HPD={1.4,1.5}} stays one token). */
+    /** Split on TOP-LEVEL commas only -- commas inside {@code {...}} sets or inside a quoted VALUE are NOT separators
+     *  (so {@code height_95%_HPD={1.4,1.5}} stays one token). A quote that does not open a value is itself data:
+     *  {@code country=Côte d'Ivoire,region=Africa} is two fields. The same rule as NHXParser's streaming scanner, and
+     *  JOINT with Archaeopteryx.js (splitTopLevelCommas / opensBlobQuote / blobQuoteClose). */
     static List<String> splitTopLevel( final String s ) {
         final List<String> out = new ArrayList<String>();
         int depth = 0;
-        boolean in_dq = false;
-        boolean in_sq = false;
         final StringBuilder cur = new StringBuilder();
         for( int i = 0; i < s.length(); i++ ) {
             final char c = s.charAt( i );
-            if ( in_dq ) {
-                if ( c == '"' ) {
-                    in_dq = false;
+            if ( ( ( c == '"' ) || ( c == '\'' ) ) && opensBlobQuote( s, i ) ) {
+                final int close = blobQuoteClose( s, i );
+                if ( close > -1 ) {
+                    cur.append( s, i, close + 1 ); // a quoted value, its commas data
+                    i = close;
+                    continue;
                 }
-                cur.append( c );
             }
-            else if ( in_sq ) {
-                if ( c == '\'' ) {
-                    in_sq = false;
-                }
-                cur.append( c );
-            }
-            else if ( c == '"' ) {
-                in_dq = true;
-                cur.append( c );
-            }
-            else if ( c == '\'' ) {
-                in_sq = true;
-                cur.append( c );
-            }
-            else if ( ( c == '{' ) || c == '[' ) {
+            if ( ( c == '{' ) || ( c == '[' ) ) {
                 depth++;
                 cur.append( c );
             }
-            else if ( ( c == '}' ) || c == ']' ) {
+            else if ( ( c == '}' ) || ( c == ']' ) ) {
                 if ( depth > 0 ) {
                     depth--;
                 }
@@ -221,6 +359,34 @@ public final class BeastAnnotationParser {
             out.add( cur.toString() );
         }
         return out;
+    }
+
+    /** A quote opens a run only where a value can START: straight after '=', or after '{', '[' or ',' . */
+    static boolean opensBlobQuote( final String s, final int p ) {
+        int m = p - 1;
+        while ( ( m >= 0 ) && Character.isWhitespace( s.charAt( m ) ) ) {
+            --m;
+        }
+        return ( m >= 0 ) && ( "={[,".indexOf( s.charAt( m ) ) >= 0 );
+    }
+
+    /** The index of the quote closing the run opened at {@code p} -- the same character standing where a value can
+     *  END (before ',', '}', ']' or the end) -- or -1. */
+    static int blobQuoteClose( final String s, final int p ) {
+        final char q = s.charAt( p );
+        for( int k = p + 1; k < s.length(); ++k ) {
+            if ( s.charAt( k ) != q ) {
+                continue;
+            }
+            int m = k + 1;
+            while ( ( m < s.length() ) && Character.isWhitespace( s.charAt( m ) ) ) {
+                ++m;
+            }
+            if ( ( m >= s.length() ) || ( ",}]".indexOf( s.charAt( m ) ) >= 0 ) ) {
+                return k;
+            }
+        }
+        return -1;
     }
 
     /** Parse a two-value BEAST set {@code {lo,hi}} (or {@code [lo,hi]}) into the two raw numeric strings, or null
@@ -243,8 +409,16 @@ public final class BeastAnnotationParser {
         return new String[] { lo, hi };
     }
 
+    // A plain decimal with an optional exponent -- what Archaeopteryx.js reads as a number too. Java alone would
+    // also take "3f", "1d" and hex floats, and type a clade called "3f" as xsd:decimal (invalid phyloXML).
+    private static final java.util.regex.Pattern NUMBER_PATTERN = java.util.regex.Pattern
+            .compile( "[-+]?(\\d+\\.?\\d*|\\.\\d+)([eE][-+]?\\d+)?" );
+
     /** {@link Double} value iff {@code v} parses as a finite number, else null. */
     static Double parseNumber( final String v ) {
+        if ( ( v == null ) || !NUMBER_PATTERN.matcher( v ).matches() ) {
+            return null;
+        }
         try {
             final double d = Double.parseDouble( v );
             return ( Double.isNaN( d ) || Double.isInfinite( d ) ) ? null : Double.valueOf( d );

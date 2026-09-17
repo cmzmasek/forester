@@ -25,12 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.archaeopteryx.FigureRenderer;
-import org.forester.io.parsers.PhylogenyParser;
-import org.forester.archaeopteryx.AptxUtil;
-import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
@@ -145,13 +140,9 @@ public final class aptx_render {
             ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
         }
         try {
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( in, true );
-            final Phylogeny[] phys = factory.create( in, parser );
-            // The same promotion the GUI applies, through the same helper: a bootstrap tree must not render
-            // one way in the window and another way here, or "the same command gives the same figure" is false.
-            AptxUtil.applyInternalLabelPolicy( phys, parser );
-            if ( ( phys == null ) || ( phys.length < 1 ) ) {
+            // read exactly as the window reads it: parser options and label promotion through the shared helpers
+            final Phylogeny[] phys = FigureRenderer.readTrees( in );
+            if ( phys.length < 1 ) {
                 ForesterUtil.fatalError( PRG_NAME, "no tree found in: " + in );
             }
             if ( phys.length > 1 ) {

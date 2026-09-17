@@ -68,6 +68,7 @@ public final class AptxUtilTest {
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testQualitativePalette() && testGatherDomainNames() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalLabelPolicy()
+                && testTreeTimeLabelRepair() && testApplyParserOptions() && testTipIntervalMeaning()
                 && testInternalNodeDateInterval()
                 && testPreferredDisplayTypeForBranchLengthTree() && testMostlyMeasuredForPhylogram()
                 && testDetectTimeTree()
@@ -432,6 +433,182 @@ public final class AptxUtilTest {
         }
         catch ( final Exception e ) {
             return fail( "unexpected exception: " + e );
+        }
+    }
+
+    /** What a TIP's date interval means is the tree's to say: a FOSSIL RANGE unless the tree is on calendar time,
+     *  where it is a sampling-date uncertainty -- and only when it has a width. */
+    private static boolean testTipIntervalMeaning() {
+        // datedTree( unit, root, mid, tip ): give the tips intervals by hand
+        final Phylogeny cal = datedTree( "year", 2019.9, 2021, 2022.5 );
+        final Phylogeny geo = datedTree( "mya", 250, 66, 0 );
+        final Phylogeny unitless = datedTree( null, 250, 66, 2.58 );
+        for( final Phylogeny p : new Phylogeny[] { cal, geo, unitless } ) {
+            if ( AptxUtil.isHasFossilRanges( p ) || AptxUtil.isHasSampledTipWithDateUncertainty( p ) ) {
+                return fail( "no tip interval: neither fossil ranges nor sampling uncertainty" );
+            }
+            final PhylogenyNode tip = p.getFirstExternalNode();
+            final org.forester.phylogeny.data.Date d = tip.getNodeData().getDate();
+            d.setMin( d.getValue() );
+            d.setMax( d.getValue() ); // {d,d}: an interval without a width
+            if ( AptxUtil.isGenuineDateInterval( tip ) ) {
+                return fail( "{d,d} is not a genuine interval" );
+            }
+        }
+        if ( AptxUtil.isHasSampledTipWithDateUncertainty( cal ) ) {
+            return fail( "calendar, zero-width tip interval: no sampling uncertainty to draw" );
+        }
+        if ( AptxUtil.isHasFossilRanges( cal ) ) {
+            return fail( "a tip interval on a CALENDAR tree is never a fossil range" );
+        }
+        if ( AptxUtil.isHasFossilRanges( geo ) || AptxUtil.isHasFossilRanges( unitless ) ) {
+            return fail( "a zero-width tip interval ({0.0,0.0}, as TreeAnnotator writes) is no fossil range, on any tree" );
+        }
+        for( final Phylogeny p : new Phylogeny[] { cal, geo, unitless } ) {
+            final org.forester.phylogeny.data.Date d = p.getFirstExternalNode().getNodeData().getDate();
+            d.setMin( d.getValue().subtract( java.math.BigDecimal.ONE ) ); // now it has a width
+        }
+        if ( !AptxUtil.isGenuineDateInterval( cal.getFirstExternalNode() ) || !AptxUtil.isHasSampledTipWithDateUncertainty( cal )
+                || AptxUtil.isHasFossilRanges( cal ) ) {
+            return fail( "calendar + a tip interval with a width: sampling uncertainty, still no fossil range" );
+        }
+        if ( AptxUtil.isHasSampledTipWithDateUncertainty( geo ) || !AptxUtil.isHasFossilRanges( geo )
+                || !AptxUtil.isHasFossilRanges( unitless ) ) {
+            return fail( "off calendar time a tip interval WITH a width is a fossil range, as it always was (unit-less trees too)" );
+        }
+        return true;
+    }
+
+    /** The one place a Newick-family parser gets the user's reading options. Judged by what the parser then DOES:
+     *  its getters are private, and behaviour is what a user sees. */
+    private static boolean testApplyParserOptions() {
+        try {
+            final String nh = "(Homo_sapiens[&rate=0.5]:1.0,B:1x);"; // ":1x" is a bad branch length
+            final String nexus = "#NEXUS\nbegin trees;\n\ttree t1 = [&R] (Homo_sapiens[&rate=0.5]:1.0,B:2.0);\nend;\n";
+            for( final boolean on : new boolean[] { true, false } ) {
+                final Options o = Options.createInstance();
+                o.setReplaceUnderscoresInNhParsing( on );
+                o.setAllowErrorsInDistanceToParent( true );
+                o.setParseBeastStyleExtendedNexusTags( on );
+                final org.forester.io.parsers.nhx.NHXParser nhx = new org.forester.io.parsers.nhx.NHXParser();
+                AptxUtil.applyParserOptions( nhx, o );
+                nhx.setSource( nh );
+                final Phylogeny p1 = nhx.parse()[ 0 ]; // throws on ":x" unless errors in lengths are allowed
+                final org.forester.io.parsers.nexus.NexusPhylogeniesParser nex = new org.forester.io.parsers.nexus.NexusPhylogeniesParser();
+                AptxUtil.applyParserOptions( nex, o );
+                final Phylogeny p2 = org.forester.phylogeny.factories.ParserBasedPhylogenyFactory.getInstance()
+                        .create( new java.io.ByteArrayInputStream( nexus.getBytes( java.nio.charset.StandardCharsets.UTF_8 ) ), nex )[ 0 ];
+                for( final Phylogeny p : new Phylogeny[] { p1, p2 } ) {
+                    final String parser = ( p == p1 ) ? "NHX" : "Nexus";
+                    final PhylogenyNode h = p.getNode( on ? "Homo sapiens" : "Homo_sapiens" ); // throws when absent
+                    final boolean has_rate = ( h.getNodeData().getProperties() != null )
+                            && !h.getNodeData().getProperties().getProperties( "beast:rate" ).isEmpty();
+                    if ( has_rate != on ) {
+                        return fail( parser + ": bracket annotations must be read exactly when the option says so (" + on + ")" );
+                    }
+                }
+            }
+            // strict branch lengths when the option says strict
+            final Options strict = Options.createInstance();
+            strict.setAllowErrorsInDistanceToParent( false );
+            final org.forester.io.parsers.nhx.NHXParser nhx = new org.forester.io.parsers.nhx.NHXParser();
+            AptxUtil.applyParserOptions( nhx, strict );
+            try {
+                nhx.setSource( "(A:1.0,B:1x);" ); // setting the source already reads the first tree
+                nhx.parse();
+                return fail( "a bad branch length must be refused when the option does not allow errors" );
+            }
+            catch ( final Exception expected ) {
+                // expected
+            }
+            // no-ops, never an exception: another parser, no parser, no options
+            AptxUtil.applyParserOptions( new org.forester.io.parsers.json.AuspiceJsonParser(), strict );
+            AptxUtil.applyParserOptions( null, strict );
+            AptxUtil.applyParserOptions( nhx, null );
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "applyParserOptions threw: " + e );
+        }
+    }
+
+    /** TreeTime's .nwk glues an internal node's name to its "%1.2f" confidence: NODE_00000161.00. The repair splits
+     *  them -- under EVERY policy, because its evidence is structural -- and is deliberately narrow: each near miss
+     *  below is a real name that happens to look similar, and stays untouched. */
+    private static boolean testTreeTimeLabelRepair() {
+        try {
+            final String glued = "(((A:1,B:1)NODE_00000030.81:1,C:1)NODE_00000161.00:1,((D:1,E:1)NODE_0000020:1,F:1)NODE_00000090.98:1)NODE_0000018:1;";
+            for( final Options.CONFIDENCE_FROM_INTERNAL_LABELS policy : Options.CONFIDENCE_FROM_INTERNAL_LABELS.values() ) {
+                final Phylogeny phy = Phylogeny.createInstanceFromNhxString( glued );
+                final int n = AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true, policy );
+                if ( n != 3 ) {
+                    return fail( policy + ": the three glued labels must be repaired (structural evidence, not the policy's guess), got " + n );
+                }
+                final PhylogenyNode n16 = phy.getNode( "NODE_0000016" );
+                if ( ( n16.getBranchData().getNumberOfConfidences() != 1 ) || ( n16.getBranchData().getConfidence( 0 ).getValue() != 1.0 )
+                        || !org.forester.util.ForesterUtil.isEmpty( n16.getBranchData().getConfidence( 0 ).getType() ) ) {
+                    return fail( policy + ": NODE_00000161.00 is node NODE_0000016 with confidence 1.00 (type unset)" );
+                }
+                if ( phy.getNode( "NODE_0000003" ).getBranchData().getConfidence( 0 ).getValue() != 0.81 ) {
+                    return fail( policy + ": NODE_00000030.81 is node NODE_0000003 with confidence 0.81" );
+                }
+                // an unglued name, and the root, are left exactly as they are
+                if ( phy.getNode( "NODE_0000020" ).getBranchData().isHasConfidences() || !phy.getRoot().getName().equals( "NODE_0000018" ) ) {
+                    return fail( policy + ": a clean NODE_ name is not touched" );
+                }
+            }
+            // not a Newick-family source: nothing
+            final Phylogeny xml = Phylogeny.createInstanceFromNhxString( glued );
+            if ( ( AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { xml }, false, Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO ) != 0 )
+                    || ( confidenceCount( xml ) != 0 ) ) {
+                return fail( "only the Newick family is repaired" );
+            }
+            // near misses, each with a second one beside it so that the corpus gate is not what stops them
+            final String[] near_misses = { "NODE_0000161.00", // 6 digits
+                    "NODE_000000161.00", // 8 digits
+                    "NODE_00000161.000", // 3 decimals
+                    "NODE_00000162.50", // a "%1.2f" confidence is 0.dd or 1.dd
+                    "NODE_00000161.0", // 1 decimal
+                    "Inner_00000161.00", "node_00000161.00", "xNODE_00000161.00" };
+            for( final String nm : near_misses ) {
+                final Phylogeny phy = Phylogeny.createInstanceFromNhxString( "(((A:1,B:1)" + nm + ":1,C:1)" + nm + ":1,D:1)r:1;" );
+                if ( ( AptxUtil.repairTreeTimeInternalLabels( phy ) != 0 ) || ( confidenceCount( phy ) != 0 ) ) {
+                    return fail( "'" + nm + "' is a near miss and must not be repaired" );
+                }
+            }
+            // the corpus gate: ONE glued label in a tree is not evidence
+            final Phylogeny single = Phylogeny.createInstanceFromNhxString( "(((A:1,B:1)NODE_00000030.81:1,C:1)NODE_0000016:1,D:1)r:1;" );
+            if ( ( AptxUtil.repairTreeTimeInternalLabels( single ) != 0 ) || ( single.getNode( "NODE_00000030.81" ) == null ) ) {
+                return fail( "a single glued label is not enough: nothing is touched" );
+            }
+            // a TIP named like that is a tip name; and a node that already has a confidence keeps its name
+            final Phylogeny tips = Phylogeny.createInstanceFromNhxString( "((NODE_00000030.81:1,NODE_00000040.96:1)x:1,C:1)r:1;" );
+            if ( AptxUtil.repairTreeTimeInternalLabels( tips ) != 0 ) {
+                return fail( "tips are never repaired" );
+            }
+            // the ROOT has no branch for a confidence to sit on: never repaired, even in a tree that is
+            final Phylogeny root_glued = Phylogeny.createInstanceFromNhxString( "(((A:1,B:1)NODE_00000030.81:1,C:1)NODE_00000161.00:1,D:1)NODE_00000181.00:1;" );
+            if ( ( AptxUtil.repairTreeTimeInternalLabels( root_glued ) != 2 ) || !root_glued.getRoot().getName().equals( "NODE_00000181.00" ) ) {
+                return fail( "the root is never repaired" );
+            }
+            // the real file (local test data, not in the repository: say so when it is not there)
+            final java.io.File real = new java.io.File( "test_trees/timetree_out_tree_0.nwk" );
+            if ( !real.canRead() ) {
+                System.out.println( "  [AptxUtilTest] note: " + real + " not readable -- real-file check of the TreeTime label repair skipped" );
+            }
+            else {
+                final Phylogeny phy = org.forester.phylogeny.factories.ParserBasedPhylogenyFactory.getInstance()
+                        .create( real, new org.forester.io.parsers.nhx.NHXParser() )[ 0 ];
+                final int repaired = AptxUtil.applyInternalLabelPolicy( new Phylogeny[] { phy }, true,
+                                                                       Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO );
+                if ( ( repaired != 13 ) || ( phy.getNode( "NODE_0000016" ) == null ) || ( phy.getNode( "NODE_0000020" ) == null ) ) {
+                    return fail( "test_trees/timetree_out_tree_0.nwk: 13 glued labels must be repaired, got " + repaired );
+                }
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "TreeTime label repair threw: " + e );
         }
     }
 

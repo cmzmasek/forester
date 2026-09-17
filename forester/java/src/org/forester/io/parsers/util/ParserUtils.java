@@ -93,30 +93,41 @@ public final class ParserUtils {
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
                                                                                    throws FileNotFoundException, IOException {
-        PhylogenyParser parser = null;
-        final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
+        return createParserFromFirstLine( ForesterUtil.getFirstLine( file ), phyloxml_validate_against_xsd );
+    }
+
+    /**
+     * The parser a source's FIRST LINE calls for, when its name says nothing: "<" is phyloXML, a Nexus header or a
+     * "begin" is Nexus, anything else is read as New Hampshire / NHX. ONE ladder for files and URLs: there were two
+     * verbatim copies, and they had already drifted (only one of them tolerated a missing XSD outside a release).
+     */
+    final static PhylogenyParser createParserFromFirstLine( final String first_line_as_read,
+                                                            final boolean phyloxml_validate_against_xsd ) {
+        final String first_line = ( first_line_as_read == null ) ? "" : first_line_as_read.trim().toLowerCase();
         if ( first_line.startsWith( "<" ) ) {
-            parser = PhyloXmlParser.createPhyloXmlParser();
-            if ( phyloxml_validate_against_xsd ) {
-                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                if ( xsd_url != null ) {
-                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                }
-                else {
-                    if ( ForesterConstants.RELEASE ) {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
+            return createPhyloXmlParser( phyloxml_validate_against_xsd );
         }
-        else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
+        if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
                 || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
-            parser = new NexusPhylogeniesParser();
+            return new NexusPhylogeniesParser();
         }
-        else {
-            parser = new NHXParser();
+        return new NHXParser();
+    }
+
+    /** A phyloXML parser, validating against the XSD shipped in the jar when asked to. Outside a release build a
+     *  missing XSD resource is tolerated (a development classpath may not carry it). */
+    private final static PhyloXmlParser createPhyloXmlParser( final boolean phyloxml_validate_against_xsd ) {
+        final PhyloXmlParser parser = PhyloXmlParser.createPhyloXmlParser();
+        if ( phyloxml_validate_against_xsd ) {
+            final URL xsd_url = PhyloXmlParser.class.getClassLoader()
+                    .getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
+            if ( xsd_url != null ) {
+                parser.setValidateAgainstSchema( xsd_url.toString() );
+            }
+            else if ( ForesterConstants.RELEASE ) {
+                throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
+                        + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
+            }
         }
         return parser;
     }
@@ -146,28 +157,7 @@ public final class ParserUtils {
         final String lc_filename = url.getFile().toString().toLowerCase();
         PhylogenyParser parser = createParserDependingOnSuffix( lc_filename, phyloxml_validate_against_xsd );
         if ( parser == null ) {
-            final String first_line = ForesterUtil.getFirstLine( url ).trim().toLowerCase();
-            if ( first_line.startsWith( "<" ) ) {
-                parser = PhyloXmlParser.createPhyloXmlParser();
-                if ( phyloxml_validate_against_xsd ) {
-                    final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                    final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                    if ( xsd_url != null ) {
-                        ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                    }
-                    else {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
-            else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
-                    || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
-                parser = new NexusPhylogeniesParser();
-            }
-            else {
-                parser = new NHXParser();
-            }
+            parser = createParserFromFirstLine( ForesterUtil.getFirstLine( url ), phyloxml_validate_against_xsd );
         }
         if ( ( parser != null ) && lc_filename.endsWith( ".zip" ) ) {
             if ( parser instanceof PhyloXmlParser ) {
@@ -405,22 +395,14 @@ public final class ParserUtils {
             parser = new TolParser();
         }
         else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( "phyloxml" ) || filename_lc.endsWith( ".zip" ) ) {
-            parser = PhyloXmlParser.createPhyloXmlParser();
-            if ( phyloxml_validate_against_xsd ) {
-                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                if ( xsd_url != null ) {
-                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                }
-                else {
-                    if ( ForesterConstants.RELEASE ) {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
+            parser = createPhyloXmlParser( phyloxml_validate_against_xsd );
         }
-        else if ( filename_lc.endsWith( ".nexus" ) || filename_lc.endsWith( ".nex" ) || filename_lc.endsWith( ".nx" ) ) {
+        // Nexus by name ONLY where the name says "Nexus". A producer's habit is not a format: BEAST writes ".trees"
+        // and MrBayes ".con.tre" / ".t" as Nexus, but a bootstrap or ASTRAL gene-tree list saved as "genes.trees", or
+        // a PHYLIP ".tre", is Newick -- forcing those to the Nexus parser made them fail to open. Everything else goes
+        // to the first-line sniff, which reads both right. Do not "fix" this by adding them.
+        else if ( filename_lc.endsWith( ".nexus" ) || filename_lc.endsWith( ".nex" ) || filename_lc.endsWith( ".nx" )
+                || filename_lc.endsWith( ".nxs" ) ) {
             parser = new NexusPhylogeniesParser();
         }
         else if ( filename_lc.endsWith( ".nhx" ) || filename_lc.endsWith( ".nh" ) || filename_lc.endsWith( ".newick" )
@@ -431,6 +413,10 @@ public final class ParserUtils {
             parser = new org.forester.io.parsers.json.AuspiceJsonParser(); // Auspice / Nextstrain v2 dataset
         }
         return parser;
+    }
+
+    final static PhylogenyParser createParserDependingOnSuffixForTest( final String filename ) {
+        return createParserDependingOnSuffix( filename, false );
     }
 
     /**

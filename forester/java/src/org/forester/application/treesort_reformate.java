@@ -67,7 +67,10 @@ public class treesort_reformate {
         Phylogeny p = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            p = factory.create(intree, new NHXParser())[0];
+            // this tool reports each tip's raw [&...] comment (nh:comment): keep bracket annotations UNPARSED
+            final NHXParser parser = new NHXParser();
+            parser.setParseBeastStyleExtendedTags(false);
+            p = factory.create(intree, parser)[0];
         } catch (final Exception e) {
             ForesterUtil.fatalError(PRG_NAME, "Could not read \"" + intree + "\" [" + e.getMessage() + "]");
         }
@@ -86,7 +89,8 @@ public class treesort_reformate {
                         if (c != null && c.size() > 0) {
                             w.write(node.getName());
                             w.write(", ");
-                            w.write(c.get(0).getValue());
+                            // quotes are data inside a kept comment now; this tool's output never carried them
+                            w.write(c.get(0).getValue().replace("\"", "").replace("'", ""));
                             w.write('\n');
                             ++counter;
                         }

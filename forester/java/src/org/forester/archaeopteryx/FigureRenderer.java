@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
+import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
  * Renders a phylogeny to a figure file without a user ever seeing a window -- the engine behind the
@@ -176,6 +179,19 @@ public final class FigureRenderer {
     }
 
     /**
+     * Reads a tree file the way the WINDOW reads it -- the same parser options (incl. bracket annotations: a BEAST
+     * tree's posterior, node ages and traits) and the same internal-label promotion, each through the one shared
+     * helper -- or "the same command gives the same figure" is false. May return an empty array; never null.
+     */
+    public static Phylogeny[] readTrees( final File input ) throws IOException {
+        final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( input, true );
+        AptxUtil.applyParserOptions( parser );
+        final Phylogeny[] phys = ParserBasedPhylogenyFactory.getInstance().create( input, parser );
+        AptxUtil.applyInternalLabelPolicy( phys, parser );
+        return ( phys == null ) ? new Phylogeny[ 0 ] : phys;
+    }
+
+    /**
      * Renders {@code phy} into {@code output}. Returns the export report (the same wording the GUI shows).
      *
      * @throws IOException on a write failure, an unknown output extension, or an unparseable size
@@ -251,6 +267,8 @@ public final class FigureRenderer {
             final MainPanel mp = mf.getMainPanel();
             final TreePanel tp = mp.getCurrentTreePanel();
             applyStyle( tp, mp.getControlPanel(), spec );
+            // nobody can drag a legend off the tree in a rendered figure: it gets a column of its own
+            tp.setReserveLegendColumn( true );
             // Re-fit after the style change. Switching TO a radial type invalidates the radial diameter, and the
             // GUI re-fits at that point (MainFrame.typeChanged) precisely because otherwise the first radial
             // layout uses a stale rectangular preferred size and the circle comes out off-centre.

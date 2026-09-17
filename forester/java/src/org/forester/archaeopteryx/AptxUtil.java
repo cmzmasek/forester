@@ -374,9 +374,49 @@ public final class AptxUtil {
         return false;
     }
 
+    /** A date with a minimum and a maximum that DIFFER: an interval with a width, i.e. an uncertainty or a range.
+     *  Auspice writes {d,d} for an exactly dated sample, which is neither. */
+    final static boolean isGenuineDateInterval(final PhylogenyNode n) {
+        final org.forester.phylogeny.data.Date d = n.getNodeData().getDate();
+        return (d != null) && (d.getMin() != null) && (d.getMax() != null) && (d.getMin().compareTo(d.getMax()) != 0);
+    }
+
+    /** True when the tree has FOSSIL RANGES to draw: tips with a date interval, on a tree that is NOT on calendar
+     *  time. On calendar time (a Nextstrain / TreeTime tree) a tip interval is a sampling-date uncertainty -- see
+     *  {@link #isHasSampledTipWithDateUncertainty} -- and auto-enabling a geologic overlay for it is what both
+     *  Nextstrain readers used to avoid by throwing those intervals away. */
+    final static boolean isHasFossilRanges(final Phylogeny phy) {
+        if (deriveTimeAxisType(phy) == Options.TIME_AXIS_TYPE.CALENDAR) {
+            return false;
+        }
+        // a RANGE has a width: TreeAnnotator writes height_95%_HPD={0.0,0.0} on a tip it did not sample, which is no
+        // first-to-last appearance and must not switch the fossil overlay on
+        for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            if (isGenuineDateInterval(it.next())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** True when a tree on CALENDAR time has at least one tip whose sampling date is uncertain (a date interval with
+     *  a width): the Node Age Bars draw it. */
+    final static boolean isHasSampledTipWithDateUncertainty(final Phylogeny phy) {
+        if (deriveTimeAxisType(phy) != Options.TIME_AXIS_TYPE.CALENDAR) {
+            return false;
+        }
+        for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            if (isGenuineDateInterval(it.next())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** True when at least one EXTERNAL node (tip) carries a node-age {@code <date>} with both a minimum and a maximum --
      *  i.e. a fossil stratigraphic range (First/Last Appearance Datum) to draw as a Fossil Range Bar. The tip analogue
-     *  of {@link #isHasAtLeastOneInternalNodeWithDateInterval}. */
+     *  of {@link #isHasAtLeastOneInternalNodeWithDateInterval}. WHAT the interval means is the tree's to say:
+     *  {@link #isHasFossilRanges} / {@link #isHasSampledTipWithDateUncertainty}. */
     final static public boolean isHasAtLeastOneExternalNodeWithDateInterval(final Phylogeny phy) {
         for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -1011,13 +1051,19 @@ public final class AptxUtil {
     public final static int applyInternalLabelPolicy(final Phylogeny[] phys,
                                                      final boolean newick_family,
                                                      final Options.CONFIDENCE_FROM_INTERNAL_LABELS policy) {
-        if ((phys == null) || (policy == null) || !newick_family
-                || (policy == Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER)) {
+        if ((phys == null) || (policy == null) || !newick_family) {
             return 0;
         }
         int promoted = 0;
         for (final Phylogeny phy : phys) {
             if ((phy == null) || phy.isEmpty()) {
+                continue;
+            }
+            // BEFORE the policy gate, and under every policy: the evidence for this repair is structural (a value
+            // glued to a TreeTime node name), not the statistical guess the policy governs -- under NEVER the user
+            // would otherwise just be left looking at a node called "NODE_00000161.00".
+            promoted += repairTreeTimeInternalLabels(phy);
+            if (policy == Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER) {
                 continue;
             }
             if ((policy == Options.CONFIDENCE_FROM_INTERNAL_LABELS.AUTO)
@@ -1028,6 +1074,88 @@ public final class AptxUtil {
             promoted += promoteNumericInternalLabels(phy);
         }
         return promoted;
+    }
+
+    /** TreeTime's node name, then Bio.Phylo's "%1.2f" of the branch's confidence -- glued together, no separator. */
+    private final static java.util.regex.Pattern TREETIME_GLUED_LABEL = java.util.regex.Pattern
+            .compile("^(NODE_\\d{7})([01]\\.\\d{2})$");
+
+    /**
+     * TreeTime's Newick output glues an internal node's NAME to its CONFIDENCE: {@code NODE_00000161.00} is the node
+     * {@code NODE_0000016} with confidence {@code 1.00} (TreeTime names nodes {@code "NODE_" + format(n, '07d')} --
+     * always exactly seven digits -- and Bio.Phylo writes name and {@code "%1.2f"} confidence with nothing between
+     * them; a node without a confidence stays a clean {@code NODE_0000020}). Splits them: the name is restored, the
+     * value becomes the branch's confidence (type unset, as for every label promotion). Returns the number repaired.
+     * <p>
+     * DELIBERATELY NARROW -- three independent gates, all required. Do not loosen this to {@code Inner1} /
+     * {@code node5} / a variable digit count: those are real names that happen to end in digits.
+     * (i) the anchored pattern: NODE_ + exactly 7 digits + [01].dd; (ii) internal, non-root nodes without a
+     * confidence of their own; (iii) a corpus gate: at least TWO labels of the tree match, or nothing is touched
+     * (the all-or-nothing discipline of the TAXLABELS-index rule).
+     * <p>
+     * Desktop only: the TreeTime CLI Archaeopteryx.js tests against writes no .nwk (a named difference).
+     */
+    static int repairTreeTimeInternalLabels(final Phylogeny phy) {
+        final List<PhylogenyNode> glued = new ArrayList<PhylogenyNode>();
+        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (n.isExternal() || n.isRoot() || n.getBranchData().isHasConfidences()
+                    || ForesterUtil.isEmpty(n.getName())) {
+                continue;
+            }
+            if (TREETIME_GLUED_LABEL.matcher(n.getName().trim()).matches()) {
+                glued.add(n);
+            }
+        }
+        if (glued.size() < 2) {
+            return 0;
+        }
+        for (final PhylogenyNode n : glued) {
+            final java.util.regex.Matcher m = TREETIME_GLUED_LABEL.matcher(n.getName().trim());
+            m.matches();
+            n.getBranchData().addConfidence(new Confidence(Double.parseDouble(m.group(2)), ""));
+            n.setName(m.group(1));
+        }
+        return glued.size();
+    }
+
+    /**
+     * THE one place a Newick-family parser is given the user's reading options -- underscores, taxonomy extraction,
+     * tolerance for bad branch lengths, and whether {@code [&...]} bracket annotations (BEAST / FigTree / MrBayes /
+     * TreeTime / Auspice) are read. For the same reason {@link #applyInternalLabelPolicy} exists: before this, the
+     * window set all four and every other entry point set some or none, so {@code aptx_render} drew a BEAST tree
+     * with no posterior, no node ages and one flat colour where the window drew all of them. A no-op for every other
+     * parser.
+     */
+    public final static void applyParserOptions(final PhylogenyParser parser, final Options options) {
+        if ((parser == null) || (options == null)) {
+            return;
+        }
+        if (parser instanceof NHXParser) {
+            final NHXParser nhx = (NHXParser) parser;
+            nhx.setReplaceUnderscores(options.isReplaceUnderscoresInNhParsing());
+            nhx.setTaxonomyExtraction(options.getTaxonomyExtraction());
+            nhx.setAllowErrorsInDistanceToParent(options.isAllowErrorsInDistanceToParent());
+        } else if (parser instanceof NexusPhylogeniesParser) {
+            final NexusPhylogeniesParser nex = (NexusPhylogeniesParser) parser;
+            nex.setReplaceUnderscores(options.isReplaceUnderscoresInNhParsing());
+            nex.setTaxonomyExtraction(options.getTaxonomyExtraction());
+        }
+        applyBracketAnnotationOption(parser, options);
+    }
+
+    /** For headless entry points (e.g. {@code aptx_render}) that have no live Options: the user's SAVED ones. */
+    public final static void applyParserOptions(final PhylogenyParser parser) {
+        applyParserOptions(parser, MainFrameApplication.optionsWithSavedPreferences());
+    }
+
+    private final static void applyBracketAnnotationOption(final PhylogenyParser parser, final Options options) {
+        if (parser instanceof NHXParser) {
+            ((NHXParser) parser).setParseBeastStyleExtendedTags(options.isParseBeastStyleExtendedNexusTags());
+        } else if (parser instanceof NexusPhylogeniesParser) {
+            ((NexusPhylogeniesParser) parser)
+                    .setParseBeastStyleExtendedTags(options.isParseBeastStyleExtendedNexusTags());
+        }
     }
 
     /** Only the Newick family needs the promotion: phyloXML and Auspice JSON carry real confidences. */
@@ -1670,8 +1798,9 @@ public final class AptxUtil {
                     || !isHasAtLeastOneBranchLengthLargerThanZero(tp.getPhylogeny())) {
                 continue;
             }
-            any_hpd |= isHasAtLeastOneInternalNodeWithDateInterval(tp.getPhylogeny());
-            any_fossil |= isHasAtLeastOneExternalNodeWithDateInterval(tp.getPhylogeny());
+            any_hpd |= isHasAtLeastOneInternalNodeWithDateInterval(tp.getPhylogeny())
+                    || isHasSampledTipWithDateUncertainty(tp.getPhylogeny());
+            any_fossil |= isHasFossilRanges(tp.getPhylogeny());
         }
         main_panel.getOptions().setShowHpdBars(any_hpd);
         main_panel.getOptions().setShowFossilRangeBars(any_fossil);

@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
 import org.forester.archaeopteryx.AptxConstants;
 import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nhx.BeastAnnotationParser;
+import org.forester.io.parsers.nhx.BracketAnnotationNormalizer;
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
@@ -91,6 +93,13 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     private boolean                        _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
     private boolean                        _rooted_info_present;
     private List<String>                   _taxlabels;
+    // A TAXLABELS entry may carry an annotation -- FigTree writes a coloured taxon as
+    // 'NewYork_454'[&!color=#-8381639] -- keyed here by the (clean) label it belongs to. A tip that is not spelled
+    // exactly like a taxlabel may still match one by the looser join key, but ONLY when that key names exactly one
+    // taxon: "Taxon_A" and "taxon_a" are two taxa, and one's colour must never reach the other.
+    private Map<String, String>            _taxlabel_annotations;
+    private Map<String, String>            _taxlabel_annotations_by_key;
+    private Map<String, Integer>           _taxlabel_key_counts;
     private TAXONOMY_EXTRACTION            _taxonomy_extraction      = TAXONOMY_EXTRACTION.NO;
     private String                         _title;
     private Map<String, String>            _translate_map;
@@ -99,7 +108,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     private char                           _matchchar;
     private String                         _matrix_reference_id;
     private final boolean                  _add_sequences            = true;
-    private boolean                       _parse_beast_style_extended_tags           = false;
+    private boolean                       _parse_beast_style_extended_tags           = NHXParser.PARSE_BRACKET_ANNOTATIONS_DEFAULT;
            
 
     @Override
@@ -136,6 +145,9 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     @Override
     public final void reset() throws FileNotFoundException, IOException {
         _taxlabels = new ArrayList<String>();
+        _taxlabel_annotations = new HashMap<String, String>();
+        _taxlabel_annotations_by_key = new HashMap<String, String>();
+        _taxlabel_key_counts = new HashMap<String, Integer>();
         _translate_map = new HashMap<String, String>();
         _nh = new StringBuilder();
         _name = "";
@@ -191,6 +203,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         pars.setReplaceUnderscores( _replace_underscores );
         pars.setIgnoreQuotes( _ignore_quotes_in_nh_data );
         pars.setParseBeastStyleExtendedTags( _parse_beast_style_extended_tags );
+        pars.setNormalizeBracketAnnotations( false ); // run below, once the TAXLABELS annotations are on the tips too
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }
@@ -236,6 +249,12 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                 else if ( tips_are_taxlabels_indices ) {
                     node.setName( _taxlabels.get( Integer.parseInt( node.getName().trim() ) - 1 ) );
                 }
+                if ( _parse_beast_style_extended_tags && !_taxlabel_annotations.isEmpty() ) {
+                    final String annotation = taxlabelAnnotationFor( node.getName() );
+                    if ( annotation != null ) {
+                        BeastAnnotationParser.applyTaxlabelAnnotation( annotation, node );
+                    }
+                }
                 if ( !_replace_underscores && ( ( _taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
                     ParserUtils.extractTaxonomyDataFromNodeName( node, _taxonomy_extraction );
                 }
@@ -253,6 +272,10 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     }
                 }
             }
+        }
+        if ( _parse_beast_style_extended_tags ) {
+            // the per-tree pass over EVERY annotation of the tree, the tree string's and the TAXLABELS block's alike
+            BracketAnnotationNormalizer.normalize( p );
         }
         _next = p;
     }
@@ -389,15 +412,21 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     else {
                         // Quote-aware: 'Seba''s bat' is ONE label, and a plain whitespace split
                         // would turn it into two -- which then line up with the wrong tips.
-                        for( String label : ParserUtils.splitWhitespaceOutsideQuotes( line ) ) {
+                        for( String label : joinBracketedTokens( ParserUtils.splitWhitespaceOutsideQuotes( line ) ) ) {
                             if ( !label.toLowerCase().equals( taxlabels ) ) {
                                 if ( label.endsWith( ";" ) ) {
                                     _in_taxalabels = false;
                                     label = label.substring( 0, label.length() - 1 );
                                 }
-                                label = ParserUtils.unquoteLabel( label );
+                                final String[] label_and_annotation = splitTaxlabelAnnotation( label );
+                                label = ParserUtils.unquoteLabel( label_and_annotation[ 0 ] );
                                 if ( label.length() > 0 ) {
                                     _taxlabels.add( label );
+                                    _taxlabel_key_counts.merge( joinKey( label ), 1, Integer::sum );
+                                    if ( label_and_annotation[ 1 ] != null ) {
+                                        _taxlabel_annotations.put( label, label_and_annotation[ 1 ] );
+                                        _taxlabel_annotations_by_key.put( joinKey( label ), label_and_annotation[ 1 ] );
+                                    }
                                 }
                             }
                         }
@@ -618,6 +647,111 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             any = true;
         }
         return any;
+    }
+
+    /** A TAXLABELS token as {label, annotation}: the annotation is the content of a "[&...]" group glued to the end of
+     *  the label (null when there is none), and the label is the token without ANY glued bracket group -- so neither
+     *  an annotation nor a plain "[comment]" leaks into the taxon's name. A bracket inside a quoted label is part of
+     *  the label. */
+    final static String[] splitTaxlabelAnnotation( final String token ) {
+        char quote = 0;
+        for( int i = 0; i < token.length(); ++i ) {
+            final char c = token.charAt( i );
+            if ( quote != 0 ) {
+                if ( c == quote ) {
+                    if ( ( ( i + 1 ) < token.length() ) && ( token.charAt( i + 1 ) == quote ) ) {
+                        ++i; // a doubled quote is the escape, not the end of the label
+                    }
+                    else {
+                        quote = 0;
+                    }
+                }
+            }
+            else if ( ( ( c == '\'' ) || ( c == '"' ) ) && ( i == 0 ) ) {
+                quote = c;
+            }
+            else if ( c == '[' ) {
+                final int cb = token.lastIndexOf( ']' );
+                final String inside = ( cb > i ) ? token.substring( i + 1, cb ) : token.substring( i + 1 );
+                return new String[] { token.substring( 0, i ), inside.startsWith( "&" ) ? inside : null };
+            }
+        }
+        return new String[] { token, null };
+    }
+
+    // The annotation of the taxlabel a tip is named by: the exact label first, else the canonical join key (Nexus
+    // treats '_' and ' ' alike, and a tree may capitalize a taxon differently from its TAXLABELS entry).
+    private final String taxlabelAnnotationFor( final String tip_name ) {
+        if ( ForesterUtil.isEmpty( tip_name ) ) {
+            return null;
+        }
+        final String exact = _taxlabel_annotations.get( tip_name );
+        if ( exact != null ) {
+            return exact;
+        }
+        // (a tip that IS an unannotated taxlabel counts under its own key, so a key shared with an annotated taxon is
+        // never unique: that taxon's annotation cannot reach it)
+        final String key = joinKey( tip_name );
+        final Integer taxa_with_key = _taxlabel_key_counts.get( key );
+        return ( ( taxa_with_key != null ) && ( taxa_with_key.intValue() == 1 ) ) ? _taxlabel_annotations_by_key.get( key )
+                : null;
+    }
+
+    /** Rejoin the pieces of one TAXLABELS entry that a whitespace split cut apart INSIDE its annotation --
+     *  {@code 'A'[&!name="x y"]} arrives as {@code 'A'[&!name="x} and {@code y"]}, and taken apart the second piece would
+     *  become a taxon of its own and shift every later taxlabel index. A bracket inside a quoted label does not count. */
+    final static List<String> joinBracketedTokens( final List<String> tokens ) {
+        final List<String> out = new ArrayList<String>();
+        StringBuilder open = null;
+        int depth = 0;
+        for( final String t : tokens ) {
+            if ( open == null ) {
+                open = new StringBuilder( t );
+            }
+            else {
+                open.append( ' ' ).append( t );
+            }
+            depth += bracketBalance( t, open.length() == t.length() );
+            if ( depth <= 0 ) {
+                out.add( open.toString() );
+                open = null;
+                depth = 0;
+            }
+        }
+        if ( open != null ) {
+            out.add( open.toString() ); // an unclosed bracket: keep what there is
+        }
+        return out;
+    }
+
+    /** '[' minus ']' in a token, skipping a quoted label at its start (only a token that STARTS an entry has one). */
+    private final static int bracketBalance( final String t, final boolean starts_entry ) {
+        int i = 0;
+        if ( starts_entry && ( t.length() > 0 ) && ( ( t.charAt( 0 ) == '\'' ) || ( t.charAt( 0 ) == '"' ) ) ) {
+            final char q = t.charAt( 0 );
+            i = 1;
+            while ( i < t.length() ) {
+                if ( t.charAt( i ) == q ) {
+                    if ( ( ( i + 1 ) < t.length() ) && ( t.charAt( i + 1 ) == q ) ) {
+                        i += 2;
+                        continue;
+                    }
+                    ++i;
+                    break;
+                }
+                ++i;
+            }
+        }
+        int balance = 0;
+        for( ; i < t.length(); ++i ) {
+            if ( t.charAt( i ) == '[' ) {
+                ++balance;
+            }
+            else if ( t.charAt( i ) == ']' ) {
+                --balance;
+            }
+        }
+        return balance;
     }
 
     private final static String joinKey( final String name ) {

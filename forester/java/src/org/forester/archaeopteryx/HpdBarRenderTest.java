@@ -47,7 +47,154 @@ public final class HpdBarRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return barsRenderOk() && calendarDirectionOk();
+        return barsRenderOk() && calendarDirectionOk() && sampledTipBarsOk();
+    }
+
+    /** On CALENDAR time a tip is a dated SAMPLE. A tip whose sampling date is known only to the year carries a genuine
+     *  date interval, and the Node Age Bars draw it (in the calendar direction); a tip dated exactly ({d,d}) draws
+     *  nothing, a tip with no interval draws nothing -- and the geologic Fossil Range Bars draw NOTHING on such a tree
+     *  even when their global toggle is on (another open tab may hold fossils). Both Nextstrain readers used to throw
+     *  tip intervals away just to keep those bars off. */
+    private static boolean sampledTipBarsOk() {
+        final boolean[] ok = { true };
+        try {
+            // YEAR: dated only to 2020 -> value 2020.9 inside [2020.0, 2020.999]; EXACT: {2021.0, 2021.0}; PLAIN: no interval
+            final String json = "{\"version\":\"v2\",\"tree\":{\"name\":\"R\",\"node_attrs\":{\"num_date\":{\"value\":2019.0}},"
+                    + "\"children\":[{\"name\":\"PLAIN\",\"node_attrs\":{\"num_date\":{\"value\":2019.5}}},"
+                    + "{\"name\":\"MID\",\"node_attrs\":{\"num_date\":{\"value\":2019.6}},"
+                    + "\"children\":[{\"name\":\"YEAR\",\"node_attrs\":{\"num_date\":{\"value\":2020.9,\"confidence\":[2020.0,2020.999]}}},"
+                    + "{\"name\":\"EXACT\",\"node_attrs\":{\"num_date\":{\"value\":2021.0,\"confidence\":[2021.0,2021.0]}}}]}]}}";
+            final org.forester.io.parsers.json.AuspiceJsonParser parser = new org.forester.io.parsers.json.AuspiceJsonParser();
+            parser.setSource( new StringBuffer( json ) );
+            final Phylogeny phy = parser.parse()[ 0 ];
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "tips" ) );
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    // the load-time auto-enable: node-age bars ON for the uncertain tip, fossil bars OFF
+                    if ( !o.isShowHpdBars() ) {
+                        fail( ok, "a calendar tree with an uncertain sampling date must auto-enable the Node Age Bars" );
+                    }
+                    if ( o.isShowFossilRangeBars() ) {
+                        fail( ok, "a calendar tree's tip intervals must NOT auto-enable the Fossil Range Bars" );
+                    }
+                    o.setGraphicsExportWhiteBackground( true );
+                    o.setShowHpdBars( true );
+                    o.setShowFossilRangeBars( true ); // as if another tab held fossils: still nothing to draw here
+                    o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR );
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                    final int w = 900, h = 460;
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    final org.forester.phylogeny.PhylogenyNode year = phy.getNode( "YEAR" );
+                    final org.forester.phylogeny.PhylogenyNode exact = phy.getNode( "EXACT" );
+                    final org.forester.phylogeny.PhylogenyNode plain = phy.getNode( "PLAIN" );
+                    // YEAR: value 2020.9 in [2020.0, 2020.999] -> the bar reaches far to the EARLIER side (left)
+                    final int yx = Math.round( year.getXcoord() ), yy = Math.round( year.getYcoord() );
+                    int left_ext = 0;
+                    for ( int dx = 8; dx <= 400; ++dx ) { // from 8 px out: clear of the node's own mark
+                        if ( bluishNear( img, yx - dx, yx - dx, yy ) ) {
+                            left_ext = dx;
+                        }
+                    }
+                    if ( left_ext < 40 ) {
+                        fail( ok, "a tip dated only to the year must draw its sampling-date uncertainty (bar reach " + left_ext + " px)" );
+                    }
+                    for ( final org.forester.phylogeny.PhylogenyNode n : new org.forester.phylogeny.PhylogenyNode[] { exact, plain } ) {
+                        final int nx = Math.round( n.getXcoord() ), ny = Math.round( n.getYcoord() );
+                        if ( bluishNear( img, nx - 60, nx - 8, ny ) ) {
+                            fail( ok, "tip " + n.getName() + " has no date uncertainty and must draw no age bar" );
+                        }
+                    }
+                    // colour-independent (this tree auto-colours by date, and that palette has sepia-like oranges): with
+                    // the fossil toggle OFF the figure must be the very same, pixel for pixel
+                    o.setShowFossilRangeBars( false );
+                    final BufferedImage without_fossil_toggle = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    int differing = 0;
+                    for ( int y = 0; y < img.getHeight(); ++y ) {
+                        for ( int x = 0; x < img.getWidth(); ++x ) {
+                            if ( img.getRGB( x, y ) != without_fossil_toggle.getRGB( x, y ) ) {
+                                ++differing;
+                            }
+                        }
+                    }
+                    if ( differing > 0 ) {
+                        fail( ok, "the Fossil Range Bars must draw nothing on a calendar tree, even with their toggle on ("
+                                + differing + " px differ)" );
+                    }
+                    // CIRCULAR parity. The only interval in this tree is the uncertain tip's, so any pixel the Node Age Bars
+                    // toggle changes IS that tip's bar; and the fossil toggle must change nothing here either.
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                    frame.showWhole();
+                    tp.setSize( 700, 700 );
+                    tp.calcParametersForPainting( 700, 700 );
+                    o.setShowFossilRangeBars( false );
+                    o.setShowHpdBars( true );
+                    final BufferedImage circ_on = AptxUtil.renderPhylogenyToImage( 700, 700, tp, o, false, 1, false );
+                    o.setShowHpdBars( false );
+                    final BufferedImage circ_off = AptxUtil.renderPhylogenyToImage( 700, 700, tp, o, false, 1, false );
+                    o.setShowFossilRangeBars( true );
+                    final BufferedImage circ_fossil = AptxUtil.renderPhylogenyToImage( 700, 700, tp, o, false, 1, false );
+                    int bar_px = 0, fossil_px = 0;
+                    for ( int y = 0; y < circ_on.getHeight(); ++y ) {
+                        for ( int x = 0; x < circ_on.getWidth(); ++x ) {
+                            bar_px += ( circ_on.getRGB( x, y ) != circ_off.getRGB( x, y ) ) ? 1 : 0;
+                            fossil_px += ( circ_fossil.getRGB( x, y ) != circ_off.getRGB( x, y ) ) ? 1 : 0;
+                        }
+                    }
+                    if ( bar_px < 20 ) {
+                        fail( ok, "circular: the uncertain tip must draw its age bar too (" + bar_px + " px)" );
+                    }
+                    if ( fossil_px > 0 ) {
+                        fail( ok, "circular: the Fossil Range Bars must draw nothing on a calendar tree (" + fossil_px + " px)" );
+                    }
+                    o.setShowHpdBars( true );
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    // the Time Axis the user SHOWS is a display choice: switching it Off or to Geologic must not turn the
+                    // sampling-date uncertainty into a fossil range (the fossil bars would then draw it)
+                    for ( final Options.TIME_AXIS_TYPE shown : new Options.TIME_AXIS_TYPE[] { Options.TIME_AXIS_TYPE.NONE,
+                            Options.TIME_AXIS_TYPE.GEOLOGIC } ) {
+                        tp.setTimeAxisType( shown );
+                        if ( !tp.isSampledTipWithDateUncertainty( year ) || !tp.isOnCalendarTime() ) {
+                            fail( ok, "showing the " + shown + " axis must not change what the tip interval means" );
+                        }
+                        final BufferedImage fossil_on = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                        o.setShowFossilRangeBars( false );
+                        final BufferedImage fossil_off = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                        o.setShowFossilRangeBars( true );
+                        int diff = 0;
+                        for ( int y = 0; y < fossil_on.getHeight(); ++y ) {
+                            for ( int x = 0; x < fossil_on.getWidth(); ++x ) {
+                                diff += ( fossil_on.getRGB( x, y ) != fossil_off.getRGB( x, y ) ) ? 1 : 0;
+                            }
+                        }
+                        if ( diff > 0 ) {
+                            fail( ok, "with the " + shown + " axis shown, the Fossil Range Bars must still draw nothing (" + diff + " px)" );
+                        }
+                    }
+                    tp.setTimeAxisType( null );
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /** On a CALENDAR tree (dates increase toward the tips, opposite of geologic age), the node-age bar for an internal

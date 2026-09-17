@@ -50,7 +50,7 @@ public final class AptxRenderTest {
     }
 
     public static boolean test() {
-        return pureOk() && ( GraphicsEnvironment.isHeadless() || renderOk() );
+        return pureOk() && readTreesOk() && ( GraphicsEnvironment.isHeadless() || ( renderOk() && legendColumnOk() ) );
     }
 
     /** Format routing and size parsing -- no display needed. */
@@ -309,6 +309,198 @@ public final class AptxRenderTest {
         }
         catch ( final Exception e ) {
             return true;
+        }
+    }
+
+    /** In a rendered figure nobody can drag the legend off the tree, and its default corner -- top right -- is where
+     *  a root-left tree puts its top tips: aptx_render used to draw the legend ON them (and on the "Time tree" badge).
+     *  There the legend gets a column of its own, reserved the way annotation columns are. The window is unchanged. */
+    private static boolean legendColumnOk() {
+        final boolean[] ok = { true };
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        try {
+            final org.forester.io.parsers.nhx.NHXParser p = new org.forester.io.parsers.nhx.NHXParser();
+            // long category names: a WIDE legend, which without its column really does lie over the tips; a numeric trait
+            // for Size-by; a discrete-trait distribution for the ancestral pies
+            // pie states WIDER than the grp colour legend below, so that counting the pie legend where it does not stand
+            // (bottom LEFT, beside a colour legend) would change the column
+            final String pie = ",loc.set={Upper Guinean Forest Zone,Sahel Transition Zone},loc.set.prob={0.6,0.4}";
+            p.setSource( "((isolate_A[&rate=Democratic Republic of the Congo,rate_n=1,loc=Ghana,grp=x]:1.2,isolate_B[&rate=Central African Republic,rate_n=4,loc=Togo,grp=y]:1.2)"
+                    + "[&loc=Ghana" + pie + "]:0.9,"
+                    + "(isolate_C[&rate=Democratic Republic of the Congo,rate_n=2,loc=Ghana,grp=x]:0.8,(isolate_D[&rate=Central African Republic,rate_n=8,loc=Togo,grp=y]:0.5,"
+                    + "isolate_E[&rate=Sao Tome and Principe,rate_n=3,loc=Ghana,grp=x]:0.5)[&loc=Togo" + pie + "]:0.3)[&loc=Ghana" + pie + "]:1.3)[&loc=Ghana" + pie + "];" );
+            final Phylogeny phy = p.parse()[ 0 ];
+            javax.swing.SwingUtilities.invokeAndWait( () -> {
+                mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "legend column" );
+                mf[ 0 ].setLocation( -32000, -32000 );
+                mf[ 0 ].setVisible( true );
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final int w = 1200;
+                final int h = 800;
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                // explicitly: this frame reads the developer's own saved preferences (aptx_render isolates itself
+                // from them), and a saved root-top orientation would silently turn every check below into a no-op
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                mf[ 0 ].getMainPanel().getControlPanel().demoSelectColorByProperty( "beast:rate" );
+                tp.setSize( w, h );
+                // the WINDOW: no column, the tree uses the width
+                tp.layoutForExportSize( w, h );
+                final double free_tip_x = maxTipX( tp, w, h );
+                final java.awt.Dimension free_box = tp.sharedLegendSizeForTest();
+                if ( ( free_box == null ) || ( ( free_tip_x + tp.getLongestExtNodeInfo() ) <= ( w - 10 - free_box.width ) ) ) {
+                    ok[ 0 ] = fail( "fixture: without a column this legend must overlap the tips, or the checks below prove nothing" );
+                }
+                if ( tp.legendColumnReserve() != 0 ) {
+                    ok[ 0 ] = fail( "outside figure rendering no legend column is reserved: the window is unchanged" );
+                }
+                // FIGURE rendering
+                tp.setReserveLegendColumn( true );
+                final java.awt.Dimension box = tp.sharedLegendSizeForTest();
+                tp.layoutForExportSize( w, h );
+                final int reserve = tp.legendColumnReserve();
+                final double figure_tip_x = maxTipX( tp, w, h );
+                if ( ( box == null ) || ( reserve < ( box.width + 10 ) ) ) {
+                    ok[ 0 ] = fail( "the column must hold the whole legend box and its 10 px inset, got reserve " + reserve
+                            + " for a box of " + box );
+                }
+                // the legend's left edge (default corner: w - 10 - box width) must lie right of every tip AND its label
+                final int legend_left = w - 10 - ( ( box == null ) ? 0 : box.width );
+                if ( ( figure_tip_x + tp.getLongestExtNodeInfo() ) > legend_left ) {
+                    ok[ 0 ] = fail( "tips + labels reach x=" + ( figure_tip_x + tp.getLongestExtNodeInfo() )
+                            + ", under a legend starting at x=" + legend_left );
+                }
+                // (not pixel for pixel: the layout re-fits the first depth step inside the narrower budget as well)
+                if ( ( free_tip_x - figure_tip_x ) < ( reserve / 2.0 ) ) {
+                    ok[ 0 ] = fail( "the column must actually narrow the tree: tips moved only " + ( free_tip_x - figure_tip_x )
+                            + " for a reserve of " + reserve );
+                }
+                // no column where the default corner does not collide, or is not where the legend is
+                tp.setLegendOffsetForTest( new java.awt.Point( 40, 40 ) );
+                if ( tp.legendColumnReserve() != 0 ) {
+                    ok[ 0 ] = fail( "a legend that was moved needs no column" );
+                }
+                tp.setLegendOffsetForTest( null );
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                if ( tp.legendColumnReserve() != 0 ) {
+                    ok[ 0 ] = fail( "a vertical orientation (not reachable from aptx_render) gets no column" );
+                }
+                tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                if ( tp.legendColumnReserve() != 0 ) {
+                    ok[ 0 ] = fail( "a radial tree is a disc and leaves the corners free: no column" );
+                }
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                tp.layoutForExportSize( 200, 800 ); // the legend would take over 40% of this width: squeezing the tree is worse
+                if ( tp.legendColumnReserve() != 0 ) {
+                    ok[ 0 ] = fail( "no column when it would take more than 40% of the width" );
+                }
+                tp.layoutForExportSize( w, h );
+                if ( tp.legendColumnReserve() == 0 ) {
+                    ok[ 0 ] = fail( "...and the column is back at a width that has room for it" );
+                }
+                mf[ 0 ].getMainPanel().getControlPanel().demoSelectColorByProperty( null );
+                if ( tp.legendColumnReserve() != 0 ) {
+                    ok[ 0 ] = fail( "no legend, no column" );
+                }
+                // the Size-by legend stands at the right edge too (top right alone): it gets the column on its own
+                tp.setSizeByPropertyRef( "beast:rate_n" );
+                tp.layoutForExportSize( w, h );
+                final int size_reserve = tp.legendColumnReserve();
+                final double size_tip_x = maxTipX( tp, w, h );
+                if ( size_reserve == 0 ) {
+                    ok[ 0 ] = fail( "a Size-by legend alone must get the legend column" );
+                }
+                else if ( ( size_tip_x + tp.getLongestExtNodeInfo() ) > ( w - size_reserve + LEGEND_GAP_FOR_TEST ) ) {
+                    ok[ 0 ] = fail( "with a Size-by legend alone, tips + labels reach x=" + ( size_tip_x + tp.getLongestExtNodeInfo() )
+                            + " inside its column of " + size_reserve );
+                }
+                // ...and the ancestral-pie legend, when it holds the top right itself
+                tp.setSizeByPropertyRef( null );
+                mf[ 0 ].getMainPanel().getControlPanel().demoSelectAncestralPie( "loc" );
+                tp.layoutForExportSize( w, h );
+                if ( !tp.isShowAncestralPies() || ( tp.legendColumnReserve() == 0 ) ) {
+                    ok[ 0 ] = fail( "an ancestral-pie legend alone at the top right must get the legend column (pies shown: "
+                            + tp.isShowAncestralPies() + ")" );
+                }
+                // beside a colour legend the pie legend drops to the bottom LEFT: only the colour legend is at the right
+                // (a NARROW one here, grp = x / y, so a wrongly counted pie legend would widen the column)
+                mf[ 0 ].getMainPanel().getControlPanel().demoSelectColorByProperty( "beast:grp" );
+                tp.layoutForExportSize( w, h );
+                final java.awt.Dimension colour_only = tp.sharedLegendSizeForTest();
+                if ( ( colour_only == null ) || ( tp.legendColumnReserve() != ( colour_only.width + 22 ) ) ) {
+                    ok[ 0 ] = fail( "beside a colour legend the pie legend moves left, so the column is the colour legend's: "
+                            + tp.legendColumnReserve() + " for a box of " + colour_only );
+                }
+            } );
+        }
+        catch ( final Exception e ) {
+            return fail( "legend column check threw: " + e );
+        }
+        finally {
+            if ( mf[ 0 ] != null ) {
+                javax.swing.SwingUtilities.invokeLater( mf[ 0 ]::dispose );
+            }
+        }
+        return ok[ 0 ];
+    }
+
+    /** The x of the right-most tip, from a paint into a scratch image at the panel's size (paint assigns the coords). */
+    private static final int LEGEND_GAP_FOR_TEST = 12; // the column's gap between the tree and the legend inset
+
+    private static double maxTipX( final TreePanel tp, final int w, final int h ) {
+        final java.awt.image.BufferedImage img = new java.awt.image.BufferedImage( w, h, java.awt.image.BufferedImage.TYPE_INT_RGB );
+        final java.awt.Graphics2D g = img.createGraphics();
+        try {
+            tp.paintPhylogeny( g, false, true, w, h, 0, 0 );
+        }
+        finally {
+            g.dispose();
+        }
+        double max = 0;
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tp.getPhylogeny().iteratorExternalForward(); it.hasNext(); ) {
+            max = Math.max( max, it.next().getXcoord() );
+        }
+        return max;
+    }
+
+    /** aptx_render reads a file the way the WINDOW does. It used to build a bare parser, so a BEAST tree rendered
+     *  with no posterior, no node ages and no traits to colour by (-color=beast:rate was refused as unknown), and
+     *  the measles Nextstrain export as an undated tree. */
+    private static boolean readTreesOk() {
+        try {
+            final File nex = File.createTempFile( "aptx_render_read", ".nex" );
+            nex.deleteOnExit();
+            java.nio.file.Files.write( nex.toPath(),
+                                       ( "#NEXUS\nbegin trees;\n\ttree t1 = [&R] ((A[&rate=0.5]:1.0,B[&rate=0.7]:1.0)"
+                                               + "[&posterior=0.98,height=1.0,height_95%_HPD={0.8,1.2}]:1.0,C[&rate=0.2]:2.0)[&height=2.0];\nend;\n" )
+                                                       .getBytes( java.nio.charset.StandardCharsets.UTF_8 ) );
+            final Phylogeny[] phys = FigureRenderer.readTrees( nex );
+            if ( phys.length != 1 ) {
+                return fail( "readTrees must return the one tree of the file" );
+            }
+            final org.forester.phylogeny.PhylogenyNode ab = phys[ 0 ].getNode( "A" ).getParent();
+            if ( !ab.getBranchData().isHasConfidences() || ( ab.getBranchData().getConfidence( 0 ).getValue() != 0.98 ) ) {
+                return fail( "readTrees must read a BEAST posterior, as the window does" );
+            }
+            if ( ( ab.getNodeData().getDate() == null ) || ( ab.getNodeData().getDate().getMax() == null ) ) {
+                return fail( "readTrees must read BEAST node ages and their HPD, as the window does" );
+            }
+            if ( ( phys[ 0 ].getNode( "A" ).getNodeData().getProperties() == null )
+                    || phys[ 0 ].getNode( "A" ).getNodeData().getProperties().getProperties( "beast:rate" ).isEmpty() ) {
+                return fail( "readTrees must read BEAST traits: they are what -color=beast:rate colours by" );
+            }
+            // ...and the internal-label promotion it always applied is still applied
+            final File nwk = File.createTempFile( "aptx_render_read", ".nwk" );
+            nwk.deleteOnExit();
+            java.nio.file.Files.write( nwk.toPath(), "((A:1,B:1)95:1,(C:1,D:1)70:1);".getBytes( java.nio.charset.StandardCharsets.UTF_8 ) );
+            final Phylogeny bs = FigureRenderer.readTrees( nwk )[ 0 ];
+            if ( !bs.getNode( "A" ).getParent().getBranchData().isHasConfidences() ) {
+                return fail( "readTrees must still promote bootstrap labels" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "readTrees threw: " + e );
         }
     }
 

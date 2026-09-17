@@ -82,8 +82,9 @@ public final class AuspiceJsonParser implements PhylogenyParser {
         if ( doc == null ) {
             throw new IOException( "not an Auspice dataset (the JSON root is not an object)" );
         }
-        if ( !"v2".equals( doc.get( "version" ) ) || !( doc.get( "tree" ) instanceof Map ) ) {
-            throw new IOException( "not an Auspice v2 dataset (expected \"version\":\"v2\" and a \"tree\" object)" );
+        if ( !isAuspiceV2( doc ) ) {
+            throw new IOException( "not an Auspice v2 dataset (expected \"version\":\"v2\" and a \"tree\" object, "
+                    + "or the v2 shape: \"meta\" + a \"tree\" whose root has \"node_attrs\")" );
         }
         final Phylogeny phy = new Phylogeny();
         final PhylogenyNode root = buildNode( asObject( doc.get( "tree" ) ) );
@@ -105,17 +106,12 @@ public final class AuspiceJsonParser implements PhylogenyParser {
             // div deltas as the branch lengths so the tree still lays out with meaningful lengths instead of a cladogram
             setDivBranchLengths( root, null );
         }
-        // a TIP is a dated sample -- keep its point date (for the calendar axis) but drop the date INTERVAL: the
-        // divergence-time UNCERTAINTY (the confidence -> Node Age spindles) belongs to the INTERNAL nodes, and a tip
-        // interval would otherwise auto-enable the Fossil Range Bars (a geologic concept) on a viral tree.
-        for ( final PhylogenyNode ext : phy.getExternalNodes() ) {
-            if ( ext.getNodeData().isHasDate() ) {
-                final Date d = ext.getNodeData().getDate();
-                if ( ( d.getMin() != null ) || ( d.getMax() != null ) ) {
-                    ext.getNodeData().setDate( new Date( d.getDesc(), d.getValue(), null, null, d.getUnit() ) );
-                }
-            }
-        }
+        // A TIP keeps its date interval too. It used to be dropped here, because a tip interval auto-enabled the
+        // Fossil Range Bars (a geologic concept) on a viral tree -- a display side effect paid for by throwing data
+        // away, and real data: a sample dated only to the month or the year carries a genuine interval (2347 of
+        // 3863 tips of a Nextstrain dengue build). The display now knows the difference instead: on calendar time a
+        // tip interval is a sampling-date uncertainty for the Node Age Bars, never a fossil range
+        // (AptxUtil.isHasFossilRanges / TreePanel.isSampledTipWithDateUncertainty). Christian, 2026-09-17.
         phy.setDistanceUnit( time_resolved ? "year" : "subs/site" );
         phy.externalNodesHaveChanged();
         return new Phylogeny[] { phy };
@@ -152,6 +148,21 @@ public final class AuspiceJsonParser implements PhylogenyParser {
             }
         }
         return node;
+    }
+
+    /** The v2 stamp, PRESENT OR IMPLIED. A dataset that states its version must state "v2" (v1 is another schema).
+     *  One that states none -- TreeTime's auspice_tree.json, its only output with full-precision dates -- is taken
+     *  for v2 by its shape: a "meta" object beside a "tree" object whose root carries "node_attrs". Arbitrary JSON
+     *  still fails with a clear message. */
+    static boolean isAuspiceV2( final Map<String, Object> doc ) {
+        final Map<String, Object> tree = asObject( doc.get( "tree" ) );
+        if ( tree == null ) {
+            return false;
+        }
+        if ( doc.containsKey( "version" ) ) {
+            return "v2".equals( doc.get( "version" ) );
+        }
+        return ( asObject( doc.get( "meta" ) ) != null ) && ( asObject( tree.get( "node_attrs" ) ) != null );
     }
 
     private static void applyNodeAttrs( final PhylogenyNode node, final Map<String, Object> attrs ) {

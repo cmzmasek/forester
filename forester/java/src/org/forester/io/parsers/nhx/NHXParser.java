@@ -20,7 +20,6 @@
 
 package org.forester.io.parsers.nhx;
 
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -55,11 +54,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private final static Pattern MB_PROB_PATTERN = Pattern.compile("prob=([-+eE0-9\\.]+)");
     private final static Pattern MB_PROB_SD_PATTERN = Pattern
             .compile("prob.stddev=([-+eE0-9\\.]+)");
+    // A branch length may be signed and may start with its decimal point: ":-0.1" (a negative length is what some
+    // distance methods write, and a parser reports what the file says) and ":.5" (legal Newick) used to vanish.
+    private final static Pattern BRANCH_LENGTH_START_PATTERN = Pattern.compile("^[-+]?(\\d|\\.\\d)");
     private final static Pattern NUMBERS_ONLY_PATTERN = Pattern.compile("^[-+]?[0-9\\.]+$");
-    private final static Pattern BEAST_STYLE_EXTENDED_BOOTSTRAP_PATTERN = Pattern
-            .compile("boot?strap=([\\d\\.]+)");
-    private final static Pattern BEAST_STYLE_EXTENDED_COLOR_PATTERN = Pattern
-            .compile("colou?r=(#[\\da-fA-F]{6})");
     private final static Pattern ENDS_WITH_NUMBER_PATTERN = Pattern.compile("(:[-+eE0-9\\.]+$)");
     public final static boolean REPLACE_UNDERSCORES_DEFAULT = false;
     private final static boolean ALLOW_ERRORS_IN_DISTANCE_TO_PARENT_DEFAULT = false;
@@ -69,6 +67,9 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private final static boolean GUESS_ROOTEDNESS_DEFAULT = true;
     private final static boolean IGNORE_QUOTES_DEFAULT = false;
     private final static char BELL = 7;
+    final static char BLOB_OPEN_BRACKET = 1;
+    final static char BLOB_CLOSE_BRACKET = 2;
+    private final static int BLOB_QUOTE_LOOKAHEAD = 1 << 16;
     private final static String ENCODING_DEFAULT = ForesterConstants.UTF_8;
     private boolean _allow_errors_in_distance_to_parent;
     private int _clade_level;
@@ -84,6 +85,28 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     // An immediately following identical quote is the Nexus/Newick escape for a literal one.
     private char _just_closed_quote = 0;
     private boolean _in_open_bracket = false;
+    // True only once a bracket has been committed to as a real "[&...]" extended annotation (the character right
+    // after '[' was '&'). Narrower than _in_open_bracket on purpose: _in_open_bracket also covers a plain "[...]"
+    // comment and the leading "[91]"-style numeric confidence, neither of which is written to _current_anotation
+    // character-by-character the way an annotation blob is, and a comment's content is discarded regardless of
+    // whitespace -- so exempting spaces/quotes for THOSE from the usual drop rule would only risk misreading the
+    // single character right after '[' that decides comment-vs-annotation-vs-numeric in the first place (a literal
+    // space there must still be swallowed so e.g. "[ 91 ]" is still recognised as the numeric confidence "91").
+    private boolean _in_kept_annotation = false;
+    // True once the second character of a kept annotation is also '&', i.e. the legacy "[&&NHX:key=value:...]"
+    // tag scheme (as opposed to a single-'&' "[&key=value,...]" BEAST/FigTree/TreeTime/Auspice-style blob). NHX
+    // tag values are programmatic identifiers (species/gene names, normally underscore-separated) and whitespace
+    // in and around them has always been pure formatting noise -- testNHXParsingQuotes pins "mo\tnkey !" reducing
+    // to "monkey!". A single-'&' blob's values are free text where whitespace (and quoting) is real data (Auspice
+    // writes "country=Democratic Republic of the Congo" with no quotes at all). Set once, right after the '&&' is
+    // seen, so it must be checked before deciding whether to keep or drop the very next character.
+    private boolean _in_legacy_nhx_tag = false;
+    // True for exactly one character: the one right after a kept annotation's opening '&', which decides
+    // _in_legacy_nhx_tag. Consumption skips characters that are unconditionally dropped everywhere (control
+    // characters), so e.g. the tab in "[&\t&NHX:...]" is not mistaken for the deciding character.
+    private boolean _awaiting_second_annotation_char = false;
+    // > 0 while inside a quoted VALUE of a kept blob: the characters left up to and including its closing quote
+    private int _blob_quote_remaining = 0;
     private boolean _in_single_quote = false;
     private byte _input_type;
     private BufferedReader _my_source_br = null;
@@ -98,7 +121,12 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     private Object _source;
     private int _source_length;
     private TAXONOMY_EXTRACTION _taxonomy_extraction;
-    private boolean _parse_beast_style_extended_tags = false;
+    // ON by default: "[&...]" bracket annotations are what BEAST, MrBayes, FigTree, TreeTime and Auspice write, and
+    // a library that silently drops posteriors, node ages and traits unless told otherwise is a trap (aptx_render
+    // fell into it). Off, a blob is kept whole as an nh:comment, exactly as before.
+    public final static boolean PARSE_BRACKET_ANNOTATIONS_DEFAULT = true;
+    private boolean _parse_beast_style_extended_tags = PARSE_BRACKET_ANNOTATIONS_DEFAULT;
+    private boolean _normalize_bracket_annotations = true;
     private final String _encoding;
 
     public NHXParser() {
@@ -154,6 +182,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _saw_colon = false;
         _saw_open_bracket = false;
         _in_open_bracket = false;
+        _in_kept_annotation = false;
+        _in_legacy_nhx_tag = false;
+        _awaiting_second_annotation_char = false;
+        _blob_quote_remaining = 0;
         _in_double_quote = false;
         _in_single_quote = false;
         _just_closed_quote = 0;
@@ -294,6 +326,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _current_phylogeny.setRooted(true);
                 }
             }
+            if (isParseBeastStyleExtendedTags() && _normalize_bracket_annotations) {
+                // what no single annotation can say: whose they are, and whether the tree confirms its dates
+                BracketAnnotationNormalizer.normalize(_current_phylogeny);
+            }
             return _current_phylogeny;
         }
         return null;
@@ -320,7 +356,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         setGuessRootedness(GUESS_ROOTEDNESS_DEFAULT);
         setIgnoreQuotes(IGNORE_QUOTES_DEFAULT);
         setAllowErrorsInDistanceToParent(ALLOW_ERRORS_IN_DISTANCE_TO_PARENT_DEFAULT);
-        setParseBeastStyleExtendedTags(false);
+        setParseBeastStyleExtendedTags(PARSE_BRACKET_ANNOTATIONS_DEFAULT);
     }
 
     private final boolean isAllowErrorsInDistanceToParent() {
@@ -363,6 +399,27 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             // ADJACENT characters counts, so this is consumed and cleared for every character.
             final char closed_quote = _just_closed_quote;
             _just_closed_quote = 0;
+            if (_blob_quote_remaining > 0) {
+                // inside a quoted VALUE of a kept blob, up to its closing quote (found when it opened): all data
+                --_blob_quote_remaining;
+                if (!((c < 32) || (c == 127))) {
+                    _current_anotation.append((_blob_quote_remaining == 0) ? c : blobQuotedChar(c));
+                }
+                ++_i;
+                continue;
+            }
+            // The character right after a kept annotation's opening '&' decides whether this is the legacy
+            // "&&NHX" tag scheme (see _in_legacy_nhx_tag) -- but white space there decides nothing: a control
+            // character is always dropped (the "\n\t is always ignored" rule below), and "[ & & NHX : S = x ]" has
+            // always been read as the NHX tag it is.
+            if (_awaiting_second_annotation_char && !((c < 33) || (c == 127))) {
+                _awaiting_second_annotation_char = false;
+                if (c == '&') {
+                    _in_legacy_nhx_tag = true;
+                }
+            }
+            // Data, not the "&&NHX" formatting-noise scheme: whitespace/quotes inside it are real and must survive.
+            final boolean raw_annotation_data = _in_kept_annotation && !_in_legacy_nhx_tag;
             if (!_in_single_quote && !_in_double_quote) {
                 if (c == ':') {
                     _saw_colon = true;
@@ -372,12 +429,24 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 }
                 if (_in_open_bracket && (c == ']')) {
                     _in_open_bracket = false;
+                    _in_kept_annotation = false;
+                    _in_legacy_nhx_tag = false;
                 }
             }
             // \n\t is always ignored,
             // "=34  '=39 space=32
+            // A plain space is dropped everywhere EXCEPT inside a kept, non-legacy "[&...]" blob, where it is
+            // DATA: real Auspice/Nextstrain Nexus writes unquoted spaces in values ("country=Democratic Republic
+            // of the Congo", "outbreak_geo=Kikwit 1995"), and squashing them silently produced a different value
+            // here than the JSON path gives for the same dataset. Gated on raw_annotation_data, NOT
+            // _in_open_bracket: a plain "[comment]", the leading character of a "[91]" numeric confidence, and a
+            // legacy "[&&NHX:...]" tag must all still have their spaces swallowed exactly as before (a comment's
+            // content is discarded either way, but the single character right after '[' decides
+            // comment-vs-annotation-vs-numeric and must not be a stray space; NHX tag values are underscore-based
+            // identifiers where whitespace has always been pure formatting noise -- testNHXParsingQuotes pins
+            // "mo\tnkey !" reducing to "monkey!").
             if ((c < 32) || (c == 127) || (isIgnoreQuotes() && ((c == 32) || (c == 34) || (c == 39)))
-                    || ((c == 32) && (!_in_single_quote && !_in_double_quote))
+                    || ((c == 32) && (!_in_single_quote && !_in_double_quote) && !raw_annotation_data)
                     || ((_clade_level == 0) && (c == ';') && (!_in_single_quote && !_in_double_quote))) {
                 //do nothing
             } else if (_in_comment) {
@@ -392,10 +461,14 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _current_anotation.append(changeCharInParens(c));
                 }
             } else if ((c == '"') && !_in_single_quote) {
-                if (closed_quote == '"') {
-                    _current_anotation.append('"');
+                if (raw_annotation_data) {
+                    openBlobQuote(c);
+                } else {
+                    if (closed_quote == '"') {
+                        _current_anotation.append('"');
+                    }
+                    _in_double_quote = true;
                 }
-                _in_double_quote = true;
             } else if (_in_single_quote) {
                 if (c == 39) {
                     _in_single_quote = false;
@@ -404,10 +477,14 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _current_anotation.append(changeCharInParens(c));
                 }
             } else if (c == 39) {
-                if (closed_quote == 39) {
-                    _current_anotation.append('\'');
+                if (raw_annotation_data) {
+                    openBlobQuote(c);
+                } else {
+                    if (closed_quote == 39) {
+                        _current_anotation.append('\'');
+                    }
+                    _in_single_quote = true;
                 }
-                _in_single_quote = true;
             } else if (c == '[') {
                 _saw_open_bracket = true;
                 _in_open_bracket = true;
@@ -417,6 +494,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     // unless ":digits and/or . [bootstrap]":
                     if (c == '&') {
                         _current_anotation.append("[&");
+                        _in_kept_annotation = true;
+                        _awaiting_second_annotation_char = true;
                     } else if ((_saw_colon || _after_close_paren)
                             && (((c > 47) && (c < 58)) || (c == 46) || (c == 45) || (c == 43))) {
                         _current_anotation.append("[" + c);
@@ -458,6 +537,86 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         } else {
             _next = null;
         }
+    }
+
+    /**
+     * A quote character inside a kept "[&...]" blob. It is DATA -- "country=Côte d'Ivoire", a real Nextstrain export
+     * -- unless the same character closes it standing where a value can END (before ',', '}' or ']'); then the run
+     * between them is one quoted stretch whose ']' does not end the blob. The search for that partner gives up at a
+     * ']' followed by Newick structure, so a bare value that merely BEGINS with an apostrophe
+     * ("division='s-Hertogenbosch") cannot reach into the next node's blob for one. Without this an odd count of
+     * apostrophes fails the parse, and an even count is worse: two of them pair up across tips and silently swallow
+     * every bracket, comma and paren -- whole tips -- in between. The accepted cost of the bound: a QUOTED value
+     * containing "]," ends its blob early ("a]b" is fine).
+     * <p>
+     * Whether such a run is a quoted VALUE (it must also START where a value can: after '=', ',', '{') is decided
+     * where it matters, in {@link BeastAnnotationParser#splitTopLevel}. Here it would change nothing: inside a blob
+     * the only structural character is ']', a well-formed blob's own ']' is always followed by Newick structure, so
+     * the bound already keeps every run inside its blob -- and what a run does to the text is undone downstream.
+     * JOINT with Archaeopteryx.js (opensBlobQuote / blobQuoteClose in forester.js).
+     */
+    private final void openBlobQuote(final char q) throws IOException {
+        final int close = blobQuoteCloseOffset(q);
+        _current_anotation.append(q);
+        _blob_quote_remaining = Math.max(close, 0);
+    }
+
+    /** How many characters ahead the quote closing a run opened HERE stands, or -1 when nothing closes it. Looks
+     *  ahead without consuming (the reader is marked and reset). */
+    private final int blobQuoteCloseOffset(final char q) throws IOException {
+        final boolean from_reader = _input_type == BUFFERED_READER;
+        if (from_reader) {
+            _my_source_br.mark(BLOB_QUOTE_LOOKAHEAD);
+        }
+        try {
+            int pending = 0; // what waits for the next non-space character: 1 a candidate closing quote, 2 a ']'
+            int pending_offset = -1;
+            for (int offset = 1; offset < BLOB_QUOTE_LOOKAHEAD; ++offset) {
+                final int ci = from_reader ? _my_source_br.read()
+                        : (((_i + offset) < _source_length) ? _my_source_charary[_i + offset] : -1);
+                if (ci < 0) {
+                    return -1; // the input ends inside the blob: nothing closes here
+                }
+                final char c = (char) ci;
+                if (pending != 0) {
+                    if (Character.isWhitespace(c)) {
+                        continue;
+                    }
+                    if (pending == 1) {
+                        if ((c == ',') || (c == '}') || (c == ']')) {
+                            return pending_offset;
+                        }
+                    } else if ((c == ',') || (c == ')') || (c == ':') || (c == ';') || (c == '(') || (c == '[')) {
+                        return -1; // the blob has ended: this quote never was an opening one
+                    }
+                    pending = 0;
+                }
+                if (c == q) {
+                    pending = 1;
+                    pending_offset = offset;
+                } else if (c == ']') {
+                    pending = 2;
+                }
+            }
+            return -1;
+        } finally {
+            if (from_reader) {
+                _my_source_br.reset();
+            }
+        }
+    }
+
+    /** Inside a blob's quoted value ':' '[' ']' are data, but the node-level parse still splits on them: they
+     *  travel as placeholders, which {@link BeastAnnotationParser} turns back. */
+    private final static char blobQuotedChar(final char c) {
+        if (c == ':') {
+            return BELL;
+        } else if (c == '[') {
+            return BLOB_OPEN_BRACKET;
+        } else if (c == ']') {
+            return BLOB_CLOSE_BRACKET;
+        }
+        return c;
     }
 
     private final static char changeCharInParens(char c) {
@@ -574,38 +733,64 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             throw new IllegalArgumentException("cannot extract taxonomies and replace under scores at the same time");
         }
         if ((s != null) && (s.length() > 0)) {
-            if (replace_underscores) {
-                s = s.replaceAll("_+", " ");
-            }
-            s = s.replaceAll("\\s+", " ").trim();
             boolean is_nhx = false;
+            if (parse_beast_style_extended_tags && (s.indexOf('[') > -1)) {
+                // EVERY bracket group of the node, not only the first, and the text around them: MrBayes writes
+                // "[&prob=...]:0.04129[&length_mean=...]" -- a length BETWEEN two groups -- and FigTree leads a
+                // BEAST blob with "!color". The keys belong to the structured parser whatever leads the blob, and
+                // underscores are replaced in the label and in legacy NHX tag values (S=Homo_sapiens), as they always
+                // were -- never inside a key=value blob ("height_median" is a key, not a name).
+                final StringBuilder outside = new StringBuilder();
+                final List<String> groups = bracketGroups(s, outside);
+                final StringBuilder blob = new StringBuilder();
+                final StringBuilder b = new StringBuilder();
+                for (final String group : groups) {
+                    if (isNhxTagSyntax(group)) {
+                        is_nhx = true;
+                        b.append(group.substring(group.indexOf(':')));
+                    } else if (group.startsWith("&")) {
+                        if (blob.length() > 0) {
+                            blob.append(',');
+                        }
+                        blob.append(group.substring(1));
+                    } else if (NUMBERS_ONLY_PATTERN.matcher(group.trim()).matches()) {
+                        // No &&NHX and digits only: is likely to be a support value.
+                        b.append(":" + NHXtags.SUPPORT + group.trim());
+                    }
+                }
+                if (blob.length() > 0) {
+                    BeastAnnotationParser.apply(blob.toString(), node_to_annotate);
+                }
+                s = outside.toString() + b; // the label and the legacy NHX tags -- never the key=value blobs
+                if (replace_underscores) {
+                    s = s.replaceAll("_+", " ");
+                }
+                s = s.replaceAll("\\s+", " ").trim();
+            } else {
+                if (replace_underscores) {
+                    s = s.replaceAll("_+", " ");
+                }
+                s = s.replaceAll("\\s+", " ").trim();
+            }
             final int ob = s.indexOf("[");
             if (ob > -1) {
                 String b = "";
-                is_nhx = true;
+                // Only a genuine "[&&NHX" tag states the node's taxonomy itself; a BEAST blob, a "[91]" support or a
+                // kept comment says nothing about it, and must not switch the name-based extraction off.
+                is_nhx = s.indexOf("&&NHX") == (ob + 1);
                 final int cb = s.indexOf("]");
                 if (cb < 0) {
                     throw new NHXFormatException("error in NHX formatted data: no closing \"]\" in \"" + s + "\"");
                 }
+                // Only the option-OFF path gets here with a bracket (the option-ON path above has consumed them
+                // all): ONE group per node, kept bit for bit as it always was.
                 if (s.indexOf("&&NHX") == (ob + 1)) {
                     b = s.substring(ob + 6, cb);
-                    // A general BEAST/TreeAnnotator blob: starts with "&", is not NHX, and is not the MrBayes
-                    // (prob), FigTree colour (!colo), or bootstrap sub-cases handled below. (A blob merely LED by a
-                    // "length" field is a normal BEAST branch annotation and is handled here -- only the special
-                    // prob/boot/!colo leads route elsewhere.)
                 } else if (s.indexOf("&") == (ob + 1) && s.indexOf("[&prob") == -1 &&
                         s.indexOf("[&boot") == -1 &&
                         s.indexOf("[&!colo") == -1) {
                     final String bracketed = s.substring(ob + 1, cb);
-                    if (parse_beast_style_extended_tags) {
-                        // structured BEAST / BEAST X / TreeAnnotator parse: posterior -> confidence,
-                        // height + height_95%_HPD -> <date> (Node Age Bars), rate/traits -> beast: properties.
-                        // Runs BEFORE the ":"-tokenizer, so {lo,hi} sets are safe; no opaque comment is left behind.
-                        BeastAnnotationParser.apply(bracketed, node_to_annotate);
-                        b = "";
-                    } else {
-                        b = ":" + NHXtags.COMMENT + bracketed; // keep the raw comment when the option is off
-                    }
+                    b = ":" + NHXtags.COMMENT + bracketed; // keep the raw comment when the option is off
                     final Matcher ewn_matcher = ENDS_WITH_NUMBER_PATTERN.matcher(s);
                     if (ewn_matcher.find()) {
                         b = b + ewn_matcher.group(1);
@@ -618,9 +803,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                         b = ":" + NHXtags.SUPPORT + bracketed;
                     } else if (s.indexOf("prob=") > -1) {
                         processMrBayes3Data(s, node_to_annotate);
-                    }
-                    if (parse_beast_style_extended_tags) {
-                        processBeastStyleExtendedData(s, node_to_annotate);
                     }
                     final Matcher ewn_matcher = ENDS_WITH_NUMBER_PATTERN.matcher(s);
                     if (ewn_matcher.find()) {
@@ -646,11 +828,11 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     }
                 }
                 while (t.hasMoreTokens()) {
-                    s = t.nextToken();
+                    s = trimNhxField(t.nextToken());
                     if ((s.indexOf(BELL) > -1) && replace_bell) {
                         s = s.replace(BELL, ':');
                     }
-                    if (Character.isDigit(s.charAt(0))) {
+                    if (BRANCH_LENGTH_START_PATTERN.matcher(s).find()) {
                         if ((node_to_annotate.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT)
                                 && !allow_errors_in_distance_to_parent) {
                             throw new NHXFormatException("error in NHX formatted data: more than one distance to parent:"
@@ -692,15 +874,46 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                         }
                         node_to_annotate.getNodeData().getSequence().setName(s.substring(3));
                     } else if (s.startsWith(NHXtags.COMMENT)) {
-                        final String comment = s.substring(3).trim();
+                        // "C=" + the comment; a bracket blob kept as a comment (option off) arrives as "C=&..."
+                        String comment = s.substring(NHXtags.COMMENT.length());
+                        if (comment.startsWith("&")) {
+                            comment = comment.substring(1);
+                        }
+                        comment = comment.trim().replace(BLOB_OPEN_BRACKET, '[').replace(BLOB_CLOSE_BRACKET, ']');
                         if (!ForesterUtil.isEmpty(comment)) {
-                            final PropertiesList custom_data = new PropertiesList();
+                            // MERGED into what the node already carries: a bracket group parsed before this tag
+                            // (the option-ON path reads them all) has put its properties there
+                            PropertiesList custom_data = node_to_annotate.getNodeData().getProperties();
+                            if (custom_data == null) {
+                                custom_data = new PropertiesList();
+                                node_to_annotate.getNodeData().setProperties(custom_data);
+                            }
                             custom_data.addProperty(new Property(ForesterConstants.NH_COMMENT, comment, "", "xsd:string", Property.AppliesTo.NODE));
-                            node_to_annotate.getNodeData().setProperties(custom_data);
                         }
                     }
                 } // while ( t.hasMoreTokens() )
             }
+            if (parse_beast_style_extended_tags) {
+                useLengthMedianWhenNoLength(node_to_annotate);
+            }
+        }
+    }
+
+    /** The file's literal ":length" is the branch length (Christian, 2026-09-16). Only when a node states NONE does
+     *  MrBayes' / TreeAnnotator's length_median stand in -- what the option-OFF path has always done for a MrBayes
+     *  node without a literal length. */
+    private final static void useLengthMedianWhenNoLength(final PhylogenyNode node) {
+        if ((node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT)
+                || (node.getNodeData().getProperties() == null)) {
+            return;
+        }
+        final List<Property> median = node.getNodeData().getProperties().getProperties("beast:length_median");
+        if (median.isEmpty()) {
+            return;
+        }
+        final Double d = BeastAnnotationParser.parseNumber(median.get(0).getValue());
+        if ((d != null) && (d.doubleValue() >= 0.0)) {
+            node.setDistanceToParent(d.doubleValue());
         }
     }
 
@@ -740,32 +953,54 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         }
     }
 
-    private final static void processBeastStyleExtendedData(final String s, final PhylogenyNode node_to_annotate)
-            throws NHXFormatException {
-        final Matcher ft_bs_matcher = BEAST_STYLE_EXTENDED_BOOTSTRAP_PATTERN.matcher(s);
-        double bs = -1;
-        if (ft_bs_matcher.find()) {
-            try {
-                bs = Double.parseDouble(ft_bs_matcher.group(1));
-            } catch (final NumberFormatException e) {
-                throw new NHXFormatException("failed to parse bootstrap support from \"" + s + "\"");
-            }
-            if (bs >= 0.0) {
-                node_to_annotate.getBranchData().addConfidence(new Confidence(bs, "bootstrap"));
-            }
+    /** One "tag=value" field of an NHX tag with the padding around its tag and around its value removed: a quoted
+     *  run keeps the white space INSIDE it ("homo sapiens"), but padding at its ends (S=" homo ") is no more part
+     *  of the value than the quotes are. JOINT with Archaeopteryx.js, which trims each field. */
+    final static String trimNhxField(final String field) {
+        final int eq = field.indexOf('=');
+        if (eq < 0) {
+            return field.trim();
         }
-        final Matcher ft_color_matcher = BEAST_STYLE_EXTENDED_COLOR_PATTERN.matcher(s);
-        Color c = null;
-        if (ft_color_matcher.find()) {
-            try {
-                c = Color.decode(ft_color_matcher.group(1));
-            } catch (final NumberFormatException e) {
-                throw new NHXFormatException("failed to parse color from \"" + s + "\"");
+        return field.substring(0, eq).trim() + "=" + field.substring(eq + 1).trim();
+    }
+
+    /** NHX tags -- ":S=species:B=91" -- rather than a "key=value,key=value" blob: an '&'-led group with a ':' before
+     *  its first '=' (a BEAST / FigTree / MrBayes key never contains a colon). That is the genuine "&&NHX:..." and
+     *  also the sloppy spellings this parser has always forgiven -- "&NHX:S=x", "&:S=x", "&&NH:S=x", "&&:S=x". */
+    final static boolean isNhxTagSyntax(final String group) {
+        if (!group.startsWith("&")) {
+            return false;
+        }
+        final int colon = group.indexOf(':');
+        final int eq = group.indexOf('=');
+        return (colon > -1) && ((eq < 0) || (colon < eq));
+    }
+
+    /** The contents of every top-level {@code [...]} group of one node's annotation text, in order (without their
+     *  brackets), with everything OUTSIDE the groups appended to {@code outside} -- so a branch length sitting
+     *  between two groups ({@code "A[&prob=1]:0.04[&length_mean=0.05]"}) survives. The streaming scanner has already
+     *  turned a bracket inside a quoted value into a brace, so every bracket here is a real one. */
+    final static List<String> bracketGroups(final String s, final StringBuilder outside) throws NHXFormatException {
+        final List<String> groups = new ArrayList<String>();
+        int pos = 0;
+        while (pos < s.length()) {
+            final int ob = s.indexOf('[', pos);
+            if (ob < 0) {
+                break;
             }
+            final int cb = s.indexOf(']', ob);
+            if (cb < 0) {
+                throw new NHXFormatException("error in NHX formatted data: no closing \"]\" in \"" + s + "\"");
+            }
+            outside.append(s, pos, ob);
+            groups.add(s.substring(ob + 1, cb));
+            pos = cb + 1;
         }
-        if (c != null) {
-            node_to_annotate.getBranchData().setBranchColor(new BranchColor(c));
+        outside.append(s, pos, s.length());
+        if (outside.indexOf("]") > -1) {
+            throw new NHXFormatException("error in NHX formatted data: a \"]\" without its \"[\" in \"" + s + "\"");
         }
+        return groups;
     }
 
     private final static void processMrBayes3Data(final String s, final PhylogenyNode node_to_annotate)
@@ -818,6 +1053,14 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
 
     private final boolean isParseBeastStyleExtendedTags() {
         return _parse_beast_style_extended_tags;
+    }
+
+    /** Whether the per-tree pass ({@link BracketAnnotationNormalizer}) runs when a tree is finished (default true).
+     *  Off ONLY for a caller that adds annotations of its own afterwards and runs the pass itself -- the Nexus
+     *  reader, whose TAXLABELS annotations reach the tips after the tree string: normalizing before them would leave
+     *  one tree with both beast: and treetime: refs. */
+    public final void setNormalizeBracketAnnotations(final boolean normalize_bracket_annotations) {
+        _normalize_bracket_annotations = normalize_bracket_annotations;
     }
 
     public final void setParseBeastStyleExtendedTags(final boolean parse_beast_style_extended_tags) {

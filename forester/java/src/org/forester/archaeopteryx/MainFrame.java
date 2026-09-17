@@ -226,6 +226,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String SHOW_CONF_STDDEV_LABEL = "Confidence Standard Deviations";
     static final String SHOW_MAD_CONF_LABEL    = "MAD Confidence Values (MAD/regular)";
     static final String USE_BRACKETS_FOR_CONF_IN_NH_LABEL = "Use Brackets for Confidence Values";
+    // names the producers: it used to say "BEAST-style", and a TreeTime or Nextstrain user had no way to know it was theirs
+    static final String PARSE_BRACKET_ANNOTATIONS_LABEL = "Read [&...] Annotations (BEAST, MrBayes, FigTree, TreeTime, Nextstrain)";
     static final String USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String TREE_PROPERTIES_LABEL = "Tree Properties…";
     static final String INFER_ANCESTOR_TAXONOMIES = "Infer Ancestor Taxonomies";
@@ -4938,7 +4940,8 @@ class DefaultFilter extends FileFilter {
                 || file_name.endsWith("phylo.xml") || file_name.endsWith(".pxml") || file_name.endsWith(".nexus")
                 || file_name.endsWith(".nx") || file_name.endsWith(".nex") || file_name.endsWith(".tre")
                 || file_name.endsWith(".zip") || file_name.endsWith(".tol") || file_name.endsWith(".tolxml")
-                || file_name.endsWith(".con") || file_name.endsWith(".json") || f.isDirectory();
+                || file_name.endsWith(".con") || file_name.endsWith(".json") || file_name.endsWith(".nxs")
+                || file_name.endsWith(".trees") || f.isDirectory();
     }
 
     @Override
@@ -4968,12 +4971,13 @@ class NexusFilter extends FileFilter {
     public boolean accept(final File f) {
         final String file_name = f.getName().trim().toLowerCase();
         return file_name.endsWith(".nex") || file_name.endsWith(".nexus") || file_name.endsWith(".nx")
-                || file_name.endsWith(".tre") || f.isDirectory();
+                || file_name.endsWith(".tre") || file_name.endsWith(".nxs") || file_name.endsWith(".trees")
+                || file_name.endsWith(".con") || f.isDirectory();
     }
 
     @Override
     public String getDescription() {
-        return "Nexus files (*.nex, *.nexus, *.nx, *.tre)";
+        return "Nexus files (*.nex, *.nexus, *.nx, *.nxs, *.tre, *.trees, *.con)";
     }
 } // NexusFilter
 

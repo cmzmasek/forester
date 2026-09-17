@@ -2015,6 +2015,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Parser by file name and first line: ");
+        if (org.forester.io.parsers.util.ParserUtilsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Bracket annotation normalizing: ");
+        if (org.forester.io.parsers.nhx.BracketAnnotationNormalizerTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Nexus taxlabel annotations: ");
+        if (org.forester.io.parsers.nexus.NexusTaxlabelAnnotationTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Nexus tree parsing (translating): ");
         if (Test.testNexusTreeParsingTranslating()) {
             System.out.println("OK.");
@@ -12880,18 +12904,20 @@ public final class Test {
         return true;
     }
 
+    private final static String MB_ANNOTATED = "(1[&prob=0.9500000000000000e+00,prob_stddev=0.1100000000000000e+00,"
+            + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
+            + "prob+-sd=\"100+-0\"]:4.129000000000000e-02[&length_mean=4.153987461671767e-02,"
+            + "length_median=4.129000000000000e-02,length_95%HPD={3.217800000000000e-02,"
+            + "5.026800000000000e-02}],2[&prob=0.810000000000000e+00,prob_stddev=0.000000000000000e+00,"
+            + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
+            + "prob+-sd=\"100+-0\"]:6.375699999999999e-02[&length_mean=6.395210411945065e-02,"
+            + "length_median=6.375699999999999e-02,length_95%HPD={5.388600000000000e-02,"
+            + "7.369400000000000e-02}])";
+
     private static boolean testNHXParsingMB() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny p1 = factory.create("(1[&prob=0.9500000000000000e+00,prob_stddev=0.1100000000000000e+00,"
-                    + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
-                    + "prob+-sd=\"100+-0\"]:4.129000000000000e-02[&length_mean=4.153987461671767e-02,"
-                    + "length_median=4.129000000000000e-02,length_95%HPD={3.217800000000000e-02,"
-                    + "5.026800000000000e-02}],2[&prob=0.810000000000000e+00,prob_stddev=0.000000000000000e+00,"
-                    + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
-                    + "prob+-sd=\"100+-0\"]:6.375699999999999e-02[&length_mean=6.395210411945065e-02,"
-                    + "length_median=6.375699999999999e-02,length_95%HPD={5.388600000000000e-02,"
-                    + "7.369400000000000e-02}])", new NHXParser())[0];
+            final Phylogeny p1 = factory.create(MB_ANNOTATED, new NHXParser())[0];
             if (!isEqual(p1.getNode("1").getDistanceToParent(), 4.129e-02)) {
                 return false;
             }
@@ -12923,6 +12949,39 @@ public final class Test {
             }
             if (p2.getNode("2") == null) {
                 return false;
+            }
+            // The same MrBayes text with the bracket-annotation option ON: every group is read, the literal length
+            // between the two groups is THE length, and the fields the regexes never reached are data.
+            final NHXParser p3p = new NHXParser();
+            p3p.setParseBeastStyleExtendedTags(true);
+            final Phylogeny p3 = factory.create(MB_ANNOTATED, p3p)[0];
+            if (!isEqual(p3.getNode("1").getDistanceToParent(), 4.129e-02)) {
+                return false;
+            }
+            if (p3.getNode("1").getBranchData().getNumberOfConfidences() != 1) {
+                return false;
+            }
+            if (!isEqual(p3.getNode("1").getBranchData().getConfidence(0).getValue(), 0.95)) {
+                return false;
+            }
+            if (!isEqual(p3.getNode("1").getBranchData().getConfidence(0).getStandardDeviation(), 0.11)) {
+                return false;
+            }
+            if (!p3.getNode("1").getBranchData().getConfidence(0).getType().equals("posterior probability")) {
+                return false;
+            }
+            if (!isEqual(p3.getNode("2").getDistanceToParent(), 6.375699999999999e-02)) {
+                return false;
+            }
+            if (!isEqual(p3.getNode("2").getBranchData().getConfidence(0).getValue(), 0.81)) {
+                return false;
+            }
+            final String[] mb_refs = {"beast:prob_range", "beast:prob_percent", "beast:prob_sd", "beast:length_mean",
+                    "beast:length_median", "beast:length_95_HPD"};
+            for (final String mb_ref : mb_refs) {
+                if (p3.getNode("1").getNodeData().getProperties().getProperties(mb_ref).size() != 1) {
+                    return false;
+                }
             }
         } catch (final Exception e) {
             e.printStackTrace(System.out);

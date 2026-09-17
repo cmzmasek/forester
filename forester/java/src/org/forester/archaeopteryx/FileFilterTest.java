@@ -62,6 +62,15 @@ public final class FileFilterTest {
                 || !def.accept( new File( "tree.nex" ) ) ) {
             return fail( "the default filter must still accept the existing tree types" );
         }
+        // what BEAST (.trees), MrBayes (.con.tre, .con) and plain Nexus (.nxs) write must be pickable
+        for( final String name : new String[] { "run.trees", "aln.nxs", "run.con.tre", "run.con" } ) {
+            if ( !def.accept( new File( name ) ) || !MainFrame.nexusfilter.accept( new File( name ) ) ) {
+                return fail( "the default and the Nexus filter must both accept " + name );
+            }
+        }
+        if ( MainFrame.nexusfilter.accept( new File( "tree.nwk" ) ) ) {
+            return fail( "the Nexus filter must not accept a Newick name" );
+        }
         if ( def.accept( new File( "photo.png" ) ) ) {
             return fail( "the default filter must still reject an unsupported type" );
         }

@@ -1,0 +1,22 @@
+#NEXUS
+[ID: 4719253806]
+begin taxa;
+	dimensions ntax=5;
+	taxlabels
+		Homo_sapiens
+		Pan_troglodytes
+		Gorilla_gorilla
+		Pongo_abelii
+		Hylobates_lar
+		;
+end;
+begin trees;
+	translate
+		1	Homo_sapiens,
+		2	Pan_troglodytes,
+		3	Gorilla_gorilla,
+		4	Pongo_abelii,
+		5	Hylobates_lar
+		;
+   tree con_50_majrule = [&U] (5[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:5.21000000e-02[&length_mean=5.24126000e-02,length_median=5.21000000e-02,length_95%HPD={4.06380000e-02,6.35620000e-02}],4[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:3.42000000e-02[&length_mean=3.44052000e-02,length_median=3.42000000e-02,length_95%HPD={2.66760000e-02,4.17240000e-02}],(3[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:1.78000000e-02[&length_mean=1.79068000e-02,length_median=1.78000000e-02,length_95%HPD={1.38840000e-02,2.17160000e-02}],(1[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:6.40000000e-03[&length_mean=6.43840000e-03,length_median=6.40000000e-03,length_95%HPD={4.99200000e-03,7.80800000e-03}],2[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:7.10000000e-03[&length_mean=7.14260000e-03,length_median=7.10000000e-03,length_95%HPD={5.53800000e-03,8.66200000e-03}])[&prob=8.70000000e-01,prob_stddev=2.10000000e-02,prob_range={8.28000000e-01,9.12000000e-01},prob(percent)="87",prob+-sd="87+-2"]:4.20000000e-03[&length_mean=4.22520000e-03,length_median=4.20000000e-03,length_95%HPD={3.27600000e-03,5.12400000e-03}])[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:1.53000000e-02[&length_mean=1.53918000e-02,length_median=1.53000000e-02,length_95%HPD={1.19340000e-02,1.86660000e-02}]);
+end;

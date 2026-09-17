@@ -1,0 +1,8 @@
+#NEXUS
+Begin Taxa;
+ Dimensions NTax=6;
+ TaxLabels A/Accra/11/2014 A/Abidjan/3/2015 A/Dakar/8/2016 A/Nairobi/5/2013 A/Kinshasa/2/2015 A/Kigali/9/2016
+End;
+Begin Trees;
+ Tree tree1=((A/Accra/11/2014:2.25[&mutations="A112G,T530C",date=2014.25],(A/Abidjan/3/2015:2.5[&mutations="G71A",date=2015.60],A/Dakar/8/2016:3.2[&mutations="C404T,A871G,T902C",date=2016.30])NODE_0000002:1.1[&mutations="T233C",date=2013.10])NODE_0000001:2.0[&mutations="A45G,C610T",date=2012.00],(A/Nairobi/5/2013:2.25[&mutations="G319A",date=2013.75],(A/Kinshasa/2/2015:2.25[&date=2015.05],A/Kigali/9/2016:4.1[&mutations="T18C,G777A",date=2016.90])NODE_0000004:1.3[&mutations="C502T",date=2012.80])NODE_0000003:1.5[&mutations="A690G",date=2011.50])NODE_0000000:0.1[&date=2010.00];
+End;

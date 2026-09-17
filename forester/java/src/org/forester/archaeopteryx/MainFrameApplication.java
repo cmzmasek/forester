@@ -1560,16 +1560,11 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     private void setSpecialOptionsForNexParser(final NexusPhylogeniesParser nex) {
-        nex.setReplaceUnderscores(getOptions().isReplaceUnderscoresInNhParsing());
-        nex.setTaxonomyExtraction(getOptions().getTaxonomyExtraction());
-        nex.setParseBeastStyleExtendedTags(getOptions().isParseBeastStyleExtendedNexusTags());
+        AptxUtil.applyParserOptions(nex, getOptions());
     }
 
     private void setSpecialOptionsForNhxParser(final NHXParser nhx) {
-        nhx.setReplaceUnderscores(getOptions().isReplaceUnderscoresInNhParsing());
-        nhx.setTaxonomyExtraction(getOptions().getTaxonomyExtraction());
-        nhx.setAllowErrorsInDistanceToParent(getOptions().isAllowErrorsInDistanceToParent());
-        nhx.setParseBeastStyleExtendedTags(getOptions().isParseBeastStyleExtendedNexusTags());
+        AptxUtil.applyParserOptions(nhx, getOptions());
     }
 
     void buildAnalysisMenu() {
@@ -1822,9 +1817,11 @@ public final class MainFrameApplication extends MainFrame {
         _export_black_and_white_cbmi = new JCheckBoxMenuItem("Export in Black and White");
         _graphics_export_visible_only_cbmi = new JCheckBoxMenuItem("Limit to Visible ('Screenshot') for PNG and JPG export");
         _replace_underscores_cbmi = new JCheckBoxMenuItem("Replace Underscores with Spaces");
-        _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem("Parse BEAST-style extended Newick/Nexus tags");
+        _parse_beast_style_extended_nexus_tags_cbmi = new JCheckBoxMenuItem(PARSE_BRACKET_ANNOTATIONS_LABEL);
         _parse_beast_style_extended_nexus_tags_cbmi
-                .setToolTipText("to parse elements in the form of \"[&!color=#800080]\" in Newick/Nexus formatted trees");
+                .setToolTipText("reads annotations such as \"[&posterior=0.98,height_95%_HPD={1.4,1.5}]\" in Newick/Nexus trees"
+                        + " as support values, node ages and dates, traits and FigTree colors;"
+                        + " when off, they are kept as plain comments");
         _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem("Ignore Distance Values Format Errors");
         // The "Taxonomy Extraction from Node Names" GUI controls were retired (the TAXONOMY_EXTRACTION
         // enum + ParserUtils stay for the CLI/library and config); the GUI now reads with no extraction.

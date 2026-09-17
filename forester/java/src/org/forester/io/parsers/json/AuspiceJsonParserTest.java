@@ -118,16 +118,25 @@ public final class AuspiceJsonParserTest {
             if ( Math.abs( root.getDistanceToParent() - 0.0 ) > 1e-9 ) {
                 return fail( "root branch length must be 0" );
             }
-            // a TIP keeps its point date but NOT the interval (that would misfire the fossil range bars); an INTERNAL
-            // node keeps its interval (root's min/max were asserted above)
-            if ( ( dv( a ) == null ) || ( a.getNodeData().getDate().getMin() != null )
-                    || ( a.getNodeData().getDate().getMax() != null ) ) {
-                return fail( "a tip's date interval must be stripped, keeping only the point date" );
+            // a TIP keeps its interval too: a sample dated only to the month or the year carries a real one. (It used
+            // to be dropped so that it could not switch the geologic Fossil Range Bars on; the DISPLAY tells a
+            // sampled tip from a fossil now -- AptxUtil.isHasFossilRanges -- so the reader throws nothing away.)
+            if ( ( dv( a ) == null ) || ( a.getNodeData().getDate().getMin() == null )
+                    || ( a.getNodeData().getDate().getMin().doubleValue() != 2019.9 )
+                    || ( a.getNodeData().getDate().getMax().doubleValue() != 2020.2 ) ) {
+                return fail( "a tip's date interval [2019.9, 2020.2] must be kept, got " + a.getNodeData().getDate() );
+            }
+            // B states no confidence: no interval is invented
+            if ( ( b.getNodeData().getDate().getMin() != null ) || ( b.getNodeData().getDate().getMax() != null ) ) {
+                return fail( "a tip without a confidence gets no interval" );
             }
             // non-v2 / malformed input must throw
             if ( !throwsOn( "{\"version\":\"v1\",\"tree\":{}}" ) || !throwsOn( "{\"tree\":{}}" )
                     || !throwsOn( "not json" ) || !throwsOn( "[1,2,3]" ) ) {
                 return fail( "a non-Auspice-v2 / malformed input must throw" );
+            }
+            if ( !unstampedDataset() ) {
+                return false;
             }
             if ( !commaStateNameQuoted() ) {
                 return false;
@@ -147,6 +156,47 @@ public final class AuspiceJsonParserTest {
             t.printStackTrace();
             return false;
         }
+    }
+
+    /** The v2 stamp is present OR implied: TreeTime's auspice_tree.json states no version at all, and is the only
+     *  TreeTime output with full-precision dates. Taken for v2 by its shape -- and only by its shape. */
+    private static boolean unstampedDataset() {
+        final String tree = "\"tree\":{\"name\":\"R\",\"node_attrs\":{\"num_date\":{\"value\":1996.3350335002062},\"div\":0},"
+                + "\"children\":[{\"name\":\"A\",\"node_attrs\":{\"num_date\":{\"value\":1998.5},\"div\":0.002}},"
+                + "{\"name\":\"B\",\"node_attrs\":{\"num_date\":{\"value\":1999.25},\"div\":0.003}}]}";
+        try {
+            final AuspiceJsonParser p = new AuspiceJsonParser();
+            p.setSource( new StringBuffer( "{\"meta\":{\"title\":\"TreeTime\"}," + tree + "}" ) );
+            final Phylogeny phy = p.parse()[ 0 ];
+            if ( ( phy.getNumberOfExternalNodes() != 2 )
+                    || ( phy.getRoot().getNodeData().getDate().getValue().doubleValue() != 1996.3350335002062 ) ) {
+                return fail( "an unstamped dataset of the v2 shape must parse, with its full-precision dates" );
+            }
+        }
+        catch ( final Exception e ) {
+            return fail( "an unstamped dataset of the v2 shape must parse, threw " + e );
+        }
+        // the shape is what implies the stamp: without "meta", or without node_attrs on the root, it is not a dataset
+        if ( !throwsOn( "{" + tree + "}" ) || !throwsOn( "{\"meta\":{},\"tree\":{\"name\":\"R\"}}" )
+                || !throwsOn( "{\"meta\":{},\"tree\":[1,2]}" ) || !throwsOn( "{\"meta\":{},\"data\":{}}" ) ) {
+            return fail( "unstamped JSON that lacks the v2 shape must still be refused" );
+        }
+        // a STATED version must be v2, whatever the shape
+        if ( !throwsOn( "{\"version\":\"v1\",\"meta\":{}," + tree + "}" ) || !throwsOn( "{\"version\":2,\"meta\":{}," + tree + "}" ) ) {
+            return fail( "a stated version other than \"v2\" must be refused even on the right shape" );
+        }
+        // ...and a stamped dataset needs no more than it did before
+        try {
+            final AuspiceJsonParser p = new AuspiceJsonParser();
+            p.setSource( new StringBuffer( "{\"version\":\"v2\"," + tree + "}" ) );
+            if ( p.parse()[ 0 ].getNumberOfExternalNodes() != 2 ) {
+                return fail( "a stamped dataset without meta must parse as before" );
+            }
+        }
+        catch ( final Exception e ) {
+            return fail( "a stamped dataset without meta must parse as before, threw " + e );
+        }
+        return true;
     }
 
     /** A trait state name containing a comma (e.g. "Korea, Republic of") must be quoted in the {@code _set} brace list

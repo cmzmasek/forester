@@ -33,9 +33,14 @@ What's in forester
 - **phyloXML & tree I/O** (`org.forester.io`, `org.forester.phylogeny`) — the
   reference implementation of the
   [phyloXML](https://doi.org/10.1186/1471-2105-10-356) format (reader, writer,
-  object model), plus Newick / New Hampshire (NH/NHX) and Nexus parsers, and the
-  phylogeny data structures they build. The phyloXML schema is bundled in this
-  repository under `forester/resources/phyloxml_schema/`; the `phyloxml.org`
+  object model), plus Newick / New Hampshire (NH/NHX), Nexus and Auspice /
+  Nextstrain JSON parsers, and the phylogeny data structures they build. The
+  Newick and Nexus parsers read `[&key=value,...]` annotations as written by
+  BEAST, MrBayes, FigTree, TreeTime and Nextstrain (support values, node ages and
+  dates, traits, colors) **by default**; call
+  `setParseBeastStyleExtendedTags(false)` on the parser to keep each annotation
+  as a plain `nh:comment` property instead, as earlier versions did. The phyloXML
+  schema is bundled in this repository under `forester/resources/phyloxml_schema/`; the `phyloxml.org`
   domain is no longer under the format authors' control and should not be used
   as a source for it.
 - **SDI / GSDI / GSDIR** (`org.forester.sdi`) — speciation–duplication inference:
