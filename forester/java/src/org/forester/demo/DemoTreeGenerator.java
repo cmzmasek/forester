@@ -121,6 +121,7 @@ public final class DemoTreeGenerator {
         writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
         writeText( dir, "treetime-tree.nwk", treeTimeNewick() );
         writeText( dir, "mrbayes-consensus.con.tre", mrBayesConsensus() );
+        writeText( dir, "beast-tip-dates.nex", beastTipDatesNexus() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
         write( dir, "tanglegram-tree-b.xml", tanglegramTreeB() );
@@ -196,6 +197,102 @@ public final class DemoTreeGenerator {
         final PhylogenyNode n = leaf( name );
         cat( n, "beast:location", location );
         return n;
+    }
+
+    // ----- "BEAST tip dates": a TreeAnnotator MCC tree of seasonal H3N2, as TreeAnnotator writes it (Taxlabels, a
+    //       Translate table, heights without a unit). The tip labels carry the sampling dates, so at load the heights
+    //       become calendar dates and the tree opens on the Calendar axis. Dates are converted to heights the way
+    //       BEAST does it -- year + (day of year - 1) / days in year -- not the way Archaeopteryx reads a label, so the
+    //       demo exercises the tolerance between the two conventions. Two tips were dated only to the month and to the
+    //       year; BEAST sampled their dates, so they carry a height HPD: a sampling-date uncertainty. A strict clock:
+    //       one rate on every branch, so no Color-by field competes with the time axis the demo is about.
+    private record BeastClade(int taxon, double date, double lo, double hi, double posterior, BeastClade... kids) {
+    }
+
+    private static final String BEAST_STRICT_CLOCK_RATE = "0.004";
+
+    private static final String[] BEAST_TIP_DATE_TAXA = { "A/Perth/16/2009|2009-07-04",
+            "A/Victoria/208/2009|2009-06-02", "A/Brisbane/10/2010|2010-03", "A/Iowa/19/2010|2010-11-09",
+            "A/Stockholm/18/2011|2011-03-28", "A/Victoria/361/2011|2011-10-24", "A/Texas/50/2012|2012-04-15",
+            "A/Almaty/2958/2013|2013", "A/Switzerland/9715293/2013|2013-12-06", "A/Hong_Kong/4801/2014|2014-02-26" };
+
+    private static String beastTipDatesNexus() {
+        final String[] t = BEAST_TIP_DATE_TAXA;
+        final BeastClade[] tips = new BeastClade[ t.length ];
+        for( int i = 0; i < t.length; ++i ) {
+            final String date = t[ i ].substring( t[ i ].indexOf( '|' ) + 1 );
+            if ( date.length() == 10 ) { // an exact day: no uncertainty
+                final double d = beastDecimalYear( java.time.LocalDate.parse( date ) );
+                tips[ i ] = new BeastClade( i + 1, d, d, d, -1 );
+            }
+            else if ( date.length() == 7 ) { // March 2010, sampled within the month
+                final java.time.LocalDate first = java.time.LocalDate.parse( date + "-01" );
+                tips[ i ] = new BeastClade( i + 1, beastDecimalYear( first.plusDays( 13 ) ), beastDecimalYear( first ),
+                                            beastDecimalYear( first.plusMonths( 1 ) ), -1 );
+            }
+            else { // 2013, sampled within the year
+                tips[ i ] = new BeastClade( i + 1, 2013.48, 2013.03, 2013.97, -1 );
+            }
+        }
+        final BeastClade n8 = new BeastClade( 0, 2013.1, 2012.85, 2013.35, 1.0, tips[ 8 ], tips[ 9 ] );
+        final BeastClade n7 = new BeastClade( 0, 2012.3, 2012.0, 2012.6, 0.94, tips[ 7 ], n8 );
+        final BeastClade n6 = new BeastClade( 0, 2011.5, 2011.15, 2011.85, 0.88, tips[ 6 ], n7 );
+        final BeastClade n5 = new BeastClade( 0, 2010.9, 2010.6, 2011.2, 0.99, tips[ 4 ], tips[ 5 ] );
+        final BeastClade n4 = new BeastClade( 0, 2010.4, 2010.05, 2010.75, 0.91, n5, n6 );
+        final BeastClade n3 = new BeastClade( 0, 2009.8, 2009.5, 2010.1, 0.97, tips[ 2 ], tips[ 3 ] );
+        final BeastClade n2 = new BeastClade( 0, 2009.3, 2008.9, 2009.7, 0.99, n3, n4 );
+        final BeastClade n1 = new BeastClade( 0, 2008.9, 2008.55, 2009.25, 1.0, tips[ 0 ], tips[ 1 ] );
+        final BeastClade root = new BeastClade( 0, 2008.3, 2007.8, 2008.75, 1.0, n1, n2 );
+        final double present = tips[ 9 ].date();
+        final StringBuilder sb = new StringBuilder( "#NEXUS\n\nBegin taxa;\n\tDimensions ntax=" + t.length
+                + ";\n\tTaxlabels\n" );
+        for( final String taxon : t ) {
+            sb.append( "\t\t'" ).append( taxon ).append( "'\n" );
+        }
+        sb.append( "\t\t;\nEnd;\n\nBegin trees;\n\tTranslate\n" );
+        for( int i = 0; i < t.length; ++i ) {
+            sb.append( "\t\t" ).append( i + 1 ).append( " '" ).append( t[ i ] ).append( '\'' )
+                    .append( ( i < ( t.length - 1 ) ) ? ",\n" : "\n;\n" );
+        }
+        sb.append( "tree TREE1 = [&R] " );
+        beastClade( sb, root, Double.NaN, present );
+        return sb.append( ";\nEnd;\n" ).toString();
+    }
+
+    private static void beastClade( final StringBuilder sb, final BeastClade c, final double parent_date,
+                                    final double present ) {
+        if ( c.kids().length > 0 ) {
+            sb.append( '(' );
+            for( int i = 0; i < c.kids().length; ++i ) {
+                if ( i > 0 ) {
+                    sb.append( ',' );
+                }
+                beastClade( sb, c.kids()[ i ], c.date(), present );
+            }
+            sb.append( ')' );
+        }
+        else {
+            sb.append( c.taxon() );
+        }
+        final String h = plain( present - c.date() );
+        sb.append( "[&rate=" ).append( BEAST_STRICT_CLOCK_RATE );
+        if ( c.hi() > c.lo() ) {
+            sb.append( ",height_95%_HPD={" ).append( plain( present - c.hi() ) ).append( ',' )
+                    .append( plain( present - c.lo() ) ).append( '}' );
+        }
+        sb.append( ",height_median=" ).append( h ).append( ",height=" ).append( h );
+        if ( c.posterior() >= 0 ) {
+            sb.append( ",posterior=" ).append( c.posterior() );
+        }
+        sb.append( ']' );
+        if ( !Double.isNaN( parent_date ) ) {
+            sb.append( ':' ).append( plain( c.date() - parent_date ) );
+        }
+    }
+
+    /** A date as BEAST turns it into a decimal year: year + (day of year - 1) / days in year. */
+    private static double beastDecimalYear( final java.time.LocalDate d ) {
+        return d.getYear() + ( ( d.getDayOfYear() - 1.0 ) / d.lengthOfYear() );
     }
 
     // ---- Nextstrain / TreeTime / MrBayes: the SHAPES the real producers write (verified against real files) -------

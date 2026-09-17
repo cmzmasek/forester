@@ -109,6 +109,7 @@ public final class Archaeopteryx {
                                                        nhx_or_nexus,
                                                        MainFrameApplication.optionsWithSavedPreferences()
                                                                .getConfidenceFromInternalLabels() );
+                    HeightDateConverter.convertHeightsToDates( phylogenies );
                 }
             }
         }

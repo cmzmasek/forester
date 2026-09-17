@@ -101,9 +101,12 @@ public final class TipDateExtractor {
     }
 
     /** A date recognised in a label: the decimal-year value, the exact substring matched, its precision, a human label
-     *  of the format, and whether the numeric day/month order had to be guessed (ambiguous). */
+     *  of the format, whether the numeric day/month order had to be guessed (ambiguous), and the calendar RANGE the
+     *  label actually states, in decimal years: {@code 2021} is all of 2021, {@code 2021-03} all of March, a day that
+     *  whole day, and a decimal year its last written digit ({@code 1993.1} is 1993.05 to 1993.15). The value is the
+     *  midpoint convention; the range is what a comparison with another program's dates must allow. */
     public record DateMatch(double decimalYear, String matchedText, Precision precision, String formatLabel,
-            boolean ambiguous) {
+            boolean ambiguous, double rangeStart, double rangeEnd) {
     }
 
     /** One tip's preview row (drives the dialog table + counts): the node, its label, the date found (null = none), and
@@ -251,7 +254,9 @@ public final class TipDateExtractor {
             final double v = Double.parseDouble( mat.group( 1 ) );
             final int y = (int) Math.floor( v );
             if ( ( y >= MIN_BARE_YEAR ) && ( y <= MAX_BARE_YEAR ) ) {
-                found = new DateMatch( v, mat.group( 1 ), Precision.DAY, "decimal year", false );
+                final String text = mat.group( 1 );
+                final double half_digit = 0.5 * Math.pow( 10, -( text.length() - text.indexOf( '.' ) - 1 ) );
+                found = new DateMatch( v, text, Precision.DAY, "decimal year", false, v - half_digit, v + half_digit );
             }
         }
         return found;
@@ -263,7 +268,7 @@ public final class TipDateExtractor {
         while ( mat.find() ) {
             final int y = Integer.parseInt( mat.group( 1 ) );
             if ( ( y >= MIN_BARE_YEAR ) && ( y <= MAX_BARE_YEAR ) ) {
-                found = new DateMatch( y + 0.5, mat.group( 1 ), Precision.YEAR, "year", false );
+                found = new DateMatch( y + 0.5, mat.group( 1 ), Precision.YEAR, "year", false, y, y + 1 );
             }
         }
         return found;
@@ -416,7 +421,10 @@ public final class TipDateExtractor {
         catch ( final RuntimeException e ) {
             return null;
         }
-        return new DateMatch( toDecimalYear( year, month, day ), matched, Precision.DAY, format, ambiguous );
+        final int doy = LocalDate.of( year, month, day ).getDayOfYear();
+        final double len = Year.of( year ).length();
+        return new DateMatch( toDecimalYear( year, month, day ), matched, Precision.DAY, format, ambiguous,
+                              year + ( ( doy - 1 ) / len ), year + ( doy / len ) );
     }
 
     /** Build a year-month match (day unknown -> mid-month). */
@@ -424,7 +432,11 @@ public final class TipDateExtractor {
         if ( ( year < MIN_YEAR ) || ( year > MAX_YEAR ) || ( month < 1 ) || ( month > 12 ) ) {
             return null;
         }
-        return new DateMatch( toDecimalYear( year, month, 0 ), matched, Precision.MONTH, format, false );
+        final LocalDate first = LocalDate.of( year, month, 1 );
+        final double len = Year.of( year ).length();
+        final double start = year + ( ( first.getDayOfYear() - 1 ) / len );
+        return new DateMatch( toDecimalYear( year, month, 0 ), matched, Precision.MONTH, format, false, start,
+                              start + ( first.lengthOfMonth() / len ) );
     }
 
     /** 1-12 for an English month name -- the EXACT 3-letter abbreviation (Jan..Dec) OR the full name (January..

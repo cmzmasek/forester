@@ -188,6 +188,7 @@ public final class FigureRenderer {
         AptxUtil.applyParserOptions( parser );
         final Phylogeny[] phys = ParserBasedPhylogenyFactory.getInstance().create( input, parser );
         AptxUtil.applyInternalLabelPolicy( phys, parser );
+        HeightDateConverter.convertHeightsToDates( phys );
         return ( phys == null ) ? new Phylogeny[ 0 ] : phys;
     }
 

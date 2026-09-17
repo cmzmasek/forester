@@ -230,7 +230,10 @@ final class NodeHoverText {
         if ( d.getValue() != null ) {
             sb.append( d.getValue().toPlainString() );
         }
-        if ( ( d.getMin() != null ) && ( d.getMax() != null ) ) {
+        // only a real WIDTH is a range: an exactly dated tip whose bounds differ by float noise (TreeAnnotator writes
+        // {9.0,9.000000000000004}) would otherwise read "11.15 [11.149999999999999 - 11.150000000000002]" -- the same
+        // claim the overlays used to draw. One predicate for what is drawn and what is said.
+        if ( AptxUtil.hasDateIntervalWidth( d ) ) {
             if ( sb.length() > 0 ) {
                 sb.append( ' ' );
             }

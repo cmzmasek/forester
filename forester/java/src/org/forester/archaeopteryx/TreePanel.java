@@ -11334,8 +11334,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 continue;
             }
             final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
-            if ((date.getMin() == null) || (date.getMax() == null)) {
-                continue; // need an interval to draw a bar
+            if (!AptxUtil.hasDateIntervalWidth(date)) {
+                continue; // need an interval WITH A WIDTH to draw a bar (never float noise)
             }
             final Double ang = _urt_nodeid_angle_map.get(node.getId());
             if (ang == null) {
@@ -11417,8 +11417,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 continue;
             }
             final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
-            if ((date.getMin() == null) || (date.getMax() == null)) {
-                continue; // need an interval to draw a bar
+            if (!AptxUtil.hasDateIntervalWidth(date)) {
+                continue; // need an interval WITH A WIDTH to draw a bar (never float noise)
             }
             final double min = date.getMin().doubleValue();
             final double max = date.getMax().doubleValue();
@@ -11509,8 +11509,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 continue; // fossil RANGE bars are for TIPS (external nodes)
             }
             final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
-            if ((date.getMin() == null) || (date.getMax() == null)) {
-                continue; // need a FAD/LAD range to draw a bar
+            if (!AptxUtil.hasDateIntervalWidth(date)) {
+                continue; // need a FAD/LAD range WITH A WIDTH (TreeAnnotator's {h,h+1e-14} is an exact date, not a range)
             }
             final double min = date.getMin().doubleValue();
             final double max = date.getMax().doubleValue();
@@ -11558,8 +11558,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 continue; // fossil RANGE bars are for TIPS (external nodes)
             }
             final org.forester.phylogeny.data.Date date = node.getNodeData().getDate();
-            if ((date.getMin() == null) || (date.getMax() == null)) {
-                continue; // need a FAD/LAD range to draw a bar
+            if (!AptxUtil.hasDateIntervalWidth(date)) {
+                continue; // need a FAD/LAD range WITH A WIDTH (TreeAnnotator's {h,h+1e-14} is an exact date, not a range)
             }
             final Double ang = _urt_nodeid_angle_map.get(node.getId());
             if (ang == null) {

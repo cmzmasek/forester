@@ -360,25 +360,54 @@ public final class AptxUtil {
         }
     }
 
-    /** True when at least one INTERNAL node carries a node-age {@code <date>} with both a minimum and a maximum --
-     *  i.e. an HPD interval to draw as a Node Age Bar (as produced by BEAST/TreeAnnotator height_95%_HPD, or a
-     *  dated phyloXML). */
+    /** True when at least one INTERNAL node carries a node-age {@code <date>} whose bounds have a real width
+     *  ({@link #hasDateIntervalWidth}) -- i.e. an HPD interval to draw as a Node Age Bar (as produced by
+     *  BEAST/TreeAnnotator height_95%_HPD, or a dated phyloXML). */
     final static public boolean isHasAtLeastOneInternalNodeWithDateInterval(final Phylogeny phy) {
         for (final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            if (!n.isExternal() && n.getNodeData().isHasDate() && (n.getNodeData().getDate().getMin() != null)
-                    && (n.getNodeData().getDate().getMax() != null)) {
+            if (!n.isExternal() && hasDateIntervalWidth(n.getNodeData().getDate())) {
                 return true;
             }
         }
         return false;
     }
 
-    /** A date with a minimum and a maximum that DIFFER: an interval with a width, i.e. an uncertainty or a range.
-     *  Auspice writes {d,d} for an exactly dated sample, which is neither. */
+    /**
+     * How far apart an interval's bounds must lie, as a fraction of their own magnitude, to be a WIDTH rather than
+     * arithmetic noise. TreeAnnotator computes a tip's height as a subtraction, so an EXACTLY dated tip comes out as
+     * {@code height_95%_HPD={9.0,9.000000000000004}} -- a "range" 0.00000000000001 years wide. Taken literally (as
+     * both implementations did until 2026-09-17) that switched the fossil-range overlay on for a virus tree and drew
+     * a 1 px bracketed range under every one of influenza.tree's 686 tips. Double noise is a few parts in 1e16, a
+     * real interval is never a billionth of its own age, so 1e-9 separates them by seven orders of magnitude at
+     * either end. Relative, because the same predicate serves calendar years (~2000) and geologic ages (~0 to 4500).
+     */
+    private final static double DATE_INTERVAL_WIDTH_FRACTION = 1e-9;
+
+    /**
+     * Whether a date states an interval with a real WIDTH -- both bounds present and further apart than
+     * {@link #DATE_INTERVAL_WIDTH_FRACTION} of their magnitude. An uncertainty or a range is one; Auspice's {d,d} for
+     * an exactly dated sample is not, and neither is TreeAnnotator's float noise.
+     * <p>
+     * THE one width test: every overlay that draws an interval asks it -- the fossil-range bars and the node-age (HPD)
+     * bars, rectangular and circular, and the load-time auto-enable of both -- so a bound pair that draws nothing can
+     * never switch a toggle on, and vice versa.
+     */
+    final static boolean hasDateIntervalWidth(final org.forester.phylogeny.data.Date d) {
+        if ((d == null) || (d.getMin() == null) || (d.getMax() == null)) {
+            return false;
+        }
+        final double min = d.getMin().doubleValue();
+        final double max = d.getMax().doubleValue();
+        // abs: a reversed pair states a width too, and every painter is already robust to swapped bounds
+        final double scale = Math.max(1.0, Math.max(Math.abs(min), Math.abs(max)));
+        return Math.abs(max - min) > (DATE_INTERVAL_WIDTH_FRACTION * scale);
+    }
+
+    /** A date with a minimum and a maximum that differ by a real width, i.e. an uncertainty or a range -- see
+     *  {@link #hasDateIntervalWidth}. */
     final static boolean isGenuineDateInterval(final PhylogenyNode n) {
-        final org.forester.phylogeny.data.Date d = n.getNodeData().getDate();
-        return (d != null) && (d.getMin() != null) && (d.getMax() != null) && (d.getMin().compareTo(d.getMax()) != 0);
+        return hasDateIntervalWidth(n.getNodeData().getDate());
     }
 
     /** True when the tree has FOSSIL RANGES to draw: tips with a date interval, on a tree that is NOT on calendar
@@ -413,15 +442,14 @@ public final class AptxUtil {
         return false;
     }
 
-    /** True when at least one EXTERNAL node (tip) carries a node-age {@code <date>} with both a minimum and a maximum --
-     *  i.e. a fossil stratigraphic range (First/Last Appearance Datum) to draw as a Fossil Range Bar. The tip analogue
+    /** True when at least one EXTERNAL node (tip) carries a node-age {@code <date>} whose bounds have a real width
+     *  ({@link #hasDateIntervalWidth}) -- i.e. a fossil stratigraphic range (First/Last Appearance Datum) to draw as a
+     *  Fossil Range Bar. The tip analogue
      *  of {@link #isHasAtLeastOneInternalNodeWithDateInterval}. WHAT the interval means is the tree's to say:
      *  {@link #isHasFossilRanges} / {@link #isHasSampledTipWithDateUncertainty}. */
     final static public boolean isHasAtLeastOneExternalNodeWithDateInterval(final Phylogeny phy) {
         for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if (n.getNodeData().isHasDate() && (n.getNodeData().getDate().getMin() != null)
-                    && (n.getNodeData().getDate().getMax() != null)) {
+            if (hasDateIntervalWidth(it.next().getNodeData().getDate())) {
                 return true;
             }
         }
@@ -915,9 +943,9 @@ public final class AptxUtil {
         //
         // A tree whose dates carry no unit therefore gets the plain numeric distance axis, and the user can still
         // choose an axis per tree (the Time Axis control) when they know what the numbers are.
-        // FOLLOW-ON, agreed with Christian 2026-09-10: infer the unit from tip labels where they carry sampling
-        // dates ("A/duck/Guangdong/12/2000"), which would also give the calendar axis a real present-date anchor.
-        // That is inference from evidence in the file rather than a guess from magnitude.
+        // Those three trees DO open on the calendar axis now, from evidence rather than magnitude: at load,
+        // HeightDateConverter turns unit-less BEAST heights into calendar dates when the tip labels' sampling dates
+        // agree with the heights (Christian, 2026-09-17), so they arrive here with the unit "year".
         return Options.TIME_AXIS_TYPE.NONE;
     }
 
@@ -1310,6 +1338,7 @@ public final class AptxUtil {
         }
         if (phys != null) {
             applyInternalLabelPolicy(phys, nhx_or_nexus, confidence_policy);
+            HeightDateConverter.convertHeightsToDates(phys);
             if (midpoint_reroot) {
                 for (final Phylogeny phy : phys) {
                     PhylogenyMethods.midpointRoot(phy);

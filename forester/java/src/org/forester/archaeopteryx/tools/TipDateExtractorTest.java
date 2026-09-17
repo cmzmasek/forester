@@ -129,6 +129,9 @@ public final class TipDateExtractorTest {
             if ( !applyToNodeOk() ) {
                 return false;
             }
+            if ( !rangesOk() ) {
+                return false;
+            }
             if ( !wholeTreeHelpersOk() ) {
                 return false;
             }
@@ -170,6 +173,62 @@ public final class TipDateExtractorTest {
         // a null match is a no-op
         if ( TipDateExtractor.applyToNode( n, null ) ) {
             return fail( "applyToNode(null) must be a no-op" );
+        }
+        return true;
+    }
+
+    /** The calendar range a label states: a whole year, a whole month (its real length, leap years included), one
+     *  day, or a decimal year to its last written digit -- and the midpoint value always inside it. */
+    private static boolean rangesOk() {
+        if ( !rangeEq( "A/Texas/50/2012", 2012, 2013 ) ) {
+            return fail( "a bare year states the whole year" );
+        }
+        if ( !rangeEq( "iso/2021-03", 2021 + ( 59.0 / 365 ), 2021 + ( 90.0 / 365 ) ) ) {
+            return fail( "a year-month states the whole month (March 2021: day 60 to day 90)" );
+        }
+        if ( !rangeEq( "Feb-2020", 2020 + ( 31.0 / 366 ), 2020 + ( 60.0 / 366 ) ) ) {
+            return fail( "a month-name year states the whole month, leap-year February has 29 days" );
+        }
+        if ( !rangeEq( "iso/2021-12", 2021 + ( 334.0 / 365 ), 2022 ) ) {
+            return fail( "December ends exactly at the next year" );
+        }
+        if ( !rangeEq( "strain|2021-03-15", 2021 + ( 73.0 / 365 ), 2021 + ( 74.0 / 365 ) ) ) {
+            return fail( "an ISO date states that one day" );
+        }
+        if ( !rangeEq( "GISAID/01-Dec-2015", 2015 + ( 334.0 / 365 ), 2015 + ( 335.0 / 365 ) ) ) {
+            return fail( "a month-name date states that one day" );
+        }
+        if ( !rangeEq( "seq/15/03/2021", 2021 + ( 73.0 / 365 ), 2021 + ( 74.0 / 365 ) ) ) {
+            return fail( "a numeric date states that one day" );
+        }
+        if ( !rangeEq( "s/2020-12-31", 2020 + ( 365.0 / 366 ), 2021 ) ) {
+            return fail( "the last day of a leap year ends exactly at the next year" );
+        }
+        if ( !rangeEq( "NewYork_705_1994.1", 1994.05, 1994.15 ) ) {
+            return fail( "a one-decimal year states +/- half its last digit" );
+        }
+        if ( !rangeEq( "sample_2021.37", 2021.365, 2021.375 ) ) {
+            return fail( "a two-decimal year states +/- half its last digit" );
+        }
+        for ( final String label : new String[] { "A/Texas/50/2012", "iso/2021-03", "Feb-2020", "strain|2021-03-15",
+                "NewYork_705_1994.1", "s/2020-12-31" } ) {
+            final DateMatch m = TipDateExtractor.parse( label, DF );
+            if ( ( m.decimalYear() <= m.rangeStart() ) || ( m.decimalYear() >= m.rangeEnd() ) ) {
+                return fail( "'" + label + "' value " + m.decimalYear() + " must lie inside its range [" + m.rangeStart()
+                        + ", " + m.rangeEnd() + "]" );
+            }
+        }
+        return true;
+    }
+
+    private static boolean rangeEq( final String label, final double start, final double end ) {
+        final DateMatch m = TipDateExtractor.parse( label, DF );
+        if ( m == null ) {
+            return note( "no date found in '" + label + "'" );
+        }
+        if ( ( Math.abs( m.rangeStart() - start ) > 1e-9 ) || ( Math.abs( m.rangeEnd() - end ) > 1e-9 ) ) {
+            return note( "'" + label + "' range [" + m.rangeStart() + ", " + m.rangeEnd() + "], expected [" + start + ", "
+                    + end + "]" );
         }
         return true;
     }

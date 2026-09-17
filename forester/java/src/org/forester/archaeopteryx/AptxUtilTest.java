@@ -69,7 +69,7 @@ public final class AptxUtilTest {
                 && testAssignDistinctColors() && testQualitativePalette() && testGatherDomainNames() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalLabelPolicy()
                 && testTreeTimeLabelRepair() && testApplyParserOptions() && testTipIntervalMeaning()
-                && testInternalNodeDateInterval()
+                && testDateIntervalWidth() && testInternalNodeDateInterval()
                 && testPreferredDisplayTypeForBranchLengthTree() && testMostlyMeasuredForPhylogram()
                 && testDetectTimeTree()
                 && testDeriveTimeAxisType();
@@ -252,6 +252,56 @@ public final class AptxUtilTest {
      * {@code <date>} with both a min and a max (an HPD interval). A date without both bounds, or an interval on an
      * external tip, does not count.
      */
+    /**
+     * The ONE width test every interval overlay asks ({@link AptxUtil#hasDateIntervalWidth}): TreeAnnotator's float
+     * noise on an exactly dated tip is not a width, at either end of the scale, while a real uncertainty or range is
+     * -- and the auto-enable predicates must agree with it, or a toggle switches on for something that draws nothing.
+     */
+    private static boolean testDateIntervalWidth() {
+        if ( AptxUtil.hasDateIntervalWidth( null )
+                || AptxUtil.hasDateIntervalWidth( new Date( "", new BigDecimal( "2000" ), null, null, "year" ) )
+                || AptxUtil.hasDateIntervalWidth( new Date( "", null, new BigDecimal( "1" ), null, "" ) ) ) {
+            return fail( "no bounds, or only one, is no interval" );
+        }
+        // what TreeAnnotator really writes for an exactly dated tip, at both ends of the scale we serve
+        if ( AptxUtil.hasDateIntervalWidth( interval( "9.0", "9.000000000000004" ) ) ) {
+            return fail( "a BEAST height and its own float noise is an exact date, not a range" );
+        }
+        if ( AptxUtil.hasDateIntervalWidth( interval( "2005.5", "2005.5000000000002" ) ) ) {
+            return fail( "the same noise on a calendar year is not a sampling uncertainty" );
+        }
+        if ( AptxUtil.hasDateIntervalWidth( interval( "66", "66.0000000000001" ) ) ) {
+            return fail( "the same noise on a geologic age is not a fossil range" );
+        }
+        if ( AptxUtil.hasDateIntervalWidth( interval( "2005.5", "2005.5" ) ) ) {
+            return fail( "Auspice's {d,d} states no width" );
+        }
+        // real intervals, at the scales the two overlays serve, and a reversed pair (which states a width too)
+        if ( !AptxUtil.hasDateIntervalWidth( interval( "2020.1", "2021.0" ) )
+                || !AptxUtil.hasDateIntervalWidth( interval( "66.0", "72.1" ) )
+                || !AptxUtil.hasDateIntervalWidth( interval( "72.1", "66.0" ) ) ) {
+            return fail( "a real uncertainty or range has a width, in either bound order" );
+        }
+        // the threshold itself: a billionth of the magnitude. Just under does not count, ten times it does -- a day
+        // of a calendar year (0.0027) is four orders above, so no real interval is anywhere near the line
+        if ( AptxUtil.hasDateIntervalWidth( interval( "2000", "2000.0000019" ) ) ) {
+            return fail( "just under a billionth of the magnitude is noise" );
+        }
+        if ( !AptxUtil.hasDateIntervalWidth( interval( "2000", "2000.00002" ) ) ) {
+            return fail( "ten times the threshold is a width" );
+        }
+        // near zero (a Recent fossil, an age of ~0) the fraction is taken of 1, not of the value
+        if ( AptxUtil.hasDateIntervalWidth( interval( "0", "0.0000000001" ) )
+                || !AptxUtil.hasDateIntervalWidth( interval( "0", "0.00001" ) ) ) {
+            return fail( "at age ~0 the threshold is absolute, not a fraction of nothing" );
+        }
+        return true;
+    }
+
+    private static Date interval( final String min, final String max ) {
+        return new Date( "", null, new BigDecimal( min ), new BigDecimal( max ), "" );
+    }
+
     private static boolean testInternalNodeDateInterval() {
         final Phylogeny phy = new Phylogeny();
         final PhylogenyNode root = new PhylogenyNode();
@@ -274,6 +324,11 @@ public final class AptxUtilTest {
                                            "" ) );
         if ( AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval( phy ) ) {
             return fail( "an interval on an EXTERNAL tip must not count (bars are internal-only)" );
+        }
+        root.getNodeData().setDate( new Date( "", new BigDecimal( "1.5" ), new BigDecimal( "1.5" ),
+                                              new BigDecimal( "1.500000000000001" ), "" ) );
+        if ( AptxUtil.isHasAtLeastOneInternalNodeWithDateInterval( phy ) ) {
+            return fail( "TreeAnnotator's float noise must not switch the Node Age Bars on" );
         }
         root.getNodeData().setDate( new Date( "", new BigDecimal( "1.5" ), new BigDecimal( "1.2" ),
                                               new BigDecimal( "1.8" ), "" ) );
@@ -463,6 +518,19 @@ public final class AptxUtilTest {
         }
         if ( AptxUtil.isHasFossilRanges( geo ) || AptxUtil.isHasFossilRanges( unitless ) ) {
             return fail( "a zero-width tip interval ({0.0,0.0}, as TreeAnnotator writes) is no fossil range, on any tree" );
+        }
+        // the same thing one float ULP wide: TreeAnnotator computes a tip height by subtraction, and influenza.tree
+        // carries 686 such "ranges" (widest 1.07e-14). They are exact dates, and no overlay may claim otherwise.
+        for( final Phylogeny p : new Phylogeny[] { cal, geo, unitless } ) {
+            final org.forester.phylogeny.data.Date d = p.getFirstExternalNode().getNodeData().getDate();
+            d.setMax( d.getValue().add( new java.math.BigDecimal( "0.00000000000001" ) ) );
+            if ( AptxUtil.isGenuineDateInterval( p.getFirstExternalNode() ) ) {
+                return fail( "float noise is not a genuine interval" );
+            }
+        }
+        if ( AptxUtil.isHasFossilRanges( geo ) || AptxUtil.isHasFossilRanges( unitless )
+                || AptxUtil.isHasSampledTipWithDateUncertainty( cal ) ) {
+            return fail( "float noise must switch on neither the fossil ranges nor the sampling uncertainty" );
         }
         for( final Phylogeny p : new Phylogeny[] { cal, geo, unitless } ) {
             final org.forester.phylogeny.data.Date d = p.getFirstExternalNode().getNodeData().getDate();

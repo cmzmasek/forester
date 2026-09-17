@@ -50,7 +50,138 @@ public final class FossilRangeBarRenderTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return barsRenderOk();
+        return barsRenderOk() && noiseIntervalsDrawNothingOk();
+    }
+
+    /**
+     * TreeAnnotator writes an exactly dated tip's height as a subtraction, so its "range" comes out one float ULP
+     * wide ({@code height_95%_HPD={9.0,9.000000000000004}}); influenza.tree carries 686 of them. Before 2026-09-17
+     * that switched the fossil-range overlay on and drew a bracketed 1 px range under every tip of a virus tree.
+     * Neither the auto-enable nor the painter may treat it as a range -- and the same fixture with a REAL range must
+     * still draw, or this would pass on a tree that simply cannot reach the painter.
+     */
+    private static boolean noiseIntervalsDrawNothingOk() {
+        try {
+            final Phylogeny phy = noiseIntervalTree();
+            final Configuration conf = new Configuration();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "noise" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    final Options o = frame.getOptions();
+                    if ( o.isShowFossilRangeBars() ) {
+                        fail( ok, "float-noise tip intervals must NOT auto-enable the Fossil Range Bars" );
+                    }
+                    if ( o.isShowHpdBars() ) {
+                        fail( ok, "float-noise intervals must not auto-enable the Node Age Bars either" );
+                    }
+                    o.setGraphicsExportWhiteBackground( true );
+                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.NONE );
+                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                    final int w = 900, h = 460;
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    // forced ON, BOTH overlays: even then, noise must draw nothing -- in either layout
+                    o.setShowFossilRangeBars( true );
+                    o.setShowHpdBars( true );
+                    final BufferedImage noise_img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    if ( ( countSepia( noise_img ) > 0 ) || ( countHpdBlue( noise_img ) > 0 ) ) {
+                        fail( ok, "rectangular: float noise must draw no bars, got " + countSepia( noise_img )
+                                + " sepia + " + countHpdBlue( noise_img ) + " blue px" );
+                    }
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                    o.setShowOverview( false );
+                    tp.setOvOn( false );
+                    frame.showWhole();
+                    tp.setPreferredSize( new java.awt.Dimension( w, h ) );
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage circ_noise = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    if ( ( countSepia( circ_noise ) > 0 ) || ( countHpdBlue( circ_noise ) > 0 ) ) {
+                        fail( ok, "circular: float noise must draw no bars, got " + countSepia( circ_noise )
+                                + " sepia + " + countHpdBlue( circ_noise ) + " blue px" );
+                    }
+                    // REACHABILITY: give one tip a real range and one internal node a real HPD -- the same fixture,
+                    // in both layouts, must now draw both. Without this the checks above would also pass on a tree
+                    // that simply cannot reach the painters.
+                    final PhylogenyNode tip = phy.getFirstExternalNode();
+                    tip.getNodeData().getDate().setMin( new java.math.BigDecimal( "4.0" ) );
+                    tip.getNodeData().getDate().setMax( new java.math.BigDecimal( "7.0" ) );
+                    final PhylogenyNode inner = phy.getRoot().getChildNode( 0 );
+                    inner.getNodeData().getDate().setMin( new java.math.BigDecimal( "5.0" ) );
+                    inner.getNodeData().getDate().setMax( new java.math.BigDecimal( "8.0" ) );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage circ_real = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    if ( ( countSepia( circ_real ) < 20 ) || ( countHpdBlue( circ_real ) < 20 ) ) {
+                        fail( ok, "circular: a REAL range and HPD must draw, got " + countSepia( circ_real )
+                                + " sepia + " + countHpdBlue( circ_real ) + " blue px" );
+                    }
+                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                    frame.showWhole();
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final BufferedImage real_img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    if ( ( countSepia( real_img ) < 20 ) || ( countHpdBlue( real_img ) < 20 ) ) {
+                        fail( ok, "rectangular: a REAL range and HPD must draw, got " + countSepia( real_img )
+                                + " sepia + " + countHpdBlue( real_img ) + " blue px" );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Four dated tips with branch lengths, unit-less ages (so the tree is not on calendar time), every tip carrying
+     *  a height and its own float noise as the "interval" -- a BEAST MCC tree that did not convert. */
+    private static Phylogeny noiseIntervalTree() {
+        final PhylogenyNode root = new PhylogenyNode();
+        noiseDate( root, "10" );
+        final PhylogenyNode left = new PhylogenyNode();
+        noiseDate( left, "6" );
+        final PhylogenyNode right = new PhylogenyNode();
+        noiseDate( right, "4" );
+        left.setDistanceToParent( 4 );
+        right.setDistanceToParent( 6 );
+        root.addAsChild( left );
+        root.addAsChild( right );
+        final String[] names = { "tip_a", "tip_b", "tip_c", "tip_d" };
+        final String[] heights = { "5", "0", "3", "0" };
+        for( int i = 0; i < names.length; ++i ) {
+            final PhylogenyNode tip = new PhylogenyNode();
+            tip.setName( names[ i ] );
+            noiseDate( tip, heights[ i ] );
+            final PhylogenyNode parent = ( i < 2 ) ? left : right;
+            tip.setDistanceToParent( Double.parseDouble( parent.getNodeData().getDate().getValue().toPlainString() )
+                    - Double.parseDouble( heights[ i ] ) );
+            parent.addAsChild( tip );
+        }
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
+    /** A height with TreeAnnotator's own float noise as its 95% HPD: {h, h + 1e-14}. */
+    private static void noiseDate( final PhylogenyNode n, final String height ) {
+        final java.math.BigDecimal h = new java.math.BigDecimal( height );
+        n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", h, h,
+                                                                       h.add( new java.math.BigDecimal( "0.00000000000001" ) ),
+                                                                       "" ) );
     }
 
     private static boolean barsRenderOk() {
@@ -188,6 +319,22 @@ public final class FossilRangeBarRenderTest {
             }
         }
         return false;
+    }
+
+    /** Pixels of the translucent blue node-age (HPD) bar (HPD_BAR_COLOR = 70,130,220 at alpha 90, composited over
+     *  white): blue clearly dominates, which no branch, label or sepia pixel does. */
+    private static int countHpdBlue( final BufferedImage img ) {
+        int n = 0;
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int rgb = img.getRGB( x, y );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( b >= ( r + 25 ) ) && ( b >= ( g + 10 ) ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
     }
 
     private static boolean isSepia( final int rgb ) {

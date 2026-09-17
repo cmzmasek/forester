@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.forester.archaeopteryx.tools.NodeDataImporter;
+import org.forester.archaeopteryx.tools.TipDateExtractor;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
@@ -217,6 +218,8 @@ public final class DemoTreesTest {
         ok &= treeTimePairOk( "treetime-nexus.nex", "treetime-divergence.nex" );
         ok &= treeTimeNewickOk( "treetime-tree.nwk" );
         ok &= mrBayesConsensusOk( "mrbayes-consensus.con.tre" );
+        // a TreeAnnotator MCC tree whose tip labels carry the sampling dates: its heights open as calendar dates
+        ok &= beastTipDatesOk( "beast-tip-dates.nex" );
 
         // ancestral-state pie charts: a discrete-trait posterior (beast:location_set + _set_prob) on the internal
         // nodes, so the pie feature has a trait with a parseable multi-state distribution
@@ -1429,6 +1432,56 @@ public final class DemoTreesTest {
         }
         if ( hp.getNodeData().getDate() != null ) {
             return note( file_name + " length_95%HPD is a branch-length interval, never a date" );
+        }
+        return true;
+    }
+
+    /** Opened as File &gt; Open opens it, a TreeAnnotator tree's unit-less heights become calendar dates, because its
+     *  tip labels carry the sampling dates: the Calendar axis, a day-dated tip inside its day, the month-dated tip's
+     *  sampled date a sampling uncertainty within March 2010, an HPD turned around, and the provenance sentence. */
+    private static boolean beastTipDatesOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 10 ) || ( phy.getNodes( "A/Brisbane/10/2010|2010-03" ).size() != 1 ) ) {
+            return note( file_name + " ten tips, named through the Translate table" );
+        }
+        if ( ( AptxUtil.deriveTimeAxisType( phy ) != Options.TIME_AXIS_TYPE.CALENDAR ) || !AptxUtil.isTimeTree( phy ) ) {
+            return note( file_name + " must open as a time tree on the Calendar axis" );
+        }
+        // the youngest tip, 26 Feb 2014, is day 57: its middle is 2014 + 56.5/365
+        if ( ( phy.getDescription() == null )
+                || !phy.getDescription().contains( "the sampling dates in 10 of 10 tip labels put height 0 at 2014.15479" ) ) {
+            return note( file_name + " provenance sentence, got: " + phy.getDescription() );
+        }
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            final TipDateExtractor.DateMatch m = TipDateExtractor.parse( tip.getName(),
+                                                                         TipDateExtractor.DayMonthOrder.DAY_FIRST );
+            final org.forester.phylogeny.data.Date d = tip.getNodeData().getDate();
+            if ( ( d == null ) || !"year".equals( d.getUnit() ) || ( d.getValue().doubleValue() < m.rangeStart() )
+                    || ( d.getValue().doubleValue() > m.rangeEnd() ) ) {
+                return note( file_name + " " + tip.getName() + " must read inside its labelled date, got " + d );
+            }
+        }
+        // BEAST counts a day from its start, a label date is read at its middle: allow that day at either end
+        final org.forester.phylogeny.data.Date march = phy.getNode( "A/Brisbane/10/2010|2010-03" ).getNodeData().getDate();
+        if ( ( march.getMin() == null ) || ( march.getMin().compareTo( march.getMax() ) >= 0 )
+                || ( march.getMin().doubleValue() < ( 2010 + ( 58.0 / 365 ) ) )
+                || ( march.getMax().doubleValue() > ( 2010 + ( 91.0 / 365 ) ) ) ) {
+            return note( file_name + " the month-dated tip's sampled date must span part of March 2010" );
+        }
+        if ( !AptxUtil.isHasSampledTipWithDateUncertainty( phy ) || AptxUtil.isHasFossilRanges( phy ) ) {
+            return note( file_name + " on calendar time a tip's interval is a sampling uncertainty, never a fossil range" );
+        }
+        final org.forester.phylogeny.data.Date root = phy.getRoot().getNodeData().getDate();
+        if ( ( Math.abs( root.getValue().doubleValue() - 2008.3 ) > 0.002 ) || ( root.getMin().doubleValue() >= 2008.3 )
+                || ( root.getMax().doubleValue() <= 2008.3 ) ) {
+            return note( file_name + " the root dates to 2008.3 with its HPD around it, got " + root.getValue() + " ["
+                    + root.getMin() + ", " + root.getMax() + "]" );
+        }
+        if ( phy.getNode( "A/Perth/16/2009|2009-07-04" ).getParent().getBranchData().getNumberOfConfidences() != 1 ) {
+            return note( file_name + " the posterior support is kept" );
         }
         return true;
     }

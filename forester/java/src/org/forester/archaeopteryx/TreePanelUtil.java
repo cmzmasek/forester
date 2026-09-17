@@ -2227,7 +2227,7 @@ public class TreePanelUtil {
     }
 
     // "tree named "x" with N tips", or "a tree with N tips" when the tree has no name
-    private static String provenanceTreePhrase( final String tree_name, final int num_ext_nodes ) {
+    static String provenanceTreePhrase( final String tree_name, final int num_ext_nodes ) {
         final String tips = num_ext_nodes + ( num_ext_nodes == 1 ? " tip" : " tips" );
         return ForesterUtil.isEmpty( tree_name ) ? ( "a tree with " + tips )
                 : ( "tree named \"" + tree_name + "\" with " + tips );

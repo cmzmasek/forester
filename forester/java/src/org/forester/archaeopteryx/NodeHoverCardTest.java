@@ -182,7 +182,17 @@ public final class NodeHoverCardTest {
                 && eq( "range only", "[5 - 8]", NodeHoverText.dateText( new Date( "", null, new BigDecimal( "5" ), new BigDecimal( "8" ), "" ) ) )
                 && eq( "desc only", "split", NodeHoverText.dateText( new Date( "split" ) ) )
                 && eq( "value+desc", "90 mya (split)", NodeHoverText.dateText( new Date( "split", new BigDecimal( "90" ), null, null, "mya" ) ) )
-                && eq( "nothing", "", NodeHoverText.dateText( new Date() ) );
+                && eq( "nothing", "", NodeHoverText.dateText( new Date() ) )
+                // float noise is not a range, on the hover card as on the canvas: TreeAnnotator writes an exactly
+                // dated tip as {h, h+1e-14}, and saying "[11.149999999999999 - 11.150000000000002]" claims an
+                // uncertainty the file does not state
+                && eq( "noise bounds",
+                       "11.15 year",
+                       NodeHoverText.dateText( new Date( "", new BigDecimal( "11.15" ), new BigDecimal( "11.15" ),
+                                                         new BigDecimal( "11.150000000000002" ), "year" ) ) )
+                && eq( "noise bounds, no value", "",
+                       NodeHoverText.dateText( new Date( "", null, new BigDecimal( "9.0" ),
+                                                         new BigDecimal( "9.000000000000004" ), "" ) ) );
     }
 
     private static Graphics2D scratch() {

@@ -789,6 +789,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Height date converter (BEAST heights -> calendar dates): ");
+        if (org.forester.archaeopteryx.HeightDateConverterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tip date tool (extract + apply + undo): ");
         if (org.forester.archaeopteryx.TipDateToolTest.test()) {
             System.out.println("OK.");
