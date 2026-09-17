@@ -97,8 +97,8 @@ public final class HeightDateConverterTest {
     private static boolean anchorsOnPrecisestTips() throws Exception {
         final Phylogeny p = ladder( new String[] { "NY_1_1994.1", "NY_2_1993.11", "NY_3_1997", "NY_4_2005.25" },
                                     new double[] { 11.15, 12.14, 8.25, 0 } );
-        final HeightDateConverter.Anchor a = HeightDateConverter.inferAnchor( p );
-        if ( ( a == null ) || ( a.present().compareTo( new BigDecimal( "2005.25" ) ) != 0 ) || ( a.agreeing() != 4 ) ) {
+        final LabelDateAnchor.Anchor a = HeightDateConverter.inferAnchor( p );
+        if ( ( a == null ) || ( a.value().compareTo( new BigDecimal( "2005.25" ) ) != 0 ) || ( a.agreeing() != 4 ) ) {
             return fail( "height 0 must be where the precisest labels put it (2005.25), got " + a );
         }
         HeightDateConverter.convertHeightsToDates( new Phylogeny[] { p } );
@@ -108,14 +108,31 @@ public final class HeightDateConverterTest {
         return true;
     }
 
-    /** The precisest tips say 2005.254 (median of 2005.25 and 2005.258), but a year-labelled tip allows nothing before
-     *  2005.255: height 0 is kept where every agreeing tip allows it. */
+    /**
+     * The tolerance decides AGREEMENT; it must not place the anchor. Two cases:
+     * <ul>
+     * <li>the agreeing tips DO state an overlapping date -- height 0 is kept inside what they actually say, even when
+     * the precise tips' median falls outside it;</li>
+     * <li>they agree only THANKS to the tolerance (no overlap at all) -- the precise median stands, rather than being
+     * pushed to an edge that no tip states. Three Nextstrain time trees were out by 4.2, 4.0 and 2.9 days against
+     * their own .nexus dates when the edge won; 0.5, 0.0 and 0.1 days once the median did.</li>
+     * </ul>
+     */
     private static boolean clampsAnchorIntoAgreement() throws Exception {
-        final Phylogeny p = ladder( new String[] { "p_1993.11", "q_2005.25", "r_1997", "s_1999" },
-                                    new double[] { 12.14, 0.008, 8.265, 6.0 } );
-        final HeightDateConverter.Anchor a = HeightDateConverter.inferAnchor( p );
-        if ( ( a == null ) || ( a.present().compareTo( new BigDecimal( "2005.255" ) ) != 0 ) ) {
-            return fail( "height 0 must be clamped into the stretch every agreeing tip allows (2005.255), got " + a );
+        // p1 and p2 are precise and nearly agree (2005.25, 2005.252 -> median 2005.251); the year-labelled tip states
+        // nothing before 2005.253, and all three overlap there
+        final Phylogeny overlapping = ladder( new String[] { "p1_1993.11", "p2_1993.13", "c_1997" },
+                                              new double[] { 12.14, 12.122, 8.253 } );
+        final LabelDateAnchor.Anchor clamped = HeightDateConverter.inferAnchor( overlapping );
+        if ( ( clamped == null ) || ( clamped.value().compareTo( new BigDecimal( "2005.253" ) ) != 0 ) ) {
+            return fail( "height 0 must be kept inside the dates the agreeing tips state (2005.253), got " + clamped );
+        }
+        // now no two of them overlap un-widened: they agree only within the tolerance, so the median stands
+        final Phylogeny tolerance_only = ladder( new String[] { "p_1993.11", "q_2005.25", "r_1997", "s_1999" },
+                                                 new double[] { 12.14, 0.008, 8.265, 6.0 } );
+        final LabelDateAnchor.Anchor median = HeightDateConverter.inferAnchor( tolerance_only );
+        if ( ( median == null ) || ( median.value().compareTo( new BigDecimal( "2005.254" ) ) != 0 ) ) {
+            return fail( "with no stated date in common the precise median stands (2005.254), got " + median );
         }
         return true;
     }
@@ -236,7 +253,7 @@ public final class HeightDateConverterTest {
                 names[ i ] = "t" + i + "_" + year;
                 h[ i ] = ( 2005 - year ) + ( ( i < wrong ) ? 3 : 0 ); // a wrong tip's label is 3 years off
             }
-            final HeightDateConverter.Anchor a = HeightDateConverter.inferAnchor( ladder( names, h ) );
+            final LabelDateAnchor.Anchor a = HeightDateConverter.inferAnchor( ladder( names, h ) );
             if ( ( wrong == 1 ) && ( ( a == null ) || ( a.agreeing() != 19 ) || ( a.compared() != 20 ) ) ) {
                 return fail( "19 of 20 tips agreeing must convert, got " + a );
             }
@@ -291,7 +308,7 @@ public final class HeightDateConverterTest {
 
     /** Two youngest tips at height exactly 0 (which NodeData.isHasDate reads as no date) must count. */
     private static boolean heightZeroCounts() throws Exception {
-        final HeightDateConverter.Anchor a = HeightDateConverter.inferAnchor( ladder( new String[] { "a_1996", "b_2005",
+        final LabelDateAnchor.Anchor a = HeightDateConverter.inferAnchor( ladder( new String[] { "a_1996", "b_2005",
                 "c_2005", "d_2000" }, new double[] { 9, 0, 0, 5 } ) );
         if ( ( a == null ) || ( a.compared() != 4 ) ) {
             return fail( "tips at height 0 are compared, got " + a );

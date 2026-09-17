@@ -1339,6 +1339,7 @@ public final class AptxUtil {
         if (phys != null) {
             applyInternalLabelPolicy(phys, nhx_or_nexus, confidence_policy);
             HeightDateConverter.convertHeightsToDates(phys);
+            BranchLengthDateConverter.dateTreesFromBranchLengths(phys);
             if (midpoint_reroot) {
                 for (final Phylogeny phy : phys) {
                     PhylogenyMethods.midpointRoot(phy);

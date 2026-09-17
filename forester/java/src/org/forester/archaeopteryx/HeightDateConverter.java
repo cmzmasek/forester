@@ -9,7 +9,6 @@
 package org.forester.archaeopteryx;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,12 +37,9 @@ import org.forester.util.ForesterUtil;
  * <li>no node's date carries a unit (a unit says what the numbers are; this never overrides one);</li>
  * <li>the tree is a time tree ({@link AptxUtil#isTimeTree}: its internal nodes are dated);</li>
  * <li>a strict majority of the tips carry both a height and a date in the label ({@link TipDateExtractor});</li>
- * <li>each such tip allows height 0 to lie anywhere in its label's calendar range plus its height, widened by
- * {@link #TOLERANCE_YEARS} on each side; the calendar date allowed by the most tips must be allowed by at least
- * {@link #MIN_AGREEING_NUM}/{@link #MIN_AGREEING_DEN} of them, and no separate stretch of dates may be allowed by as
- * many;</li>
- * <li>the agreeing tips must have been sampled at different times: two of their label ranges must not overlap. Tips
- * all from one year agree with heights in any unit, and so prove nothing.</li>
+ * <li>the tips agree on where height 0 is, by the shared rule in {@link LabelDateAnchor}: each offers its label's
+ * calendar range plus its height, at least 19 in 20 must allow one date, no rival stretch may be as well supported,
+ * and the agreeing tips must have been sampled at different times.</li>
  * </ol>
  * Height 0 is then the median of label date plus height over the most precisely dated agreeing tips, kept inside the
  * dates all of them allow, and each node's date is that minus its height (the older HPD bound becomes the earlier
@@ -57,19 +53,7 @@ import org.forester.util.ForesterUtil;
  */
 final class HeightDateConverter {
 
-    /** How far a tip's label date plus its height may miss, in years: covers the one-day differences between the
-     *  decimal-year conventions of different programs with room to spare, and is far below the gaps heights in months
-     *  or days open up. */
-    static final double TOLERANCE_YEARS  = 0.01;
-    /** At least this share (19/20) of the tips carrying a height and a label date must agree on height 0. */
-    static final int    MIN_AGREEING_NUM = 19;
-    static final int    MIN_AGREEING_DEN = 20;
-    static final String YEAR_UNIT        = "year";
-
-    /** The calendar date (decimal year) of height 0, how many of the compared tips agree on it, and how many tips were
-     *  compared (those with a height and a date in the label). */
-    record Anchor(BigDecimal present, int agreeing, int compared) {
-    }
+    static final String YEAR_UNIT = "year";
 
     /** Converts every tree of a load that qualifies, appending the provenance sentence to each converted tree's
      *  description. Returns the number of trees converted. Called by every load path, next to
@@ -80,11 +64,11 @@ final class HeightDateConverter {
         }
         int converted = 0;
         for( final Phylogeny phy : phys ) {
-            final Anchor anchor = inferAnchor( phy );
+            final LabelDateAnchor.Anchor anchor = inferAnchor( phy );
             if ( anchor == null ) {
                 continue;
             }
-            convert( phy, anchor.present() );
+            convert( phy, anchor.value() );
             final String prov = provenanceSentence( anchor, phy.getName(), phy.getNumberOfExternalNodes() );
             final String existing = phy.getDescription();
             phy.setDescription( ForesterUtil.isEmpty( existing ) ? prov : ( existing + " " + prov ) );
@@ -94,7 +78,7 @@ final class HeightDateConverter {
     }
 
     /** The calendar date of height 0 by the rule in the class comment, or null when the tree does not qualify. Pure. */
-    static Anchor inferAnchor( final Phylogeny phy ) {
+    static LabelDateAnchor.Anchor inferAnchor( final Phylogeny phy ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return null;
         }
@@ -108,7 +92,7 @@ final class HeightDateConverter {
             return null;
         }
         int tips = 0;
-        final List<double[]> ranges = new ArrayList<>(); // per compared tip: label start, end, height, label date
+        final List<LabelDateAnchor.TipOffer> offers = new ArrayList<>();
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode tip = it.next();
             tips++;
@@ -119,59 +103,12 @@ final class HeightDateConverter {
             }
             final DateMatch m = TipDateExtractor.parse( tip.getName(), DayMonthOrder.DAY_FIRST );
             if ( m != null ) {
-                ranges.add( new double[] { m.rangeStart(), m.rangeEnd(), d.getValue().doubleValue(),
-                        m.decimalYear() } );
+                // a height is time BEFORE the anchor, so the tip's label plus its height points at the anchor
+                offers.add( new LabelDateAnchor.TipOffer( m.rangeStart(), m.rangeEnd(), d.getValue().doubleValue(),
+                                                          m.decimalYear() ) );
             }
         }
-        final int compared = ranges.size();
-        if ( ( compared * 2 ) <= tips ) {
-            return null;
-        }
-        final double[] best = mostAllowedDates( ranges );
-        if ( best == null ) {
-            return null; // two separate stretches of dates are equally well supported
-        }
-        final double mid = ( best[ 0 ] + best[ 1 ] ) / 2;
-        final List<double[]> agreeing_tips = new ArrayList<>();
-        double latest_start = -Double.MAX_VALUE;
-        double earliest_end = Double.MAX_VALUE;
-        for( final double[] r : ranges ) {
-            if ( allows( r, mid ) ) {
-                agreeing_tips.add( r );
-                latest_start = Math.max( latest_start, r[ 0 ] );
-                earliest_end = Math.min( earliest_end, r[ 1 ] );
-            }
-        }
-        final int agreeing = agreeing_tips.size();
-        if ( ( agreeing * MIN_AGREEING_DEN ) < ( compared * MIN_AGREEING_NUM ) ) {
-            return null;
-        }
-        if ( latest_start <= earliest_end ) {
-            return null; // every agreeing label range overlaps every other: no two samples are known to differ in time
-        }
-        final double present = Math.max( best[ 0 ], Math.min( best[ 1 ], precisestMedian( agreeing_tips ) ) );
-        return new Anchor( rounded( BigDecimal.valueOf( present ) ), agreeing, compared );
-    }
-
-    /** Where the most precisely dated tips put height 0: the median of label date plus height over the tips whose
-     *  label range is at most twice as wide as the narrowest. The middle of the stretch all agreeing tips allow would
-     *  be pulled about by the coarse labels -- influenza.tree mixes {@code 1993.11} with {@code 1997} (meaning
-     *  1997.00), and that middle, 2005.2525, showed the tip labelled 1994.1 as 1994.1025. */
-    private static double precisestMedian( final List<double[]> tips ) {
-        double narrowest = Double.MAX_VALUE;
-        for( final double[] r : tips ) {
-            narrowest = Math.min( narrowest, r[ 1 ] - r[ 0 ] );
-        }
-        final List<Double> values = new ArrayList<>();
-        for( final double[] r : tips ) {
-            if ( ( r[ 1 ] - r[ 0 ] ) <= ( 2 * narrowest ) ) {
-                values.add( r[ 3 ] + r[ 2 ] );
-            }
-        }
-        values.sort( null );
-        final int n = values.size();
-        return ( ( n % 2 ) == 1 ) ? values.get( n / 2 )
-                : ( ( values.get( ( n / 2 ) - 1 ) + values.get( n / 2 ) ) / 2 );
+        return LabelDateAnchor.infer( offers, tips );
     }
 
     /** Rewrites every node date as {@code present - height}, the interval bounds swapped (the older bound is the
@@ -183,71 +120,24 @@ final class HeightDateConverter {
             if ( d == null ) {
                 continue;
             }
-            final BigDecimal value = ( d.getValue() == null ) ? null : rounded( present.subtract( d.getValue() ) );
-            final BigDecimal min = ( d.getMax() == null ) ? null : rounded( present.subtract( d.getMax() ) );
-            final BigDecimal max = ( d.getMin() == null ) ? null : rounded( present.subtract( d.getMin() ) );
+            final BigDecimal value = ( d.getValue() == null ) ? null
+                    : LabelDateAnchor.rounded( present.subtract( d.getValue() ) );
+            final BigDecimal min = ( d.getMax() == null ) ? null
+                    : LabelDateAnchor.rounded( present.subtract( d.getMax() ) );
+            final BigDecimal max = ( d.getMin() == null ) ? null
+                    : LabelDateAnchor.rounded( present.subtract( d.getMin() ) );
             n.getNodeData().setDate( new Date( d.getDesc(), value, min, max, ( value != null ) ? YEAR_UNIT : "" ) );
         }
     }
 
     /** e.g. <i>Converted the node heights of tree named "TREE1" with 190 tips to calendar dates: the sampling dates in
      *  190 of 190 tip labels put height 0 at 2005.5, so each date is 2005.5 minus the height.</i> */
-    static String provenanceSentence( final Anchor anchor, final String tree_name, final int num_ext_nodes ) {
-        final String present = anchor.present().toPlainString();
+    static String provenanceSentence( final LabelDateAnchor.Anchor anchor, final String tree_name,
+                                      final int num_ext_nodes ) {
+        final String present = anchor.value().toPlainString();
         return "Converted the node heights of " + TreePanelUtil.provenanceTreePhrase( tree_name, num_ext_nodes )
                 + " to calendar dates: the sampling dates in " + anchor.agreeing() + " of " + anchor.compared()
                 + " tip labels put height 0 at " + present + ", so each date is " + present + " minus the height.";
-    }
-
-    /** Whether a compared tip ({label start, label end, height, label date}) allows height 0 at calendar date
-     *  {@code x}. */
-    private static boolean allows( final double[] r, final double x ) {
-        return ( x >= ( ( r[ 0 ] + r[ 2 ] ) - TOLERANCE_YEARS ) ) && ( x <= ( r[ 1 ] + r[ 2 ] + TOLERANCE_YEARS ) );
-    }
-
-    /** The stretch of calendar dates allowed by the most tips, as {start, end}; null when a separate stretch is allowed
-     *  by as many. A sweep over the tips' allowed intervals, closed at both ends. */
-    private static double[] mostAllowedDates( final List<double[]> ranges ) {
-        final List<double[]> events = new ArrayList<>(); // {x, +1 start / -1 end}
-        for( final double[] r : ranges ) {
-            events.add( new double[] { ( r[ 0 ] + r[ 2 ] ) - TOLERANCE_YEARS, 1 } );
-            events.add( new double[] { r[ 1 ] + r[ 2 ] + TOLERANCE_YEARS, -1 } );
-        }
-        // starts before ends at the same x: intervals that touch overlap
-        events.sort( ( a, b ) -> ( a[ 0 ] != b[ 0 ] ) ? Double.compare( a[ 0 ], b[ 0 ] )
-                : Double.compare( b[ 1 ], a[ 1 ] ) );
-        int depth = 0;
-        int best = 0;
-        double start = 0;
-        double end = 0;
-        boolean open = false;
-        boolean tied = false;
-        for( final double[] e : events ) {
-            if ( e[ 1 ] > 0 ) {
-                depth++;
-                if ( depth > best ) {
-                    best = depth;
-                    start = e[ 0 ];
-                    open = true;
-                    tied = false;
-                }
-                else if ( ( depth == best ) && !open ) {
-                    tied = true;
-                }
-            }
-            else {
-                if ( open ) {
-                    end = e[ 0 ];
-                    open = false;
-                }
-                depth--;
-            }
-        }
-        return ( ( best == 0 ) || tied ) ? null : new double[] { start, end };
-    }
-
-    private static BigDecimal rounded( final BigDecimal x ) {
-        return new BigDecimal( x.setScale( 5, RoundingMode.HALF_UP ).stripTrailingZeros().toPlainString() );
     }
 
     private HeightDateConverter() {

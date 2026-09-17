@@ -797,6 +797,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Label date anchor (the shared rule): ");
+        if (org.forester.archaeopteryx.LabelDateAnchorTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Branch length date converter (Newick time trees): ");
+        if (org.forester.archaeopteryx.BranchLengthDateConverterTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tip date tool (extract + apply + undo): ");
         if (org.forester.archaeopteryx.TipDateToolTest.test()) {
             System.out.println("OK.");

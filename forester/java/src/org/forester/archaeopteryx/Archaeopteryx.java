@@ -110,6 +110,7 @@ public final class Archaeopteryx {
                                                        MainFrameApplication.optionsWithSavedPreferences()
                                                                .getConfidenceFromInternalLabels() );
                     HeightDateConverter.convertHeightsToDates( phylogenies );
+                    BranchLengthDateConverter.dateTreesFromBranchLengths( phylogenies );
                 }
             }
         }

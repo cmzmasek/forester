@@ -220,6 +220,8 @@ public final class DemoTreesTest {
         ok &= mrBayesConsensusOk( "mrbayes-consensus.con.tre" );
         // a TreeAnnotator MCC tree whose tip labels carry the sampling dates: its heights open as calendar dates
         ok &= beastTipDatesOk( "beast-tip-dates.nex" );
+        // a plain Newick time tree and its divergence twin: identical shape and labels, only the unit differs
+        ok &= newickTimeTreePairOk( "newick-time-tree.nwk", "newick-divergence-tree.nwk" );
 
         // ancestral-state pie charts: a discrete-trait posterior (beast:location_set + _set_prob) on the internal
         // nodes, so the pie feature has a trait with a parseable multi-state distribution
@@ -1432,6 +1434,45 @@ public final class DemoTreesTest {
         }
         if ( hp.getNodeData().getDate() != null ) {
             return note( file_name + " length_95%HPD is a branch-length interval, never a date" );
+        }
+        return true;
+    }
+
+    /** A pair that differs only in what its branch lengths MEAN: the time tree is dated from its tip labels and opens
+     *  on the Calendar axis, its divergence twin -- same topology, same labels, lengths in substitutions per site --
+     *  keeps no dates at all and stays re-rootable. */
+    private static boolean newickTimeTreePairOk( final String time_file, final String divergence_file ) {
+        final Phylogeny time = loadAsOpened( time_file );
+        final Phylogeny div = loadAsOpened( divergence_file );
+        if ( ( time == null ) || ( div == null ) ) {
+            return false;
+        }
+        if ( ( time.getNumberOfExternalNodes() != 8 ) || ( div.getNumberOfExternalNodes() != 8 ) ) {
+            return note( "both halves of the Newick pair have eight tips" );
+        }
+        if ( ( AptxUtil.deriveTimeAxisType( time ) != Options.TIME_AXIS_TYPE.CALENDAR ) || !AptxUtil.isTimeTree( time ) ) {
+            return note( time_file + " must open as a time tree on the Calendar axis" );
+        }
+        if ( ( time.getDescription() == null )
+                || !time.getDescription().contains( "the branch lengths are years, and the root is at 2018.8452" ) ) {
+            return note( time_file + " provenance sentence, got: " + time.getDescription() );
+        }
+        for( final PhylogenyNode tip : time.getExternalNodes() ) {
+            final TipDateExtractor.DateMatch m = TipDateExtractor.parse( tip.getName(),
+                                                                        TipDateExtractor.DayMonthOrder.DAY_FIRST );
+            final org.forester.phylogeny.data.Date d = tip.getNodeData().getDate();
+            if ( ( d == null ) || !"year".equals( d.getUnit() ) || ( d.getValue().doubleValue() < m.rangeStart() )
+                    || ( d.getValue().doubleValue() > m.rangeEnd() ) ) {
+                return note( time_file + " " + tip.getName() + " must be dated inside its labelled day, got " + d );
+            }
+        }
+        for( final Iterator<PhylogenyNode> it = div.iteratorPreorder(); it.hasNext(); ) {
+            if ( it.next().getNodeData().getDate() != null ) {
+                return note( divergence_file + " substitutions per site must not be read as time" );
+            }
+        }
+        if ( ( AptxUtil.deriveTimeAxisType( div ) != Options.TIME_AXIS_TYPE.NONE ) || AptxUtil.isTimeTree( div ) ) {
+            return note( divergence_file + " must stay a plain distance tree (and stay re-rootable)" );
         }
         return true;
     }

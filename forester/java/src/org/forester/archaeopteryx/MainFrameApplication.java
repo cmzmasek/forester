@@ -1252,6 +1252,7 @@ public final class MainFrameApplication extends MainFrame {
     private void afterPhylogeniesRead(final Phylogeny[] phys, final File file, final boolean nhx_or_nexus) {
         AptxUtil.applyInternalLabelPolicy(phys, nhx_or_nexus, getOptions().getConfidenceFromInternalLabels());
         HeightDateConverter.convertHeightsToDates(phys);
+        BranchLengthDateConverter.dateTreesFromBranchLengths(phys);
         boolean one_desc = false;
         if (nhx_or_nexus) {
             for (final Phylogeny phy : phys) {

@@ -122,6 +122,8 @@ public final class DemoTreeGenerator {
         writeText( dir, "treetime-tree.nwk", treeTimeNewick() );
         writeText( dir, "mrbayes-consensus.con.tre", mrBayesConsensus() );
         writeText( dir, "beast-tip-dates.nex", beastTipDatesNexus() );
+        writeText( dir, "newick-time-tree.nwk", newickTimeTree() );
+        writeText( dir, "newick-divergence-tree.nwk", newickDivergenceTree() );
         write( dir, "ancestral-pie-charts.xml", ancestralPieChartsTree() );
         write( dir, "tanglegram-tree-a.xml", tanglegramTreeA() );
         write( dir, "tanglegram-tree-b.xml", tanglegramTreeB() );
@@ -288,6 +290,65 @@ public final class DemoTreeGenerator {
         if ( !Double.isNaN( parent_date ) ) {
             sb.append( ':' ).append( plain( c.date() - parent_date ) );
         }
+    }
+
+    // ----- "Newick time tree": what TreeTime and Nextstrain export as a plain .nwk -- branch lengths in YEARS, no
+    //       dates anywhere, and the sampling date only in the tip name. Nothing in the file says the lengths are
+    //       years; the labels do, because every tip's date minus its distance from the root is the same root date.
+    //       Its divergence twin (newick-divergence-tree.nwk) is the same topology with the lengths in substitutions
+    //       per site, which must NOT be read as time -- open both.
+    private static final String[][] NEWICK_TIME_TIPS = { { "A/Peru/1552/2019", "2019-04-22" },
+            { "A/Chile/3821/2019", "2019-09-13" }, { "A/Brazil/7013/2020", "2020-02-06" },
+            { "A/Peru/2299/2020", "2020-07-19" }, { "A/Bolivia/1184/2021", "2021-01-28" },
+            { "A/Chile/5566/2021", "2021-06-11" }, { "A/Brazil/9902/2021", "2021-11-30" },
+            { "A/Peru/3145/2022", "2022-03-04" } };
+
+    private static String newickTimeTree() {
+        return newickFromTips( 1.0 ) + "\n";
+    }
+
+    /** The same topology and the same labels, with the lengths in substitutions per site: the divergence twin, which
+     *  must NOT be read as time. */
+    private static String newickDivergenceTree() {
+        return newickFromTips( 0.0012 ) + "\n";
+    }
+
+    /**
+     * The tips joined into a LADDER, each sitting at {@code (its sampling date - the root date) x scale} from the
+     * root: scale 1 gives years (a time tree), a small scale substitutions per site (its divergence twin, same
+     * topology, same labels). Each tip branches off the trunk at the date of the previously branching one, which is
+     * the shape a seasonal-flu or SARS-CoV-2 tree really has, and keeps every branch positive.
+     */
+    private static String newickFromTips( final double scale ) {
+        final double root = decimalYearFromStart( "2018-11-05" );
+        final int n = NEWICK_TIME_TIPS.length;
+        final double[] d = new double[ n ]; // each tip's distance from the root
+        for( int i = 0; i < n; ++i ) {
+            d[ i ] = ( decimalYearFromStart( NEWICK_TIME_TIPS[ i ][ 1 ] ) - root ) * scale;
+        }
+        // the trunk node where tip i branches off sits at the previous tip's distance (the root, 0, for the first)
+        final double[] t = new double[ n ];
+        for( int i = 1; i < n; ++i ) {
+            t[ i ] = d[ i - 1 ];
+        }
+        StringBuilder sb = new StringBuilder( "(" ).append( tip( n - 2, d[ n - 2 ] - t[ n - 2 ] ) ).append( ',' )
+                .append( tip( n - 1, d[ n - 1 ] - t[ n - 2 ] ) ).append( ')' );
+        for( int i = n - 3; i >= 0; --i ) {
+            sb = new StringBuilder( "(" ).append( tip( i, d[ i ] - t[ i ] ) ).append( ',' ).append( sb ).append( ':' )
+                    .append( plain( t[ i + 1 ] - t[ i ] ) ).append( ')' );
+        }
+        return sb.append( ';' ).toString();
+    }
+
+    /** {@code name|date:length} -- the sampling date is in the tip NAME, which is the whole point of these two. */
+    private static String tip( final int i, final double length ) {
+        return NEWICK_TIME_TIPS[ i ][ 0 ] + "|" + NEWICK_TIME_TIPS[ i ][ 1 ] + ":" + plain( length );
+    }
+
+    /** A date as a decimal year counting a day from its start -- what TreeTime and Auspice write. */
+    private static double decimalYearFromStart( final String iso ) {
+        final java.time.LocalDate d = java.time.LocalDate.parse( iso );
+        return d.getYear() + ( ( d.getDayOfYear() - 1.0 ) / d.lengthOfYear() );
     }
 
     /** A date as BEAST turns it into a decimal year: year + (day of year - 1) / days in year. */
