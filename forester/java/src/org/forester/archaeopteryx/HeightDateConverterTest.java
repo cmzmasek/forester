@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Year;
 
+import org.forester.archaeopteryx.tools.TipDateExtractor;
+import org.forester.archaeopteryx.tools.TipDateExtractor.DateMatch;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -259,6 +261,17 @@ public final class HeightDateConverterTest {
         names[ 19 ] = "y_2005-11-20";
         if ( HeightDateConverter.inferAnchor( ladder( names, h ) ) != null ) {
             return fail( "two separate, equally supported dates for height 0 must not convert" );
+        }
+        // THE YEARS MUST CYCLE, and this proves it rather than describing it: with only ONE of the two rival tips the
+        // same tree CONVERTS, so the pair is what refuses it above and no other rule is firing. Give all 18 tips one
+        // year instead and this line fails, because then their label ranges all overlap and the
+        // different-sampling-times rule refuses the tree for a reason that has nothing to do with the tie -- the test
+        // would stay green while pinning nothing. Archaeopteryx.js rebuilt this fixture from a description, hit
+        // exactly that, and concluded the tie was unreachable (2026-09-17).
+        final String[] one_rival = java.util.Arrays.copyOf( names, 19 );
+        final double[] one_rival_h = java.util.Arrays.copyOf( h, 19 );
+        if ( HeightDateConverter.inferAnchor( ladder( one_rival, one_rival_h ) ) == null ) {
+            return fail( "with one rival tip the tie fixture must convert, or the refusal above is not the tie" );
         }
         return true;
     }
