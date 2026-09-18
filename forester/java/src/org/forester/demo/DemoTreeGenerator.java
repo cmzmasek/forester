@@ -22,12 +22,17 @@ package org.forester.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import java.util.ArrayList;
 import java.util.List;
 import org.forester.phylogeny.data.Confidence;
@@ -111,6 +116,9 @@ public final class DemoTreeGenerator {
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
+        final Pangenome pangenome = pangenome(); // ONE simulation -> the tree and its table
+        write( dir, "pangenome-presence-absence.xml", pangenome._tree );
+        writeText( dir, "pangenome-presence-absence.tsv", pangenome._tsv );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
@@ -507,6 +515,280 @@ public final class DemoTreeGenerator {
                 + "isolate_10,mosquito,Brazil,1120,yes\n"
                 + "isolate_11,pig,Vietnam,505,no\n"
                 + "isolate_12,bat,China,1450,yes\n";
+    }
+
+    // ----- "Pangenome presence/absence": a REALISTIC stress case for the heat-map MATRIX -- 100 strains x 40 genes,
+    //       as a plain tree plus the annotation table a lab actually has. Each cell is an ORDINAL certainty 0..4
+    //       (evidence strength that the gene is present: 0 definitely absent .. 4 definitely present); a BLANK cell
+    //       is NOT ASSESSED, which is not the same as 0.
+    //
+    //       Built to teach something rather than to look plausible. A random matrix looks fine in a heat map and
+    //       tests nothing, so gene presence is simulated by GAIN/LOSS ON THE TREE and the 0..4 value is EMITTED from
+    //       that hidden presence. The 40 genes are deliberately heterogeneous because each class stresses a matrix
+    //       differently: core (everywhere), clade-specific (gained on one internal branch, so a real block), patchy
+    //       (HGT-like, little signal), rare (two or three strains) and ambiguous (a real pattern behind weak evidence,
+    //       so mostly mid-scale). About 4% of cells are unassessed, plus one draft genome missing most of its genes.
+    //
+    //       The table lists the genes GROUPED BY CLASS, not alphabetically: View > Clustergram lays the matrix out in
+    //       the table's own column order, so the classes read as horizontal bands. (The columns used to come out by
+    //       visualization score, which scattered the classes -- this demo is the case that exposed it.)
+    //
+    //       Deterministic: java.util.Random's algorithm is specified, and every draw walks a LIST, never a hash set --
+    //       the Python prototype of this generator drew a random number per element of a set and so produced
+    //       different data on every run. NOT the same bytes as the joint contract fixture in
+    //       test_data/pangenome_contract, which is pinned separately and must never be regenerated from this.
+    private static final long       PANGENOME_SEED     = 20260917L;
+    private static final int[]      PANGENOME_CLADES   = { 28, 22, 18, 14, 11, 7 }; // = 100 strains
+    private static final String[]   PANGENOME_GENERA   = { "Klebsiella", "Escherichia", "Enterobacter", "Citrobacter",
+            "Salmonella", "Serratia" };
+    private static final String[]   PANGENOME_SPECIES  = { "pneumoniae", "coli", "cloacae", "freundii", "enterica",
+            "marcescens" };
+    private static final String[]   PANGENOME_CORE     = { "rpoB", "gyrA", "dnaK", "recA", "groEL", "ftsZ", "atpD",
+            "infB" };
+    private static final String[]   PANGENOME_CLADE    = { "blaTEM", "blaCTX-M", "tetM", "vanA", "mecA", "aac6-Ib",
+            "sul1", "qnrS", "mcr-1", "ermB", "catA1", "dfrA17", "strA", "aadA1", "oqxAB" };
+    private static final String[]   PANGENOME_PATCHY   = { "intI1", "tnpA", "IS26", "traJ", "repA", "mobA", "virB4",
+            "tra8" };
+    private static final String[]   PANGENOME_RARE     = { "cbaABC", "pks_island", "clbB", "ybtS", "iroN" };
+    private static final String[]   PANGENOME_AMBIG    = { "hyp_0417", "hyp_1132", "divergent_ompK", "pseudo_fimH" };
+    /** Emission, P(certainty | hidden presence): rows are {value, probability}, each table summing to 1. */
+    private static final double[][] EMIT_PRESENT       = { { 4, 0.70 }, { 3, 0.20 }, { 2, 0.08 }, { 1, 0.02 } };
+    private static final double[][] EMIT_ABSENT        = { { 0, 0.75 }, { 1, 0.18 }, { 2, 0.06 }, { 3, 0.01 } };
+    /** The ambiguous genes: a real presence pattern seen through WEAK evidence, so they pile up mid-scale. */
+    private static final double[][] EMIT_PRESENT_WEAK  = { { 4, 0.10 }, { 3, 0.33 }, { 2, 0.42 }, { 1, 0.15 } };
+    private static final double[][] EMIT_ABSENT_WEAK   = { { 0, 0.30 }, { 1, 0.32 }, { 2, 0.30 }, { 3, 0.08 } };
+
+    /** The tree and its table come from ONE simulation, so they are built together and written separately. */
+    private static final class Pangenome {
+
+        final Phylogeny _tree;
+        final String    _tsv;
+
+        Pangenome( final Phylogeny tree, final String tsv ) {
+            _tree = tree;
+            _tsv = tsv;
+        }
+    }
+
+    private static Pangenome pangenome() {
+        final Random rnd = new Random( PANGENOME_SEED );
+        final List<String> names = pangenomeStrainNames();
+        final PhylogenyNode root = new PhylogenyNode();
+        int at = 0;
+        for( final int size : PANGENOME_CLADES ) {
+            final PhylogenyNode clade = yuleClade( names.subList( at, at + size ), rnd );
+            clade.setDistanceToParent( round6( uniform( rnd, 0.08, 0.16 ) ) ); // deep, well-separated stems
+            root.addAsChild( clade );
+            at += size;
+        }
+        final Phylogeny phy = tree( root, "Pangenome presence/absence (demo)",
+                                    "100 synthetic strains in six species-level clades, carrying NO per-tip data. "
+                                            + "Pair it with the companion pangenome-presence-absence.tsv: 40 genes, "
+                                            + "each cell an ordinal certainty 0..4 that the gene is present (0 "
+                                            + "definitely absent .. 4 definitely present), a blank cell NOT "
+                                            + "ASSESSED. File > Import Annotations, match the \"strain\" column "
+                                            + "against the tip name, then View > Clustergram." );
+        final List<PhylogenyNode> tips = phy.getExternalNodes();
+        final int n = tips.size();
+        final Map<String, Integer> tip_index = new HashMap<String, Integer>(); // lookups only, never iterated
+        for( int t = 0; t < n; ++t ) {
+            tip_index.put( tips.get( t ).getName(), t );
+        }
+        final List<PhylogenyNode> internals = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( !node.isExternal() ) {
+                internals.add( node );
+            }
+        }
+        // the HIDDEN truth, one row per gene, in the table's column order (grouped by class)
+        final List<String> genes = new ArrayList<String>();
+        final List<boolean[]> truth = new ArrayList<boolean[]>();
+        final List<Boolean> weak = new ArrayList<Boolean>();
+        for( final String g : PANGENOME_CORE ) { // everywhere, with the occasional real loss
+            final boolean[] p = new boolean[ n ];
+            for( int t = 0; t < n; ++t ) {
+                p[ t ] = rnd.nextDouble() >= 0.01;
+            }
+            genes.add( g );
+            truth.add( p );
+            weak.add( false );
+        }
+        for( final String g : PANGENOME_CLADE ) { // gained once on an internal branch, then lost here and there
+            final boolean[] p = new boolean[ n ];
+            for( final int t : tipIndices( pickClade( internals, 4, 45, rnd ), tip_index ) ) {
+                p[ t ] = rnd.nextDouble() >= 0.08;
+            }
+            for( int t = 0; t < n; ++t ) { // rare HGT out of the clade: a stray carrier worth drawing, kept LOW
+                if ( !p[ t ] && ( rnd.nextDouble() < 0.004 ) ) {
+                    p[ t ] = true;
+                }
+            }
+            genes.add( g );
+            truth.add( p );
+            weak.add( false );
+        }
+        for( final String g : PANGENOME_PATCHY ) { // HGT-like: high gain/loss, little phylogenetic signal
+            final double rate = uniform( rnd, 0.15, 0.45 );
+            final boolean[] p = new boolean[ n ];
+            for( int t = 0; t < n; ++t ) {
+                p[ t ] = rnd.nextDouble() < rate;
+            }
+            genes.add( g );
+            truth.add( p );
+            weak.add( false );
+        }
+        for( final String g : PANGENOME_RARE ) { // a recent gain in two or three strains
+            final boolean[] p = new boolean[ n ];
+            final PhylogenyNode small = pickClade( internals, 2, 3, rnd );
+            if ( small != null ) {
+                for( final int t : tipIndices( small, tip_index ) ) {
+                    p[ t ] = true;
+                }
+            }
+            else {
+                p[ rnd.nextInt( n ) ] = true;
+            }
+            genes.add( g );
+            truth.add( p );
+            weak.add( false );
+        }
+        for( final String g : PANGENOME_AMBIG ) { // a real clade pattern, but the evidence for it is WEAK
+            final boolean[] p = new boolean[ n ];
+            for( final int t : tipIndices( pickClade( internals, 8, 45, rnd ), tip_index ) ) {
+                p[ t ] = true;
+            }
+            genes.add( g );
+            truth.add( p );
+            weak.add( true );
+        }
+        // emit the OBSERVED certainty from the hidden truth; a blank cell is "not assessed", never a 0
+        final int draft = rnd.nextInt( n ); // one draft genome: most of its genes unassessed
+        // The draft's blanks are placed BY CONSTRUCTION -- exactly 60% of its cells -- not drawn at p = 0.60 per
+        // cell: drawn, this seed left it only 14 of 40 blank (a 1-in-800 outcome), and the promise above that it is
+        // "missing most of its genes" would have been false. A feature the README promises must hold by design,
+        // not by the luck of a seed.
+        final List<Integer> draft_order = new ArrayList<Integer>();
+        for( int g = 0; g < genes.size(); ++g ) {
+            draft_order.add( g );
+        }
+        Collections.shuffle( draft_order, rnd );
+        final boolean[] draft_blank = new boolean[ genes.size() ];
+        for( int k = 0; k < Math.round( 0.60 * genes.size() ); ++k ) {
+            draft_blank[ draft_order.get( k ) ] = true;
+        }
+        final StringBuilder sb = new StringBuilder( "strain" );
+        for( final String g : genes ) {
+            sb.append( '\t' ).append( g );
+        }
+        sb.append( '\n' );
+        for( int t = 0; t < n; ++t ) {
+            sb.append( tips.get( t ).getName() );
+            for( int g = 0; g < genes.size(); ++g ) {
+                final boolean present = truth.get( g )[ t ];
+                final double[][] emit = weak.get( g ) ? ( present ? EMIT_PRESENT_WEAK : EMIT_ABSENT_WEAK )
+                        : ( present ? EMIT_PRESENT : EMIT_ABSENT );
+                final int value = draw( emit, rnd );
+                // both draws are ALWAYS made, so the random stream does not depend on which cells go missing
+                final double r = rnd.nextDouble();
+                final boolean missing = ( t == draft ) ? draft_blank[ g ] : ( r < 0.04 );
+                sb.append( '\t' );
+                if ( !missing ) {
+                    sb.append( value );
+                }
+            }
+            sb.append( '\n' );
+        }
+        return new Pangenome( phy, sb.toString() );
+    }
+
+    /** Readable, deliberately VARIED-LENGTH strain names (8..21 chars) -- the label column is part of the test. */
+    private static List<String> pangenomeStrainNames() {
+        final List<String> names = new ArrayList<String>();
+        for( int c = 0; c < PANGENOME_CLADES.length; ++c ) {
+            final String genus = PANGENOME_GENERA[ c ];
+            final String sp = PANGENOME_SPECIES[ c ];
+            final String abbrev = genus.charAt( 0 ) + sp.substring( 0, 3 );
+            for( int i = 0; i < PANGENOME_CLADES[ c ]; ++i ) {
+                switch ( i % 3 ) {
+                    case 0:
+                        names.add( String.format( Locale.ROOT, "%s_ST%d_%02d", abbrev, 11 + ( 37 * c ), i + 1 ) );
+                        break;
+                    case 1:
+                        names.add( String.format( Locale.ROOT, "%s_%s_isolate_%03d", genus.substring( 0, 4 ),
+                                                  sp.substring( 0, 4 ), ( 100 * c ) + i + 1 ) );
+                        break;
+                    default:
+                        names.add( String.format( Locale.ROOT, "%s_%c%02d", abbrev, ( char ) ( 'A' + c ), i + 1 ) );
+                }
+            }
+        }
+        return names;
+    }
+
+    /** Grows a clade by repeatedly splitting a randomly chosen lineage (a Yule process), then names the tips. */
+    private static PhylogenyNode yuleClade( final List<String> tip_names, final Random rnd ) {
+        final PhylogenyNode clade_root = new PhylogenyNode();
+        final List<PhylogenyNode> lineages = new ArrayList<PhylogenyNode>();
+        lineages.add( clade_root );
+        while ( lineages.size() < tip_names.size() ) {
+            final PhylogenyNode parent = lineages.remove( rnd.nextInt( lineages.size() ) );
+            for( int k = 0; k < 2; ++k ) {
+                final PhylogenyNode child = new PhylogenyNode();
+                child.setDistanceToParent( round6( uniform( rnd, 0.003, 0.020 ) ) );
+                parent.addAsChild( child );
+                lineages.add( child );
+            }
+        }
+        Collections.shuffle( lineages, rnd ); // specified algorithm: deterministic for a given Random
+        for( int i = 0; i < lineages.size(); ++i ) {
+            lineages.get( i ).setName( tip_names.get( i ) );
+            lineages.get( i ).setDistanceToParent( round6( uniform( rnd, 0.004, 0.030 ) ) );
+        }
+        return clade_root;
+    }
+
+    /** A random internal node whose clade has {@code lo..hi} tips, or null if there is none. */
+    private static PhylogenyNode pickClade( final List<PhylogenyNode> internals, final int lo, final int hi,
+                                           final Random rnd ) {
+        final List<PhylogenyNode> candidates = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNode node : internals ) {
+            final int size = node.getAllExternalDescendants().size();
+            if ( ( size >= lo ) && ( size <= hi ) ) {
+                candidates.add( node );
+            }
+        }
+        return candidates.isEmpty() ? null : candidates.get( rnd.nextInt( candidates.size() ) );
+    }
+
+    private static List<Integer> tipIndices( final PhylogenyNode clade, final Map<String, Integer> tip_index ) {
+        final List<Integer> out = new ArrayList<Integer>();
+        if ( clade != null ) {
+            for( final PhylogenyNode tip : clade.getAllExternalDescendants() ) {
+                out.add( tip_index.get( tip.getName() ) );
+            }
+        }
+        return out;
+    }
+
+    private static int draw( final double[][] table, final Random rnd ) {
+        final double r = rnd.nextDouble();
+        double acc = 0.0;
+        for( final double[] row : table ) {
+            acc += row[ 1 ];
+            if ( r < acc ) {
+                return ( int ) row[ 0 ];
+            }
+        }
+        return ( int ) table[ table.length - 1 ][ 0 ];
+    }
+
+    private static double uniform( final Random rnd, final double lo, final double hi ) {
+        return lo + ( rnd.nextDouble() * ( hi - lo ) );
+    }
+
+    private static double round6( final double d ) {
+        return Math.round( d * 1.0e6 ) / 1.0e6;
     }
 
     // ----- "Import GTDB Taxonomy": a tree of Bacteria + Archaea genomes named ONLY by their assembly accession

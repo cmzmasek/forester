@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.forester.archaeopteryx.tools.NodeDataImporter;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -142,6 +143,29 @@ final class DemoTrees {
                                          new AnnotationColumns.ColumnSpec( "data:bacteroidetes", AnnotationColumns.Type.PIE ),
                                          new AnnotationColumns.ColumnSpec( "data:proteobacteria", AnnotationColumns.Type.PIE ) ) );
                                  refit( mf );
+                             } ) );
+        demos.add( new Demo( "Pangenome Presence/Absence (Clustergram)",
+                             "100 strains x 40 genes: a plain tree plus a table of gene-presence certainty (0..4, "
+                                     + "blank = not assessed), imported and laid out as a clustergram in the table's "
+                                     + "own column order -- so the gene classes read as bands.",
+                             mf -> {
+                                 // the lab's real workflow, not a pre-joined file: a PLAIN tree + the table, through
+                                 // the Import Annotations core (undo checkpoint + provenance), then View > Clustergram
+                                 final TreePanel tp = openTree( mf, "pangenome-presence-absence.xml" );
+                                 final NodeDataImporter.Table table = NodeDataImporter
+                                         .parseTable( loadText( "pangenome-presence-absence.tsv" ) );
+                                 final NodeDataImporter.ImportResult res = mf.importAnnotationsAndRefit(
+                                         tp.getPhylogeny(), table, table.defaultKeyColumn(),
+                                         NodeDataImporter.MatchBy.TIP_NAME, NodeDataImporter.ColumnPlan.importAll( table ),
+                                         "pangenome-presence-absence.tsv" );
+                                 if ( res.getTipsAnnotated() == 0 ) {
+                                     // fail LOUDLY, naming the cause: on a data-less tree the Clustergram preset
+                                     // would instead pop a modal "use File > Import Annotations" -- misleading for
+                                     // someone who clicked a demo, and a HANG, not a failure, in the gallery test
+                                     throw new IOException( "the bundled pangenome table matched no tip of the"
+                                             + " bundled tree" );
+                                 }
+                                 mf.applyClustergramPreset();
                              } ) );
         demos.add( new Demo( "Protein Domain Architectures",
                              "Multi-domain protein sequences drawn to scale at each tip (auto-enabled on load).",

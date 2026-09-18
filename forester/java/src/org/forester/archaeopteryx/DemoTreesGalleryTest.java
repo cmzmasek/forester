@@ -71,8 +71,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 24 ) {
-                return fail( "the demo catalog should have 24 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 25 ) {
+                return fail( "the demo catalog should have 25 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -255,6 +255,50 @@ public final class DemoTreesGalleryTest {
             }
             else if ( !tp.hasAnnotationColumns() || ( tp.getAnnotationColumnSpecs().size() != 4 ) ) {
                 fail( ok, "the properties-in-labels demo must render the other four fields as columns" );
+            }
+        }
+        else if ( label.startsWith( "Pangenome" ) ) {
+            // the demo walks the lab's real workflow -- plain tree + table -> Import -> Clustergram -- so each step's
+            // visible consequence is pinned: the 40 genes as a MATRIX in the TABLE's column order (classes as bands),
+            // a vertical clustergram, no auto-colour dragged in by 40 numeric fields, and an import that is a
+            // documented, undoable tree mutation (provenance + undo), exactly as the menu item would perform it
+            java.util.List<String> table_order = null;
+            try {
+                final String[] header = DemoTrees.loadText( "pangenome-presence-absence.tsv" ).split( "\n", 2 )[ 0 ]
+                        .split( "\t", -1 );
+                table_order = new java.util.ArrayList<String>();
+                for( int c = 1; c < header.length; ++c ) {
+                    table_order.add( "meta:" + header[ c ] );
+                }
+            }
+            catch ( final java.io.IOException e ) {
+                fail( ok, "the pangenome demo's table is not bundled: " + e.getMessage() );
+            }
+            final java.util.List<String> matrix = new java.util.ArrayList<String>();
+            if ( tp.getAnnotationColumnSpecs() != null ) {
+                for( final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs() ) {
+                    if ( s._type == AnnotationColumns.Type.MATRIX ) {
+                        matrix.add( s._ref );
+                    }
+                }
+            }
+            if ( ( table_order != null ) && ( ( table_order.size() != 40 ) || !matrix.equals( table_order ) ) ) {
+                fail( ok, "the pangenome demo must show all 40 genes as a MATRIX in the table's column order, got "
+                        + matrix.size() + " matrix columns: " + matrix );
+            }
+            else if ( !tp.isVerticalOrientation() ) {
+                fail( ok, "the pangenome demo must open as a vertical clustergram (View > Clustergram)" );
+            }
+            else if ( tp.getColorByPropertyRef() != null ) {
+                fail( ok, "the pangenome demo must not auto-colour by one gene, got Color by: "
+                        + tp.getColorByPropertyRef() );
+            }
+            else if ( ( tp.getPhylogeny().getDescription() == null ) || !tp.getPhylogeny().getDescription()
+                    .contains( "Imported annotations from table \"pangenome-presence-absence.tsv\"" ) ) {
+                fail( ok, "the pangenome demo's import must append its provenance sentence to the description" );
+            }
+            else if ( !tp.canUndo() ) {
+                fail( ok, "the pangenome demo's import must be undoable, as the real Import Annotations is" );
             }
         }
         else if ( label.startsWith( "Symbol Columns" ) ) {

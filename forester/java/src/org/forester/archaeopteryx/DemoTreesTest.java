@@ -171,6 +171,10 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "import-annotations.xml", 12 );
         ok &= csvJoinMatchesAllTips( "import-annotations.xml", "import-annotations.csv" );
 
+        // pangenome presence/absence: a PLAIN 100-strain tree + a 40-gene ordinal (0..4) table with blank cells;
+        // imported and shown with View > Clustergram, the matrix must lay out in the TABLE's column order
+        ok &= pangenomeDemoOk( "pangenome-presence-absence.xml", "pangenome-presence-absence.tsv" );
+
         // import GTDB taxonomy: accession-named genome tree + a GTDB-Tk table whose classifications must apply to
         // EVERY tip, giving gtdb:<rank> properties + a species taxonomy
         ok &= hasAtLeastTips( "gtdb-genomes.xml", 14 );
@@ -934,6 +938,144 @@ public final class DemoTreesTest {
         }
         catch ( final Exception e ) {
             return note( csv_file + " could not be read/joined: " + e.getMessage() );
+        }
+    }
+
+    /**
+     * The pangenome presence/absence demo keeps every promise its README row makes. Each is asserted here so none can
+     * quietly become false -- the generator's first draft promised a draft genome "missing most of its genes" that
+     * its seed had left only 35% blank, and nothing would have said so:
+     * <ol>
+     * <li>the tree is PLAIN (100 tips, no node carries a property), so the import is what adds the data;</li>
+     * <li>the table's key column is the one the import dialog preselects, and it joins onto every tip, 40 genes;</li>
+     * <li>every cell is an ordinal 0..4 or blank, all five values occur, and a blank stays UNFILLED after the join;</li>
+     * <li>exactly one strain is a draft genome with at least half of its genes unassessed;</li>
+     * <li>the core genes (the table's first 8 columns) are mostly 4, so the core band is actually visible;</li>
+     * <li>View &gt; Clustergram lays the 40 columns out in the TABLE's order -- and that order differs from the
+     * candidate ranking, so the demo shows the difference rather than coinciding with it.</li>
+     * </ol>
+     */
+    private static boolean pangenomeDemoOk( final String tree_file, final String tsv_file ) {
+        final Phylogeny phy = load( tree_file );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() != 100 ) {
+            return note( tree_file + " should have 100 strains, got " + phy.getNumberOfExternalNodes() );
+        }
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( ( n.getNodeData().getProperties() != null ) && ( n.getNodeData().getProperties().size() > 0 ) ) {
+                return note( tree_file + " must be a PLAIN tree -- node " + n.getName() + " carries properties, so the"
+                        + " import would not be what adds the data" );
+            }
+        }
+        final File tsv = new File( DEMO_DIR + tsv_file );
+        if ( !tsv.exists() ) {
+            return note( tsv_file + " is missing from the demo gallery (" + tsv.getAbsolutePath() + ")" );
+        }
+        try {
+            final java.util.List<String> lines = java.nio.file.Files.readAllLines( tsv.toPath() );
+            final String[] header = lines.get( 0 ).split( "\t", -1 );
+            if ( header.length != 41 ) {
+                return note( tsv_file + " should have a key column + 40 genes, got " + header.length + " columns" );
+            }
+            int blanks = 0;
+            int drafts = 0;
+            final boolean[] seen = new boolean[ 5 ];
+            final int[] core_fours = new int[ 8 ];
+            final int[] core_assessed = new int[ 8 ];
+            for( int r = 1; r < lines.size(); ++r ) {
+                final String[] cells = lines.get( r ).split( "\t", -1 );
+                if ( cells.length != header.length ) {
+                    return note( tsv_file + " row " + r + " has " + cells.length + " cells, not " + header.length );
+                }
+                int row_blanks = 0;
+                for( int c = 1; c < cells.length; ++c ) {
+                    if ( cells[ c ].isEmpty() ) {
+                        ++row_blanks;
+                        continue;
+                    }
+                    final int v;
+                    try {
+                        v = Integer.parseInt( cells[ c ] );
+                    }
+                    catch ( final NumberFormatException e ) {
+                        return note( tsv_file + " row " + r + ": \"" + cells[ c ] + "\" is not an ordinal 0..4" );
+                    }
+                    if ( ( v < 0 ) || ( v > 4 ) ) {
+                        return note( tsv_file + " row " + r + ": " + v + " is outside the ordinal scale 0..4" );
+                    }
+                    seen[ v ] = true;
+                    if ( c <= 8 ) {
+                        ++core_assessed[ c - 1 ];
+                        if ( v == 4 ) {
+                            ++core_fours[ c - 1 ];
+                        }
+                    }
+                }
+                blanks += row_blanks;
+                if ( ( row_blanks * 2 ) >= 40 ) {
+                    ++drafts;
+                }
+            }
+            for( int v = 0; v <= 4; ++v ) {
+                if ( !seen[ v ] ) {
+                    return note( tsv_file + " never uses certainty " + v + " -- the demo must span the whole scale" );
+                }
+            }
+            if ( drafts != 1 ) {
+                return note( tsv_file + " should have exactly ONE draft genome with at least half its genes"
+                        + " unassessed, got " + drafts );
+            }
+            for( int c = 0; c < 8; ++c ) {
+                if ( ( core_fours[ c ] * 2 ) <= core_assessed[ c ] ) {
+                    return note( "core gene " + header[ c + 1 ] + " should be mostly 4 (the visible core band), got "
+                            + core_fours[ c ] + " of " + core_assessed[ c ] );
+                }
+            }
+            // the import, as the dialog would run it
+            final NodeDataImporter.Table table = NodeDataImporter.parseTable( String.join( "\n", lines ) + "\n" );
+            final int key = table.defaultKeyColumn();
+            if ( ( key != 0 ) || !"strain".equals( table.getHeaders()[ key ] ) ) {
+                return note( tsv_file + ": the import dialog should preselect \"strain\" as the key, got column " + key );
+            }
+            final NodeDataImporter.ImportResult res = NodeDataImporter.apply( phy, table, key,
+                                                                               NodeDataImporter.MatchBy.TIP_NAME );
+            if ( ( res.getTipsAnnotated() != 100 ) || ( res.getRowsMatched() != 100 )
+                    || ( res.getPropertyColumns().size() != 40 ) ) {
+                return note( tsv_file + " should join onto all 100 strains with 40 genes, got " + res.getTipsAnnotated()
+                        + " tips, " + res.getRowsMatched() + " rows, " + res.getPropertyColumns().size() + " columns" );
+            }
+            int props = 0;
+            for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+                props += tip.getNodeData().getProperties().size();
+            }
+            if ( props != ( 4000 - blanks ) ) {
+                return note( "a blank cell must stay UNFILLED, not become a 0: expected " + ( 4000 - blanks )
+                        + " properties after the join, got " + props );
+            }
+            // View > Clustergram: the table's own column order, which is NOT the candidate ranking
+            final java.util.List<String> table_order = new java.util.ArrayList<String>();
+            for( int c = 1; c < header.length; ++c ) {
+                table_order.add( "meta:" + header[ c ] );
+            }
+            final java.util.List<String> matrix = new java.util.ArrayList<String>();
+            for( final AnnotationColumns.ColumnSpec s : MainFrame.clustergramColumnSpecs( phy ) ) {
+                if ( s._type == AnnotationColumns.Type.MATRIX ) {
+                    matrix.add( s._ref );
+                }
+            }
+            if ( !matrix.equals( table_order ) ) {
+                return note( "View > Clustergram should lay the matrix out in the table's column order; got " + matrix );
+            }
+            if ( PropertyColorScheme.colorableRefs( phy ).equals( table_order ) ) {
+                return note( "the candidate ranking equals the table order, so this demo cannot show the difference" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return note( tsv_file + " could not be read/joined: " + e );
         }
     }
 
