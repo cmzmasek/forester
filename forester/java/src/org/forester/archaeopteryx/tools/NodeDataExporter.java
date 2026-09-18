@@ -350,12 +350,36 @@ public final class NodeDataExporter {
         return refs;
     }
 
+    /** The separator for a ref a node carries more than once. Joint with Archaeopteryx.js, whose spelling this is. */
+    private static final String MULTI_VALUE_SEPARATOR = "; ";
+
+    /**
+     * Every value this node holds for {@code ref}, in document order, joined by {@link #MULTI_VALUE_SEPARATOR}.
+     * <p>
+     * A ref may legitimately repeat on one node, and this used to return {@code get(0)} -- the first value, the
+     * rest dropped without a word. A column claiming to carry what the node holds must not quietly carry less: a
+     * PRESENTATION site (a colour, a label, a glyph) renders one thing and may choose one value, but a
+     * SERIALIZATION site may not. Archaeopteryx.js wrote the identical bug independently in its own node-data
+     * table, from the same cause -- {@code getPropertiesWithGivenRef} returns a List but reads at the call site as
+     * though a ref had one value -- and fixed it first; the desktop follows their spelling here so the two
+     * programs write the same table. One column per ref either way, so the column set never varies with the data.
+     */
     private static String propertyValue( final PhylogenyNode n, final String ref ) {
         if ( n.getNodeData().getProperties() == null ) {
             return "";
         }
         final List<Property> ps = n.getNodeData().getProperties().getPropertiesWithGivenRef( ref );
-        return ( ( ps != null ) && !ps.isEmpty() ) ? ps.get( 0 ).getValue() : "";
+        if ( ( ps == null ) || ps.isEmpty() ) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder();
+        for( final Property p : ps ) {
+            if ( sb.length() > 0 ) {
+                sb.append( MULTI_VALUE_SEPARATOR );
+            }
+            sb.append( p.getValue() );
+        }
+        return sb.toString();
     }
 
     /** Tabs / newlines in a value would break the TSV; collapse them to spaces. */

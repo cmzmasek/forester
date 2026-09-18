@@ -131,6 +131,35 @@ public final class NodeDataExporterTest {
                 }
             }
 
+            // ---- a ref a node carries MORE THAN ONCE: every value, document order, "; " joined ----
+            // This used to export get(0) and drop the rest silently. A column claiming to carry what the node holds
+            // must not carry less. The separator and the order are joint with Archaeopteryx.js (their spelling).
+            final Phylogeny multi_phy = multiValueTree();
+            final String[] mlines = NodeDataExporter.toNodeDataTsv( multi_phy ).split( "\\R" );
+            final List<String> mheader = Arrays.asList( mlines[ 0 ].split( "\t", -1 ) );
+            // ONE column per ref, never a second column for the repeat -- the column set must not vary with data
+            int seen = 0;
+            for( final String col : mheader ) {
+                if ( "data:note".equals( col ) ) {
+                    ++seen;
+                }
+            }
+            if ( seen != 1 ) {
+                return fail( "a repeated ref must stay ONE column, got " + seen + ": " + mheader );
+            }
+            final int note_col = mheader.indexOf( "data:note" );
+            final String multi_cell = mlines[ 1 ].split( "\t", -1 )[ note_col ];
+            if ( !"zeta; alpha; mu".equals( multi_cell ) ) {
+                return fail( "a repeated ref must export every value in document order joined by \"; \", got ["
+                        + multi_cell + "]" );
+            }
+            // the neighbouring case: a ref carried ONCE must be untouched -- no separator, no trailing join
+            final int host_col = mheader.indexOf( "data:host" );
+            final String single_cell = mlines[ 1 ].split( "\t", -1 )[ host_col ];
+            if ( !"bat".equals( single_cell ) ) {
+                return fail( "a single-valued ref must export unchanged, got [" + single_cell + "]" );
+            }
+
             // ---- export scope: tip-list overloads + selected-tip resolution (external only, no expansion) ----
             final List<PhylogenyNode> ext = phy.getExternalNodes();
             // a single-tip subset yields only that tip
@@ -251,6 +280,32 @@ public final class NodeDataExporterTest {
     }
 
     /** Same nodes (by identity) in the same order. */
+    /**
+     * One tip carrying {@code data:note} three times. The values are {@code zeta, alpha, mu} in THAT order, chosen
+     * so document order and alphabetical order differ -- with "first, second, third" the two coincide and the
+     * assertion could not tell a sort from the source's order. A single-valued {@code data:host} is the
+     * neighbouring case.
+     */
+    private static Phylogeny multiValueTree() {
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        final PhylogenyNode tip = new PhylogenyNode();
+        tip.setName( "tip_1" );
+        final PropertiesList pl = new PropertiesList();
+        pl.addProperty( new Property( "data:note", "zeta", "", "xsd:string", AppliesTo.NODE ) );
+        pl.addProperty( new Property( "data:host", "bat", "", "xsd:string", AppliesTo.NODE ) );
+        pl.addProperty( new Property( "data:note", "alpha", "", "xsd:string", AppliesTo.NODE ) );
+        pl.addProperty( new Property( "data:note", "mu", "", "xsd:string", AppliesTo.NODE ) );
+        tip.getNodeData().setProperties( pl );
+        root.addAsChild( tip );
+        final PhylogenyNode tip2 = new PhylogenyNode();
+        tip2.setName( "tip_2" );
+        root.addAsChild( tip2 );
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
     private static boolean sameOrder( final List<PhylogenyNode> a, final List<PhylogenyNode> b ) {
         if ( a.size() != b.size() ) {
             return false;
