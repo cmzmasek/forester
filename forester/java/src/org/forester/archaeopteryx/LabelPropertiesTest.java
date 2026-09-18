@@ -43,7 +43,9 @@ import org.forester.phylogeny.data.Property.AppliesTo;
  * The behaviour under test is a deliberate replacement of the old one, which appended EVERY property to the label
  * as "{@code <full ref>: <value>}", newline-joined into a string drawn as a single line -- so a ten-property tree
  * got an unreadable label with embedded newlines, in backwards ref order. The assertions below pin each of those
- * four things (values only, comma-joined, one line, ascending order) so none of them can quietly come back.
+ * four things (values only, comma-joined, one line, and the property list's own order) so none of them can quietly
+ * come back. That order is the SOURCE's order; the list itself is pinned by
+ * {@link org.forester.phylogeny.data.PropertiesListTest}.
  */
 public final class LabelPropertiesTest {
 
@@ -54,7 +56,7 @@ public final class LabelPropertiesTest {
     }
 
     public static boolean test() {
-        return testLabelText() && testPropertyListOrder() && testFieldInventory() && testFieldRoles()
+        return testLabelText() && testFieldInventory() && testFieldRoles()
                 && testLabelSpecIsNotAColumn() && testFieldReorder() && testLabelInTreePanel();
     }
 
@@ -73,10 +75,12 @@ public final class LabelPropertiesTest {
         props.addProperty( new Property( "data:spaces", "   ", "", "xsd:string", AppliesTo.NODE ) );
         props.addProperty( new Property( "aptx:import_profile", "v1;/data/x.csv", "", "xsd:string", AppliesTo.NODE ) );
         props.addProperty( new Property( "style:node_color", "0x112233", "", "xsd:string", AppliesTo.PHYLOGENY ) );
-        // default (no explicit selection): every user-visible property, values only, ascending ref order, one line
+        // default (no explicit selection): every user-visible property, values only, one line, in the list's own
+        // order -- which is the order they were added above (host, country, reads), NOT alphabetical by ref
         final String all = TreePanelUtil.labelPropertiesText( props, null );
-        if ( !"Brazil, cat, 42 kb".equals( all ) ) {
-            return fail( "default label text should be \"Brazil, cat, 42 kb\", got [" + all + "]" );
+        if ( !"cat, Brazil, 42 kb".equals( all ) ) {
+            return fail( "default label text should follow the property list's own (source) order,"
+                    + " expected \"cat, Brazil, 42 kb\", got [" + all + "]" );
         }
         if ( all.indexOf( '\n' ) >= 0 ) {
             return fail( "the label is drawn as ONE line -- it must never contain a newline: [" + all + "]" );
@@ -87,7 +91,7 @@ public final class LabelPropertiesTest {
         if ( all.contains( "v1;" ) || all.contains( "0x112233" ) ) {
             return fail( "internal aptx:/style: metadata must never reach the label: [" + all + "]" );
         }
-        // an explicit selection picks the fields AND their order (the reverse of the ref-sorted order, to prove
+        // an explicit selection picks the fields AND their order (deliberately NOT the list's own order, to prove
         // the chosen order wins rather than coinciding with it)
         final String chosen = TreePanelUtil.labelPropertiesText( props, Arrays.asList( "data:reads", "data:host" ) );
         if ( !"42 kb, cat".equals( chosen ) ) {
@@ -128,17 +132,8 @@ public final class LabelPropertiesTest {
         return true;
     }
 
-    // ---- the property list sorts ASCENDING by ref ---------------------------------------------------------------
-    private static boolean testPropertyListOrder() {
-        final PropertiesList props = new PropertiesList();
-        props.addProperty( new Property( "data:zebra", "z", "", "xsd:string", AppliesTo.NODE ) );
-        props.addProperty( new Property( "data:aardvark", "a", "", "xsd:string", AppliesTo.NODE ) );
-        if ( !"data:aardvark".equals( props.getProperties().get( 0 ).getRef() ) ) {
-            return fail( "properties must sort ASCENDING by ref (the comparator's arguments used to be swapped), got "
-                    + props.getProperties().get( 0 ).getRef() + " first" );
-        }
-        return true;
-    }
+    // The property list's own ordering contract lives with the class it belongs to, in
+    // org.forester.phylogeny.data.PropertiesListTest -- one source, so a second copy here cannot disagree with it.
 
     // ---- the chooser's field inventory is BROADER than the colorable refs ----------------------------------------
     private static boolean testFieldInventory() {

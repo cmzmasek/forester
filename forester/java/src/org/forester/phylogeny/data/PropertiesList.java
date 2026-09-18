@@ -23,26 +23,28 @@ package org.forester.phylogeny.data;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.forester.util.ForesterUtil;
 
 public class PropertiesList implements PhylogenyData {
 
+    // INSERTION ORDER is the contract: a node's properties stay in the order they were added, which for every
+    // parser and importer is the order the SOURCE states -- the phyloXML document, the imported table's columns,
+    // the NHX/JSON token order.
+    //
+    // This list used to re-sort itself by ref on every add. That alphabetized a node's properties on read and wrote
+    // them back out alphabetized, so opening a phyloXML whose properties are grouped meaningfully (a gene
+    // presence/absence matrix ordered core / accessory / mobile, say) and saving it silently rewrote the author's
+    // column order -- and it disagreed with Archaeopteryx.js, whose reader and writer both preserve document order.
+    // Order is data; it is kept. (The sort itself long predates the intent documented for it: it arrived in 0.9.6
+    // beta with its comparator arguments swapped, sorting DESCENDING unnoticed for years, and 0.11.111 only
+    // corrected the direction.)
+    //
+    // Nothing downstream needs alphabetical order: every surface that wants one sorts for itself -- the Annotation
+    // Fields inventory and Tree Facts by display name, the Color-by candidates by PropertyColorScheme.VIS_ORDER --
+    // and every other consumer looks a property up by ref.
     private final List<Property> _properties;
-    // Sorted by ref so a node's properties display (and are written) in a stable, predictable order. Ascending:
-    // the arguments used to be swapped, which sorted them backwards -- "z_field" before "a_field" -- in the tip
-    // label, the rollover popup, the node panel and the phyloXML output alike. The sort is stable, so several
-    // properties sharing one ref keep the order they were added in.
-    private final Comparator<Property> comp = new Comparator<Property>() {
-
-        @Override
-        public int compare(final Property p1, final Property p2) {
-            return p1.getRef().compareTo(p2.getRef());
-        }
-    };
 
     public PropertiesList() {
         _properties = new ArrayList<Property>();
@@ -52,9 +54,9 @@ public class PropertiesList implements PhylogenyData {
         return _properties.size();
     }
 
+    /** Appends a property, keeping insertion (source) order; several properties may share one ref. */
     public void addProperty(final Property property) throws IllegalArgumentException {
         _properties.add(property);
-        Collections.sort(_properties, comp);
     }
 
     @Override

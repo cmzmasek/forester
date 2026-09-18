@@ -1932,8 +1932,9 @@ public class TreePanelUtil {
      * The node's properties as ONE-LINE tip-label text: values only (no {@code ref:} prefix), comma-joined.
      * <p>
      * {@code refs_in_order} selects and ORDERS the fields; a ref the node does not carry is simply skipped. Pass
-     * {@code null} for the default -- every user-visible property, in the property list's own (ref-sorted) order,
-     * which is what the rollover popup and the node panel show too. Internal {@code aptx:*} / {@code style:*}
+     * {@code null} for the default -- every user-visible property, in the property list's own order, which is the
+     * order the SOURCE stated it (see {@link org.forester.phylogeny.data.PropertiesList}), and which is what the
+     * rollover popup and the node panel show too. Internal {@code aptx:*} / {@code style:*}
      * metadata and empty values never appear. A property's unit, if it has one, follows its value.
      */
     static String labelPropertiesText( final PropertiesList props, final List<String> refs_in_order ) {
