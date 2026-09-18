@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -2024,6 +2025,43 @@ public class TreePanelUtil {
             final int c = PropertyColorScheme.displayName( a ).compareToIgnoreCase( PropertyColorScheme.displayName( b ) );
             return ( c != 0 ) ? c : a.compareTo( b );
         } );
+        return refs;
+    }
+
+    /**
+     * Every user-visible property ref of the tree in SOURCE order -- first appearance in a preorder walk, which for
+     * a parsed file or an imported table is the order that source states its columns in (kept end to end since
+     * {@link org.forester.phylogeny.data.PropertiesList} stopped alphabetizing).
+     * <p>
+     * This is LAYOUT order, and it is deliberately distinct from the two neighbours it must never be confused with.
+     * {@link #userVisiblePropertyRefs} sorts by display name because a CHOOSER wants findability. {@code
+     * PropertyColorScheme.VIS_ORDER} ranks Color-by CANDIDATES by tier and score. An annotation matrix's column
+     * order instead carries the author's grouping -- a gene presence/absence matrix ordered core / accessory /
+     * mobile says something that alphabetizing or score-ranking destroys -- so it follows the source and nothing
+     * else.
+     * <p>
+     * Layout order and candidate order therefore stop coinciding here, which is the point: nothing may read one as
+     * the other. (Joint note with Archaeopteryx.js: their candidate order is unaffected by this, so a reader
+     * comparing the two programs must compare candidate order with candidate order, never with column layout.)
+     */
+    static List<String> propertyRefsInSourceOrder( final Phylogeny phy ) {
+        final List<String> refs = new ArrayList<String>();
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return refs;
+        }
+        final Set<String> seen = new HashSet<String>();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( ( n.getNodeData() == null ) || ( n.getNodeData().getProperties() == null ) ) {
+                continue;
+            }
+            for( final Property p : n.getNodeData().getProperties().getProperties() ) {
+                if ( !isInternalPropertyRef( p.getRef() ) && !isVisualStylePropertyRef( p.getRef() )
+                        && seen.add( p.getRef() ) ) {
+                    refs.add( p.getRef() );
+                }
+            }
+        }
         return refs;
     }
 

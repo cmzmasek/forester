@@ -4113,16 +4113,45 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static java.util.List<AnnotationColumns.ColumnSpec> clustergramColumnSpecs(final Phylogeny phy) {
         final java.util.List<String> colorable = PropertyColorScheme.colorableRefs(phy); // scan the tree ONCE
         final java.util.List<String> numeric = PropertyColorScheme.numericRefs(phy, colorable);
+        // Columns lay out in the SOURCE's own order, NOT in the order the two ref lists arrive in. Those come from
+        // colorableRefs, which ranks Color-by CANDIDATES by tier and score (PropertyColorScheme.VIS_ORDER) -- for a
+        // 40-gene presence/absence matrix that lays the columns out by an invisible "interestingness" score, which
+        // scatters the author's grouping and is not an order a reader can predict or control. The file's (or the
+        // imported table's) own column order is the one thing the person preparing the data does control.
+        // See TreePanelUtil.propertyRefsInSourceOrder: layout order and candidate order deliberately differ here.
+        final java.util.List<String> source_order = TreePanelUtil.propertyRefsInSourceOrder(phy);
         final java.util.List<AnnotationColumns.ColumnSpec> specs = new java.util.ArrayList<>();
-        for (final String ref : numeric) {
+        for (final String ref : inSourceOrder(numeric, source_order)) {
             specs.add(new AnnotationColumns.ColumnSpec(ref, AnnotationColumns.Type.MATRIX));
         }
-        for (final String ref : colorable) {
+        for (final String ref : inSourceOrder(colorable, source_order)) {
             if (!numeric.contains(ref)) {
                 specs.add(new AnnotationColumns.ColumnSpec(ref, AnnotationColumns.Type.COLOR_STRIP));
             }
         }
         return specs;
+    }
+
+    /**
+     * {@code refs} re-ordered to follow {@code source_order}. A ref the source order does not name keeps its
+     * incoming relative order and goes at the end -- it cannot be placed, so it must not be dropped. That is not
+     * hypothetical: an ELEMENT SLOT candidate (taxonomy, sequence, ...) is a colorable field that is not a node
+     * property at all, so it never appears in the source order.
+     */
+    private static java.util.List<String> inSourceOrder(final java.util.List<String> refs,
+                                                       final java.util.List<String> source_order) {
+        final java.util.List<String> out = new java.util.ArrayList<>();
+        for (final String ref : source_order) {
+            if (refs.contains(ref)) {
+                out.add(ref);
+            }
+        }
+        for (final String ref : refs) {
+            if (!out.contains(ref)) {
+                out.add(ref);
+            }
+        }
+        return out;
     }
 
     /** The user's choices from the import config dialog: which table (a given delimiter), key column, match attribute, and column plan. */

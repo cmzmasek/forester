@@ -50,7 +50,7 @@ public final class ClustergramPresetTest {
     }
 
     public static boolean test() {
-        if ( !columnSpecsOk() ) {
+        if ( !columnSpecsOk() || !sourceOrderOk() ) {
             return false; // pure, headless-safe
         }
         if ( GraphicsEnvironment.isHeadless() ) {
@@ -178,6 +178,90 @@ public final class ClustergramPresetTest {
 
     /** Four tips with a numeric field (data:score) and a categorical one (data:host); host repeats (2 of 4 distinct)
      *  so it is color-able (a per-tip-unique categorical is intentionally excluded by colorableRefs). */
+    /**
+     * Columns lay out in the SOURCE's order, not the candidate (tier/score) order the ref lists arrive in, and not
+     * alphabetically. The fixture states three numeric fields in an order that is neither: {@code zz_core} is
+     * nearly constant (lowest score, stated FIRST), {@code aa_patchy} spans five values (highest score, stated
+     * LAST, and alphabetically first). So candidate order and alphabetical order both disagree with source order,
+     * in opposite directions, and only source order can satisfy the assertion.
+     */
+    private static boolean sourceOrderOk() {
+        final Phylogeny phy = sourceOrderTree();
+        final List<String> source = TreePanelUtil.propertyRefsInSourceOrder( phy );
+        if ( !"data:zz_core data:mm_mid data:aa_patchy".equals( String.join( " ", source ) ) ) {
+            return fail( "the fixture's own source order is not what it claims: [" + String.join( " ", source ) + "]" );
+        }
+        // GUARD: if the candidate order happened to equal the source order the assertion below would prove nothing.
+        // Assert the two really do differ, so this test is known to isolate the thing it is about.
+        final List<String> colorable = PropertyColorScheme.colorableRefs( phy );
+        final List<String> cand_data = new java.util.ArrayList<>();
+        for( final String r : colorable ) {
+            if ( r.startsWith( "data:" ) ) {
+                cand_data.add( r );
+            }
+        }
+        if ( String.join( " ", cand_data ).equals( String.join( " ", source ) ) ) {
+            return fail( "the fixture cannot isolate the rule: candidate order already equals source order ["
+                    + String.join( " ", cand_data ) + "]" );
+        }
+        final List<AnnotationColumns.ColumnSpec> specs = MainFrame.clustergramColumnSpecs( phy );
+        final List<String> matrix = new java.util.ArrayList<>();
+        for( final AnnotationColumns.ColumnSpec s : specs ) {
+            if ( s._type == AnnotationColumns.Type.MATRIX ) {
+                matrix.add( s._ref );
+            }
+        }
+        if ( !"data:zz_core data:mm_mid data:aa_patchy".equals( String.join( " ", matrix ) ) ) {
+            return fail( "matrix columns must follow the SOURCE order, got [" + String.join( " ", matrix )
+                    + "] (candidate order was [" + String.join( " ", cand_data ) + "])" );
+        }
+        // the neighbouring wrong answers, named so a regression says WHICH order came back
+        if ( "data:aa_patchy".equals( matrix.get( 0 ) ) ) {
+            return fail( "columns came back in alphabetical or candidate order, not source order" );
+        }
+        // an ELEMENT SLOT candidate is not a node property, so the source order cannot name it -- it must still be
+        // kept (at the end of its group), never dropped
+        boolean saw_slot = false;
+        for( final AnnotationColumns.ColumnSpec s : specs ) {
+            if ( PropertyColorScheme.isElementSlot( s._ref ) ) {
+                saw_slot = true;
+            }
+        }
+        if ( !saw_slot ) {
+            return fail( "the taxonomy element-slot column was dropped by the re-ordering" );
+        }
+        if ( specs.size() != colorable.size() ) {
+            return fail( "re-ordering must neither drop nor duplicate a column: " + specs.size() + " specs vs "
+                    + colorable.size() + " colorable refs" );
+        }
+        return true;
+    }
+
+    private static Phylogeny sourceOrderTree() {
+        final String[] core = { "4", "4", "4", "4", "4", "4", "4", "3" };   // nearly constant -> lowest score
+        final String[] mid = { "1", "1", "2", "2", "3", "3", "1", "2" };    // three distinct values
+        final String[] patchy = { "0", "1", "2", "3", "4", "0", "1", "2" }; // five distinct -> highest score
+        final Phylogeny phy = new Phylogeny();
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < core.length; ++i ) {
+            final PhylogenyNode n = new PhylogenyNode();
+            n.setName( "t" + i );
+            final PropertiesList pl = new PropertiesList();
+            // stated in THIS order on purpose: neither alphabetical nor by score
+            pl.addProperty( new Property( "data:zz_core", core[ i ], "", "xsd:integer", AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:mm_mid", mid[ i ], "", "xsd:integer", AppliesTo.NODE ) );
+            pl.addProperty( new Property( "data:aa_patchy", patchy[ i ], "", "xsd:integer", AppliesTo.NODE ) );
+            n.getNodeData().setProperties( pl );
+            final org.forester.phylogeny.data.Taxonomy tax = new org.forester.phylogeny.data.Taxonomy();
+            tax.setScientificName( ( ( i % 2 ) == 0 ) ? "Escherichia coli" : "Klebsiella pneumoniae" );
+            n.getNodeData().setTaxonomy( tax );
+            root.addAsChild( n );
+        }
+        phy.setRoot( root );
+        phy.externalNodesHaveChanged();
+        return phy;
+    }
+
     private static Phylogeny mixedTree() {
         final Phylogeny phy = new Phylogeny();
         final PhylogenyNode root = new PhylogenyNode();
