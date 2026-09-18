@@ -146,8 +146,9 @@ final class DemoTrees {
                              } ) );
         demos.add( new Demo( "Pangenome Presence/Absence (Clustergram)",
                              "100 strains x 40 genes: a plain tree plus a table of gene-presence certainty (0..4, "
-                                     + "blank = not assessed), imported and laid out as a clustergram in the table's "
-                                     + "own column order -- so the gene classes read as bands.",
+                                     + "blank = not assessed), imported and shown as a clustergram with its columns "
+                                     + "clustered; View > Order Matrix Columns > Same as Table shows the gene classes "
+                                     + "as bands, and a column's header can be dragged to move it.",
                              mf -> {
                                  // the lab's real workflow, not a pre-joined file: a PLAIN tree + the table, through
                                  // the Import Annotations core (undo checkpoint + provenance), then View > Clustergram

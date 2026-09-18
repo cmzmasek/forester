@@ -10067,14 +10067,283 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Toggles the color key (legend) for the annotation column whose header (rectangular) or ring (circular) was
      *  clicked. */
     final boolean handleAnnotationHeaderClick(final MouseEvent e) {
-        final int col = (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
-                ? circularAnnotationRingAt(e.getX(), e.getY())
-                : annotationHeaderColumnAt(e.getX(), e.getY());
+        final int col = annotationColumnGrabbedAt(e.getX(), e.getY());
         if (col < 0) {
             return false;
         }
         setFocusedAnnotationColumn(col);
         return true;
+    }
+
+    // ---- Dragging a column to a new place: press its header (rectangular, vertical) or its ring (circular) and drag.
+    //      A plain click still toggles the column's legend -- MouseListener only calls these once the pointer has
+    //      moved past a small threshold, the same rule that separates a legend click from a legend drag. ------------
+
+    /** The DRAWN column being dragged, or -1 when no column drag is in progress. */
+    private int _column_drag_source = -1;
+    /** Where it would land: insertion slot 0..n (0 = before the first column, n = after the last), or -1. */
+    private int _column_drag_slot = -1;
+    /** Test hook: how many times the drop marker was drawn (it must be drawn on screen and NEVER into an export). */
+    int _column_drag_marker_paints = 0;
+
+    /**
+     * The drawn column whose header (rectangular, vertical) or ring (circular) is under the point, or -1. One hit-test
+     * for both the legend click and the drag, so what can be clicked is exactly what can be dragged. The unrooted
+     * layout draws no columns, so nothing there can be grabbed.
+     */
+    int annotationColumnGrabbedAt(final int x, final int y) {
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
+            return -1;
+        }
+        return (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) ? circularAnnotationRingAt(x, y)
+                : annotationHeaderColumnAt(x, y);
+    }
+
+    /** Begins dragging drawn column {@code col}; nothing moves until {@link #endAnnotationColumnDrag}. */
+    void startAnnotationColumnDrag(final int col) {
+        _column_drag_source = col;
+        _column_drag_slot = -1;
+    }
+
+    boolean isDraggingAnnotationColumn() {
+        return _column_drag_source >= 0;
+    }
+
+    /** Follows the pointer: the insertion slot nearest to it, marked on screen (never in an export). */
+    void dragAnnotationColumn(final int x, final int y) {
+        if (_column_drag_source < 0) {
+            return;
+        }
+        _column_drag_slot = annotationColumnInsertionSlotAt(x, y);
+        setCursor(MOVE_CURSOR);
+        repaint();
+    }
+
+    /**
+     * Ends a column drag. With {@code drop} the column moves to the marked slot; a real move marks the tree edited --
+     * the arrangement is saved with the tree, exactly as a reorder in Tools > Annotation Fields is -- and the View >
+     * Order Matrix Columns radios follow (a matrix column moved by hand makes the tab Manual).
+     */
+    void endAnnotationColumnDrag(final boolean drop) {
+        final int from = _column_drag_source;
+        final int slot = _column_drag_slot;
+        _column_drag_source = -1;
+        _column_drag_slot = -1;
+        if (drop && moveAnnotationColumn(from, slot)) {
+            setEdited(true);
+            if ((getMainPanel() != null) && (getMainPanel().getMainFrame() != null)) {
+                getMainPanel().getMainFrame().syncMatrixColumnOrderMenu();
+            }
+        }
+        repaint();
+    }
+
+    /**
+     * Moves drawn column {@code from} to insertion slot {@code slot} (see {@link #annotationColumnInsertionSlotAt}).
+     * A drawn column is a GROUP of specs -- a merged stacked-bar or pie column is every spec of its type -- and the
+     * whole group moves ({@link AnnotationColumns#specIndicesByColumn}). The same rule as a reorder in the Annotation
+     * Fields dialog decides the tab's order mode ({@link MatrixColumnOrder#resolveEdited}): a move that changes the
+     * matrix's own order makes the tab Manual; a colour strip moved without changing it leaves the mode as it was. A
+     * legend shown for a column stays with that column.
+     *
+     * @return whether anything moved (a column dropped where it already was does not)
+     */
+    boolean moveAnnotationColumn(final int from, final int slot) {
+        if (_annotation_column_specs == null) {
+            return false;
+        }
+        final java.util.List<AnnotationColumns.ColumnSpec> specs = _annotation_column_specs;
+        final java.util.List<java.util.List<Integer>> groups = AnnotationColumns.specIndicesByColumn(specs);
+        final int n = groups.size();
+        if ((from < 0) || (from >= n) || (slot < 0) || (slot > n) || (slot == from) || (slot == (from + 1))) {
+            return false;
+        }
+        final java.util.List<Integer> order = new java.util.ArrayList<Integer>();
+        for (int k = 0; k < n; ++k) {
+            if (k != from) {
+                order.add(k);
+            }
+        }
+        order.add((slot > from) ? (slot - 1) : slot, from);
+        final java.util.List<AnnotationColumns.ColumnSpec> moved = new java.util.ArrayList<AnnotationColumns.ColumnSpec>();
+        for (final int g : order) {
+            for (final int i : groups.get(g)) {
+                moved.add(specs.get(i));
+            }
+        }
+        for (final AnnotationColumns.ColumnSpec s : specs) {
+            if (s._type == AnnotationColumns.Type.LABEL) {
+                moved.add(s); // a spec that draws no column has no place to move from; keep it, never drop it
+            }
+        }
+        final int focused = (_focused_annotation_column >= 0) ? order.indexOf(_focused_annotation_column) : -1;
+        final MatrixColumnOrder.Resolved resolved = MatrixColumnOrder.resolveEdited(moved, true, _matrix_column_order,
+                getPhylogeny());
+        setAnnotationColumns(resolved.specs()); // (this clears the shown legend ...)
+        _matrix_column_order = resolved.mode();
+        if (focused >= 0) {
+            _focused_annotation_column = focused; // (... so it is put back on its column, wherever that went)
+        }
+        return true;
+    }
+
+    /**
+     * The insertion slot nearest to the point: 0 before the first column, n after the last, k between columns k-1 and
+     * k. Measured along the columns' own axis only -- logical x in the rectangular layouts (the point is taken back
+     * through the clustergram's rotation first) and the radius in the circular one -- so the marker follows the
+     * pointer however far it strays sideways from the columns.
+     */
+    int annotationColumnInsertionSlotAt(final int x, final int y) {
+        if (!hasAnnotationColumns() || (_annotation_columns == null)) {
+            return -1;
+        }
+        final double[] b = annotationColumnSlotPositions();
+        if (b == null) {
+            return -1;
+        }
+        final double pos = (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
+                ? Math.hypot(x - _circular_center_x, y - _circular_center_y) : toLogicalPoint(x, y).x;
+        int best = 0;
+        for (int k = 1; k < b.length; ++k) {
+            if (Math.abs(pos - b[k]) < Math.abs(pos - b[best])) {
+                best = k;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * The n+1 slot positions along the columns' axis -- logical x (rectangular) or radius (circular): the first
+     * column's leading edge, the middle of each gap between two columns, the last column's trailing edge. Null when
+     * the circular rings have not been laid out yet.
+     */
+    private double[] annotationColumnSlotPositions() {
+        final boolean circular = getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR;
+        if (circular && (_circular_radius <= 0)) {
+            return null;
+        }
+        final int n = _annotation_columns.size();
+        final double[] b = new double[n + 1];
+        double at = circular ? circularAnnotationRingStart(_circular_radius) : annotationColumnsStartX();
+        b[0] = at;
+        for (int i = 0; i < n; ++i) {
+            final double end = at + annotationColumnWidth(i);
+            final double next = end + annotationColumnGapAfter(i);
+            b[i + 1] = (i < (n - 1)) ? ((end + next) / 2.0) : end;
+            at = next;
+        }
+        return b;
+    }
+
+    /**
+     * The drop marker for the rectangular layouts: a line across the columns at the target slot, drawn in LOGICAL
+     * coordinates -- in a vertical orientation {@code g} already carries the rotation, so the line lands between the
+     * right bands without being rotated twice. Screen only; the callers never pass an export's graphics.
+     */
+    private void paintAnnotationColumnDragMarker(final Graphics2D g) {
+        if ((_column_drag_slot < 0) || !hasAnnotationColumns() || (_annotation_columns == null)) {
+            return;
+        }
+        final double[] b = annotationColumnSlotPositions();
+        float min_y = Float.MAX_VALUE;
+        float max_y = -Float.MAX_VALUE;
+        for (final PhylogenyNode t : visibleExternalTips()) {
+            min_y = Math.min(min_y, t.getYcoord());
+            max_y = Math.max(max_y, t.getYcoord());
+        }
+        if ((b == null) || (min_y == Float.MAX_VALUE)) {
+            return;
+        }
+        final double x = b[_column_drag_slot];
+        final Color saved_color = g.getColor();
+        final java.awt.Stroke saved_stroke = g.getStroke();
+        g.setColor(getTreeColorSet().getFoundColor0());
+        g.setStroke(new java.awt.BasicStroke(3f));
+        g.draw(new java.awt.geom.Line2D.Double(x, min_y - getYdistance(), x, max_y + getYdistance()));
+        g.setStroke(saved_stroke);
+        g.setColor(saved_color);
+        ++_column_drag_marker_paints;
+    }
+
+    /** The drop marker for the circular layout: a circle at the target ring boundary. Screen only. */
+    private void paintAnnotationColumnDragMarkerCircular(final Graphics2D g, final int cx, final int cy) {
+        if ((_column_drag_slot < 0) || !hasAnnotationColumns() || (_annotation_columns == null)) {
+            return;
+        }
+        final double[] b = annotationColumnSlotPositions();
+        if (b == null) {
+            return;
+        }
+        final double r = b[_column_drag_slot];
+        final Color saved_color = g.getColor();
+        final java.awt.Stroke saved_stroke = g.getStroke();
+        g.setColor(getTreeColorSet().getFoundColor0());
+        g.setStroke(new java.awt.BasicStroke(3f));
+        g.draw(new java.awt.geom.Ellipse2D.Double(cx - r, cy - r, 2 * r, 2 * r));
+        g.setStroke(saved_stroke);
+        g.setColor(saved_color);
+        ++_column_drag_marker_paints;
+    }
+
+    /** Test hook: a device point on drawn column {@code col}'s grab handle -- its header, or the middle of its ring
+     *  on the 3-o'clock spoke -- or null. Built from the same geometry the hit-test uses. */
+    java.awt.Point annotationColumnGrabPointForTest(final int col) {
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
+            if (!hasAnnotationColumns() || (_circular_radius <= 0) || (col < 0) || (col >= _annotation_columns.size())) {
+                return null;
+            }
+            double r = circularAnnotationRingStart(_circular_radius);
+            for (int i = 0; i < col; ++i) {
+                r += annotationColumnWidth(i) + annotationColumnGapAfter(i);
+            }
+            r += annotationColumnWidth(col) / 2.0;
+            return new java.awt.Point((int) Math.round(_circular_center_x + r), _circular_center_y);
+        }
+        return annotationHeaderMidpointForTest(col);
+    }
+
+    /** Test hook: as {@link #annotationColumnSlotPointForTest(int)}, but in the circular layout at {@code angle}
+     *  (radians, device) round the centre instead of on the 3-o'clock spoke -- where x-offset and radius coincide, so
+     *  a slot measured by the wrong one would pass unnoticed. Ignored in the rectangular layouts. */
+    java.awt.Point annotationColumnSlotPointForTest(final int slot, final double angle) {
+        final java.awt.Point p = annotationColumnSlotPointForTest(slot);
+        if ((p == null) || (getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)) {
+            return p;
+        }
+        final double r = p.x - _circular_center_x;
+        return new java.awt.Point((int) Math.round(_circular_center_x + (r * Math.cos(angle))),
+                                  (int) Math.round(_circular_center_y + (r * Math.sin(angle))));
+    }
+
+    /** Test hook: a device point exactly at insertion slot {@code slot}, in whichever layout is showing, or null. */
+    java.awt.Point annotationColumnSlotPointForTest(final int slot) {
+        if (!hasAnnotationColumns() || (_annotation_columns == null)) {
+            return null;
+        }
+        final double[] b = annotationColumnSlotPositions();
+        if ((b == null) || (slot < 0) || (slot >= b.length)) {
+            return null;
+        }
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
+            return new java.awt.Point((int) Math.round(_circular_center_x + b[slot]), _circular_center_y);
+        }
+        float mid_y = 0f;
+        int n = 0;
+        for (final PhylogenyNode t : visibleExternalTips()) {
+            mid_y += t.getYcoord();
+            ++n;
+        }
+        final Point2D.Double p = screenPoint(b[slot], (n > 0) ? (mid_y / n) : 0);
+        return new java.awt.Point((int) Math.round(p.x), (int) Math.round(p.y));
+    }
+
+    int columnDragSlotForTest() {
+        return _column_drag_slot;
+    }
+
+    /** Test hook: the drawn column whose legend is shown, or -1. */
+    int focusedAnnotationColumnForTest() {
+        return _focused_annotation_column;
     }
 
     /** Shows column {@code col}'s legend (toggling it off if it already showed); a text or out-of-range column
@@ -14582,6 +14851,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
                 paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD stratigraphic-range bars on fossil tips
                 paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
+                if (!to_pdf && !to_graphics_file) {
+                    paintAnnotationColumnDragMarker(g); // where a dragged column would land -- screen only
+                }
                 paintMsaTrack(g, to_pdf, to_graphics_file, graphics_file_y, graphics_file_height); // MSA cells + ruler
                 paintCladeBands(g); // clade boxes/bars over the tree -- node coords set by the loop above
                 paintAncestralPies(g, to_pdf, to_graphics_file); // per-node state pies, on top -- coords set above
@@ -14597,6 +14869,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars: a plain rect at each node -> rides R
                 paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD tip range bars: axis-aligned rects -> ride R
                 paintAnnotationColumnsVertical(g);
+                if (!to_pdf && !to_graphics_file) {
+                    paintAnnotationColumnDragMarker(g); // logical coords; g carries R -> lands between the bands
+                }
                 paintCladeBands(g); // boxes ride R; bars/brackets draw the label upright (isVerticalOrientation branch)
                 paintAncestralPies(g, to_pdf, to_graphics_file); // pies ride R: the disc stays a disc, wedges rotate
                 paintTipImagesVertical(g); // tip images drawn UPRIGHT (not rotated under R) at the branch end
@@ -14798,6 +15073,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintFossilRangeBarsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // tip-aligned annotation columns as concentric rings (strip/heat-map/bar/text), just past the tips + labels
             paintAnnotationColumnsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
+            if (!to_pdf && !to_graphics_file) {
+                paintAnnotationColumnDragMarkerCircular(g, center_x, center_y); // screen only
+            }
             // clade bands as polar sectors/arcs, over the tree (coords set above), like the rectangular wash
             paintCladeBandsCircular(g, center_x, center_y, radius > 0 ? radius : 0);
             // the geologic band names, up the top spoke ON TOP of the tree (the annuli are drawn behind, above)

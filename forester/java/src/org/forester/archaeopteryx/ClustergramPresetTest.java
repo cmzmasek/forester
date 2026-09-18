@@ -38,8 +38,9 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 /**
  * The one-click "Clustergram" preset (View menu). Pure part: {@code MainFrame.clustergramColumnSpecs} maps a tree's
  * numeric fields to a shared-scale heat-map MATRIX (first) and its categorical fields to color strips. Headful part:
- * {@code applyClustergramPreset} on the heat-map-matrix demo sets a rectangular, root-at-top, tip-aligned,
- * labels-below layout with the numeric columns added as a matrix. A green no-op when headless.
+ * {@code applyClustergramPreset} on the heat-map-matrix demo sets a rectangular, root-on-left, tip-aligned layout
+ * with the numeric columns added as a matrix, and leaves the vertical-only "Tip Labels Below Columns" option as the
+ * user set it. A green no-op when headless.
  */
 public final class ClustergramPresetTest {
 
@@ -97,35 +98,52 @@ public final class ClustergramPresetTest {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
-                    // precondition: a plain horizontal tree with no columns
-                    if ( tp.hasAnnotationColumns() || tp.isVerticalOrientation() ) {
-                        fail( ok, "precondition: the tree should start as a plain horizontal tree" );
+                    // precondition: start ROOT-TOP -- the tab, its layout row, AND the default for new tabs -- so that
+                    // ending root-left proves the preset switched each of them; a precondition equal to the expected
+                    // result would pass even if the preset set nothing (the app's default IS root-left)
+                    final Options o = frame.getOptions();
+                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
+                    tp.getControlPanel().syncLayoutButtons(); // the layout row too, or its later check proves nothing
+                    // the vertical-only labels-below option must be left as the user set it -- checked with FALSE here
+                    // (the value the old root-top preset overwrote with true) and with TRUE below, so a preset that
+                    // forces EITHER value is caught
+                    o.setTipLabelsBelowColumns( false );
+                    final boolean labels_below_before = o.isTipLabelsBelowColumns();
+                    if ( tp.hasAnnotationColumns() || !tp.isVerticalOrientation()
+                            || ( tp.getControlPanel().selectedLayoutKind() != LayoutIcon.Kind.ROOT_TOP ) ) {
+                        fail( ok, "precondition: the tree should start as a root-top tree with no columns, the layout"
+                                + " row on root-top" );
                     }
                     frame.applyClustergramPreset();
-                    final Options o = frame.getOptions();
-                    if ( o.getTreeOrientation() != Options.TREE_ORIENTATION.ROOT_TOP ) {
-                        fail( ok, "Clustergram should set root-at-top orientation" );
+                    if ( o.getTreeOrientation() != Options.TREE_ORIENTATION.ROOT_LEFT ) {
+                        fail( ok, "Clustergram should make root-on-left the orientation for new tabs" );
                     }
+                    if ( o.isTipLabelsBelowColumns() != labels_below_before ) {
+                        fail( ok, "Clustergram must leave the vertical-only Tip Labels Below Columns as the user set it"
+                                + " (it forced it on)" );
+                    }
+                    o.setTipLabelsBelowColumns( true );
+                    frame.applyClustergramPreset();
                     if ( !o.isTipLabelsBelowColumns() ) {
-                        fail( ok, "Clustergram should enable Tip Labels Below Columns" );
+                        fail( ok, "Clustergram must leave the vertical-only Tip Labels Below Columns as the user set it"
+                                + " (it forced it off)" );
                     }
+                    o.setTipLabelsBelowColumns( labels_below_before );
                     if ( tp.getPhylogenyGraphicsType() != Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) {
                         fail( ok, "Clustergram should force a rectangular graphics type" );
                     }
                     if ( tp.getControlPanel().getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) {
                         fail( ok, "Clustergram should align the tips" );
                     }
-                    if ( !tp.isVerticalOrientation() || !tp.hasAnnotationColumns() ) {
-                        fail( ok, "Clustergram should be a vertical tree WITH annotation columns" );
-                    }
-                    if ( !tp.tipLabelsBelowColumns() ) {
-                        fail( ok, "the labels-below clustergram layout should be active after the preset" );
+                    if ( tp.isVerticalOrientation() || !tp.hasAnnotationColumns() ) {
+                        fail( ok, "Clustergram should be a root-on-left tree WITH annotation columns" );
                     }
                     // The preset sets the style + orientation directly rather than through MainFrame.typeChanged,
                     // so the control panel's five-way layout row has to be re-seeded by hand -- otherwise it stays
-                    // lit on root-left while the clustergram is drawn root-at-top.
-                    if ( tp.getControlPanel().selectedLayoutKind() != LayoutIcon.Kind.ROOT_TOP ) {
-                        fail( ok, "Clustergram must leave the control-panel layout row on root-top, got "
+                    // lit on root-top (the precondition) while the clustergram is drawn root-on-left.
+                    if ( tp.getControlPanel().selectedLayoutKind() != LayoutIcon.Kind.ROOT_LEFT ) {
+                        fail( ok, "Clustergram must leave the control-panel layout row on root-left, got "
                                 + tp.getControlPanel().selectedLayoutKind() );
                     }
                     if ( tp.isEdited() ) {

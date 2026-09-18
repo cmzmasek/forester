@@ -298,8 +298,9 @@ public final class DemoTreesGalleryTest {
                 fail( ok, "the pangenome demo's tab must be in the default Clustered mode, is "
                         + tp.getMatrixColumnOrder() );
             }
-            else if ( !tp.isVerticalOrientation() ) {
-                fail( ok, "the pangenome demo must open as a vertical clustergram (View > Clustergram)" );
+            else if ( tp.isVerticalOrientation()
+                    || ( tp.getPhylogenyGraphicsType() != Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) ) {
+                fail( ok, "the pangenome demo must open as a rectangular, root-on-left clustergram (View > Clustergram)" );
             }
             else if ( tp.getColorByPropertyRef() != null ) {
                 fail( ok, "the pangenome demo must not auto-colour by one gene, got Color by: "

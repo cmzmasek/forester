@@ -1318,9 +1318,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _fit_to_window_item.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_0, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _view_jmenu.add(_clustergram_item = new JMenuItem("Clustergram"));
-        _clustergram_item.setToolTipText("<html>One click: turn the tree into a vertical dendrogram over a tip-aligned "
-                + "heat map — root at top, tips aligned, sample labels along the bottom, and each numeric per-tip "
-                + "field as a shared-scale heat-map column (categorical fields as color strips).<br><i>The figure iTOL "
+        _clustergram_item.setToolTipText("<html>One click: turn the tree into a clustergram — the dendrogram on the "
+                + "left with its tips aligned, and the numeric per-tip fields as shared-scale heat-map columns beside it "
+                + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>The figure iTOL "
                 + "does clunkily and FigTree/PearTree can't do at all. Import Annotations (CSV/TSV) first if the tree "
                 + "has no per-tip data yet.</i></html>");
         final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
@@ -4091,13 +4091,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return profile.isUrl() ? profile.getSource() : new File(profile.getSource()).getName();
     }
 
-    /**
-     * View -> Clustergram: one click to build the signature vertical-dendrogram-over-a-heat-map figure. Forces a
-     * rectangular, root-at-top, tip-aligned layout with the tip labels below the columns, and auto-builds the
-     * annotation columns from the tree's own per-tip data (every numeric field -> one shared-scale heat-map MATRIX;
-     * every categorical field -> a color strip). Display-only: Undo is N/A, and every setting it flips is already
-     * covered by Reset to Defaults (no new Options field).
-     */
     /** The Order Matrix Columns mode a menu item stands for, or null when {@code source} is not one of them. */
     MatrixColumnOrder.Mode matrixOrderModeOf(final Object source) {
         for (final java.util.Map.Entry<MatrixColumnOrder.Mode, JRadioButtonMenuItem> e : _matrix_order_items.entrySet()) {
@@ -4132,6 +4125,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * View -> Clustergram: one click to build the dendrogram-beside-a-heat-map figure. Forces a rectangular,
+     * root-on-left, tip-aligned layout and auto-builds the annotation columns from the tree's own per-tip data: the
+     * numeric fields become one shared-scale heat-map MATRIX, ordered by the tab's View -> Order Matrix Columns mode;
+     * the categorical fields become colour strips (a field that cannot be coloured -- the same value on every tip --
+     * is left out). Root on the left, the tip labels sit between the tree and the matrix. The vertical-only "Tip
+     * Labels Below Columns" option is left as the user set it: it does nothing in this layout, and setting it here would
+     * silently reconfigure the root-top/bottom ones. Display-only: Undo is N/A, and every setting it flips is already
+     * covered by Reset to Defaults (no new Options field).
+     */
     void applyClustergramPreset() {
         final TreePanel tp = getCurrentTreePanel();
         if (tp == null) {
@@ -4153,22 +4156,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // mode then orders the matrix -- Clustered by default. A tab in Manual gets the table order to start from.
         tp.setAnnotationColumns(MatrixColumnOrder.apply(specs, tp.getMatrixColumnOrder(), phy));
         syncMatrixColumnOrderMenu();
-        // a rectangular, root-at-top, tip-aligned tree with the sample labels below the columns = the clustergram
+        // a rectangular, root-on-left, tip-aligned tree: the dendrogram, its tip labels, then the matrix
         getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         tp.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
-        tp.setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP); // this tab only; other tabs keep theirs
-        getOptions().setTreeOrientation(Options.TREE_ORIENTATION.ROOT_TOP); // ... and the default for new tabs
-        getOptions().setTipLabelsBelowColumns(true);
-        getOptions().setTipLabelDirection(Options.TIP_LABEL_DIRECTION.AUTO); // upright short names, tilt as density rises
-        applyOptionsToMenuStates(getOptions()); // reflect the labels-below toggle in the menu / Settings dialog
+        tp.setTreeOrientation(Options.TREE_ORIENTATION.ROOT_LEFT); // this tab only; other tabs keep theirs
+        getOptions().setTreeOrientation(Options.TREE_ORIENTATION.ROOT_LEFT); // ... and the default for new tabs
+        applyOptionsToMenuStates(getOptions()); // keep the menus / Settings dialog in step with the Options above
         tp.getControlPanel().setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM); // align tips -> clean grid
         // NB: display-only -- do NOT setEdited(true): nothing here is saved to the tree file, and setEdited would both
         // pop a spurious save prompt and clear the redo stack (the undo safety net). Sibling display toggles don't either.
         final ControlPanel cp = tp.getControlPanel();
         cp.updateZoomButtonsForLayout();
         // the preset sets the style + orientation directly (not through typeChanged), so the control panel's
-        // five-way layout row would otherwise stay lit on whatever was chosen before -- root-left, while the
-        // clustergram is drawn root-at-top
+        // five-way layout row would otherwise stay lit on whatever was chosen before -- root-top or circular, say,
+        // while the clustergram is drawn root-on-left
         cp.syncLayoutButtons();
         cp.displayedPhylogenyMightHaveChanged(true); // recompute the label/column extents for the swapped layout
         cp.showWhole(); // re-fit for the vertical extent (a plain repaint would leave the old scroll extent)

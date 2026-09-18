@@ -248,6 +248,56 @@ final class AnnotationColumns {
 
     private final List<Column> _columns;
 
+    /**
+     * For each column the constructor below DRAWS, the indices of the specs it is built from, in drawn order: one spec
+     * for an ordinary column; every STACKED_BAR (or every PIE) spec for the merged column, which sits at the FIRST spec
+     * of its type; nothing for a LABEL spec, which draws no column. What the user grabs on the canvas is a drawn
+     * column, so moving it means moving this group of specs. It must mirror the constructor's emission rule exactly --
+     * {@code AnnotationColumnDragTest} pins the two against each other rather than trusting this comment.
+     */
+    static List<List<Integer>> specIndicesByColumn( final List<ColumnSpec> specs ) {
+        final List<List<Integer>> out = new ArrayList<List<Integer>>();
+        if ( specs == null ) {
+            return out;
+        }
+        final List<Integer> stack = new ArrayList<Integer>();
+        final List<Integer> pie = new ArrayList<Integer>();
+        for( int i = 0; i < specs.size(); ++i ) {
+            if ( specs.get( i )._type == Type.STACKED_BAR ) {
+                stack.add( i );
+            }
+            else if ( specs.get( i )._type == Type.PIE ) {
+                pie.add( i );
+            }
+        }
+        boolean stack_added = false;
+        boolean pie_added = false;
+        for( int i = 0; i < specs.size(); ++i ) {
+            final Type type = specs.get( i )._type;
+            if ( type == Type.LABEL ) {
+                continue;
+            }
+            if ( type == Type.STACKED_BAR ) {
+                if ( !stack_added ) {
+                    out.add( stack );
+                    stack_added = true;
+                }
+                continue;
+            }
+            if ( type == Type.PIE ) {
+                if ( !pie_added ) {
+                    out.add( pie );
+                    pie_added = true;
+                }
+                continue;
+            }
+            final List<Integer> one = new ArrayList<Integer>();
+            one.add( i );
+            out.add( one );
+        }
+        return out;
+    }
+
     AnnotationColumns( final Phylogeny phylogeny, final List<ColumnSpec> specs ) {
         _columns = new ArrayList<Column>();
         // every STACKED_BAR field MERGES into one segmented-bar column, and every PIE field into one pie column (each

@@ -209,6 +209,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Annotation column drag: ");
+        if (org.forester.archaeopteryx.AnnotationColumnDragTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Matrix column order menu: ");
         if (org.forester.archaeopteryx.MatrixColumnOrderMenuTest.test()) {
             System.out.println("OK.");
