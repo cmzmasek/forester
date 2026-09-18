@@ -200,6 +200,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Pangenome joint contract: ");
+        if (org.forester.archaeopteryx.PangenomeContractTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Properties list order: ");
         if (org.forester.phylogeny.data.PropertiesListTest.test()) {
             System.out.println("OK.");
