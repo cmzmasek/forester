@@ -53,6 +53,13 @@ import org.forester.phylogeny.PhylogenyNode;
  * The fixture files are NOT reproducible from the generator that made them (it drew a random number per element of
  * a set, whose iteration order is hash-randomized per process), which is exactly why the artifact is pinned rather
  * than a recipe.
+ * <p>
+ * <b>A known blind spot, stated rather than hidden</b> (found on the Archaeopteryx.js side, and true here too):
+ * ranking on the raw ref instead of the display label PASSES this test, because 40 distinct scores mean
+ * {@code VIS_ORDER}'s label tiebreak is never reached. That is the flip side of this fixture's whole virtue --
+ * score dominance is what it pins. Do NOT "strengthen" it by introducing tied scores: ties are what
+ * {@code test_data/vis_contract} is for, and adding them here would cost the one property this fixture exists to
+ * provide. {@link PropertyColorSchemeTest}'s contract fixtures cover the tiebreak.
  */
 public final class PangenomeContractTest {
 
