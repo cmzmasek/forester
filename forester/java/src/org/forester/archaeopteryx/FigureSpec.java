@@ -134,6 +134,10 @@ final class FigureSpec {
         final List<String> labels = splitList( get( K_LABEL_PROPS ) );
         tp.setLabelPropertyRefs( ( get( K_LABEL_PROPS ) == null ) ? null : labels );
         tp.setAnnotationColumns( parseColumns( get( K_COLUMNS ) ) );
+        // a saved figure restores an EXPLICIT column order: the tab must not re-sort it, whatever mode produced it
+        if ( MatrixColumnOrder.matrixRefs( tp.getAnnotationColumnSpecs() ).size() > 1 ) {
+            tp.setMatrixColumnOrder( MatrixColumnOrder.Mode.MANUAL );
+        }
         final List<CladeLevel.Spec> levels = parseCladeLevels( get( K_CLADE_LEVELS ) );
         final TreePanel.CLADE_VIS mode = enumOf( TreePanel.CLADE_VIS.class, get( K_CLADE_MODE ) );
         if ( !levels.isEmpty() && ( mode != null ) ) {

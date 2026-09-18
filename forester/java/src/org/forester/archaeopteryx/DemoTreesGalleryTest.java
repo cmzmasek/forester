@@ -50,7 +50,8 @@ public final class DemoTreesGalleryTest {
             "node-hpd-bars.xml",
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
             "dinosaur-time-tree.xml", "late-cretaceous-stages.xml", "lagomorph-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
-            "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml", "gtdb-genomes.xml" };
+            "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml", "gtdb-genomes.xml",
+            "pangenome-presence-absence.xml" };
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -93,6 +94,10 @@ public final class DemoTreesGalleryTest {
             final String assoc = DemoTrees.loadText( "tanglegram-association.tsv" );
             if ( ForesterUtilShim.isBlank( assoc ) ) {
                 return fail( "the bundled tanglegram association TSV is empty" );
+            }
+            final String pangenome = DemoTrees.loadText( "pangenome-presence-absence.tsv" );
+            if ( ForesterUtilShim.isBlank( pangenome ) || !pangenome.startsWith( "strain\t" ) ) {
+                return fail( "the bundled pangenome table is empty or lost its \"strain\" key column" );
             }
             final String gtdb = DemoTrees.loadText( "gtdb-classifications.tsv" );
             if ( ForesterUtilShim.isBlank( gtdb ) || !gtdb.contains( "d__Bacteria" ) ) {
@@ -259,7 +264,7 @@ public final class DemoTreesGalleryTest {
         }
         else if ( label.startsWith( "Pangenome" ) ) {
             // the demo walks the lab's real workflow -- plain tree + table -> Import -> Clustergram -- so each step's
-            // visible consequence is pinned: the 40 genes as a MATRIX in the TABLE's column order (classes as bands),
+            // visible consequence is pinned: the 40 genes as a MATRIX in the default CLUSTERED order,
             // a vertical clustergram, no auto-colour dragged in by 40 numeric fields, and an import that is a
             // documented, undoable tree mutation (provenance + undo), exactly as the menu item would perform it
             java.util.List<String> table_order = null;
@@ -282,9 +287,16 @@ public final class DemoTreesGalleryTest {
                     }
                 }
             }
-            if ( ( table_order != null ) && ( ( table_order.size() != 40 ) || !matrix.equals( table_order ) ) ) {
-                fail( ok, "the pangenome demo must show all 40 genes as a MATRIX in the table's column order, got "
-                        + matrix.size() + " matrix columns: " + matrix );
+            // the preset orders the matrix by the tab's View > Order Matrix Columns mode -- Clustered by default
+            final java.util.List<String> clustered = ( table_order == null ) ? null
+                    : MatrixColumnOrder.order( table_order, MatrixColumnOrder.Mode.CLUSTERED, tp.getPhylogeny() );
+            if ( ( table_order != null ) && ( ( table_order.size() != 40 ) || !matrix.equals( clustered ) ) ) {
+                fail( ok, "the pangenome demo must show all 40 genes as a MATRIX in the CLUSTERED order (the default),"
+                        + " got " + matrix.size() + " matrix columns: " + matrix );
+            }
+            else if ( tp.getMatrixColumnOrder() != MatrixColumnOrder.Mode.CLUSTERED ) {
+                fail( ok, "the pangenome demo's tab must be in the default Clustered mode, is "
+                        + tp.getMatrixColumnOrder() );
             }
             else if ( !tp.isVerticalOrientation() ) {
                 fail( ok, "the pangenome demo must open as a vertical clustergram (View > Clustergram)" );

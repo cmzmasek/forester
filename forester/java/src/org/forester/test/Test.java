@@ -200,6 +200,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Matrix column order: ");
+        if (org.forester.archaeopteryx.MatrixColumnOrderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Matrix column order menu: ");
+        if (org.forester.archaeopteryx.MatrixColumnOrderMenuTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Pangenome joint contract: ");
         if (org.forester.archaeopteryx.PangenomeContractTest.test()) {
             System.out.println("OK.");

@@ -366,6 +366,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _tree_properties_item;
     JMenuItem _fit_to_window_item;
     JMenuItem _clustergram_item;
+    /** View -> Order Matrix Columns: one radio item per mode, in menu order. */
+    final java.util.EnumMap<MatrixColumnOrder.Mode, JRadioButtonMenuItem> _matrix_order_items =
+            new java.util.EnumMap<MatrixColumnOrder.Mode, JRadioButtonMenuItem>(MatrixColumnOrder.Mode.class);
     JMenuItem _find_next_hit_item;
     JMenuItem _find_prev_hit_item;
     // help menu:
@@ -516,6 +519,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             showWhole();
         } else if (o == _clustergram_item) {
             applyClustergramPreset();
+        } else if (matrixOrderModeOf(o) != null) {
+            setMatrixColumnOrderForCurrentTab(matrixOrderModeOf(o));
         } else if (o == _find_next_hit_item) {
             if (getCurrentTreePanel() != null) {
                 getCurrentTreePanel().stepToFoundNode(1);
@@ -1318,6 +1323,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 + "field as a shared-scale heat-map column (categorical fields as color strips).<br><i>The figure iTOL "
                 + "does clunkily and FigTree/PearTree can't do at all. Import Annotations (CSV/TSV) first if the tree "
                 + "has no per-tip data yet.</i></html>");
+        final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
+        order_menu.setFont(MainFrame.menu_font); // createMenu sets the font only in custom-colors mode
+        order_menu.setToolTipText("How this tab's heat-map matrix orders its columns (the other columns keep their "
+                + "place)");
+        final ButtonGroup order_group = new ButtonGroup();
+        for (final MatrixColumnOrder.Mode m : MatrixColumnOrder.Mode.values()) {
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(m.label());
+            item.setToolTipText(m.tooltip());
+            order_group.add(item);
+            order_menu.add(item);
+            customizeRadioButtonMenuItem(item, m == MatrixColumnOrder.DEFAULT);
+            _matrix_order_items.put(m, item);
+        }
+        _view_jmenu.add(order_menu);
         _view_jmenu.addSeparator();
         _view_jmenu.add(_find_next_hit_item = new JMenuItem("Find Next"));
         _find_next_hit_item.setToolTipText("Center the next search hit in the view");
@@ -1731,6 +1750,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         final JPanel panel = new JPanel(new GridLayout(0, 4, 10, 3));
+        final boolean[] moved = { false }; // did the user move a row with the arrows? (Manual decides on it)
         final Runnable relayout = () -> {
             panel.removeAll();
             panel.add(new JLabel("Field"));
@@ -1755,8 +1775,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             panel.repaint();
         };
         for (final FieldRow r : rows) {
-            r._up.addActionListener(e -> moveFieldRow(rows, r, -1, relayout));
-            r._down.addActionListener(e -> moveFieldRow(rows, r, 1, relayout));
+            r._up.addActionListener(e -> moved[0] |= moveFieldRow(rows, r, -1, relayout));
+            r._down.addActionListener(e -> moved[0] |= moveFieldRow(rows, r, 1, relayout));
         }
         relayout.run();
         sync_normalize.run(); // enable the normalize checkbox only when a Stacked bar column is actually selected
@@ -1790,7 +1810,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 specs.add(new AnnotationColumns.ColumnSpec(r._ref, t));
             }
         }
-        tp.setAnnotationColumns(specs);
+        // a MOVE that changed the matrix order wins and makes the tab Manual; otherwise the tab's mode re-orders the
+        // matrix (placing any newly added fields) -- see MatrixColumnOrder.resolveEdited
+        final MatrixColumnOrder.Resolved resolved = MatrixColumnOrder.resolveEdited(specs, moved[0],
+                tp.getMatrixColumnOrder(), tp.getPhylogeny());
+        tp.setAnnotationColumns(resolved.specs());
+        // records the mode; for a sorting mode it re-derives the order, which comes out identical because no mode
+        // depends on the order its columns arrive in (MANUAL never re-sorts at all)
+        tp.setMatrixColumnOrder(resolved.mode());
+        syncMatrixColumnOrderMenu();
         tp.setLabelPropertyRefs(new_label_refs);
         // Picking a label field has to actually SHOW it -- the "Properties" checkbox is off by default, so without
         // this the chooser would silently do nothing. Only an ADDED field counts: opening the chooser to add a
@@ -1813,11 +1841,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /** Moves {@code row} by {@code delta} places within {@code rows} and, if it actually moved, relays out. */
-    private static void moveFieldRow(final List<FieldRow> rows, final FieldRow row, final int delta,
+    /** Moves a chooser row one place; true when it moved (a row already at the edge does not). */
+    private static boolean moveFieldRow(final List<FieldRow> rows, final FieldRow row, final int delta,
             final Runnable relayout) {
         if (moveInList(rows, row, delta)) {
             relayout.run();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -3455,8 +3486,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
                 tp.resetBranchLengthModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
                 tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Fields selection (fresh install has none)
+                tp.setMatrixColumnOrder(MatrixColumnOrder.DEFAULT); // per-tab: back to Clustered (no columns left to move)
                 tp.clearCladeBands(); // per-tab: likewise the Tools>Annotate Clades by Rank marks + their legend
             }
+            syncMatrixColumnOrderMenu(); // the View > Order Matrix Columns radios follow the reset
             final ControlPanel cp = getMainPanel().getControlPanel();
             if (cp != null) {
                 cp.setColorByPropertySelectionToNone();
@@ -4065,6 +4098,40 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * every categorical field -> a color strip). Display-only: Undo is N/A, and every setting it flips is already
      * covered by Reset to Defaults (no new Options field).
      */
+    /** The Order Matrix Columns mode a menu item stands for, or null when {@code source} is not one of them. */
+    MatrixColumnOrder.Mode matrixOrderModeOf(final Object source) {
+        for (final java.util.Map.Entry<MatrixColumnOrder.Mode, JRadioButtonMenuItem> e : _matrix_order_items.entrySet()) {
+            if (e.getValue() == source) {
+                return e.getKey();
+            }
+        }
+        return null;
+    }
+
+    /** View > Order Matrix Columns: set the CURRENT tab's mode (each tab keeps its own) and re-order its matrix. */
+    void setMatrixColumnOrderForCurrentTab(final MatrixColumnOrder.Mode mode) {
+        final TreePanel tp = getCurrentTreePanel();
+        if (tp != null) {
+            tp.setMatrixColumnOrder(mode);
+            tp.repaint(); // a permutation of the same columns: same widths, so no re-fit
+        }
+        syncMatrixColumnOrderMenu();
+    }
+
+    /**
+     * Makes the radio items show the CURRENT tab's mode (the default when there is no tab). Called on every tab switch,
+     * after anything that changes a tab's mode, and after Reset to Defaults; setSelected fires no action, so this can
+     * never re-order anything by itself.
+     */
+    void syncMatrixColumnOrderMenu() {
+        final TreePanel tp = getCurrentTreePanel();
+        final MatrixColumnOrder.Mode mode = (tp != null) ? tp.getMatrixColumnOrder() : MatrixColumnOrder.DEFAULT;
+        final JRadioButtonMenuItem item = _matrix_order_items.get(mode);
+        if (item != null) {
+            item.setSelected(true);
+        }
+    }
+
     void applyClustergramPreset() {
         final TreePanel tp = getCurrentTreePanel();
         if (tp == null) {
@@ -4082,7 +4149,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     "Clustergram", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        tp.setAnnotationColumns(specs);
+        // clustergramColumnSpecs gives the TABLE order (the pure building block); the tab's View > Order Matrix Columns
+        // mode then orders the matrix -- Clustered by default. A tab in Manual gets the table order to start from.
+        tp.setAnnotationColumns(MatrixColumnOrder.apply(specs, tp.getMatrixColumnOrder(), phy));
+        syncMatrixColumnOrderMenu();
         // a rectangular, root-at-top, tip-aligned tree with the sample labels below the columns = the clustergram
         getOptions().setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
         tp.setPhylogenyGraphicsType(PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
@@ -4121,10 +4191,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // See TreePanelUtil.propertyRefsInSourceOrder: layout order and candidate order deliberately differ here.
         final java.util.List<String> source_order = TreePanelUtil.propertyRefsInSourceOrder(phy);
         final java.util.List<AnnotationColumns.ColumnSpec> specs = new java.util.ArrayList<>();
-        for (final String ref : inSourceOrder(numeric, source_order)) {
+        for (final String ref : MatrixColumnOrder.inSourceOrder(numeric, source_order)) {
             specs.add(new AnnotationColumns.ColumnSpec(ref, AnnotationColumns.Type.MATRIX));
         }
-        for (final String ref : inSourceOrder(colorable, source_order)) {
+        for (final String ref : MatrixColumnOrder.inSourceOrder(colorable, source_order)) {
             if (!numeric.contains(ref)) {
                 specs.add(new AnnotationColumns.ColumnSpec(ref, AnnotationColumns.Type.COLOR_STRIP));
             }
@@ -4132,27 +4202,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return specs;
     }
 
-    /**
-     * {@code refs} re-ordered to follow {@code source_order}. A ref the source order does not name keeps its
-     * incoming relative order and goes at the end -- it cannot be placed, so it must not be dropped. That is not
-     * hypothetical: an ELEMENT SLOT candidate (taxonomy, sequence, ...) is a colorable field that is not a node
-     * property at all, so it never appears in the source order.
-     */
-    private static java.util.List<String> inSourceOrder(final java.util.List<String> refs,
-                                                       final java.util.List<String> source_order) {
-        final java.util.List<String> out = new java.util.ArrayList<>();
-        for (final String ref : source_order) {
-            if (refs.contains(ref)) {
-                out.add(ref);
-            }
-        }
-        for (final String ref : refs) {
-            if (!out.contains(ref)) {
-                out.add(ref);
-            }
-        }
-        return out;
-    }
 
     /** The user's choices from the import config dialog: which table (a given delimiter), key column, match attribute, and column plan. */
     private static final class ImportChoice {

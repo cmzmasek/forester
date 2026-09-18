@@ -951,8 +951,9 @@ public final class DemoTreesTest {
      * <li>every cell is an ordinal 0..4 or blank, all five values occur, and a blank stays UNFILLED after the join;</li>
      * <li>exactly one strain is a draft genome with at least half of its genes unassessed;</li>
      * <li>the core genes (the table's first 8 columns) are mostly 4, so the core band is actually visible;</li>
-     * <li>View &gt; Clustergram lays the 40 columns out in the TABLE's order -- and that order differs from the
-     * candidate ranking, so the demo shows the difference rather than coinciding with it.</li>
+     * <li>View &gt; Order Matrix Columns &gt; Same as Table lays the 40 columns out in the TABLE's order -- and that
+     * order differs from the candidate ranking, so the demo shows the difference rather than coinciding with it;</li>
+     * <li>the default, Clustered, keeps the 8 core genes together as one block.</li>
      * </ol>
      */
     private static boolean pangenomeDemoOk( final String tree_file, final String tsv_file ) {
@@ -1067,7 +1068,19 @@ public final class DemoTreesTest {
                 }
             }
             if ( !matrix.equals( table_order ) ) {
-                return note( "View > Clustergram should lay the matrix out in the table's column order; got " + matrix );
+                return note( "the Clustergram's table-order building block (Order Matrix Columns > Same as Table) should"
+                        + " follow the table's column order; got " + matrix );
+            }
+            // the default, Clustered: the 8 core genes (the table's first 8 columns) must come out as ONE block
+            final java.util.List<String> clustered = MatrixColumnOrder.order( table_order,
+                                                                              MatrixColumnOrder.Mode.CLUSTERED, phy );
+            final java.util.List<Integer> core_at = new java.util.ArrayList<Integer>();
+            for( int c = 0; c < 8; ++c ) {
+                core_at.add( clustered.indexOf( table_order.get( c ) ) );
+            }
+            java.util.Collections.sort( core_at );
+            if ( ( core_at.get( 7 ) - core_at.get( 0 ) ) != 7 ) {
+                return note( "clustered, the 8 core genes should form one contiguous block, found at " + core_at );
             }
             if ( PropertyColorScheme.colorableRefs( phy ).equals( table_order ) ) {
                 return note( "the candidate ranking equals the table order, so this demo cannot show the difference" );

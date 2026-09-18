@@ -83,6 +83,13 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] MAD-rooting citation is missing" );
             ok = false;
         }
+        // the clustered matrix column order must name its method, its missing-value rule and both primary citations
+        if ( !text.contains( "Order Matrix Columns" ) || !text.contains( "complete-linkage" )
+                || !text.contains( "never read as 0" ) || !text.contains( "Sørensen T (1948)" )
+                || !text.contains( "Cluster analysis and display of genome-wide expression patterns" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] clustered column order reference/citation is missing" );
+            ok = false;
+        }
         // the tanglegram auto-untangle heuristic must be described, with its barycentre + tanglegram citations
         if ( !text.contains( "Auto-untangle" ) || !text.contains( "barycentre" ) || !text.contains( "Sugiyama" )
                 || !text.contains( "Tanglegrams for rooted phylogenetic trees" ) ) {

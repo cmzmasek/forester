@@ -307,6 +307,10 @@ public final class ResetToDefaultsTest {
                     }
                     // the same chooser assigns which properties go in the tip LABEL, so a reset owes them too
                     tp.setLabelPropertyRefs( java.util.Arrays.asList( "data:sz" ) );
+                    tp.setMatrixColumnOrder( MatrixColumnOrder.Mode.MANUAL ); // View > Order Matrix Columns, per tab
+                    if ( tp.getMatrixColumnOrder() != MatrixColumnOrder.Mode.MANUAL ) {
+                        fail( ok, "precondition: the tab's matrix-column order must have been changed before reset" );
+                    }
                     if ( tp.getLabelPropertyRefs() == null ) {
                         fail( ok, "precondition: label property fields should be set before reset" );
                     }
@@ -415,6 +419,10 @@ public final class ResetToDefaultsTest {
                     if ( tp.getLabelPropertyRefs() != null ) {
                         fail( ok, "the label-field selection must be cleared by reset, got "
                                 + tp.getLabelPropertyRefs() );
+                    }
+                    if ( tp.getMatrixColumnOrder() != MatrixColumnOrder.DEFAULT ) {
+                        fail( ok, "the tab's matrix-column order must be reset to Clustered, got "
+                                + tp.getMatrixColumnOrder() );
                     }
                     // 3f-quater. per-tab clade annotations cleared. Only assertable when the fixture tree could
                     // actually place bands at that rank -- otherwise there was nothing to clear and nothing to prove.

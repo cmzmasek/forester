@@ -7316,6 +7316,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static float        CLADE_BRACKET_STROKE = 1.5f;
     // Tip-aligned annotation columns (color strip / heat map / bar / text), drawn right of the labels.
     private java.util.List<AnnotationColumns.ColumnSpec> _annotation_column_specs = null; // the user's selection
+    private MatrixColumnOrder.Mode _matrix_column_order = MatrixColumnOrder.DEFAULT; // View > Order Matrix Columns
     // which node properties the tip label shows, in order; null = every user-visible property that is not already
     // drawn as a column (see _annotation_column_refs) -- the default
     private java.util.List<String>     _label_property_refs = null;
@@ -9680,6 +9681,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     java.util.List<AnnotationColumns.ColumnSpec> getAnnotationColumnSpecs() {
         return _annotation_column_specs;
+    }
+
+    /** This tab's View -> Order Matrix Columns mode (per tab, like the columns themselves). */
+    MatrixColumnOrder.Mode getMatrixColumnOrder() {
+        return _matrix_column_order;
+    }
+
+    /**
+     * Sets this tab's matrix-column order and re-orders the MATRIX columns now shown to match it. MANUAL never
+     * re-sorts -- it records that the order on screen is the user's own (or a saved figure's) and must be kept.
+     * Display-only: no undo checkpoint and no provenance, like every other display toggle.
+     */
+    void setMatrixColumnOrder(final MatrixColumnOrder.Mode mode) {
+        _matrix_column_order = (mode == null) ? MatrixColumnOrder.DEFAULT : mode;
+        if ((_annotation_column_specs != null) && (_matrix_column_order != MatrixColumnOrder.Mode.MANUAL)) {
+            setAnnotationColumns(MatrixColumnOrder.apply(_annotation_column_specs, _matrix_column_order, getPhylogeny()));
+        }
     }
 
     /** Sets which fields are shown as annotation columns (each spec = a field + render type) and rebuilds. */

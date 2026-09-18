@@ -4173,6 +4173,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             getMainPanel().getMainFrame()
                     .setSelectedTypeInTypeMenu(getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType());
+            getMainPanel().getMainFrame().syncMatrixColumnOrderMenu(); // View > Order Matrix Columns is per tab too
             // per-tab view state: re-seed the SHARED widgets from whichever tab is now current, so a control
             // never shows (or applies) another tab's value
             reseedDisplayDataFromCurrentTab();

@@ -149,6 +149,17 @@ final class AlgorithmReferences {
                         + "an ambiguity code (B, X, Z) or a non-standard residue, because the scale defines none. "
                         + "Kyte J, Doolittle RF (1982): \"A simple method for displaying the hydropathic character of a "
                         + "protein\", Journal of Molecular Biology 157(1):105-132, doi:10.1016/0022-2836(82)90515-0." ) );
+        refs.add( new Reference( "Clustered matrix column order (View → Order Matrix Columns → Clustered)",
+                "Orders a heat-map matrix's columns so that columns whose values agree across the tips sit together: "
+                        + "complete-linkage hierarchical clustering on Euclidean distance, the default of R's pheatmap, "
+                        + "heatmap.2 and ComplexHeatmap. A tip missing either value is left out of that pair and the "
+                        + "squared sum scaled up by tips / used (R's dist() convention), never read as 0; the column "
+                        + "order is the one R's hclust(method = \"complete\") gives. Complete linkage: Sørensen T (1948): "
+                        + "\"A method of establishing groups of equal amplitude in plant sociology based on similarity "
+                        + "of species content and its application to analyses of the vegetation on Danish commons\", "
+                        + "Biologiske Skrifter 5(4):1-34. The clustered heat map: Eisen MB, Spellman PT, Brown PO, "
+                        + "Botstein D (1998): \"Cluster analysis and display of genome-wide expression patterns\", "
+                        + "PNAS 95(25):14863-14868, doi:10.1073/pnas.95.25.14863." ) );
         refs.add( new Reference( "Node age bars / spindles (HPD) (Settings → Overlays → Data Overlays)",
                 "On a dated (time-calibrated) phylogram, draws each internal node's divergence-time uncertainty from its "
                         + "phyloXML date -- the point estimate (median/mean height) and the 95% Highest Posterior Density "
