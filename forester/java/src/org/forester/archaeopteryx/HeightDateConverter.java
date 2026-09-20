@@ -45,10 +45,12 @@ import org.forester.util.ForesterUtil;
  * dates all of them allow, and each node's date is that minus its height (the older HPD bound becomes the earlier
  * date), in years, rounded to 5 decimals. The heights are not kept: the sentence appended to the tree description
  * names the date of height 0, from which each one follows. (Keeping them as a {@code beast:height} property was
- * measured and rejected: the PearTree Ebola tree, which has no other Color-by field, would open coloured by it.)
+ * measured and rejected: the third-party Ebola example tree, which has no other Color-by field, would open
+ * coloured by it.)
  * <p>
  * Measured 2026-09-17 on every tree file in the forester, Archaeopteryx.js and Downloads corpora: the four real BEAST
- * trees (influenza.tree, HA_discrete_MCC, HA_continuous_MCC, the PearTree Ebola example) agree on every tip, and no
+ * trees (influenza.tree, HA_discrete_MCC, HA_continuous_MCC, and the third-party Ebola example named in the
+ * working notes) agree on every tip, and no
  * other tree has unit-less dates.
  */
 final class HeightDateConverter {

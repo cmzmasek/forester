@@ -51,7 +51,29 @@ public final class DemoTreesGalleryTest {
             "long-branch-break.xml", "sars-cov-2-time-tree.xml", "nextstrain-ncov.json", "filoviridae-tree.xml",
             "dinosaur-time-tree.xml", "late-cretaceous-stages.xml", "lagomorph-time-tree.xml", "ammonite-time-tree.xml", "tree-of-life-deep-time.xml",
             "tanglegram-host-tree.xml", "tanglegram-parasite-tree.xml", "gtdb-genomes.xml",
-            "pangenome-presence-absence.xml" };
+            "pangenome-presence-absence.xml", "sparse-accessory-genome.xml" };
+
+    /** The eight columns of the sparse accessory genome demo that share no strain -- the ones the two orders differ on. */
+    private static final String[] SPARSE_RARE = { "prophage_Mu", "prophage_P2", "prophage_lambda", "prophage_HK97",
+            "prophage_Sf6", "prophage_T1", "orf_hypo_1", "orf_hypo_2" };
+
+    /** How many columns the rare ones span in {@code order}: exactly their count when they are one contiguous block. */
+    private static int rareBlockSpan( final java.util.List<String> order ) {
+        if ( order == null ) {
+            return -1;
+        }
+        int lo = Integer.MAX_VALUE;
+        int hi = -1;
+        for( final String r : SPARSE_RARE ) {
+            final int at = order.indexOf( "meta:" + r );
+            if ( at < 0 ) {
+                return -1;
+            }
+            lo = Math.min( lo, at );
+            hi = Math.max( hi, at );
+        }
+        return ( hi - lo ) + 1;
+    }
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -72,8 +94,8 @@ public final class DemoTreesGalleryTest {
     /** Headless: every bundled demo resource loads + parses from the classpath, and the catalog is the expected size. */
     private static boolean resourcesLoadOk() {
         try {
-            if ( DemoTrees.catalog().size() != 25 ) {
-                return fail( "the demo catalog should have 25 curated entries, has " + DemoTrees.catalog().size() );
+            if ( DemoTrees.catalog().size() != 26 ) {
+                return fail( "the demo catalog should have 26 curated entries, has " + DemoTrees.catalog().size() );
             }
             // if the demo resources were not staged onto the classpath (a raw IDE compile that skipped the Ant
             // copy_resources step), skip the load checks rather than fail the whole suite -- the authoritative
@@ -98,6 +120,10 @@ public final class DemoTreesGalleryTest {
             final String pangenome = DemoTrees.loadText( "pangenome-presence-absence.tsv" );
             if ( ForesterUtilShim.isBlank( pangenome ) || !pangenome.startsWith( "strain\t" ) ) {
                 return fail( "the bundled pangenome table is empty or lost its \"strain\" key column" );
+            }
+            final String sparse = DemoTrees.loadText( "sparse-accessory-genome.tsv" );
+            if ( ForesterUtilShim.isBlank( sparse ) || !sparse.startsWith( "strain\t" ) ) {
+                return fail( "the bundled sparse accessory genome table is empty or lost its \"strain\" key column" );
             }
             final String gtdb = DemoTrees.loadText( "gtdb-classifications.tsv" );
             if ( ForesterUtilShim.isBlank( gtdb ) || !gtdb.contains( "d__Bacteria" ) ) {
@@ -312,6 +338,68 @@ public final class DemoTreesGalleryTest {
             }
             else if ( !tp.canUndo() ) {
                 fail( ok, "the pangenome demo's import must be undoable, as the real Import Annotations is" );
+            }
+        }
+        else if ( label.startsWith( "Sparse Accessory Genome" ) ) {
+            // the demo exists to show ONE thing: that the two clustered orders disagree. So what is pinned is the
+            // disagreement itself, on the bundled data -- the default order clumping the eight rare genes into one
+            // block, and the other order refusing to. A demo that opened on a matrix where both orders agreed would
+            // teach nothing, and nothing else here would say so.
+            java.util.List<String> table_order = null;
+            try {
+                final String[] header = DemoTrees.loadText( "sparse-accessory-genome.tsv" ).split( "\n", 2 )[ 0 ]
+                        .split( "\t", -1 );
+                table_order = new java.util.ArrayList<String>();
+                for( int c = 1; c < header.length; ++c ) {
+                    table_order.add( "meta:" + header[ c ] );
+                }
+            }
+            catch ( final java.io.IOException e ) {
+                fail( ok, "the sparse accessory genome demo's table is not bundled: " + e.getMessage() );
+            }
+            final java.util.List<String> matrix = new java.util.ArrayList<String>();
+            if ( tp.getAnnotationColumnSpecs() != null ) {
+                for( final AnnotationColumns.ColumnSpec s : tp.getAnnotationColumnSpecs() ) {
+                    if ( s._type == AnnotationColumns.Type.MATRIX ) {
+                        matrix.add( s._ref );
+                    }
+                }
+            }
+            final java.util.List<String> clustered = ( table_order == null ) ? null
+                    : MatrixColumnOrder.order( table_order, MatrixColumnOrder.Mode.CLUSTERED, tp.getPhylogeny() );
+            final java.util.List<String> presence = ( table_order == null ) ? null
+                    : MatrixColumnOrder.order( table_order, MatrixColumnOrder.Mode.CLUSTERED_PRESENCE,
+                                               tp.getPhylogeny() );
+            if ( ( table_order != null ) && ( ( table_order.size() != 18 ) || !matrix.equals( clustered ) ) ) {
+                fail( ok, "the demo must show all 18 genes as a MATRIX in the CLUSTERED order (the default), got "
+                        + matrix.size() + " matrix columns: " + matrix );
+            }
+            else if ( tp.getMatrixColumnOrder() != MatrixColumnOrder.Mode.CLUSTERED ) {
+                fail( ok, "the demo must open in the default Clustered mode -- the artefact is what it shows first --"
+                        + " is " + tp.getMatrixColumnOrder() );
+            }
+            else if ( rareBlockSpan( clustered ) != SPARSE_RARE.length ) {
+                fail( ok, "clustered by co-occurrence, the " + SPARSE_RARE.length + " rare genes must come out as ONE"
+                        + " contiguous block (that is the artefact the demo exists to show), span "
+                        + rareBlockSpan( clustered ) );
+            }
+            else if ( rareBlockSpan( presence ) == SPARSE_RARE.length ) {
+                fail( ok, "ignoring shared absence, the rare genes must NOT stay one block -- this demo would show"
+                        + " the two orders agreeing" );
+            }
+            else if ( tp.isVerticalOrientation()
+                    || ( tp.getPhylogenyGraphicsType() != Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR ) ) {
+                fail( ok, "the demo must open as a rectangular, root-on-left clustergram (View > Clustergram)" );
+            }
+            else if ( tp.getColorByPropertyRef() != null ) {
+                fail( ok, "the demo must not auto-colour by one gene, got Color by: " + tp.getColorByPropertyRef() );
+            }
+            else if ( ( tp.getPhylogeny().getDescription() == null ) || !tp.getPhylogeny().getDescription()
+                    .contains( "Imported annotations from table \"sparse-accessory-genome.tsv\"" ) ) {
+                fail( ok, "the demo's import must append its provenance sentence to the description" );
+            }
+            else if ( !tp.canUndo() ) {
+                fail( ok, "the demo's import must be undoable, as the real Import Annotations is" );
             }
         }
         else if ( label.startsWith( "Symbol Columns" ) ) {

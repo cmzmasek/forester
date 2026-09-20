@@ -227,6 +227,7 @@ final class SettingsDialog extends JDialog {
         add( c, cb( _mf._label_direction_cbmi ) );
         add( c, cb( _mf._reverse_tip_order_cbmi ) );
         add( c, cb( _mf._break_long_branches_cbmi ) );
+        add( c, cb( _mf._legend_column_cbmi ) );
         c.add( header( "Domains" ) );
         add( c, labeled( "Domain labels:", enumCombo( Options.DOMAIN_LABEL_MODE.values(),
                                                       _mf.getOptions().getDomainLabelMode(),

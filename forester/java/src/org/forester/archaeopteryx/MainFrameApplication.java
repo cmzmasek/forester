@@ -1780,6 +1780,8 @@ public final class MainFrameApplication extends MainFrame {
         _show_internal_taxonomy_key_cbmi.setToolTipText(MainFrame.DISPLAY_INTERNAL_TAXONOMY_KEY_TIP);
         _tip_labels_below_columns_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_TIP_LABELS_BELOW_COLUMNS_LABEL);
         _tip_labels_below_columns_cbmi.setToolTipText(MainFrame.DISPLAY_TIP_LABELS_BELOW_COLUMNS_TIP);
+        _legend_column_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_LEGEND_COLUMN_LABEL);
+        _legend_column_cbmi.setToolTipText(MainFrame.DISPLAY_LEGEND_COLUMN_TIP);
         _reverse_tip_order_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_REVERSE_TIP_ORDER_LABEL);
         _reverse_tip_order_cbmi.setToolTipText(MainFrame.DISPLAY_REVERSE_TIP_ORDER_TIP);
         _bold_found_labels_cbmi = new JCheckBoxMenuItem(MainFrame.DISPLAY_BOLD_FOUND_LABELS_LABEL);
@@ -1861,6 +1863,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem(_break_long_branches_cbmi, getOptions().isBreakLongBranches());
         customizeCheckBoxMenuItem(_show_internal_taxonomy_key_cbmi, getOptions().isShowInternalTaxonomyKey());
         customizeCheckBoxMenuItem(_tip_labels_below_columns_cbmi, getOptions().isTipLabelsBelowColumns());
+        customizeCheckBoxMenuItem(_legend_column_cbmi, getOptions().isReserveLegendColumn());
         customizeCheckBoxMenuItem(_reverse_tip_order_cbmi, getOptions().isReverseTipOrder());
         customizeCheckBoxMenuItem(_bold_found_labels_cbmi, getOptions().isBoldFoundLabels());
         customizeCheckBoxMenuItem(_dim_non_matches_cbmi, getOptions().isDimNonMatches());

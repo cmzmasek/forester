@@ -90,8 +90,8 @@ public final class RadialNodeContentRenderTest {
         return ok[ 0 ];
     }
 
-    /** The CIRCULAR ALIGNED phylogram (the "A" button) pins every external tip LABEL to a common outer circle (the iTOL
-     *  aligned-tips look) with a dotted radial leader bridging each tip's branch-length radius to the ring; the
+    /** The CIRCULAR ALIGNED phylogram (the "A" button) pins every external tip LABEL to a common outer circle,
+     *  with a dotted radial leader bridging each tip's branch-length radius to the ring; the
      *  UNALIGNED ("P") phylogram keeps labels at each tip's own radius. Checked transform-independently via the shared
      *  circularLabelAnchor: aligned tip-label anchors all share ONE radius (spread ~0), unaligned anchors vary; and the
      *  aligned render adds light-grey leader ink (scale OFF, so no distance rings compete) the unaligned render lacks. */

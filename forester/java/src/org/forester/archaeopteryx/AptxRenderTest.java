@@ -343,7 +343,9 @@ public final class AptxRenderTest {
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 mf[ 0 ].getMainPanel().getControlPanel().demoSelectColorByProperty( "beast:rate" );
                 tp.setSize( w, h );
-                // the WINDOW: no column, the tree uses the width
+                // the WINDOW with Settings > Layout > "Legend in Its Own Column" OFF: no column, the tree uses the
+                // width -- and the legend lands on it, which is the state this setting exists to fix
+                mf[ 0 ].getOptions().setReserveLegendColumn( false );
                 tp.layoutForExportSize( w, h );
                 final double free_tip_x = maxTipX( tp, w, h );
                 final java.awt.Dimension free_box = tp.sharedLegendSizeForTest();
@@ -351,10 +353,20 @@ public final class AptxRenderTest {
                     ok[ 0 ] = fail( "fixture: without a column this legend must overlap the tips, or the checks below prove nothing" );
                 }
                 if ( tp.legendColumnReserve() != 0 ) {
-                    ok[ 0 ] = fail( "outside figure rendering no legend column is reserved: the window is unchanged" );
+                    ok[ 0 ] = fail( "with the setting OFF no legend column is reserved" );
                 }
-                // FIGURE rendering
+                // ...and with it ON (its default) the WINDOW reserves the same column the figure gets
+                mf[ 0 ].getOptions().setReserveLegendColumn( true );
+                tp.layoutForExportSize( w, h );
+                if ( tp.legendColumnReserve() == 0 ) {
+                    ok[ 0 ] = fail( "with the setting ON the window must reserve the legend column" );
+                }
+                // FIGURE rendering overrides the setting either way: nobody can drag a legend in a rendered PNG
+                mf[ 0 ].getOptions().setReserveLegendColumn( false );
                 tp.setReserveLegendColumn( true );
+                if ( tp.legendColumnReserve() == 0 ) {
+                    ok[ 0 ] = fail( "aptx_render must reserve the column whatever the window's setting says" );
+                }
                 final java.awt.Dimension box = tp.sharedLegendSizeForTest();
                 tp.layoutForExportSize( w, h );
                 final int reserve = tp.legendColumnReserve();

@@ -88,6 +88,7 @@ final class GuiPreferences {
             boolPref( "show_internal_taxonomy_key", Options::isShowInternalTaxonomyKey,
                       Options::setShowInternalTaxonomyKey ),
             boolPref( "tip_labels_below_columns", Options::isTipLabelsBelowColumns, Options::setTipLabelsBelowColumns ),
+            boolPref( "reserve_legend_column", Options::isReserveLegendColumn, Options::setReserveLegendColumn ),
             // key kept as "flip_vertically" (its original name) so existing saved settings still load after the
             // feature was renamed to "Reverse Tip Order"; do NOT rename the key.
             boolPref( "flip_vertically", Options::isReverseTipOrder, Options::setReverseTipOrder ),

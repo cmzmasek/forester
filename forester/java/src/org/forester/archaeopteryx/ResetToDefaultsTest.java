@@ -100,6 +100,7 @@ public final class ResetToDefaultsTest {
         o.setBreakLongBranches( true );
         o.setShowInternalTaxonomyKey( true );
         o.setTipLabelsBelowColumns( true );
+        o.setReserveLegendColumn( false ); // default is ON, so drive to OFF to prove reset restores it
         o.setReverseTipOrder( true );
         o.setBoldFoundLabels( true );
         o.setDimNonMatches( false );   // default is ON, so drive to OFF to prove reset restores it
@@ -133,6 +134,15 @@ public final class ResetToDefaultsTest {
         o.setSearchWithRegex( true );
         o.setInverseSearchResult( true );
         o.setSearchProperties( false );
+
+        // A field whose setter quietly refused would still read "default" below, for the wrong reason. Assert the
+        // drive-away TOOK for the fields whose default is ON -- the direction a stubbed setter hides best. (Measured:
+        // with setReserveLegendColumn stubbed to always set true, the comparison below still passed.)
+        if ( o.isReserveLegendColumn() || o.isDimNonMatches() || o.isPulseFoundNodes() ) {
+            System.out.println( "  [ResetToDefaultsTest] the fixture did not actually move a default-ON field off its"
+                    + " default, so the reset check below would pass on a value that never left it" );
+            return false;
+        }
 
         o.resetToDefaults();
 
@@ -176,6 +186,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "breakLongBranches", o.isBreakLongBranches(), def.isBreakLongBranches() );
         ok &= eq( "showInternalTaxonomyKey", o.isShowInternalTaxonomyKey(), def.isShowInternalTaxonomyKey() );
         ok &= eq( "tipLabelsBelowColumns", o.isTipLabelsBelowColumns(), def.isTipLabelsBelowColumns() );
+        ok &= eq( "reserveLegendColumn", o.isReserveLegendColumn(), def.isReserveLegendColumn() );
         ok &= eq( "reverseTipOrder", o.isReverseTipOrder(), def.isReverseTipOrder() );
         ok &= eq( "boldFoundLabels", o.isBoldFoundLabels(), def.isBoldFoundLabels() );
         ok &= eq( "dimNonMatches", o.isDimNonMatches(), def.isDimNonMatches() );

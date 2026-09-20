@@ -427,7 +427,7 @@ public class TreePanelUtil {
 
     /**
      * The device-y the horizontal scale axis line is drawn at (its top). On SCREEN the axis FLOATS at the viewport
-     * bottom so it never scrolls out of view when zoomed in (PearTree-style), exactly like the viewport-fixed scale
+     * bottom so it never scrolls out of view when zoomed in, exactly like the viewport-fixed scale
      * bar. A FILE export stays anchored to the tree/export extent bottom so figures remain WYSIWYG; the direct
      * File&gt;Print path (an export flag set but {@code graphics_file_height == 0}) anchors to the whole canvas.
      */

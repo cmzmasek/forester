@@ -302,6 +302,11 @@ final public class Options {
     // BELOW the columns (at the bottom) instead of between the tree and the columns, so the dendrogram sits directly
     // on the tip-aligned grid. Display-only; no-op in the horizontal orientation / without annotation columns.
     private boolean _tip_labels_below_columns;
+    // The shared legend's default corner -- top right -- is exactly where a root-left tree puts its top tips, and its
+    // annotation-column headers. Reserve a COLUMN for it at the right instead of letting it float over them, so the
+    // window shows what a rendered figure (aptx_render, and File > Save/Export as PDF) has always shown. Drag a
+    // legend anywhere and it gives the column back: only a legend still at its default corner claims one.
+    private boolean _reserve_legend_column;
     private boolean _show_overview;
     private boolean _show_scale;
     private boolean _show_scale_grid;
@@ -365,6 +370,14 @@ final public class Options {
 
     final boolean isTipLabelsBelowColumns() {
         return _tip_labels_below_columns;
+    }
+
+    final boolean isReserveLegendColumn() {
+        return _reserve_legend_column;
+    }
+
+    final void setReserveLegendColumn( final boolean reserve_legend_column ) {
+        _reserve_legend_column = reserve_legend_column;
     }
 
     final void setTipLabelsBelowColumns(final boolean tip_labels_below_columns) {
@@ -483,6 +496,7 @@ final public class Options {
         _domain_label_mode = DOMAIN_LABEL_MODE.ON_DOMAINS;
         _show_domain_glow = false;
         _tip_labels_below_columns = false;
+        _reserve_legend_column = true; // the window agrees with the figure; turn it off to give the tree the width
         setAbbreviateScientificTaxonNames(false);
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = false;

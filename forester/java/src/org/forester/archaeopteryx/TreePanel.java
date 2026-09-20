@@ -240,8 +240,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
 
 
-    // Fine dotted "leader" that links each tip to its lined-up label/data in aligned-phylogram mode (the
-    // iTOL-style guide line). Round-capped dots at a visible width -- the old per-branch strokes were
+    // Fine dotted "leader" that links each tip to its lined-up label/data in aligned-phylogram mode.
+    // Round-capped dots at a visible width -- the old per-branch strokes were
     // sub-pixel (0.01-0.1f) and rendered effectively invisible.
     private static final BasicStroke LEADER_STROKE = new BasicStroke(0.7f,
             BasicStroke.CAP_ROUND,
@@ -279,7 +279,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Node age (HPD) bars: the bar thickness and its translucent fill (blue on screen/color export; a neutral gray in
     // a black-and-white export so it is not the only colored element).
     private static final int    HPD_BAR_HEIGHT = 7;
-    private static final Color  HPD_BAR_COLOR = new Color(70, 130, 220, 90);  // translucent blue, FigTree-like
+    private static final Color  HPD_BAR_COLOR = new Color(70, 130, 220, 90);  // translucent blue, the usual HPD tint
     private static final Color  HPD_BAR_COLOR_BW = new Color(90, 90, 90, 70); // translucent gray for B&W export
     // Node-age SPINDLE (an alternative shape to the flat HPD bar): a tapered lens peaking at the point estimate. Its
     // MAX half-thickness (a touch fatter than the bar's half-height so the tapered shape reads distinctly), and the
@@ -379,6 +379,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** The node hover card (null = none): canvas state painted as the last overlay -- never a popup window. */
     private NodeHoverCard _hover_card;
     private PhylogenyNode _hover_card_node;
+    private AnnotationCell _hover_card_cell;
     private int _hover_card_x;
     private int _hover_card_y;
     private long _hover_card_shown_at;
@@ -4522,8 +4523,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final float y = getYdistance(); // track the actual row spacing (see the horizontal path above)
                 final int h = TreePanelUtil.domainBoxHeight(y, DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
                 rds.setRenderingHeight(h);
-                // Domain architectures always line up in a common right-edge column (the standard,
-                // iTOL-style comparable layout); the phylogram column is past the deepest tip + longest
+                // Domain architectures always line up in a common right-edge column, so they can be
+                // compared across tips; the phylogram column is past the deepest tip + longest
                 // label, the cladogram column just past the aligned tips.
                 if (getControlPanel().isDrawPhylogram()) {
                     rds.render(alignedPhylogramDomainColumnX(),
@@ -4884,8 +4885,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Stroke saved_stroke = g.getStroke();
         g.setFont(getTreeFontSet().getSmallFont());
         final FontMetrics fm = g.getFontMetrics();
-        // Screen: FLOAT the axis at the viewport bottom so it never scrolls out of view when zoomed in (PearTree-
-        // style), exactly like the viewport-fixed scale bar. A file export stays anchored to the tree/export bottom
+        // Screen: FLOAT the axis at the viewport bottom so it never scrolls out of view when zoomed in,
+        // exactly like the viewport-fixed scale bar. A file export stays anchored to the tree/export bottom
         // so figures remain WYSIWYG.
         final Rectangle vr = getVisibleRect();
         final int bottom = TreePanelUtil.scaleAxisFloatingBottom(to_pdf, to_graphics_file, graphics_file_y,
@@ -5011,7 +5012,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int tip_side_x = (int) Math.round(screenPoint(origin_x, ruler_ly - 16.0).x);
         final int in = (tip_side_x >= anchored_x) ? 1 : -1; // +1 = tree to the right of the ruler (ticks point right)
         // Screen: FLOAT the ruler to the viewport breadth EDGE on its own side (away from the tree) so it stays
-        // visible when zoomed/scrolled along the breadth (PearTree-style); every export keeps the tree-anchored
+        // visible when zoomed/scrolled along the breadth; every export keeps the tree-anchored
         // breadth position (treeBreadthExtent) so figures remain WYSIWYG. The tick DEPTH positions (device-y from
         // screenPoint) are unchanged, so they stay aligned with the branches.
         final Rectangle vr = getVisibleRect();
@@ -5989,8 +5990,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  root (the oldest age), a tick mark + Ma label at each "nice" round age (0, 50, 100 ... via
      *  {@link TreePanelUtil#maAxisTickValues}), the unit "Ma" at the age-0 end, decimated so labels never overlap. Ages
      *  INCREASE toward the root -- the standard age-before-present axis. Because the ruler is anchored to the tree's own
-     *  root-age calibration ({@link #ageToX}), not a manual offset/reverse, it can't show a wrong root age (unlike the
-     *  FigTree reverse-axis footgun). Reused by the horizontal axis (device coords) and the vertical axis (logical
+     *  root-age calibration ({@link #ageToX}), not a manual offset/reverse, it cannot be set to show a wrong root
+     *  age. Reused by the horizontal axis (device coords) and the vertical axis (logical
      *  coords, riding R into a rotated ruler), exactly like {@link #paintGeologicBoundaryAges}. */
     private void paintGeologicAgeRuler(final Graphics2D g, final double root_age, final float origin_x,
                                        final double corr, final int ruler_y, final boolean to_pdf,
@@ -6786,6 +6787,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_hover_card != null) {
             _hover_card = null;
             _hover_card_node = null;
+            _hover_card_cell = null;
             stopHoverCardFade();
             repaint();
         }
@@ -6794,6 +6796,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Test hook: whether the node hover card is currently showing. */
     final boolean isNodeDescPopupShowingForTest() {
         return _hover_card != null;
+    }
+
+    /** Test hook: the circular layout's ring centre (device), or null before it has been laid out. */
+    final java.awt.Point circularCenterForTest() {
+        return (_circular_radius <= 0) ? null : new java.awt.Point(_circular_center_x, _circular_center_y);
+    }
+
+    /** Test hook: the annotation-column cell the showing rollover is for, or null (a node card, or no card). */
+    final AnnotationCell hoverCardCellForTest() {
+        return (_hover_card == null) ? null : _hover_card_cell;
     }
 
     /**
@@ -6814,6 +6826,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _hover_card = new NodeHoverCard(rows, (base != null) ? base : getFont(), this::getFontMetrics,
                 NodeHoverCard.isDarkTheme());
         _hover_card_node = node;
+        _hover_card_cell = null;
+        _hover_card_x = e.getX();
+        _hover_card_y = e.getY();
+        _hover_card_shown_at = System.currentTimeMillis();
+        startHoverCardFade();
+        repaint();
+    }
+
+    /**
+     * The rollover for an annotation-column CELL: the same card the node rollover uses, holding what that cell
+     * actually contains. Beside a 40-column matrix the colour is all there is to go on, and the tip labels are a
+     * long way to the left, so the card names the tip as well as the value.
+     */
+    final private void showAnnotationCellPopup(final MouseEvent e, final AnnotationCell cell) {
+        if ((_hover_card != null) && (_hover_card_cell != null) && (_hover_card_cell.column() == cell.column())
+                && (_hover_card_cell.tip() == cell.tip())) {
+            return; // same cell: leave the card where it is rather than restart its fade under the pointer
+        }
+        final java.util.List<NodeHoverText.Row> rows = _annotation_columns.cellRows(cell.tip(), cell.column());
+        if (rows.isEmpty()) {
+            hideNodeDataPopup();
+            return;
+        }
+        final Font base = UIManager.getFont("Label.font");
+        _hover_card = new NodeHoverCard(rows, (base != null) ? base : getFont(), this::getFontMetrics,
+                NodeHoverCard.isDarkTheme());
+        _hover_card_node = null;
+        _hover_card_cell = cell;
         _hover_card_x = e.getX();
         _hover_card_y = e.getY();
         _hover_card_shown_at = System.currentTimeMillis();
@@ -7754,9 +7794,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    // FIGURE RENDERING (aptx_render): on screen a legend floats over the tree and the user drags it clear; in a
-    // rendered figure nobody can, and its default corner -- top right -- is exactly where a root-left tree puts its
-    // top tips. So there the legend gets a COLUMN of its own at the right, reserved like the annotation columns are.
+    // THE LEGEND COLUMN. A legend's default corner -- top right -- is exactly where a root-left tree puts its top
+    // tips, and the headers of its annotation columns. So the legend can get a COLUMN of its own at the right,
+    // reserved like the annotation columns are, rather than floating over them.
+    //
+    // Two ways in. The user's Settings > Layout > "Legend in Its Own Column" (Options, on by default) is what the
+    // WINDOW follows -- and with it the PDF/SVG the window exports, which is drawn by this same panel. The field
+    // below is the figure renderer's override: aptx_render always reserves, because nobody can drag a legend in a
+    // rendered PNG. On screen they can, and a legend they moved claims no column (see rightEdgeLegendWidth).
     private boolean             _reserve_legend_column = false;
     private Dimension           _last_legend_box_size  = null;
     private int                 _layout_width          = 0;
@@ -7769,13 +7814,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _reserve_legend_column = reserve_legend_column;
     }
 
+    /** Whether this panel gives a right-edge legend a column at all: the user's setting, or the figure renderer's
+     *  own override. */
+    private boolean reservesLegendColumn() {
+        return _reserve_legend_column || ((getOptions() != null) && getOptions().isReserveLegendColumn());
+    }
+
     /**
-     * The width reserved at the right for the legends that stand at the right edge, or 0. Only in figure rendering,
-     * only where that edge collides with the tree -- the rectangular ROOT-LEFT layout (a radial tree is a disc and
-     * leaves the corners free; the vertical orientations are not reachable from aptx_render).
+     * The width reserved at the right for the legends that stand at the right edge, or 0 -- only where that edge
+     * collides with the tree, the rectangular ROOT-LEFT layout (a radial tree is a disc and leaves the corners free;
+     * in a vertical orientation the tips run along the bottom, not the right edge).
      */
     final int legendColumnReserve() {
-        if (!_reserve_legend_column || isRadialLayout() || isVerticalOrientation()) {
+        if (!reservesLegendColumn() || isRadialLayout() || isVerticalOrientation()) {
             return 0;
         }
         final int width = rightEdgeLegendWidth();
@@ -7797,22 +7848,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  clade-band rule sends it left), the Size-by legend (top right alone, bottom right beside a colour legend), and
      *  the ancestral-pie legend when it holds the top right itself (else it goes bottom LEFT). */
     private int rightEdgeLegendWidth() {
+        final boolean chrome = legendsCarryScreenChrome();
         int width = 0;
         if ((_legend_offset == null) && !defaultLegendGoesLeft()) {
-            final Dimension shared = measureSharedLegend();
+            final Dimension shared = measureSharedLegend(chrome);
             if (shared != null) {
                 width = Math.max(width, shared.width);
             }
         }
         final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
         if (isSizeByProperty() && (_size_legend_offset == null)) {
-            final Dimension size = measureLegend(g -> drawSizeLegend(g, anywhere, false));
+            final Dimension size = measureLegend(g -> drawSizeLegend(g, anywhere, chrome));
             if (size != null) {
                 width = Math.max(width, size.width);
             }
         }
         if (isShowAncestralPies() && (_ancestral_pie_legend_offset == null) && !sharedLegendHoldsTopRight()) {
-            final Dimension pies = measureLegend(g -> drawAncestralPieLegend(g, anywhere, false, false));
+            final Dimension pies = measureLegend(g -> drawAncestralPieLegend(g, anywhere, chrome, false));
             if (pies != null) {
                 width = Math.max(width, pies.width);
             }
@@ -7820,12 +7872,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return width;
     }
 
+    /**
+     * Whether the legends of THIS panel are drawn with their on-screen chrome -- the drag affordance, the sort
+     * toggle, the "more" row -- which makes a box measurably wider than the plain one a rendered figure gets (a
+     * Color-by legend: 197 px against 94 on the pan-genome demo). The paint decides it per destination
+     * ({@code to_screen} in paintPhylogeny), and a column reserved for the narrower box would leave the wider one
+     * covering the tree again. The figure renderer's panel only ever paints to a file, so it measures the plain box;
+     * a window panel measures the chrome, and a PDF exported from that window then has room to spare rather than too
+     * little.
+     */
+    private boolean legendsCarryScreenChrome() {
+        return !_reserve_legend_column;
+    }
+
+    /** The legend size the shared slot would draw now, measured as this panel will actually draw it. */
     final Dimension sharedLegendSizeForTest() {
-        return measureSharedLegend();
+        return measureSharedLegend(legendsCarryScreenChrome());
     }
 
     /** The size of the legend the shared slot would draw now (null when it would draw none). */
-    private Dimension measureSharedLegend() {
+    private Dimension measureSharedLegend(final boolean draggable) {
         final boolean annotation = annotationLegendVisible();
         final boolean color = hasColorByPropertyLegend();
         if (!annotation && !color && !hasRankLegend()) {
@@ -7834,11 +7900,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
         return measureLegend(g -> {
             if (annotation) {
-                drawAnnotationColumnLegend(g, anywhere, false);
+                drawAnnotationColumnLegend(g, anywhere, draggable);
             } else if (color) {
-                drawPropertyColorLegend(g, anywhere, false);
+                drawPropertyColorLegend(g, anywhere, draggable);
             } else {
-                drawRankLegend(g, anywhere, false);
+                drawRankLegend(g, anywhere, draggable);
             }
         });
     }
@@ -10064,6 +10130,103 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return -1;
     }
 
+    /** A cell of an annotation column: the DRAWN column and the tip whose row it is on. */
+    record AnnotationCell(int column, PhylogenyNode tip) {
+    }
+
+    /**
+     * The annotation-column cell under the point, or null -- what the rollover reads out.
+     * <p>
+     * One hit-test for every layout that draws cells: the rectangular family measures along LOGICAL coordinates (the
+     * point goes back through the clustergram's rotation first, as the drag's slot hit-test does), the circular one
+     * along radius and angle. The UNROOTED layout draws no cells, so nothing there can be hit.
+     * <p>
+     * Both axes are measured with the PAINT's own expressions -- the column start and the per-column widths and gaps,
+     * {@link #tipRowBand} for the row, the ring start and the half-step of
+     * {@link #paintAnnotationColumnsCircular} for the arc -- so what reads out is exactly the cell that was drawn.
+     */
+    AnnotationCell annotationCellAt(final int x, final int y) {
+        if (!hasAnnotationColumns() || (_annotation_columns == null)
+                || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
+            return null;
+        }
+        final java.util.List<PhylogenyNode> tips = visibleExternalTips();
+        if (tips.isEmpty()) {
+            return null;
+        }
+        return (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) ? circularCellAt(x, y, tips)
+                : rectangularCellAt(x, y, tips);
+    }
+
+    private AnnotationCell rectangularCellAt(final int x, final int y, final java.util.List<PhylogenyNode> tips) {
+        if (isVerticalOrientation() && (_orientation_R_inverse == null)) {
+            return null; // R is built during paint; before the first vertical paint the point cannot be un-rotated
+        }
+        final Point2D.Double p = toLogicalPoint(x, y);
+        final int col = annotationColumnAtPosition(p.x, annotationColumnsStartX());
+        if (col < 0) {
+            return null;
+        }
+        for (int r = 0; r < tips.size(); ++r) {
+            final int[] band = tipRowBand(tips, r);
+            if ((p.y >= band[0]) && (p.y < (band[0] + band[1]))) {
+                return new AnnotationCell(col, tips.get(r));
+            }
+        }
+        return null;
+    }
+
+    private AnnotationCell circularCellAt(final int x, final int y, final java.util.List<PhylogenyNode> tips) {
+        if (_circular_radius <= 0) {
+            return null;
+        }
+        final int col = annotationColumnAtPosition(Math.hypot(x - _circular_center_x, y - _circular_center_y),
+                                                   circularAnnotationRingStart(_circular_radius));
+        if (col < 0) {
+            return null;
+        }
+        final double units = circularRowUnits();
+        if (units <= 0) {
+            return null;
+        }
+        final double half_step = Math.PI / units;
+        final double a = Math.atan2(y - _circular_center_y, x - _circular_center_x);
+        for (final PhylogenyNode t : tips) {
+            final Double ta = _urt_nodeid_angle_map.get(t.getId());
+            if ((ta != null) && (Math.abs(angleDelta(ta.doubleValue(), a)) <= half_step)) {
+                return new AnnotationCell(col, t);
+            }
+        }
+        return null;
+    }
+
+    /** {@code a - b} wrapped into (-pi, pi], so a cell at the fan seam is not missed by a whole turn (the stored
+     *  spoke angles run 0..2pi, atan2 returns -pi..pi). */
+    private static double angleDelta(final double a, final double b) {
+        double d = (a - b) % (2 * Math.PI);
+        if (d > Math.PI) {
+            d -= 2 * Math.PI;
+        }
+        if (d <= -Math.PI) {
+            d += 2 * Math.PI;
+        }
+        return d;
+    }
+
+    /** The drawn column whose band contains {@code pos} along the columns' own axis (logical x, or radius), or -1.
+     *  Walks the same widths and gaps the painters lay out, so a point in the GAP between two columns is in neither. */
+    private int annotationColumnAtPosition(final double pos, final double start) {
+        double at = start;
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final int w = annotationColumnWidth(i);
+            if ((pos >= at) && (pos <= (at + w))) {
+                return i;
+            }
+            at += w + annotationColumnGapAfter(i);
+        }
+        return -1;
+    }
+
     /** Toggles the color key (legend) for the annotation column whose header (rectangular) or ring (circular) was
      *  clicked. */
     final boolean handleAnnotationHeaderClick(final MouseEvent e) {
@@ -11402,7 +11565,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /**
      * Zebra striping: a faint alternating background band behind every other visible tip row, spanning the full
-     * width, so a label is easy to track across a wide tree to its annotation columns (the iTOL row-shading aid).
+     * width, so a label is easy to track across a wide tree to its annotation columns.
      * Theme-aware and translucent (branches/labels show through); drawn after the node loop (coords are set there).
      * Rectangular layouts only (this is called from the rectangular paint branch). Collapsed-clade wedges count
      * as one row; nodes hidden under a collapse are skipped so the alternation matches the DRAWN rows.
@@ -11522,8 +11685,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
 
     /** Protein-domain architectures for the CIRCULAR layout: each external tip's architecture rides its spoke, drawn
-     *  as a bar extending radially OUTWARD from a common start radius just past the tip labels -- the iTOL
-     *  circular-domains look (a clean CONCENTRIC ring in both aligned and unaligned phylograms). circularRadius already
+     *  as a bar extending radially OUTWARD from a common start radius just past the tip labels -- a clean
+     *  CONCENTRIC ring in both aligned and unaligned phylograms. circularRadius already
      *  reserves the concentric worst-case reach, so this only DRAWS. On-box domain-name labels are suppressed in radial
      *  (they would rotate illegibly on a spoke and collide with neighbours); the draggable, E-value-aware domain LEGEND
      *  names them instead -- the same approved exception as the vertical (root-top/bottom) orientation. */
@@ -11537,7 +11700,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         // ALL architectures start at a common radius just past the longest tip label -> a clean CONCENTRIC domain
-        // ring (the iTOL look) in BOTH aligned and unaligned phylograms (radius + longest label clears every tip's
+        // ring in BOTH aligned and unaligned phylograms (radius + longest label clears every tip's
         // label, since even a shallow tip's label reaches at most radius + longest_text).
         final double start_r = radius + _length_of_longest_text_only + DOMAIN_RADIAL_GAP;
         // clamp the box thickness to the arc between adjacent spokes at that radius, so dense trees don't overlap
@@ -14380,10 +14543,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // halo behind the triangle reads cleanly where the old flat disc over it did not.
                 applyHover(node, false);
             } else {
-                // not over a node: over a branch (Select-Node(s) mode) -> hand cursor + preview the subtree
-                final PhylogenyNode branch = select_mode ? findBranch(e.getX(), e.getY()) : null;
-                applyHover(branch, true);
-                setCursor((branch != null) ? HAND_CURSOR : ARROW_CURSOR);
+                // not over a node. An annotation-column CELL reads out what it holds -- under the same Rollover
+                // display option as the node card, and checked first: out there among the columns there is no
+                // branch to preview anyway.
+                final AnnotationCell cell = shows(DisplayOption.NODE_DATA_POPUP)
+                        ? annotationCellAt(e.getX(), e.getY()) : null;
+                if (cell != null) {
+                    showAnnotationCellPopup(e, cell);
+                    card_wanted = true;
+                    applyHover(null, false); // no node under the pointer -> no focus glow left behind
+                    setCursor(ARROW_CURSOR);
+                } else {
+                    // over a branch (Select-Node(s) mode) -> hand cursor + preview the subtree
+                    final PhylogenyNode branch = select_mode ? findBranch(e.getX(), e.getY()) : null;
+                    applyHover(branch, true);
+                    setCursor((branch != null) ? HAND_CURSOR : ARROW_CURSOR);
+                }
             }
         }
         if (!card_wanted) {
@@ -14599,7 +14774,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** The circular ALIGNED phylogram (the "A" tree-shape button in circular): a phylogram whose branches end at each
      *  tip's branch-length radius, but whose external tip LABELS are all pinned to the common OUTER ring (radius) with a
-     *  dotted radial leader bridging the gap -- the iTOL aligned-tips signature look. The polar twin of the rectangular
+     *  dotted radial leader bridging the gap. The polar twin of the rectangular
      *  ALIGNED_PHYLOGRAM (labels at a common right column + leader). UNALIGNED ("P") keeps labels at each tip's radius. */
     private boolean isAlignedCircularPhylogram() {
         return isCircularPhylogram()
@@ -15082,7 +15257,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintGeologicRingLabelsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // optional Ma age labels at the coarse-band boundary radii, up the spoke (gated on "Geologic Boundary Ages")
             paintGeologicBoundaryAgesCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
-            // protein-domain architectures riding each tip's spoke, just past the labels (iTOL circular-domains look)
+            // protein-domain architectures riding each tip's spoke, just past the labels
             paintDomainsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             paintTimeAxisHint(g, to_pdf, to_graphics_file); // a dated circular CLADOGRAM: say why the ring axis isn't showing

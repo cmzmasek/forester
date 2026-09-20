@@ -67,12 +67,12 @@ final class AnnotationColumns {
          *  length is its value as a fraction of the largest per-tip series total, so the bar's overall length shows
          *  magnitude AND its segments show composition; a <em>normalized</em> column instead fills the whole width and
          *  each segment shows that series' proportion of the tip's own total (composition only). For compositional /
-         *  proportional data (iTOL's DATASET_MULTIBAR). */
+         *  proportional data. */
         STACKED_BAR,
         /** A PIE glyph: several numeric fields (each set to PIE) MERGE into one pie per tip, each field a
          *  distinctly-coloured wedge whose angle is its share of the tip's total. The pie-chart alternative to a
          *  <em>normalized</em> stacked bar -- the same proportional composition, mapped to wedge angles instead of
-         *  segment lengths (iTOL's DATASET_PIECHART). A pie is inherently proportional, so it has no absolute mode. */
+         *  segment lengths. A pie is inherently proportional, so it has no absolute mode. */
         PIE,
         /** The raw value drawn as text. */
         TEXT,
@@ -512,6 +512,68 @@ final class AnnotationColumns {
             return "";
         }
         return ps.get( 0 ).getValue();
+    }
+
+    /** What a cell with no value reads as in the rollover -- absence of evidence, which is not a 0. */
+    static final String NOT_ASSESSED = "not assessed";
+
+    /**
+     * The rollover rows for {@code node}'s cell in drawn column {@code i}: which tip's row this is, then what the
+     * cell actually holds -- the field and its RAW value (a blank cell reads "not assessed", never 0), one row per
+     * series for a merged stacked-bar / pie column, and, for a gradient, the scale the colour was taken from, so a
+     * shade can be read back to a number. Never empty: a cell with no value still names the tip and the field.
+     * <p>
+     * The tip is a VALUE row, not a card heading: the card sets its headings in small uppercase, which is right for
+     * a section label and wrong for a name -- "Kpn_L1_05" is data and has to read back exactly as it is written.
+     */
+    List<NodeHoverText.Row> cellRows( final PhylogenyNode node, final int i ) {
+        final List<NodeHoverText.Row> rows = new ArrayList<NodeHoverText.Row>();
+        final Column c = _columns.get( i );
+        rows.add( NodeHoverText.Row.line( "Tip", tipLabel( node ) ) );
+        if ( isMergedType( c._type ) && ( c._stack_refs != null ) ) {
+            final List<String> headers = stackHeaders( i );
+            for( int k = 0; k < c._stack_refs.size(); ++k ) {
+                rows.add( NodeHoverText.Row.line( headers.get( k ),
+                                                  valueOrNotAssessed( node, c._stack_refs.get( k ) ) ) );
+            }
+        }
+        else {
+            rows.add( NodeHoverText.Row.line( c.getHeader(), valueOrNotAssessed( node, c._ref ) ) );
+        }
+        if ( ( c._scheme != null ) && c._scheme.isGradient() && !c._scheme.isEmpty() ) {
+            rows.add( NodeHoverText.Row.line( "Scale", c._scheme.getGradientMinLabel() + " \u2013 "
+                    + c._scheme.getGradientMaxLabel() ) );
+        }
+        return rows;
+    }
+
+    private static String valueOrNotAssessed( final PhylogenyNode node, final String ref ) {
+        final String v = valueOrEmpty( node, ref );
+        return ForesterUtil.isEmpty( v ) ? NOT_ASSESSED : v;
+    }
+
+    /** What to call the tip the cell sits on: its name, else whatever else identifies it, else a placeholder -- the
+     *  heading has to say WHICH row this is, which is the whole reason it is there. */
+    private static String tipLabel( final PhylogenyNode node ) {
+        if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+            return node.getName();
+        }
+        if ( node.getNodeData() != null ) {
+            if ( node.getNodeData().isHasTaxonomy() ) {
+                final String sci = node.getNodeData().getTaxonomy().getScientificName();
+                if ( !ForesterUtil.isEmpty( sci ) ) {
+                    return sci;
+                }
+                final String common = node.getNodeData().getTaxonomy().getCommonName();
+                if ( !ForesterUtil.isEmpty( common ) ) {
+                    return common;
+                }
+            }
+            if ( node.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
+                return node.getNodeData().getSequence().getName();
+            }
+        }
+        return "(unnamed tip)";
     }
 
     /** The default render type for a field: heat map for a numeric field, color strip for a categorical one. */

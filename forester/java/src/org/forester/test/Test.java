@@ -1586,6 +1586,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Annotation cell rollover: ");
+        if (org.forester.archaeopteryx.AnnotationCellHoverTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Legend in its own column: ");
+        if (org.forester.archaeopteryx.LegendColumnTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Clustergram layout (render): ");
         if (org.forester.archaeopteryx.ClustergramRenderTest.test()) {
             System.out.println("OK.");

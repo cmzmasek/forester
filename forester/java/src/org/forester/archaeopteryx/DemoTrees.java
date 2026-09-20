@@ -169,6 +169,28 @@ final class DemoTrees {
                                  }
                                  mf.applyClustergramPreset();
                              } ) );
+        demos.add( new Demo( "Sparse Accessory Genome (Two Clustered Orders)",
+                             "50 strains x 18 genes whose eight rare genes share no strain at all. Clustered by "
+                                     + "co-occurrence they clump into one block -- Euclidean distance counts the "
+                                     + "strains they are jointly ABSENT from as agreement. View > Order Matrix "
+                                     + "Columns > Clustered (ignoring shared absence) breaks that block up and moves "
+                                     + "each prophage beside its own lineage's capsule locus.",
+                             mf -> {
+                                 // same workflow as the pangenome demo: a PLAIN tree + its table, then Clustergram.
+                                 // It opens in the DEFAULT order, so what the demo shows first is the artefact.
+                                 final TreePanel tp = openTree( mf, "sparse-accessory-genome.xml" );
+                                 final NodeDataImporter.Table table = NodeDataImporter
+                                         .parseTable( loadText( "sparse-accessory-genome.tsv" ) );
+                                 final NodeDataImporter.ImportResult res = mf.importAnnotationsAndRefit(
+                                         tp.getPhylogeny(), table, table.defaultKeyColumn(),
+                                         NodeDataImporter.MatchBy.TIP_NAME, NodeDataImporter.ColumnPlan.importAll( table ),
+                                         "sparse-accessory-genome.tsv" );
+                                 if ( res.getTipsAnnotated() == 0 ) {
+                                     throw new IOException( "the bundled sparse accessory genome table matched no tip"
+                                             + " of the bundled tree" );
+                                 }
+                                 mf.applyClustergramPreset();
+                             } ) );
         demos.add( new Demo( "Protein Domain Architectures",
                              "Multi-domain protein sequences drawn to scale at each tip (auto-enabled on load).",
                              mf -> openTree( mf, "domain-architectures.xml" ) ) ); // domains auto-enable + fit on load

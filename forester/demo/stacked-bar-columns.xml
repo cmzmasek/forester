@@ -10,22 +10,22 @@
       <clade>
         <name>gut_01</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">140</property>
         <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">820</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">140</property>
         <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">40</property>
       </clade>
       <clade>
         <name>gut_02</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">300</property>
         <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">610</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">300</property>
         <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">90</property>
       </clade>
       <clade>
         <name>gut_03</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">380</property>
         <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">450</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">380</property>
         <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">170</property>
       </clade>
     </clade>
@@ -36,15 +36,15 @@
         <clade>
           <name>oral_01</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">250</property>
           <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">300</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">250</property>
           <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">1450</property>
         </clade>
         <clade>
           <name>oral_02</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">210</property>
           <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">260</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">210</property>
           <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">980</property>
         </clade>
       </clade>
@@ -53,15 +53,15 @@
         <clade>
           <name>skin_01</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">60</property>
           <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">900</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">60</property>
           <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">40</property>
         </clade>
         <clade>
           <name>skin_02</name>
           <branch_length>0.02</branch_length>
-          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">120</property>
           <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">780</property>
+          <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">120</property>
           <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">100</property>
         </clade>
       </clade>
@@ -71,22 +71,22 @@
       <clade>
         <name>soil_01</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">700</property>
         <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">200</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">700</property>
         <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">300</property>
       </clade>
       <clade>
         <name>soil_02</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">640</property>
         <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">150</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">640</property>
         <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">210</property>
       </clade>
       <clade>
         <name>water_01</name>
         <branch_length>0.02</branch_length>
-        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">400</property>
         <property ref="data:firmicutes" datatype="xsd:decimal" applies_to="node">120</property>
+        <property ref="data:bacteroidetes" datatype="xsd:decimal" applies_to="node">400</property>
         <property ref="data:proteobacteria" datatype="xsd:decimal" applies_to="node">480</property>
       </clade>
     </clade>

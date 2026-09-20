@@ -11,9 +11,9 @@
         <name>A/Vietnam/1203/2004</name>
         <branch_length>0.02</branch_length>
         <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI1731</property>
-        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
-        <property ref="data:country" datatype="xsd:string" applies_to="node">Viet Nam</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:country" datatype="xsd:string" applies_to="node">Viet Nam</property>
+        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
         <property ref="data:passage" datatype="xsd:string" applies_to="node">E3</property>
         <property ref="data:year" datatype="xsd:decimal" applies_to="node">2004</property>
       </clade>
@@ -21,9 +21,9 @@
         <name>A/HongKong/156/1997</name>
         <branch_length>0.02</branch_length>
         <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI0885</property>
-        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.2.1c</property>
-        <property ref="data:country" datatype="xsd:string" applies_to="node">China</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Human</property>
+        <property ref="data:country" datatype="xsd:string" applies_to="node">China</property>
+        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.2.1c</property>
         <property ref="data:passage" datatype="xsd:string" applies_to="node">E2</property>
         <property ref="data:year" datatype="xsd:decimal" applies_to="node">1997</property>
       </clade>
@@ -31,9 +31,9 @@
         <name>A/duck/Hunan/795/2002</name>
         <branch_length>0.02</branch_length>
         <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI1442</property>
-        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.2.1c</property>
-        <property ref="data:country" datatype="xsd:string" applies_to="node">China</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+        <property ref="data:country" datatype="xsd:string" applies_to="node">China</property>
+        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.2.1c</property>
         <property ref="data:passage" datatype="xsd:string" applies_to="node">E1</property>
         <property ref="data:year" datatype="xsd:decimal" applies_to="node">2002</property>
       </clade>
@@ -41,9 +41,9 @@
         <name>A/chicken/Egypt/07/2010</name>
         <branch_length>0.02</branch_length>
         <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI2984</property>
-        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.2.1</property>
-        <property ref="data:country" datatype="xsd:string" applies_to="node">Egypt</property>
         <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+        <property ref="data:country" datatype="xsd:string" applies_to="node">Egypt</property>
+        <property ref="data:clade" datatype="xsd:string" applies_to="node">2.2.1</property>
         <property ref="data:passage" datatype="xsd:string" applies_to="node">E4</property>
         <property ref="data:year" datatype="xsd:decimal" applies_to="node">2010</property>
       </clade>
@@ -56,9 +56,9 @@
           <name>A/swine/Iowa/15/1930</name>
           <branch_length>0.02</branch_length>
           <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI0112</property>
-          <property ref="data:clade" datatype="xsd:string" applies_to="node">1A.3.3.2</property>
-          <property ref="data:country" datatype="xsd:string" applies_to="node">USA</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Swine</property>
+          <property ref="data:country" datatype="xsd:string" applies_to="node">USA</property>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">1A.3.3.2</property>
           <property ref="data:passage" datatype="xsd:string" applies_to="node">MDCK1</property>
           <property ref="data:year" datatype="xsd:decimal" applies_to="node">1930</property>
         </clade>
@@ -66,9 +66,9 @@
           <name>A/equine/Prague/1/1956</name>
           <branch_length>0.02</branch_length>
           <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI0334</property>
-          <property ref="data:clade" datatype="xsd:string" applies_to="node">Fc1</property>
-          <property ref="data:country" datatype="xsd:string" applies_to="node">Czechia</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Equine</property>
+          <property ref="data:country" datatype="xsd:string" applies_to="node">Czechia</property>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">Fc1</property>
           <property ref="data:passage" datatype="xsd:string" applies_to="node">E5</property>
           <property ref="data:year" datatype="xsd:decimal" applies_to="node">1956</property>
         </clade>
@@ -79,9 +79,9 @@
           <name>A/turkey/Ontario/6118/1968</name>
           <branch_length>0.02</branch_length>
           <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI0671</property>
-          <property ref="data:clade" datatype="xsd:string" applies_to="node">2.2.1</property>
-          <property ref="data:country" datatype="xsd:string" applies_to="node">Canada</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:country" datatype="xsd:string" applies_to="node">Canada</property>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">2.2.1</property>
           <property ref="data:passage" datatype="xsd:string" applies_to="node">E2</property>
           <property ref="data:year" datatype="xsd:decimal" applies_to="node">1968</property>
         </clade>
@@ -89,9 +89,9 @@
           <name>A/mallard/Alberta/24/2001</name>
           <branch_length>0.02</branch_length>
           <property ref="data:accession" datatype="xsd:string" applies_to="node">EPI1390</property>
-          <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
-          <property ref="data:country" datatype="xsd:string" applies_to="node">Canada</property>
           <property ref="data:host" datatype="xsd:string" applies_to="node">Avian</property>
+          <property ref="data:country" datatype="xsd:string" applies_to="node">Canada</property>
+          <property ref="data:clade" datatype="xsd:string" applies_to="node">2.3.4.4b</property>
           <property ref="data:passage" datatype="xsd:string" applies_to="node">E1</property>
           <property ref="data:year" datatype="xsd:decimal" applies_to="node">2001</property>
         </clade>

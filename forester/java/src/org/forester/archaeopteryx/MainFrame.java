@@ -192,6 +192,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_REVERSE_TIP_ORDER_TIP = "Reverse the order of the tips (mirror the tree across the tip axis). In a root-top/bottom orientation the tips run sideways, so this flips them left-to-right. Rectangular layouts only.";
     static final String DISPLAY_TIP_LABELS_BELOW_COLUMNS_LABEL = "Tip Labels Below Columns";
     static final String DISPLAY_TIP_LABELS_BELOW_COLUMNS_TIP = "Clustergram layout: in a root-top/bottom orientation with annotation columns, draw the tip labels BELOW the columns (so the dendrogram sits directly on the tip-aligned grid) instead of between the tree and the columns.";
+    static final String DISPLAY_LEGEND_COLUMN_LABEL = "Legend in Its Own Column";
+    static final String DISPLAY_LEGEND_COLUMN_TIP = "Reserve a column at the right for the legend instead of letting it float over the tree -- its default corner, the top right, is where a root-left tree puts its top tips and its annotation-column headers. The window then shows what a rendered figure (and Save/Export as PDF) shows. Drag a legend anywhere and it gives the column back. Rectangular root-left only; never at the cost of more than 40% of the width.";
     static final String DISPLAY_BOLD_FOUND_LABELS_LABEL = "Bold Found Labels";
     static final String DISPLAY_BOLD_FOUND_LABELS_TIP = "Render the labels of found/selected nodes in bold, so search hits stand out. Works on screen and in exports.";
     static final String DISPLAY_DIM_NON_MATCHES_LABEL = "Dim Non-Matches";
@@ -320,6 +322,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem _break_long_branches_cbmi;
     JCheckBoxMenuItem _show_internal_taxonomy_key_cbmi;
     JCheckBoxMenuItem _tip_labels_below_columns_cbmi;
+    JCheckBoxMenuItem _legend_column_cbmi;
     JCheckBoxMenuItem _reverse_tip_order_cbmi;
     JCheckBoxMenuItem _bold_found_labels_cbmi;
     JCheckBoxMenuItem _dim_non_matches_cbmi;
@@ -600,6 +603,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _tip_labels_below_columns_cbmi) {
             updateOptions(getOptions());
+        } else if (o == _legend_column_cbmi) {
+            updateOptions(getOptions());
+            // this one changes how much width the tree itself gets, so the layout has to be recomputed, not repainted
+            showWhole();
         } else if (o == _reverse_tip_order_cbmi) {
             updateOptions(getOptions());
         } else if (o == _bold_found_labels_cbmi) {
@@ -1320,9 +1327,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _view_jmenu.add(_clustergram_item = new JMenuItem("Clustergram"));
         _clustergram_item.setToolTipText("<html>One click: turn the tree into a clustergram — the dendrogram on the "
                 + "left with its tips aligned, and the numeric per-tip fields as shared-scale heat-map columns beside it "
-                + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>The figure iTOL "
-                + "does clunkily and FigTree/PearTree can't do at all. Import Annotations (CSV/TSV) first if the tree "
-                + "has no per-tip data yet.</i></html>");
+                + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>Import "
+                + "Annotations (CSV/TSV) first if the tree has no per-tip data yet.</i></html>");
         final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
         order_menu.setFont(MainFrame.menu_font); // createMenu sets the font only in custom-colors mode
         order_menu.setToolTipText("How this tab's heat-map matrix orders its columns (the other columns keep their "
@@ -3316,6 +3322,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 (_show_internal_taxonomy_key_cbmi != null) && _show_internal_taxonomy_key_cbmi.isSelected());
         options.setTipLabelsBelowColumns((_tip_labels_below_columns_cbmi != null)
                 && _tip_labels_below_columns_cbmi.isSelected());
+        options.setReserveLegendColumn((_legend_column_cbmi != null) && _legend_column_cbmi.isSelected());
         options.setReverseTipOrder((_reverse_tip_order_cbmi != null) && _reverse_tip_order_cbmi.isSelected());
         options.setBoldFoundLabels((_bold_found_labels_cbmi != null) && _bold_found_labels_cbmi.isSelected());
         options.setDimNonMatches((_dim_non_matches_cbmi != null) && _dim_non_matches_cbmi.isSelected());
@@ -3412,6 +3419,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         setSelected(_break_long_branches_cbmi, options.isBreakLongBranches());
         setSelected(_show_internal_taxonomy_key_cbmi, options.isShowInternalTaxonomyKey());
         setSelected(_tip_labels_below_columns_cbmi, options.isTipLabelsBelowColumns());
+        setSelected(_legend_column_cbmi, options.isReserveLegendColumn());
         setSelected(_reverse_tip_order_cbmi, options.isReverseTipOrder());
         setSelected(_bold_found_labels_cbmi, options.isBoldFoundLabels());
         setSelected(_dim_non_matches_cbmi, options.isDimNonMatches());

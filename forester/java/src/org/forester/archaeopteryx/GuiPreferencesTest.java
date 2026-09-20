@@ -64,7 +64,8 @@ public final class GuiPreferencesTest {
             final boolean scale = !src.isShowScale();
             final boolean italic = !src.isUseItalicScientificNames();
             final boolean antialias = !src.isAntialiasExport();
-            final boolean white_bg = !src.isGraphicsExportWhiteBackground(); // the only default-TRUE key -> flips to false
+            final boolean white_bg = !src.isGraphicsExportWhiteBackground(); // a default-TRUE key -> flips to false
+            final boolean legend_column = !src.isReserveLegendColumn(); // likewise default TRUE -> must persist FALSE
             // non-boolean settings round-trip too: enums (node shape/fill, support viz), a short (node size),
             // a float (branch width) and doubles (support threshold, min-confidence fraction)
             final NodeShape shape = ( src.getDefaultNodeShape() == NodeShape.RECTANGLE ) ? NodeShape.CIRCLE
@@ -119,6 +120,7 @@ public final class GuiPreferencesTest {
             src.setUseItalicScientificNames( italic );
             src.setAntialiasExport( antialias );
             src.setGraphicsExportWhiteBackground( white_bg );
+            src.setReserveLegendColumn( legend_column );
             src.setDefaultNodeShape( shape );
             src.setDefaultNodeShapeSize( node_size );
             src.setDefaultNodeFill( fill );
@@ -177,6 +179,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.isGraphicsExportWhiteBackground() != white_bg ) {
                 return fail( "graphics_export_white_background did not round-trip" );
+            }
+            if ( dst.isReserveLegendColumn() != legend_column ) {
+                return fail( "reserve_legend_column did not round-trip" );
             }
             if ( dst.getDefaultNodeShape() != shape ) {
                 return fail( "default_node_shape did not round-trip" );

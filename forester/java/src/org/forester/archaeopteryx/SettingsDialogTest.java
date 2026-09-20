@@ -180,6 +180,27 @@ public final class SettingsDialogTest {
                         ok[ 0 ] = TestFail.here(); // toggling the dialog control did not flip the menu item
                     }
                 }
+                // the Legend-column row must BE in the dialog (it is the only way to reach the setting) and, like
+                // every other bound row, drive its backing menu item
+                final JCheckBox legend_cb = findCheckBox( dlg.getContentPane(),
+                                                          mf[ 0 ]._legend_column_cbmi.getText() );
+                if ( legend_cb == null ) {
+                    ok[ 0 ] = TestFail.here(); // no row: Settings cannot reach "Legend in Its Own Column" at all
+                }
+                else {
+                    final boolean legend_before = mf[ 0 ]._legend_column_cbmi.isSelected();
+                    if ( !legend_before ) {
+                        ok[ 0 ] = TestFail.here(); // the row must come up TICKED: the setting is on by default
+                    }
+                    legend_cb.doClick();
+                    if ( mf[ 0 ]._legend_column_cbmi.isSelected() == legend_before ) {
+                        ok[ 0 ] = TestFail.here();
+                    }
+                    else if ( mf[ 0 ].getOptions().isReserveLegendColumn() ) {
+                        ok[ 0 ] = TestFail.here(); // the click must reach Options, not just the menu item
+                    }
+                    legend_cb.doClick(); // put it back
+                }
                 // the Node-shape / Node-fill combos must render enum constants proper-cased, not ALL-CAPS: find
                 // the actual combos in the dialog and confirm their installed renderer turns RECTANGLE/SOLID into
                 // "Rectangle"/"Solid" (guards that the pretty renderer is really wired to these two combos)
