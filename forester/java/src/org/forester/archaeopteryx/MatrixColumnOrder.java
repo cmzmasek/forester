@@ -50,6 +50,12 @@ import org.forester.phylogeny.PhylogenyNode;
  * between two singletons, the earlier-formed first between two clusters). One deliberate divergence: two genes no
  * strain was assessed for together have no distance at all; R refuses such input, and here they are treated as
  * maximally distant, so they join last.
+ * <p>
+ * <b>Clustered (ignoring shared absence)</b> is the same complete-linkage clustering read from a different distance:
+ * the Bray-Curtis dissimilarity (Bray &amp; Curtis 1957), R {@code vegan}'s {@code vegdist} default. Euclidean distance
+ * has the double-zero problem -- two genes that are both ABSENT from the same strains are counted as agreeing there --
+ * so on a sparse pan-genome the rare genes cluster together merely for being rare. Bray-Curtis drops a tip where both
+ * columns are 0 instead of scoring it as agreement; see {@link #brayCurtisDistances}.
  */
 final class MatrixColumnOrder {
 
@@ -59,6 +65,11 @@ final class MatrixColumnOrder {
                    "Columns whose values agree across the tips sit together: complete-linkage clustering on Euclidean "
                            + "distance, the default of R's heat maps. A tip missing either value is left out of that "
                            + "pair, never read as 0." ),
+        CLUSTERED_PRESENCE( "Clustered (ignoring shared absence)",
+                            "Columns found in the same tips sit together: a tip where BOTH columns are 0 is left out "
+                                    + "of that pair, so two rare genes no longer look alike merely for being rare. "
+                                    + "Complete-linkage clustering on the Bray-Curtis dissimilarity, the default of R's "
+                                    + "vegdist(). For values that are 0 or more." ),
         TABLE( "Same as Table", "The order the file, or the imported table, lists the columns in." ),
         ALPHABETICAL( "Alphabetical", "By column name, ignoring case." ),
         FREQUENCY( "Frequency",
@@ -173,6 +184,8 @@ final class MatrixColumnOrder {
                 return byFrequency( table, phy );
             case CLUSTERED:
                 return clustered( table, phy );
+            case CLUSTERED_PRESENCE:
+                return clusteredByPresence( table, phy );
             default:
                 return table;
         }
@@ -246,7 +259,22 @@ final class MatrixColumnOrder {
         if ( refs.size() < 3 ) {
             return new ArrayList<String>( refs ); // two leaves have one order up to a flip, and R puts index 1 first
         }
-        final int[] leaf_order = completeLinkageOrder( distances( values( refs, phy ) ) );
+        return leafOrder( refs, completeLinkageOrder( distances( values( refs, phy ) ) ) );
+    }
+
+    /**
+     * Complete-linkage clustering of the columns on Bray-Curtis dissimilarity, in R's {@code hclust} leaf order --
+     * the same dendrogram, read from a distance that ignores the tips where both columns are absent.
+     */
+    static List<String> clusteredByPresence( final List<String> refs, final Phylogeny phy ) {
+        if ( refs.size() < 3 ) {
+            return new ArrayList<String>( refs ); // as above: one order up to a flip
+        }
+        return leafOrder( refs, completeLinkageOrder( brayCurtisDistances( values( refs, phy ) ) ) );
+    }
+
+    /** {@code refs} read out in the order the dendrogram's leaves come in. */
+    private static List<String> leafOrder( final List<String> refs, final int[] leaf_order ) {
         final List<String> out = new ArrayList<String>();
         for( final int g : leaf_order ) {
             out.add( refs.get( g ) );
@@ -298,6 +326,60 @@ final class MatrixColumnOrder {
                 }
                 else {
                     dist = Math.sqrt( ( used == tips ) ? sum : ( sum / ( ( double ) used / tips ) ) );
+                }
+                d[ a ][ b ] = dist;
+                d[ b ][ a ] = dist;
+            }
+        }
+        return d;
+    }
+
+    /**
+     * Bray-Curtis dissimilarity between every two columns: {@code sum|x - y| / sum(x + y)} over the tips where BOTH
+     * columns have a value (pairwise deletion, R {@code vegan}'s {@code vegdist(method = "bray", na.rm = TRUE)}).
+     * Being a ratio it normalizes itself, so -- unlike Euclidean -- it needs no scale-up for the tips it dropped.
+     * <p>
+     * A tip where both columns are 0 adds nothing to either sum, so it drops out: the DOUBLE ZERO, which Euclidean
+     * reads as agreement, is simply not evidence here. Two genes that are each rare, and never in the same strain, are
+     * maximally distant (1) rather than nearly identical. On 0/1 data this is exactly the Sorensen-Dice dissimilarity
+     * {@code 1 - 2|A and B| / (|A| + |B|)}.
+     * <p>
+     * Two divergences from {@code vegdist}, both forced: a pair that shares no assessed tip at all is
+     * {@code +Infinity} (vegdist gives NA, and hclust then refuses), and a pair that is 0 at every tip it shares --
+     * the undefined 0/0 -- is 0, because those two columns are identical wherever they can be compared (vegdist again
+     * gives NaN). The same rule covers the only other way the denominator can fail, negative values cancelling: a pair
+     * that cannot be told apart is 0, one that differs over a non-positive total is {@code +Infinity} rather than a
+     * negative or NaN distance. Bray-Curtis is meant for values that are 0 or more; vegan warns for negative data too.
+     * <p>
+     * The result is a DISSIMILARITY, not a metric -- it does not obey the triangle inequality, which complete linkage
+     * does not require. On the data it is meant for (values 0 or more) it lies in [0, 1]: 0 for columns that agree
+     * wherever both were assessed, 1 for columns that share no tip they are both present at.
+     */
+    static double[][] brayCurtisDistances( final Double[][] v ) {
+        final int n = v.length;
+        final double[][] d = new double[ n ][ n ];
+        for( int a = 0; a < n; ++a ) {
+            for( int b = a + 1; b < n; ++b ) {
+                double num = 0.0;
+                double den = 0.0;
+                int used = 0;
+                final int tips = v[ a ].length;
+                for( int t = 0; t < tips; ++t ) {
+                    if ( ( v[ a ][ t ] != null ) && ( v[ b ][ t ] != null ) ) {
+                        num += Math.abs( v[ a ][ t ] - v[ b ][ t ] );
+                        den += v[ a ][ t ] + v[ b ][ t ];
+                        ++used;
+                    }
+                }
+                final double dist;
+                if ( used == 0 ) {
+                    dist = Double.POSITIVE_INFINITY;
+                }
+                else if ( den <= 0.0 ) {
+                    dist = ( num == 0.0 ) ? 0.0 : Double.POSITIVE_INFINITY;
+                }
+                else {
+                    dist = num / den;
                 }
                 d[ a ][ b ] = dist;
                 d[ b ][ a ] = dist;

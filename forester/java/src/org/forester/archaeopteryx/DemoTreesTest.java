@@ -175,6 +175,9 @@ public final class DemoTreesTest {
         // imported and shown with View > Clustergram, the matrix must lay out in the TABLE's column order
         ok &= pangenomeDemoOk( "pangenome-presence-absence.xml", "pangenome-presence-absence.tsv" );
 
+        // sparse accessory genome: the matrix on which the two CLUSTERED column orders must disagree
+        ok &= sparseAccessoryDemoOk( "sparse-accessory-genome.xml", "sparse-accessory-genome.tsv" );
+
         // import GTDB taxonomy: accession-named genome tree + a GTDB-Tk table whose classifications must apply to
         // EVERY tip, giving gtdb:<rank> properties + a species taxonomy
         ok &= hasAtLeastTips( "gtdb-genomes.xml", 14 );
@@ -1090,6 +1093,182 @@ public final class DemoTreesTest {
         catch ( final Exception e ) {
             return note( tsv_file + " could not be read/joined: " + e );
         }
+    }
+
+    private static final String[] SPARSE_CAPSULE  = { "cps_K1", "cps_K2", "cps_K5", "cps_K20", "cps_K54", "cps_K64" };
+    private static final String[] SPARSE_PROPHAGE = { "prophage_Mu", "prophage_P2", "prophage_lambda",
+            "prophage_HK97", "prophage_Sf6", "prophage_T1" };
+    private static final String[] SPARSE_RARE     = { "prophage_Mu", "prophage_P2", "prophage_lambda",
+            "prophage_HK97", "prophage_Sf6", "prophage_T1", "orf_hypo_1", "orf_hypo_2" };
+
+    /**
+     * The sparse accessory genome demo keeps the promises its README row makes -- the ones the pangenome demo cannot,
+     * because every pair of ITS 40 genes co-occurs somewhere:
+     * <ol>
+     * <li>the tree is PLAIN (50 tips, no node carries a property), so the import is what adds the data;</li>
+     * <li>the table joins onto every tip, 18 genes, every cell an ordinal 0..4 or blank, and a blank stays UNFILLED;</li>
+     * <li>the eight rare columns really are rare and really are disjoint: no two of them are present together in any
+     * strain, so this matrix HAS the double zeros the two clustered modes disagree about;</li>
+     * <li>Clustered (Euclidean) puts all eight of them side by side as one contiguous block -- the artefact -- and
+     * makes each prophage's NEAREST column another rare gene it shares no strain with;</li>
+     * <li>Clustered (ignoring shared absence) breaks that block up and makes each prophage's nearest column the
+     * capsule locus of its own lineage -- all six of them.</li>
+     * </ol>
+     * Points 4 and 5 are the same assertion asked of the two distances and answered the other way, so neither mode
+     * can quietly become the other.
+     */
+    private static boolean sparseAccessoryDemoOk( final String tree_file, final String tsv_file ) {
+        final Phylogeny phy = load( tree_file );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( phy.getNumberOfExternalNodes() != 50 ) {
+            return note( tree_file + " should have 50 strains, got " + phy.getNumberOfExternalNodes() );
+        }
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( ( n.getNodeData().getProperties() != null ) && ( n.getNodeData().getProperties().size() > 0 ) ) {
+                return note( tree_file + " must be a PLAIN tree -- node " + n.getName() + " carries properties" );
+            }
+        }
+        final File tsv = new File( DEMO_DIR + tsv_file );
+        if ( !tsv.exists() ) {
+            return note( tsv_file + " is missing from the demo gallery (" + tsv.getAbsolutePath() + ")" );
+        }
+        try {
+            final java.util.List<String> lines = java.nio.file.Files.readAllLines( tsv.toPath() );
+            final String[] header = lines.get( 0 ).split( "\t", -1 );
+            if ( header.length != 19 ) {
+                return note( tsv_file + " should have a key column + 18 genes, got " + header.length + " columns" );
+            }
+            int blanks = 0;
+            for( int r = 1; r < lines.size(); ++r ) {
+                final String[] cells = lines.get( r ).split( "\t", -1 );
+                if ( cells.length != header.length ) {
+                    return note( tsv_file + " row " + r + " has " + cells.length + " cells, not " + header.length );
+                }
+                for( int c = 1; c < cells.length; ++c ) {
+                    if ( cells[ c ].isEmpty() ) {
+                        ++blanks;
+                        continue;
+                    }
+                    final int v;
+                    try {
+                        v = Integer.parseInt( cells[ c ] );
+                    }
+                    catch ( final NumberFormatException e ) {
+                        return note( tsv_file + " row " + r + ": \"" + cells[ c ] + "\" is not an ordinal 0..4" );
+                    }
+                    if ( ( v < 0 ) || ( v > 4 ) ) {
+                        return note( tsv_file + " row " + r + ": " + v + " is outside the ordinal scale 0..4" );
+                    }
+                }
+            }
+            if ( blanks < 1 ) {
+                return note( tsv_file + " should have unassessed cells -- a blank is not a 0" );
+            }
+            final NodeDataImporter.Table table = NodeDataImporter.parseTable( String.join( "\n", lines ) + "\n" );
+            final int key = table.defaultKeyColumn();
+            if ( ( key != 0 ) || !"strain".equals( table.getHeaders()[ key ] ) ) {
+                return note( tsv_file + ": the import dialog should preselect \"strain\" as the key, got column " + key );
+            }
+            final NodeDataImporter.ImportResult res = NodeDataImporter.apply( phy, table, key,
+                                                                               NodeDataImporter.MatchBy.TIP_NAME );
+            if ( ( res.getTipsAnnotated() != 50 ) || ( res.getPropertyColumns().size() != 18 ) ) {
+                return note( tsv_file + " should join onto all 50 strains with 18 genes, got " + res.getTipsAnnotated()
+                        + " tips, " + res.getPropertyColumns().size() + " columns" );
+            }
+            int props = 0;
+            for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+                props += tip.getNodeData().getProperties().size();
+            }
+            if ( props != ( ( 50 * 18 ) - blanks ) ) {
+                return note( "a blank cell must stay UNFILLED, not become a 0: expected " + ( ( 50 * 18 ) - blanks )
+                        + " properties after the join, got " + props );
+            }
+            final java.util.List<String> table_order = new java.util.ArrayList<String>();
+            for( int c = 1; c < header.length; ++c ) {
+                table_order.add( "meta:" + header[ c ] );
+            }
+            final Double[][] v = MatrixColumnOrder.values( table_order, phy );
+            // the eight rare columns are present in no strain together -- what makes this matrix the right fixture
+            for( int a = 0; a < SPARSE_RARE.length; ++a ) {
+                for( int b = a + 1; b < SPARSE_RARE.length; ++b ) {
+                    final int ia = table_order.indexOf( "meta:" + SPARSE_RARE[ a ] );
+                    final int ib = table_order.indexOf( "meta:" + SPARSE_RARE[ b ] );
+                    if ( ( ia < 0 ) || ( ib < 0 ) ) {
+                        return note( tsv_file + " is missing a rare gene column" );
+                    }
+                    for( int t = 0; t < v[ ia ].length; ++t ) {
+                        if ( ( v[ ia ][ t ] != null ) && ( v[ ib ][ t ] != null ) && ( v[ ia ][ t ] >= 3 )
+                                && ( v[ ib ][ t ] >= 3 ) ) {
+                            return note( SPARSE_RARE[ a ] + " and " + SPARSE_RARE[ b ] + " are both present in strain "
+                                    + t + ", so this demo no longer isolates the double-zero problem" );
+                        }
+                    }
+                }
+            }
+            final double[][] de = MatrixColumnOrder.distances( v );
+            final double[][] db = MatrixColumnOrder.brayCurtisDistances( v );
+            for( int c = 0; c < SPARSE_PROPHAGE.length; ++c ) {
+                final int g = table_order.indexOf( "meta:" + SPARSE_PROPHAGE[ c ] );
+                final String euclid = table_order.get( nearestColumn( de, g ) );
+                final String bray = table_order.get( nearestColumn( db, g ) );
+                if ( !isRare( euclid ) ) {
+                    return note( "Euclidean should make " + SPARSE_PROPHAGE[ c ] + "'s nearest column another RARE gene"
+                            + " (the double-zero artefact this demo shows), got " + euclid );
+                }
+                if ( !bray.equals( "meta:" + SPARSE_CAPSULE[ c ] ) ) {
+                    return note( "Bray-Curtis should make " + SPARSE_PROPHAGE[ c ] + "'s nearest column its own lineage's "
+                            + SPARSE_CAPSULE[ c ] + ", got " + bray );
+                }
+            }
+            // and the whole orders: one contiguous rare block under Euclidean, broken up under Bray-Curtis
+            if ( rareSpan( MatrixColumnOrder.order( table_order, MatrixColumnOrder.Mode.CLUSTERED, phy ) ) != 8 ) {
+                return note( "clustered on Euclidean distance, the 8 rare genes should come out as ONE contiguous"
+                        + " block" );
+            }
+            if ( rareSpan( MatrixColumnOrder.order( table_order, MatrixColumnOrder.Mode.CLUSTERED_PRESENCE,
+                                                    phy ) ) == 8 ) {
+                return note( "ignoring shared absence, the 8 rare genes must NOT stay one block -- that is the whole"
+                        + " difference between the two modes" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return note( tsv_file + " could not be read/joined: " + e );
+        }
+    }
+
+    private static boolean isRare( final String ref ) {
+        for( final String r : SPARSE_RARE ) {
+            if ( ref.equals( "meta:" + r ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** How many columns the 8 rare ones span in {@code order}: 8 when they are one contiguous block. */
+    private static int rareSpan( final java.util.List<String> order ) {
+        int lo = Integer.MAX_VALUE;
+        int hi = -1;
+        for( final String r : SPARSE_RARE ) {
+            final int at = order.indexOf( "meta:" + r );
+            lo = Math.min( lo, at );
+            hi = Math.max( hi, at );
+        }
+        return ( hi - lo ) + 1;
+    }
+
+    private static int nearestColumn( final double[][] d, final int g ) {
+        int best = -1;
+        for( int k = 0; k < d.length; ++k ) {
+            if ( ( k != g ) && ( ( best < 0 ) || ( d[ g ][ k ] < d[ g ][ best ] ) ) ) {
+                best = k;
+            }
+        }
+        return best;
     }
 
     /** The GTDB-Tk-style companion table parses, its classification column joins onto EVERY tip by name, and applying

@@ -38,13 +38,14 @@ import org.forester.phylogeny.Phylogeny;
 
 /**
  * The wiring of <b>View &rarr; Order Matrix Columns</b> (the orders themselves are {@link MatrixColumnOrderTest}'s):
- * the submenu and its five radio items; the Clustergram preset ordering by the tab's mode, Clustered by default; each
+ * the submenu and its six radio items; the Clustergram preset ordering by the tab's mode, Clustered by default; each
  * radio item re-ordering the CURRENT tab's matrix and Manual never re-sorting; the mode being PER TAB with the radios
  * following a tab switch; a restored figure setting its tab to Manual; and Reset to Defaults putting every tab back
  * to Clustered. Headful; a green no-op when headless.
  * <p>
- * The fixture is the pangenome demo (40 genes), and the test first asserts that its four data-driven orders are
- * pairwise DIFFERENT -- otherwise a radio that did nothing could pass for one that worked.
+ * The fixture is the pangenome demo (40 genes), and the test first asserts that its five data-driven orders are
+ * pairwise DIFFERENT -- otherwise a radio that did nothing could pass for one that worked. That guard is also the
+ * proof, on real 40-gene data rather than a 6-column fixture, that the two Clustered modes are not the same order.
  */
 public final class MatrixColumnOrderMenuTest {
 
@@ -97,12 +98,16 @@ public final class MatrixColumnOrderMenuTest {
                     final List<String> alpha = MatrixColumnOrder.order( table, MatrixColumnOrder.Mode.ALPHABETICAL, phy );
                     final List<String> freq = MatrixColumnOrder.order( table, MatrixColumnOrder.Mode.FREQUENCY, phy );
                     final List<String> clus = MatrixColumnOrder.order( table, MatrixColumnOrder.Mode.CLUSTERED, phy );
-                    // GUARD: four orders that differ pairwise, or a radio that did nothing could pass
-                    final List<List<String>> all = java.util.Arrays.asList( table, alpha, freq, clus );
+                    final List<String> pres = MatrixColumnOrder.order( table, MatrixColumnOrder.Mode.CLUSTERED_PRESENCE,
+                                                                       phy );
+                    // GUARD: five orders that differ pairwise, or a radio that did nothing could pass
+                    final List<List<String>> all = java.util.Arrays.asList( table, alpha, freq, clus, pres );
+                    final String[] names = { "Same as Table", "Alphabetical", "Frequency", "Clustered",
+                            "Clustered (ignoring shared absence)" };
                     for( int i = 0; i < all.size(); ++i ) {
                         for( int j = i + 1; j < all.size(); ++j ) {
                             if ( all.get( i ).equals( all.get( j ) ) ) {
-                                fail( ok, "the fixture cannot tell two modes apart (orders " + i + " and " + j + ")" );
+                                fail( ok, "the fixture cannot tell " + names[ i ] + " from " + names[ j ] );
                             }
                         }
                     }
@@ -113,6 +118,9 @@ public final class MatrixColumnOrderMenuTest {
                     frame.applyClustergramPreset();
                     expect( ok, frame, tp0, clus, MatrixColumnOrder.Mode.CLUSTERED, "View > Clustergram (default)" );
                     // each radio re-orders the current tab
+                    click( frame, MatrixColumnOrder.Mode.CLUSTERED_PRESENCE );
+                    expect( ok, frame, tp0, pres, MatrixColumnOrder.Mode.CLUSTERED_PRESENCE,
+                            "Clustered (ignoring shared absence)" );
                     click( frame, MatrixColumnOrder.Mode.TABLE );
                     expect( ok, frame, tp0, table, MatrixColumnOrder.Mode.TABLE, "Same as Table" );
                     click( frame, MatrixColumnOrder.Mode.ALPHABETICAL );

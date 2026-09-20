@@ -31,10 +31,11 @@ import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
 
 /**
- * {@link MatrixColumnOrder}: the five modes of View &gt; Order Matrix Columns.
+ * {@link MatrixColumnOrder}: the six modes of View &gt; Order Matrix Columns.
  * <p>
  * The clustering expectations are R's OWN output, generated deliberately with R 4.5.3 --
- * {@code hclust(dist(t(m)), method = "complete")} on the same small matrices -- not restated here in this test's own
+ * {@code hclust(dist(t(m)), method = "complete")} for Euclidean and {@code vegan::vegdist(t(m), method = "bray")}
+ * (vegan 2.7-2) for Bray-Curtis, on the same small matrices -- not restated here in this test's own
  * words: a second implementation of the rule written by the same hand could agree with the first and guard nothing.
  * The four cases are chosen to reach every branch of the algorithm: no ties, zero-distance ties (duplicate columns),
  * a matrix where EVERY pair ties, and missing values (R's pairwise-deletion scaling). A wider cross-check against R --
@@ -55,7 +56,9 @@ public final class MatrixColumnOrderTest {
         return testDistancesMatchR() && testMissingIsNotZero() && testNoOverlap() && testClusteredOrderMatchesR()
                 && testLinkageIsComplete()
                 && testClusteredIgnoresIncomingOrder() && testFrequency() && testAlphabetical() && testTableOrder()
-                && testManualAndEdges() && testApplyIsSlotPreserving() && testDialogResolution() && testDeterministic();
+                && testManualAndEdges() && testApplyIsSlotPreserving() && testDialogResolution() && testDeterministic()
+                && testBrayCurtisMatchesVegan() && testDoubleZeroIsNotAgreement() && testBrayCurtisPairwiseDeletion()
+                && testBrayCurtisIsSorensenOnBinary() && testBrayCurtisEdges();
     }
 
     private static boolean fail( final String msg ) {
@@ -250,6 +253,12 @@ public final class MatrixColumnOrderTest {
         if ( !o.equals( refs( "e4", "e3", "e1", "e2" ) ) ) {
             return fail( "CLUSTERED must not depend on the incoming order (the previous mode's), got " + o );
         }
+        // the same for the other clustered mode: every pair of these columns shares no presence, so Bray-Curtis ties
+        // them all at 1.0 and only the tie-break and leaf order are left -- R's vegdist + hclust give 4 3 1 2 too
+        final List<String> b = MatrixColumnOrder.order( scrambled, MatrixColumnOrder.Mode.CLUSTERED_PRESENCE, phy );
+        if ( !b.equals( refs( "e4", "e3", "e1", "e2" ) ) ) {
+            return fail( "CLUSTERED_PRESENCE must not depend on the incoming order either, got " + b );
+        }
         return true;
     }
 
@@ -429,6 +438,212 @@ public final class MatrixColumnOrderTest {
             if ( !a.equals( b ) ) {
                 return fail( m + " must be deterministic: " + a + " vs " + b );
             }
+        }
+        return true;
+    }
+
+    // ---- Bray-Curtis: clustering that ignores shared absence ---------------------------------------------------------
+
+    /**
+     * The double-zero fixture, 6 genes over 8 strains, built so that the two Clustered modes MUST disagree: two core
+     * genes (h1, h2, present everywhere), two clade genes on disjoint halves (h3, h4), and two RARE genes each present
+     * in one strain only -- and in DIFFERENT strains (h5 in the first, h6 in the last). h5 and h6 share no strain they
+     * are both present in, and agree only by being absent.
+     * <p>
+     * R: {@code cbind(h1=..., h2=..., h3=..., h4=..., h5=..., h6=...)} of the columns below.
+     */
+    private static final String[]    DZ_GENES = { "h1", "h2", "h3", "h4", "h5", "h6" };
+    private static final Integer[][] DZ       = columns( new Integer[] { 4, 4, 4, 4, 4, 4, 4, 4 },
+                                                         new Integer[] { 4, 4, 3, 4, 4, 4, 4, 4 },
+                                                         new Integer[] { 4, 4, 4, 4, 0, 0, 0, 0 },
+                                                         new Integer[] { 0, 0, 0, 0, 4, 4, 4, 4 },
+                                                         new Integer[] { 4, 0, 0, 0, 0, 0, 0, 0 },
+                                                         new Integer[] { 0, 0, 0, 0, 0, 0, 0, 4 } );
+
+    /** Every pair of the double-zero fixture, as R's {@code vegdist(t(m), method = "bray")} gives it. */
+    private static boolean testBrayCurtisMatchesVegan() {
+        final double[][] r = {
+                { 0.0, 0.015873015873, 0.333333333333, 0.333333333333, 0.777777777778, 0.777777777778 },
+                { 0.015873015873, 0.0, 0.361702127660, 0.319148936170, 0.771428571429, 0.771428571429 },
+                { 0.333333333333, 0.361702127660, 0.0, 1.0, 0.6, 1.0 },
+                { 0.333333333333, 0.319148936170, 1.0, 0.0, 1.0, 0.6 },
+                { 0.777777777778, 0.771428571429, 0.6, 1.0, 0.0, 1.0 },
+                { 0.777777777778, 0.771428571429, 1.0, 0.6, 1.0, 0.0 } };
+        final double[][] d = MatrixColumnOrder
+                .brayCurtisDistances( MatrixColumnOrder.values( refs( DZ_GENES ), tree( DZ_GENES, DZ ) ) );
+        for( int a = 0; a < 6; ++a ) {
+            for( int b = 0; b < 6; ++b ) {
+                if ( Math.abs( d[ a ][ b ] - r[ a ][ b ] ) > EPS ) {
+                    return fail( "Bray-Curtis " + DZ_GENES[ a ] + "-" + DZ_GENES[ b ] + " should be vegdist's "
+                            + r[ a ][ b ] + ", got " + d[ a ][ b ] );
+                }
+            }
+            if ( d[ a ][ a ] != 0.0 ) {
+                return fail( "a column is at distance 0 from itself, got " + d[ a ][ a ] );
+            }
+        }
+        return true;
+    }
+
+    /**
+     * What the mode is FOR. On the same fixture the two distances disagree about the two rare genes, in opposite
+     * directions: Euclidean counts the six strains where both h5 and h6 are absent as agreement, so they become each
+     * other's NEAREST column (5.657, against 6.93 and more to everything else); Bray-Curtis drops those strains, so
+     * they are each other's FARTHEST (1.0 -- they are never present together) and each one's nearest is the clade gene
+     * it actually occurs with (0.6). The whole orders differ too: R gives {@code 4 1 2 3 5 6} for Euclidean and
+     * {@code 3 5 6 4 1 2} for Bray-Curtis.
+     */
+    private static boolean testDoubleZeroIsNotAgreement() {
+        final Phylogeny phy = tree( DZ_GENES, DZ );
+        final Double[][] v = MatrixColumnOrder.values( refs( DZ_GENES ), phy );
+        if ( nearest( MatrixColumnOrder.distances( v ), 4 ) != 5 ) {
+            return fail( "Euclidean must make the two rare genes each other's nearest (the double-zero problem this "
+                    + "mode exists for); if it no longer does, the fixture stopped isolating the thing under test" );
+        }
+        final double[][] bc = MatrixColumnOrder.brayCurtisDistances( v );
+        if ( nearest( bc, 4 ) != 2 ) {
+            return fail( "Bray-Curtis must put h5 nearest the clade gene it occurs with (h3), got index "
+                    + nearest( bc, 4 ) );
+        }
+        if ( nearest( bc, 5 ) != 3 ) {
+            return fail( "Bray-Curtis must put h6 nearest h4, got index " + nearest( bc, 5 ) );
+        }
+        if ( ( bc[ 4 ][ 5 ] != 1.0 ) || ( bc[ 3 ][ 2 ] != 1.0 ) ) {
+            return fail( "columns never present in the same tip are maximally distant (1.0), got " + bc[ 4 ][ 5 ] );
+        }
+        final List<String> euclid = MatrixColumnOrder.order( refs( DZ_GENES ), MatrixColumnOrder.Mode.CLUSTERED, phy );
+        if ( !euclid.equals( refs( "h4", "h1", "h2", "h3", "h5", "h6" ) ) ) {
+            return fail( "CLUSTERED must match R's Euclidean order 4 1 2 3 5 6, got " + euclid );
+        }
+        final List<String> bray = MatrixColumnOrder.order( refs( DZ_GENES ), MatrixColumnOrder.Mode.CLUSTERED_PRESENCE,
+                                                           phy );
+        if ( !bray.equals( refs( "h3", "h5", "h6", "h4", "h1", "h2" ) ) ) {
+            return fail( "CLUSTERED_PRESENCE must match R's Bray-Curtis order 3 5 6 4 1 2, got " + bray );
+        }
+        return true;
+    }
+
+    /** The index of the column closest to {@code g}, itself excluded. */
+    private static int nearest( final double[][] d, final int g ) {
+        int best = -1;
+        for( int k = 0; k < d.length; ++k ) {
+            if ( ( k != g ) && ( ( best < 0 ) || ( d[ g ][ k ] < d[ g ][ best ] ) ) ) {
+                best = k;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Missing cells are deleted pairwise (vegan's {@code na.rm = TRUE}), not read as 0 and not scaled up: being a
+     * ratio, Bray-Curtis needs no scaling. The neighbouring case is the SAME matrix with its four blanks filled with
+     * 0, which R makes a different number on five of the six pairs -- so these values can only come from the right
+     * rule. (The two orders happen to coincide on this matrix, which is why the VALUES are what is pinned.)
+     */
+    private static boolean testBrayCurtisPairwiseDeletion() {
+        final String[] genes = { "g1", "g2", "g3", "g4" };
+        final Integer[][] m = columns( new Integer[] { 4, 4, 0, 2, null, 3 }, new Integer[] { 4, null, 3, 0, 1, 2 },
+                                       new Integer[] { 0, 0, null, 1, 4, 2 }, new Integer[] { 2, 0, 4, null, 3, 1 } );
+        final double[][] d = MatrixColumnOrder
+                .brayCurtisDistances( MatrixColumnOrder.values( refs( genes ), tree( genes, m ) ) );
+        // vegdist(t(m), method = "bray", na.rm = TRUE); the same matrix with 0 for NA gives the second column
+        final double[][] pairs = { { 0, 1, 0.333333333333, 0.478260869565 }, { 0, 2, 0.625, 0.7 },
+                { 0, 3, 0.666666666667, 0.739130434783 }, { 1, 2, 0.571428571429, 0.647058823529 },
+                { 2, 3, 0.333333333333, 0.529411764706 } };
+        for( final double[] p : pairs ) {
+            final double got = d[ ( int ) p[ 0 ] ][ ( int ) p[ 1 ] ];
+            if ( Math.abs( got - p[ 2 ] ) > EPS ) {
+                return fail( "pairwise deletion: " + genes[ ( int ) p[ 0 ] ] + "-" + genes[ ( int ) p[ 1 ] ]
+                        + " must be vegdist's " + p[ 2 ] + " (filling the blanks with 0 would give " + p[ 3 ]
+                        + "), got " + got );
+            }
+        }
+        if ( Math.abs( d[ 1 ][ 3 ] - 0.3 ) > EPS ) {
+            return fail( "g2-g4, the one pair zero-filling does NOT change, must still be 0.3, got " + d[ 1 ][ 3 ] );
+        }
+        return true;
+    }
+
+    /**
+     * On 0/1 data Bray-Curtis IS the Sorensen-Dice dissimilarity, {@code 1 - 2|A and B| / (|A| + |B|)} -- the reason
+     * it is the right distance for presence/absence. Checked twice over: against vegdist's numbers for this matrix
+     * (R 4.5.3, {@code set.seed(7)}), and against the Sorensen formula computed here from SET COUNTS, which is a
+     * different formula rather than this test restating the one under test.
+     */
+    private static boolean testBrayCurtisIsSorensenOnBinary() {
+        final String[] genes = { "b1", "b2", "b3", "b4", "b5" };
+        final Integer[][] bin = columns( new Integer[] { 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 },
+                                         new Integer[] { 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1 },
+                                         new Integer[] { 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1 },
+                                         new Integer[] { 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1 },
+                                         new Integer[] { 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0 } );
+        final double[][] d = MatrixColumnOrder
+                .brayCurtisDistances( MatrixColumnOrder.values( refs( genes ), tree( genes, bin ) ) );
+        final double[] vegan = { 0.75, 0.75, 1.0, 0.555555555556, 0.4, 0.454545454545, 0.636363636364, 0.272727272727,
+                0.454545454545, 0.5 };
+        int k = 0;
+        for( int a = 0; a < 5; ++a ) {
+            for( int b = a + 1; b < 5; ++b ) {
+                if ( Math.abs( d[ a ][ b ] - vegan[ k ] ) > EPS ) {
+                    return fail( "binary " + genes[ a ] + "-" + genes[ b ] + " must be vegdist's " + vegan[ k ]
+                            + ", got " + d[ a ][ b ] );
+                }
+                int shared = 0;
+                int in_a = 0;
+                int in_b = 0;
+                for( int t = 0; t < bin.length; ++t ) {
+                    in_a += bin[ t ][ a ];
+                    in_b += bin[ t ][ b ];
+                    shared += ( ( bin[ t ][ a ] == 1 ) && ( bin[ t ][ b ] == 1 ) ) ? 1 : 0;
+                }
+                final double sorensen = 1.0 - ( ( 2.0 * shared ) / ( in_a + in_b ) );
+                if ( Math.abs( d[ a ][ b ] - sorensen ) > EPS ) {
+                    return fail( "on 0/1 data Bray-Curtis must equal the Sorensen-Dice dissimilarity " + sorensen
+                            + " for " + genes[ a ] + "-" + genes[ b ] + ", got " + d[ a ][ b ] );
+                }
+                ++k;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The three cases vegdist cannot answer, each decided here so clustering never sees a NaN: no jointly assessed
+     * tip at all (vegdist: NA) is +Infinity, so the pair joins last; two columns that are 0 at every tip they share
+     * (vegdist: NaN, "empty rows") are identical wherever they can be compared, so 0; and a pair whose values are
+     * signed and cancel to a non-positive total -- Bray-Curtis is meant for values that are 0 or more -- is
+     * +Infinity if the columns differ at all, never a negative distance or a NaN.
+     */
+    private static boolean testBrayCurtisEdges() {
+        final String[] genes = { "P", "Q", "Q2" };
+        final Phylogeny phy = tree( genes, columns( new Integer[] { 1, 1, null, null },
+                                                    new Integer[] { null, null, 2, 2 },
+                                                    new Integer[] { null, null, 2, 3 } ) );
+        final double[][] d = MatrixColumnOrder.brayCurtisDistances( MatrixColumnOrder.values( refs( genes ), phy ) );
+        if ( !Double.isInfinite( d[ 0 ][ 1 ] ) || !Double.isInfinite( d[ 0 ][ 2 ] ) ) {
+            return fail( "a pair with no jointly assessed tip must be +Infinity, got " + d[ 0 ][ 1 ] );
+        }
+        final List<String> o = MatrixColumnOrder.clusteredByPresence( refs( genes ), phy );
+        if ( ( o.size() != 3 ) || !o.containsAll( refs( genes ) ) ) {
+            return fail( "an unmeasurable pair must still leave every column in the order, got " + o );
+        }
+        final String[] zero = { "z1", "z2", "z3" };
+        final double[][] dz = MatrixColumnOrder.brayCurtisDistances( MatrixColumnOrder
+                .values( refs( zero ), tree( zero, columns( new Integer[] { 0, 0, 0 }, new Integer[] { 0, 0, 0 },
+                                                            new Integer[] { 0, 1, 0 } ) ) ) );
+        if ( dz[ 0 ][ 1 ] != 0.0 ) {
+            return fail( "two columns that are 0 at every shared tip are identical there: distance 0, got "
+                    + dz[ 0 ][ 1 ] );
+        }
+        if ( dz[ 0 ][ 2 ] != 1.0 ) {
+            return fail( "an all-zero column against one with a single 1 shares no presence: 1.0, got " + dz[ 0 ][ 2 ] );
+        }
+        final String[] neg = { "n1", "n2" };
+        final double[][] dn = MatrixColumnOrder.brayCurtisDistances( MatrixColumnOrder
+                .values( refs( neg ), tree( neg, columns( new Integer[] { 2, -2 }, new Integer[] { -2, 2 } ) ) ) );
+        if ( !Double.isInfinite( dn[ 0 ][ 1 ] ) ) {
+            return fail( "a non-positive total with columns that differ must be +Infinity, never negative or NaN, got "
+                    + dn[ 0 ][ 1 ] );
         }
         return true;
     }

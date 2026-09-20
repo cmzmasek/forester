@@ -160,6 +160,18 @@ final class AlgorithmReferences {
                         + "Biologiske Skrifter 5(4):1-34. The clustered heat map: Eisen MB, Spellman PT, Brown PO, "
                         + "Botstein D (1998): \"Cluster analysis and display of genome-wide expression patterns\", "
                         + "PNAS 95(25):14863-14868, doi:10.1073/pnas.95.25.14863." ) );
+        refs.add( new Reference( "Matrix column order ignoring shared absence (View → Order Matrix Columns → "
+                + "Clustered (ignoring shared absence))",
+                "The same complete-linkage clustering of a heat-map matrix's columns, read from the Bray-Curtis "
+                        + "dissimilarity instead of Euclidean distance: sum|x-y| / sum(x+y) over the tips where both "
+                        + "columns have a value (pairwise deletion, the default of R vegan's vegdist). Euclidean "
+                        + "distance has the double-zero problem -- two genes both ABSENT from the same strains count "
+                        + "as agreeing there, so on a sparse pan-genome rare genes cluster together merely for being "
+                        + "rare. Bray-Curtis drops a tip where both columns are 0 rather than scoring it as agreement, "
+                        + "and on 0/1 data is exactly the Sørensen-Dice dissimilarity. It is a dissimilarity, not a "
+                        + "metric (no triangle inequality), and is meant for values that are 0 or more. "
+                        + "Bray JR, Curtis JT (1957): \"An ordination of the upland forest communities of southern "
+                        + "Wisconsin\", Ecological Monographs 27(4):325-349, doi:10.2307/1942268." ) );
         refs.add( new Reference( "Node age bars / spindles (HPD) (Settings → Overlays → Data Overlays)",
                 "On a dated (time-calibrated) phylogram, draws each internal node's divergence-time uncertainty from its "
                         + "phyloXML date -- the point estimate (median/mean height) and the 95% Highest Posterior Density "

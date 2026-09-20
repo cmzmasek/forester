@@ -90,6 +90,13 @@ public final class AlgorithmReferencesTest {
             System.out.println( "  [AlgorithmReferencesTest] clustered column order reference/citation is missing" );
             ok = false;
         }
+        // the second clustered order must name its dissimilarity, WHY it exists (the double zero) and Bray & Curtis
+        if ( !text.contains( "ignoring shared absence" ) || !text.contains( "Bray-Curtis" )
+                || !text.contains( "double-zero" ) || !text.contains( "Bray JR, Curtis JT (1957)" )
+                || !text.contains( "doi:10.2307/1942268" ) ) {
+            System.out.println( "  [AlgorithmReferencesTest] Bray-Curtis column order reference/citation is missing" );
+            ok = false;
+        }
         // the tanglegram auto-untangle heuristic must be described, with its barycentre + tanglegram citations
         if ( !text.contains( "Auto-untangle" ) || !text.contains( "barycentre" ) || !text.contains( "Sugiyama" )
                 || !text.contains( "Tanglegrams for rooted phylogenetic trees" ) ) {

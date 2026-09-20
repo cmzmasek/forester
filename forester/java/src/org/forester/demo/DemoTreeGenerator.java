@@ -22,6 +22,7 @@ package org.forester.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -116,9 +117,12 @@ public final class DemoTreeGenerator {
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
-        final Pangenome pangenome = pangenome(); // ONE simulation -> the tree and its table
+        final TreeAndTable pangenome = pangenome(); // ONE simulation -> the tree and its table
         write( dir, "pangenome-presence-absence.xml", pangenome._tree );
         writeText( dir, "pangenome-presence-absence.tsv", pangenome._tsv );
+        final TreeAndTable sparse = sparseAccessoryGenome();
+        write( dir, "sparse-accessory-genome.xml", sparse._tree );
+        writeText( dir, "sparse-accessory-genome.tsv", sparse._tsv );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
@@ -559,18 +563,18 @@ public final class DemoTreeGenerator {
     private static final double[][] EMIT_ABSENT_WEAK   = { { 0, 0.30 }, { 1, 0.32 }, { 2, 0.30 }, { 3, 0.08 } };
 
     /** The tree and its table come from ONE simulation, so they are built together and written separately. */
-    private static final class Pangenome {
+    private static final class TreeAndTable {
 
         final Phylogeny _tree;
         final String    _tsv;
 
-        Pangenome( final Phylogeny tree, final String tsv ) {
+        TreeAndTable( final Phylogeny tree, final String tsv ) {
             _tree = tree;
             _tsv = tsv;
         }
     }
 
-    private static Pangenome pangenome() {
+    private static TreeAndTable pangenome() {
         final Random rnd = new Random( PANGENOME_SEED );
         final List<String> names = pangenomeStrainNames();
         final PhylogenyNode root = new PhylogenyNode();
@@ -699,7 +703,7 @@ public final class DemoTreeGenerator {
             }
             sb.append( '\n' );
         }
-        return new Pangenome( phy, sb.toString() );
+        return new TreeAndTable( phy, sb.toString() );
     }
 
     /** Readable, deliberately VARIED-LENGTH strain names (8..21 chars) -- the label column is part of the test. */
@@ -724,6 +728,134 @@ public final class DemoTreeGenerator {
             }
         }
         return names;
+    }
+
+    // ----- "Sparse accessory genome": the matrix that makes the two CLUSTERED column orders disagree -- 50 strains
+    //       x 18 genes, the same ordinal certainty 0..4 as the pangenome demo, a blank cell NOT ASSESSED.
+    //
+    //       The pangenome demo is realistic, and so it does NOT isolate the double-zero problem: every one of its 780
+    //       gene pairs co-occurs in some strain (measured), so Euclidean distance never picks a neighbour the two
+    //       genes are never present together in. This one is built so that it must. Each of the six lineages carries
+    //       its own capsule locus (clade-wide) and its own PROPHAGE, present in just two strains of that lineage; two
+    //       ORPHAN genes sit in one strain each. So the eight rare columns are nearly all zeros, and no two of them
+    //       share a single strain.
+    //
+    //       Euclidean distance reads those shared zeros as agreement, so the rare columns are each other's nearest
+    //       neighbours and clump into one meaningless block. Bray-Curtis drops a strain where both columns are 0, so
+    //       the same rare columns are maximally distant from each other (1.0 -- never present together) and each one
+    //       lands beside the capsule locus of the lineage it actually lives in. View > Order Matrix Columns switches
+    //       between the two readings of the same data.
+    //
+    //       Built BY CONSTRUCTION, not by the luck of a seed: presence is placed deterministically and only cells
+    //       whose hidden truth is ABSENT may go unassessed, so a rare gene can never lose the two cells that carry
+    //       it. The noise is in the CERTAINTY, drawn from the emission tables -- and absence is SHARP here (0.92 of
+    //       an absent cell is a plain 0), because it is the exact zeros that Bray-Curtis drops: on a matrix whose
+    //       absences are recorded as 1s and 2s the double zero is not double and neither distance can help.
+    private static final long       SPARSE_SEED     = 20260919L;
+    private static final int[]      SPARSE_CLADES   = { 10, 9, 9, 8, 7, 7 }; // = 50 strains
+    private static final String[]   SPARSE_ABBREV   = { "Kpn", "Eco", "Ecl", "Cfr", "Sen", "Sma" };
+    private static final String[]   SPARSE_CORE     = { "rpoB", "gyrA", "recA", "dnaK" };
+    /** One per lineage, carried by the whole lineage. */
+    private static final String[]   SPARSE_CAPSULE  = { "cps_K1", "cps_K2", "cps_K5", "cps_K20", "cps_K54", "cps_K64" };
+    /** One per lineage, in TWO of its strains -- and so in no strain any other prophage is in. */
+    private static final String[]   SPARSE_PROPHAGE = { "prophage_Mu", "prophage_P2", "prophage_lambda",
+            "prophage_HK97", "prophage_Sf6", "prophage_T1" };
+    /** One strain each, in different lineages: the extreme case, two columns with a single 4 in 50 cells. */
+    private static final String[]   SPARSE_ORPHAN   = { "orf_hypo_1", "orf_hypo_2" };
+    /** Absence is a plain 0 far more often than in the pangenome demo -- see the note above. */
+    private static final double[][] EMIT_ABSENT_SHARP = { { 0, 0.92 }, { 1, 0.07 }, { 2, 0.01 } };
+
+    private static TreeAndTable sparseAccessoryGenome() {
+        final Random rnd = new Random( SPARSE_SEED );
+        final List<String> names = new ArrayList<String>();
+        for( int c = 0; c < SPARSE_CLADES.length; ++c ) {
+            for( int i = 0; i < SPARSE_CLADES[ c ]; ++i ) {
+                names.add( String.format( Locale.ROOT, "%s_L%d_%02d", SPARSE_ABBREV[ c ], c + 1, i + 1 ) );
+            }
+        }
+        final PhylogenyNode root = new PhylogenyNode();
+        int at = 0;
+        for( final int size : SPARSE_CLADES ) {
+            final PhylogenyNode clade = yuleClade( names.subList( at, at + size ), rnd );
+            clade.setDistanceToParent( round6( uniform( rnd, 0.08, 0.16 ) ) );
+            root.addAsChild( clade );
+            at += size;
+        }
+        final Phylogeny phy = tree( root, "Sparse accessory genome (demo)",
+                                    "50 synthetic strains in six lineages, carrying NO per-tip data. Pair it with "
+                                            + "the companion sparse-accessory-genome.tsv: 18 genes, each cell an "
+                                            + "ordinal certainty 0..4 that the gene is present, a blank cell NOT "
+                                            + "ASSESSED. File > Import Annotations, match the \"strain\" column "
+                                            + "against the tip name, then View > Clustergram -- and compare the two "
+                                            + "clustered orders in View > Order Matrix Columns: the eight rare genes "
+                                            + "clump together under \"Clustered (co-occurrence)\", which counts the "
+                                            + "strains they are jointly ABSENT from as agreement, and move beside "
+                                            + "the lineage they actually live in under \"Clustered (ignoring shared "
+                                            + "absence)\"." );
+        final List<PhylogenyNode> tips = phy.getExternalNodes();
+        final int n = tips.size();
+        final Map<String, Integer> tip_index = new HashMap<String, Integer>(); // lookups only, never iterated
+        for( int t = 0; t < n; ++t ) {
+            tip_index.put( tips.get( t ).getName(), t );
+        }
+        // the HIDDEN truth, one row per gene, in the table's column order (grouped by class)
+        final List<String> genes = new ArrayList<String>();
+        final List<boolean[]> truth = new ArrayList<boolean[]>();
+        for( final String g : SPARSE_CORE ) { // every strain
+            final boolean[] p = new boolean[ n ];
+            Arrays.fill( p, true );
+            genes.add( g );
+            truth.add( p );
+        }
+        int start = 0;
+        final int[] clade_start = new int[ SPARSE_CLADES.length ];
+        for( int c = 0; c < SPARSE_CLADES.length; ++c ) {
+            clade_start[ c ] = start;
+            start += SPARSE_CLADES[ c ];
+        }
+        for( int c = 0; c < SPARSE_CAPSULE.length; ++c ) { // the whole lineage
+            final boolean[] p = new boolean[ n ];
+            for( int i = 0; i < SPARSE_CLADES[ c ]; ++i ) {
+                p[ tip_index.get( names.get( clade_start[ c ] + i ) ) ] = true;
+            }
+            genes.add( SPARSE_CAPSULE[ c ] );
+            truth.add( p );
+        }
+        for( int c = 0; c < SPARSE_PROPHAGE.length; ++c ) { // two strains of that lineage, and no other
+            final boolean[] p = new boolean[ n ];
+            for( int i = 0; i < 2; ++i ) {
+                p[ tip_index.get( names.get( clade_start[ c ] + i ) ) ] = true;
+            }
+            genes.add( SPARSE_PROPHAGE[ c ] );
+            truth.add( p );
+        }
+        for( int k = 0; k < SPARSE_ORPHAN.length; ++k ) { // one strain each, in the first and the last lineage
+            final boolean[] p = new boolean[ n ];
+            final int clade = ( k == 0 ) ? 0 : ( SPARSE_CLADES.length - 1 );
+            p[ tip_index.get( names.get( ( clade_start[ clade ] + SPARSE_CLADES[ clade ] ) - 1 ) ) ] = true;
+            genes.add( SPARSE_ORPHAN[ k ] );
+            truth.add( p );
+        }
+        final StringBuilder sb = new StringBuilder( "strain" );
+        for( final String g : genes ) {
+            sb.append( '\t' ).append( g );
+        }
+        sb.append( '\n' );
+        for( int t = 0; t < n; ++t ) {
+            sb.append( tips.get( t ).getName() );
+            for( int g = 0; g < genes.size(); ++g ) {
+                final boolean present = truth.get( g )[ t ];
+                final int value = draw( present ? EMIT_PRESENT : EMIT_ABSENT_SHARP, rnd );
+                // both draws are ALWAYS made, so the random stream does not depend on which cells go missing
+                final double r = rnd.nextDouble();
+                sb.append( '\t' );
+                if ( present || ( r >= 0.03 ) ) { // only an ABSENT cell may be unassessed -- see the note above
+                    sb.append( value );
+                }
+            }
+            sb.append( '\n' );
+        }
+        return new TreeAndTable( phy, sb.toString() );
     }
 
     /** Grows a clade by repeatedly splitting a randomly chosen lineage (a Yule process), then names the tips. */
