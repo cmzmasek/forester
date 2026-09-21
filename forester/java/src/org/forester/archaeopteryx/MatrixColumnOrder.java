@@ -21,6 +21,7 @@
 package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -192,10 +193,18 @@ final class MatrixColumnOrder {
     }
 
     /**
-     * {@code refs} re-ordered to follow {@code source_order}. A ref the source order does not name keeps its incoming
-     * relative order and goes at the end -- it cannot be placed, so it must not be dropped. That is not hypothetical:
-     * an ELEMENT SLOT candidate (taxonomy, sequence, ...) is a colorable field that is not a node property at all, so
-     * it never appears in the source order.
+     * {@code refs} re-ordered to follow {@code source_order}. A ref the source order does not name cannot be placed,
+     * so it must not be dropped: it goes at the end, and the unplaceable ones are sorted among themselves. That is
+     * not hypothetical -- an ELEMENT SLOT candidate (taxonomy, sequence, ...) is a colorable field that is not a
+     * node property at all, and {@code propertyRefsInSourceOrder} walks the DISPLAYED tree, so a matrix column
+     * whose values all sit outside the current subtree drops out of the source order too.
+     * <p>
+     * The tail is SORTED rather than left in its incoming order so that this function depends only on its inputs as
+     * a SET. Every data-driven mode normalises through here precisely so a result cannot depend on the order the
+     * columns happened to be in, and an incoming-order tail broke that promise exactly when it mattered: the column
+     * order is computed from the PRE-sort order and the dendrogram that describes it from the POST-sort one, so a
+     * single unplaceable ref made the two disagree and the dendrogram silently vanished from a correctly clustered
+     * matrix.
      */
     static List<String> inSourceOrder( final List<String> refs, final List<String> source_order ) {
         final List<String> out = new ArrayList<String>();
@@ -204,11 +213,14 @@ final class MatrixColumnOrder {
                 out.add( ref );
             }
         }
+        final List<String> unplaceable = new ArrayList<String>();
         for( final String ref : refs ) {
-            if ( !out.contains( ref ) ) {
-                out.add( ref );
+            if ( !out.contains( ref ) && !unplaceable.contains( ref ) ) {
+                unplaceable.add( ref );
             }
         }
+        Collections.sort( unplaceable );
+        out.addAll( unplaceable );
         return out;
     }
 
@@ -400,12 +412,101 @@ final class MatrixColumnOrder {
      * clusters.
      */
     static int[] completeLinkageOrder( final double[][] d ) {
+        return completeLinkage( d ).order();
+    }
+
+    /**
+     * The dendrogram behind a matrix's column order -- what a drawn column dendrogram is made of -- or {@code null}
+     * when none may be drawn.
+     * <p>
+     * {@code refs_in_drawn_order} is the matrix as it is ON SCREEN. The clustering is recomputed from the data and
+     * its leaves are then required to BE that order: if they are not, this returns null rather than a dendrogram.
+     * That is the whole guard. A dendrogram drawn over a matrix it does not describe would have connectors that
+     * cross, a picture asserting a grouping the columns do not have -- and the ways to get there are ordinary: a
+     * column dragged by hand (the tab goes MANUAL, but nothing else has to), a figure restored from a file, a cached
+     * dendrogram outliving an edit to the data. Checking the answer beats trying to enumerate the causes.
+     */
+    static Dendrogram dendrogramFor( final List<String> refs_in_drawn_order, final Mode mode, final Phylogeny phy ) {
+        if ( ( mode != Mode.CLUSTERED ) && ( mode != Mode.CLUSTERED_PRESENCE ) ) {
+            return null; // the other modes did not come from a clustering, so there is no tree behind them
+        }
+        if ( ( refs_in_drawn_order == null ) || ( refs_in_drawn_order.size() < 3 ) ) {
+            return null; // fewer than three columns: clustered() returns them as they are, without clustering
+        }
+        final List<String> table = inSourceOrder( refs_in_drawn_order, TreePanelUtil.propertyRefsInSourceOrder( phy ) );
+        final Double[][] v = values( table, phy );
+        final Dendrogram d = completeLinkage( ( mode == Mode.CLUSTERED ) ? distances( v ) : brayCurtisDistances( v ) );
+        final List<String> leaves = new ArrayList<String>();
+        for( final int g : d.order() ) {
+            leaves.add( table.get( g ) );
+        }
+        return leaves.equals( refs_in_drawn_order ) ? d : null;
+    }
+
+    /**
+     * The complete-linkage dendrogram of a distance matrix -- the same structure R's {@code hclust} returns, so it can
+     * be pinned against it wholesale:
+     * <ul>
+     * <li>{@code left} / {@code right}: one merge per stage, in R's {@code $merge} node-id convention -- a NEGATIVE
+     * value is the singleton of that index (-1 = column 0), a POSITIVE value the cluster formed at that earlier
+     * stage. The pair is oriented by R's {@code hcass2} rule (singleton before cluster, lower index between
+     * singletons, earlier stage between clusters), which is what makes the leaf order reproducible;</li>
+     * <li>{@code height}: the distance each merge happened AT ({@code $height}) -- this is what a drawn dendrogram's
+     * bar heights are, and what tells a reader whether a block of columns is one tight cluster or two loose ones.
+     * It can be {@code +Infinity} for a pair of columns that share no assessed tip (see {@link #distances}), so
+     * anything that draws it has to decide what to do with a merge that has no finite height;</li>
+     * <li>{@code order}: the leaves as {@code $order} reads them out, which is the column order itself.</li>
+     * </ul>
+     */
+    record Dendrogram( int[] left, int[] right, double[] height, int[] order ) {
+
+        /** The number of merges: one fewer than the number of columns (0 for a single column). */
+        int stages() {
+            return height.length;
+        }
+
+        // A record whose components are ARRAYS gets equals/hashCode by array IDENTITY and a toString of four
+        // "[I@1a2b3c" -- so two structurally identical dendrograms would compare unequal, and a failure message
+        // would print nothing a reader could use. Both are spelled out here rather than left as a trap.
+
+        @Override
+        public boolean equals( final Object o ) {
+            if ( this == o ) {
+                return true;
+            }
+            if ( !( o instanceof Dendrogram ) ) {
+                return false;
+            }
+            final Dendrogram d = ( Dendrogram ) o;
+            return Arrays.equals( left, d.left ) && Arrays.equals( right, d.right )
+                    && Arrays.equals( height, d.height ) && Arrays.equals( order, d.order );
+        }
+
+        @Override
+        public int hashCode() {
+            return ( ( ( ( 31 * Arrays.hashCode( left ) ) + Arrays.hashCode( right ) ) * 31 )
+                    + Arrays.hashCode( height ) ) * 31 + Arrays.hashCode( order );
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder( "Dendrogram[order=" );
+            sb.append( Arrays.toString( order ) ).append( ", merges=" );
+            for( int i = 0; i < stages(); ++i ) {
+                sb.append( i > 0 ? ", " : "" ).append( '(' ).append( left[ i ] ).append( ',' ).append( right[ i ] )
+                        .append( " @" ).append( height[ i ] ).append( ')' );
+            }
+            return sb.append( ']' ).toString();
+        }
+    }
+
+    static Dendrogram completeLinkage( final double[][] d ) {
         final int n = d.length;
         if ( n == 0 ) {
-            return new int[ 0 ];
+            return new Dendrogram( new int[ 0 ], new int[ 0 ], new double[ 0 ], new int[ 0 ] );
         }
         if ( n == 1 ) {
-            return new int[] { 0 };
+            return new Dendrogram( new int[ 0 ], new int[ 0 ], new double[ 0 ], new int[] { 0 } );
         }
         final double[][] dist = new double[ n ][];
         for( int i = 0; i < n; ++i ) {
@@ -420,6 +521,7 @@ final class MatrixColumnOrder {
         }
         final int[] left = new int[ n - 1 ];
         final int[] right = new int[ n - 1 ];
+        final double[] height = new double[ n - 1 ];
         for( int stage = 0; stage < ( n - 1 ); ++stage ) {
             int bi = -1;
             int bj = -1;
@@ -460,6 +562,7 @@ final class MatrixColumnOrder {
             }
             left[ stage ] = l;
             right[ stage ] = r;
+            height[ stage ] = best; // R's $height: the distance the two clusters were apart when they merged
             // complete linkage: the merged cluster (kept under the lower label, bi) is as far as its farther half
             for( int k = 0; k < n; ++k ) {
                 if ( active[ k ] && ( k != bi ) && ( k != bj ) ) {
@@ -486,7 +589,7 @@ final class MatrixColumnOrder {
         for( int i = 0; i < n; ++i ) {
             out[ i ] = -order.get( i ) - 1;
         }
-        return out;
+        return new Dendrogram( left, right, height, out );
     }
 
     private MatrixColumnOrder() {

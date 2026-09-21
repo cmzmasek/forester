@@ -135,19 +135,155 @@ public final class ResetToDefaultsTest {
         o.setInverseSearchResult( true );
         o.setSearchProperties( false );
 
-        // A field whose setter quietly refused would still read "default" below, for the wrong reason. Assert the
-        // drive-away TOOK for the fields whose default is ON -- the direction a stubbed setter hides best. (Measured:
-        // with setReserveLegendColumn stubbed to always set true, the comparison below still passed.)
-        if ( o.isReserveLegendColumn() || o.isDimNonMatches() || o.isPulseFoundNodes() ) {
-            System.out.println( "  [ResetToDefaultsTest] the fixture did not actually move a default-ON field off its"
-                    + " default, so the reset check below would pass on a value that never left it" );
+        // the 18 the fixture used to leave at their defaults, so the comparison after the reset said nothing about
+        // them (found by everyFieldMoved below, 2026-09-21)
+        o.setOutlineFontsInVectorExport( false );
+        o.setInternalLabelsAboveBranch( false );
+        o.setColorLabelsSameAsParentBranch( true );
+        o.setShowDefaultNodeShapesInternal( true );
+        o.setShowDefaultNodeShapesExternal( true );
+        o.setShowDefaultNodeShapesForMarkedNodes( true );
+        o.setReplaceUnderscoresInNhParsing( true );
+        o.setAllowErrorsInDistanceToParent( true );
+        o.setParseBeastStyleExtendedNexusTags( false );
+        o.setNhConversionSupportValueStyle( PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
+        o.setCladogramType( Options.CLADOGRAM_TYPE.NON_LINED_UP );
+        o.setShowConfidenceStddev( true );
+        o.setShowMadConfidence( true );
+        o.setExportBlackAndWhite( true );
+        o.setPdfLineWidth( 3.5f );
+        o.setShowTipImages( true );
+        o.setTipImageSize( 99 );
+        o.setBaseFont( new java.awt.Font( "Serif", java.awt.Font.BOLD, 21 ) );
+        // ...and the three that have NO mutator at all -- init() is their only writer, so a setter cannot move them
+        // and only reflection can. They are the fields this test most needs to drive: nothing else in the program
+        // would notice if init() stopped assigning them.
+        if ( !driveFieldsWithoutSetters( o ) ) {
+            return false;
+        }
+
+        if ( !everyFieldMoved( o, Options.createInstance() ) ) {
             return false;
         }
 
         o.resetToDefaults();
 
         final Options def = Options.createInstance();
-        return sameDefaults( o, def );
+        // both halves: every field by reflection (complete, and covers a field added later), and the named list
+        // below, which says what each one IS and carries the few value-specific invariants
+        return everyFieldReset( o, def ) & sameDefaults( o, def );
+    }
+
+    /**
+     * The three Options fields with no mutator -- {@code _editable},
+     * {@code _number_of_digits_after_comma_for_confidence_values} and {@code _taxonomy_extraction} are assigned in
+     * {@code init()} and nowhere else. Driven here by reflection so that {@link #sameDefaults} actually proves
+     * something about them; skipping them instead would leave exactly the hole this guard exists to close. If one
+     * ever gains a setter, use it -- the field write below would still pass, but the setter would go untested.
+     */
+    private static boolean driveFieldsWithoutSetters( final Options o ) {
+        try {
+            set( o, "_editable", Boolean.FALSE );
+            set( o, "_number_of_digits_after_comma_for_confidence_values", Short.valueOf( (short) 5 ) );
+            set( o, "_taxonomy_extraction", org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            return true;
+        }
+        catch ( final Exception e ) {
+            System.out.println( "  [ResetToDefaultsTest] could not drive a setter-less field: " + e
+                    + " -- if the field was renamed or retyped, fix the name here rather than dropping the check" );
+            return false;
+        }
+    }
+
+    private static void set( final Options o, final String field, final Object value ) throws Exception {
+        final java.lang.reflect.Field f = Options.class.getDeclaredField( field );
+        f.setAccessible( true );
+        f.set( o, value );
+    }
+
+    /**
+     * Every field of {@link Options} must actually DIFFER from a fresh default at this point -- i.e. the drive-away
+     * above really took. Without this the comparison after the reset passes on a value that never moved: a setter
+     * that ignores its argument, a getter that reads a different field, or a fixture line that was never typed all
+     * look identical to "reset worked". (Measured 2026-09-19: with {@code setReserveLegendColumn} stubbed to ignore
+     * its argument, this whole test still passed.)
+     * <p>
+     * Reflection over Options' own readers, not a hand-kept list, so a field added LATER is covered without anyone
+     * remembering to come here: it fails until the fixture drives it or it is named in {@link #NOT_DRIVEN} with a
+     * reason. That also makes THIS the check that gives the one after the reset its teeth -- "init() forgot a field"
+     * can only be caught for a field that was moved off its default first.
+     */
+    private static boolean everyFieldMoved( final Options driven, final Options fresh ) {
+        boolean ok = true;
+        int checked = 0;
+        final java.util.List<String> names = new java.util.ArrayList<String>();
+        for( final java.lang.reflect.Method m : Options.class.getDeclaredMethods() ) {
+            if ( !isReader( m ) ) {
+                continue;
+            }
+            final String n = m.getName();
+            names.add( n );
+            try {
+                m.setAccessible( true );
+                final Object a = m.invoke( driven );
+                final Object b = m.invoke( fresh );
+                final boolean moved = ( a == null ) ? ( b != null ) : !a.equals( b );
+                ++checked;
+                if ( !moved ) {
+                    System.out.println( "  [ResetToDefaultsTest] the fixture never moves " + n + "() off its default ("
+                            + a + "), so the reset check below proves nothing about it -- drive it above (via its"
+                            + " setter, or driveFieldsWithoutSetters if it has none)" );
+                    ok = false;
+                }
+            }
+            catch ( final Exception e ) {
+                System.out.println( "  [ResetToDefaultsTest] could not read " + n + "(): " + e );
+                ok = false; // a reader that could not run has proved nothing, and must not pass for one that did
+            }
+        }
+        if ( checked < 40 ) {
+            System.out.println( "  [ResetToDefaultsTest] only " + checked + " Options readers were found (" + names
+                    + ") -- the reflection scan is not seeing the class" );
+            ok = false;
+        }
+        return ok;
+    }
+
+    /**
+     * The mirror of {@link #everyFieldMoved}: after the reset EVERY field must be back at a fresh default's value.
+     * {@link #sameDefaults} below compares a hand-kept list of names, which is good documentation and carries a few
+     * value-specific invariants, but a field it forgets is a field {@code init()} may forget too -- so the complete
+     * comparison is done here, by reflection, and cannot fall behind the class.
+     */
+    private static boolean everyFieldReset( final Options reset, final Options fresh ) {
+        boolean ok = true;
+        for( final java.lang.reflect.Method m : Options.class.getDeclaredMethods() ) {
+            if ( !isReader( m ) ) {
+                continue;
+            }
+            try {
+                m.setAccessible( true );
+                final Object a = m.invoke( reset );
+                final Object b = m.invoke( fresh );
+                if ( ( a == null ) ? ( b != null ) : !a.equals( b ) ) {
+                    System.out.println( "  [ResetToDefaultsTest] " + m.getName() + "() was not reset: got " + a
+                            + ", a fresh default has " + b + " -- init() does not restore it" );
+                    ok = false;
+                }
+            }
+            catch ( final Exception e ) {
+                System.out.println( "  [ResetToDefaultsTest] could not read " + m.getName() + "(): " + e );
+                ok = false;
+            }
+        }
+        return ok;
+    }
+
+    /** A zero-argument {@code isXxx()} / {@code getXxx()} value reader on Options. */
+    private static boolean isReader( final java.lang.reflect.Method m ) {
+        return ( m.getParameterCount() == 0 ) && ( m.getReturnType() != void.class )
+                && !java.lang.reflect.Modifier.isStatic( m.getModifiers() )
+                && ( m.getName().startsWith( "is" ) || m.getName().startsWith( "get" ) );
     }
 
     /** Compares the persisted + display fields of a reset Options against a fresh default. */

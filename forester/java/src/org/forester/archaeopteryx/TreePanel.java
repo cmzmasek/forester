@@ -6995,7 +6995,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             // reserve space at the top for the rotated annotation-column headers so they don't overlap the top
             // cells; the tree is compressed into the remaining height and its origin shifted down (see below)
-            final int top_reserve = annotationHeaderTopReserve();
+            final int top_reserve = annotationHeaderTopReserve() + matrixDendrogramBandHeight();
             // the labeled scale axis eats into the tip-spread budget so the tips stay clear of it: a side ruler in a
             // vertical orientation (verticalScaleAxisReserve), a bottom band in a horizontal one (scaleAxisBottomReserve)
             // -- the two are mutually exclusive by orientation, and both are 0 when the axis is off. Reserving it here
@@ -9850,6 +9850,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Rebuilds the column model from the stored specs against the currently displayed tree (visible tips). */
     final void rebuildAnnotationColumns() {
         _annotation_col_widths = null; // invalidate the cached widths -- the model (and its text) may have changed
+        _matrix_dendrogram_refs = null; // ...and the column dendrogram: same refs, same mode, DIFFERENT values
         if ((_annotation_column_specs == null) || _annotation_column_specs.isEmpty() || (_phylogeny == null)
                 || _phylogeny.isEmpty()) {
             _annotation_columns = null;
@@ -10128,6 +10129,241 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             cx += w + annotationColumnGapAfter(i);
         }
         return -1;
+    }
+
+    // ---- The COLUMN dendrogram: the clustering that produced the matrix's column order, drawn above its headers.
+    //      Only in the two Clustered modes, and only while it still describes what is on screen -- see
+    //      MatrixColumnOrder.dendrogramFor, which checks its own leaves against the drawn order rather than trusting
+    //      a mode flag. Rectangular family only: in CIRCULAR the columns are concentric rings and a dendrogram over
+    //      rings has no sensible geometry (Christian, 2026-09-21: "circular does not need it"); UNROOTED draws no
+    //      columns at all.
+    private MatrixColumnOrder.Dendrogram _matrix_dendrogram;
+    private java.util.List<String>       _matrix_dendrogram_refs;
+    private MatrixColumnOrder.Mode       _matrix_dendrogram_mode;
+
+    /** The matrix columns' refs in DRAWN order -- the dendrogram's leaves, if it has any. A MATRIX column is never a
+     *  merged type, so one spec is one drawn column and the spec order IS the drawn order (matrixColumnCentersX
+     *  walks the drawn columns and must agree with this; the painter checks the two lengths before it draws). */
+    private java.util.List<String> drawnMatrixRefs() {
+        return MatrixColumnOrder.matrixRefs(_annotation_column_specs);
+    }
+
+    /**
+     * The dendrogram to draw over the matrix, or null. Cached on the refs + mode it was built from: the clustering
+     * is O(columns^2 x tips) and a repaint happens on every mouse move, so it must not run per paint.
+     * <p>
+     * The refs+mode key is NOT enough on its own: a subtree, a super-tree, an undo, a tip deletion or a re-import all
+     * change the VALUES while leaving the refs and the mode alone, and the self-check in
+     * {@link MatrixColumnOrder#dendrogramFor} runs only on a cache MISS -- so a hit would hand back a dendrogram of
+     * the old data and draw it over the new. {@link #rebuildAnnotationColumns()} is the one place every such path
+     * goes through, and it drops this cache there.
+     */
+    MatrixColumnOrder.Dendrogram matrixColumnDendrogram() {
+        if (!hasAnnotationColumns() || isRadialLayout()) {
+            return null;
+        }
+        final java.util.List<String> refs = drawnMatrixRefs();
+        if (!refs.equals(_matrix_dendrogram_refs) || (_matrix_column_order != _matrix_dendrogram_mode)) {
+            _matrix_dendrogram_refs = refs;
+            _matrix_dendrogram_mode = _matrix_column_order;
+            _matrix_dendrogram = MatrixColumnOrder.dendrogramFor(refs, _matrix_column_order, getPhylogeny());
+        }
+        return _matrix_dendrogram;
+    }
+
+    /** The band the column dendrogram is drawn in, above the headers, or 0 when none is drawn. Deliberately short:
+     *  it is a shape to read a grouping off, not a scale anyone reads a number from. */
+    int matrixDendrogramBandHeight() {
+        return (matrixColumnDendrogram() == null) ? 0
+                : (3 * getFontMetrics(getTreeFontSet().getSmallFont()).getHeight());
+    }
+
+    /** The logical y the dendrogram's leaves sit on: just above the column headers, which are themselves anchored a
+     *  full header-length above the first tip. NaN when there are no visible tips to anchor to. Shared by the paint
+     *  and the test hook, so what a test measures is where the lines actually are. */
+    private double matrixDendrogramBaselineY() {
+        float min_tip_y = Float.MAX_VALUE;
+        for (final PhylogenyNode t : visibleExternalTips()) {
+            min_tip_y = Math.min(min_tip_y, t.getYcoord());
+        }
+        if (min_tip_y == Float.MAX_VALUE) {
+            return Double.NaN;
+        }
+        // No Math.max(1, ...) clamp here, unlike the header anchor in paintAnnotationColumns: the root's own Ycoord
+        // is already shifted down by this reserve AND the band (see paintPhylogeny), so the baseline cannot reach the
+        // top of the canvas the way an unshifted header can. Measured on the 18-column demo by squeezing the canvas
+        // from 900 px down to 70: the unclamped baseline never moved off 49.0 and the band's top stayed at 6. A
+        // clamp here would be dead code, and a comment saying it protects against something it never sees is worse.
+        return (min_tip_y - getYdistance()) - 3.0 - annotationHeaderTopReserve();
+    }
+
+    /**
+     * Test hook: the logical strip of height {@code h} immediately above the column headers, across the matrix --
+     * where the dendrogram is drawn, and where in a mode without one there must be nothing. Computed in the CURRENT
+     * layout, because the reserve changes the layout: a strip measured in one mode means nothing in another.
+     */
+    java.awt.Rectangle matrixHeaderStripForTest(final int h) {
+        if ((h <= 0) || !hasAnnotationColumns()) {
+            return null; // before the baseline: it walks the tips, and there may not be a tree at all
+        }
+        final double baseline = matrixDendrogramBaselineY();
+        if (Double.isNaN(baseline)) {
+            return null;
+        }
+        final double[] xs = matrixColumnCentersX();
+        if (xs.length < 2) {
+            return null;
+        }
+        final int x0 = (int) Math.floor(xs[0]);
+        final int x1 = (int) Math.ceil(xs[xs.length - 1]);
+        return new java.awt.Rectangle(x0, (int) Math.floor(baseline - h), Math.max(1, x1 - x0), h);
+    }
+
+    /** Test hook: the strip the dendrogram actually occupies now, or null when none is drawn. */
+    java.awt.Rectangle matrixDendrogramBandForTest() {
+        return matrixHeaderStripForTest(matrixDendrogramBandHeight());
+    }
+
+    /** The logical x of the centre of each MATRIX column, in drawn order -- the dendrogram's leaf positions. */
+    private double[] matrixColumnCentersX() {
+        final java.util.List<Double> out = new java.util.ArrayList<Double>();
+        double at = annotationColumnsStartX();
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final int w = annotationColumnWidth(i);
+            if (_annotation_columns.getColumn(i).getType() == AnnotationColumns.Type.MATRIX) {
+                out.add(Double.valueOf(at + (w / 2.0)));
+            }
+            at += w + annotationColumnGapAfter(i);
+        }
+        final double[] xs = new double[out.size()];
+        for (int i = 0; i < xs.length; ++i) {
+            xs[i] = out.get(i).doubleValue();
+        }
+        return xs;
+    }
+
+    /**
+     * The column dendrogram: the clustering that put the matrix in the order it is in, drawn as a compressed tree
+     * above the column headers, leaves down. Heights are scaled LINEARLY against the tallest merge, so a block that
+     * joins low really is tighter than one that joins high -- spacing the merges evenly would read better and say
+     * something false. A merge with no finite height (two columns that share no assessed tip, see
+     * MatrixColumnOrder.distances) is drawn at the top of the band, above every measurable merge, which is where it
+     * belongs: it joined last, and no distance was ever computed for it.
+     * <p>
+     * Logical coordinates, as the columns themselves are: in a vertical orientation g already carries R, so the
+     * lines ride the rotation with the cells they belong to. Part of the figure, so it is drawn in exports too.
+     */
+    private void paintMatrixColumnDendrogram(final Graphics2D g, final boolean to_pdf,
+                                            final boolean to_graphics_file) {
+        final MatrixColumnOrder.Dendrogram d = matrixColumnDendrogram();
+        final int band = matrixDendrogramBandHeight();
+        if ((d == null) || (band <= 0) || (d.stages() < 1)) {
+            return;
+        }
+        final double[] xs = matrixColumnCentersX();
+        if (xs.length != d.order().length) {
+            return; // the matrix changed under us between the two reads: draw nothing rather than something wrong
+        }
+        final double baseline = matrixDendrogramBaselineY();
+        if (Double.isNaN(baseline)) {
+            return;
+        }
+        double max_h = 0;
+        for (final double h : d.height()) {
+            if (!Double.isInfinite(h) && !Double.isNaN(h) && (h > max_h)) {
+                max_h = h;
+            }
+        }
+        final int[] slot = new int[d.order().length]; // leaf index (in the clustering) -> drawn matrix position
+        for (int k = 0; k < d.order().length; ++k) {
+            slot[d.order()[k]] = k;
+        }
+        final double[] cluster_x = new double[d.stages()];
+        final double[] cluster_y = new double[d.stages()];
+        final Color saved_color = g.getColor();
+        final java.awt.Stroke saved_stroke = g.getStroke();
+        g.setColor(getTreeColorSet().getBranchColor());
+        // the same weight the tree's own branches are drawn at, per destination (see paintPhylogeny): a hardcoded
+        // 1f came out at twice the branch weight in a default PDF and two thirds of it on screen
+        if (to_pdf || to_graphics_file) {
+            g.setStroke(new BasicStroke(getOptions().getPdfLineWidth()));
+        }
+        else {
+            setupStroke(g);
+        }
+        for (int s = 0; s < d.stages(); ++s) {
+            final double ym = dendrogramMergeY(baseline, band, d.height()[s], max_h);
+            final double x1 = nodeX(d.left()[s], slot, xs, cluster_x);
+            final double y1 = nodeY(d.left()[s], baseline, cluster_y);
+            final double x2 = nodeX(d.right()[s], slot, xs, cluster_x);
+            final double y2 = nodeY(d.right()[s], baseline, cluster_y);
+            g.draw(new java.awt.geom.Line2D.Double(x1, y1, x1, ym));
+            g.draw(new java.awt.geom.Line2D.Double(x2, y2, x2, ym));
+            g.draw(new java.awt.geom.Line2D.Double(x1, ym, x2, ym));
+            cluster_x[s] = (x1 + x2) / 2.0;
+            cluster_y[s] = ym;
+        }
+        g.setStroke(saved_stroke);
+        g.setColor(saved_color);
+        ++_matrix_dendrogram_paints;
+    }
+
+    /**
+     * Where a merge at height {@code h} sits in a band of {@code band} px whose leaves are on {@code baseline}:
+     * LINEAR in the height, so a block that joins low really is drawn tighter than one that joins high. Spacing
+     * merges evenly by rank would read more clearly and would say something false. A height that is not finite --
+     * two columns that share no assessed tip, so no distance was ever computed -- goes to the top of the band,
+     * above every measurable merge, which is where it belongs: it joined last.
+     */
+    static double dendrogramMergeY(final double baseline, final int band, final double h, final double max_h) {
+        if (!Double.isFinite(h) || !(max_h > 0)) {
+            return baseline - band;
+        }
+        return baseline - ((h / max_h) * band);
+    }
+
+    /** R's node-id convention: negative = the singleton of that index, positive = the cluster formed at that stage. */
+    private static double nodeX(final int id, final int[] slot, final double[] xs, final double[] cluster_x) {
+        return (id < 0) ? xs[slot[-id - 1]] : cluster_x[id - 1];
+    }
+
+    private static double nodeY(final int id, final double baseline, final double[] cluster_y) {
+        return (id < 0) ? baseline : cluster_y[id - 1];
+    }
+
+    /** Test hook: how many times the column dendrogram has been painted. */
+    private int _matrix_dendrogram_paints = 0;
+
+    int matrixDendrogramPaintsForTest() {
+        return _matrix_dendrogram_paints;
+    }
+
+    /**
+     * Fills one cell of a TILED grid -- a colour-strip / heat-map / matrix cell, an MSA residue.
+     * <p>
+     * On SCREEN an integer rectangle is exact: the scale is 1, so two neighbours share a pixel boundary and tile
+     * with no seam. An EXPORT scales user space by a fractional factor, so a shared edge lands in the middle of a
+     * device pixel and BOTH neighbours antialias against the background instead of against each other -- a pale
+     * hairline grid between every pair of cells, which is what a PDF of a clustergram showed while the screen
+     * looked right.
+     * <p>
+     * So when exporting, each cell is grown by half a DEVICE pixel on every side (converted back through the
+     * current transform, which in a vertical orientation carries a rotation as well as a scale) and neighbours
+     * OVERLAP instead of abutting. Half a device pixel is the most a seam can be, and the overlap is invisible: it
+     * is smaller than the pixel it is covering.
+     */
+    private void fillGridCell(final Graphics2D g, final int x, final int y, final int w, final int h,
+                              final boolean exporting) {
+        if (!exporting) {
+            g.fillRect(x, y, w, h);
+            return;
+        }
+        final java.awt.geom.AffineTransform t = g.getTransform();
+        final double sx = Math.hypot(t.getScaleX(), t.getShearY()); // the unit x vector's device length
+        final double sy = Math.hypot(t.getShearX(), t.getScaleY());
+        final double bx = (sx > 0) ? (0.5 / sx) : 0.5;
+        final double by = (sy > 0) ? (0.5 / sy) : 0.5;
+        g.fill(new java.awt.geom.Rectangle2D.Double(x - bx, y - by, w + (2 * bx), h + (2 * by)));
     }
 
     /** A cell of an annotation column: the DRAWN column and the tip whose row it is on. */
@@ -10846,7 +11082,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return bands;
     }
 
-    private void paintAnnotationColumns(final Graphics2D g) {
+    private void paintAnnotationColumns(final Graphics2D g, final boolean exporting) {
         if (!hasAnnotationColumns()) {
             return;
         }
@@ -10880,7 +11116,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         final Color c = _annotation_columns.cellColor(t, i);
                         if (c != null) {
                             g.setColor(c);
-                            g.fillRect(xi, cy, w, cell_h);
+                            fillGridCell(g, xi, cy, w, cell_h, exporting);
                         }
                         break;
                     }
@@ -10959,7 +11195,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * angle" setting -- a 45deg cell would overrun the fixed band depth), and the header sits upright in the reserved
      * margin just before the first cell. Called while g is still rotated by R (paintPhylogeny).
      */
-    private void paintAnnotationColumnsVertical(final Graphics2D g) {
+    private void paintAnnotationColumnsVertical(final Graphics2D g, final boolean exporting) {
         if (!hasAnnotationColumns()) {
             return;
         }
@@ -10999,7 +11235,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         final Color c = _annotation_columns.cellColor(t, i);
                         if (c != null) {
                             g.setColor(c);
-                            g.fillRect(xi, cy, w, cell_h);
+                            fillGridCell(g, xi, cy, w, cell_h, exporting);
                         }
                         break;
                     }
@@ -13099,7 +13335,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     continue;
                 }
                 g.setColor(col);
-                g.fillRect(cx, cy, cell_w, cell_h);
+                fillGridCell(g, cx, cy, cell_w, cell_h, to_pdf || to_graphics_file);
                 if (draw_letters && (cell_h >= (fm.getAscent() + fm.getDescent()))) {
                     final String ch = String.valueOf(Character.toUpperCase(res));
                     final int lw = fm.stringWidth(ch);
@@ -14959,7 +15195,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             // Position starting Y of tree (shifted down by the same header reserve used in calcParametersForPainting)
             _phylogeny.getRoot().setYcoord((float) (getYdistance() * rowWeight(_phylogeny.getRoot()))
-                    + (TreePanel.MOVE / 2.0f) + verticalBreadthPad() + annotationHeaderTopReserve());
+                    + (TreePanel.MOVE / 2.0f) + verticalBreadthPad() + annotationHeaderTopReserve()
+                    + matrixDendrogramBandHeight());
             final int dynamic_hiding_factor = calcDynamicHidingFactor();
             if (shows(DisplayOption.DYNAMICALLY_HIDE_DATA)) {
                 if (dynamic_hiding_factor > 1) {
@@ -15025,7 +15262,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width);
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars -- node coords set by the loop above
                 paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD stratigraphic-range bars on fossil tips
-                paintAnnotationColumns(g); // tip-aligned columns (strip/heat map/bar/text), right of the labels
+                paintAnnotationColumns(g, to_pdf || to_graphics_file); // tip-aligned columns, right of the labels
+                paintMatrixColumnDendrogram(g, to_pdf, to_graphics_file); // the clustering behind the column order
                 if (!to_pdf && !to_graphics_file) {
                     paintAnnotationColumnDragMarker(g); // where a dragged column would land -- screen only
                 }
@@ -15043,7 +15281,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintZebraStripes(g, to_pdf, to_graphics_file, graphics_file_x, graphics_file_width); // faint row bands, behind
                 paintHpdBars(g, to_pdf, to_graphics_file); // node-age HPD bars: a plain rect at each node -> rides R
                 paintFossilRangeBars(g, to_pdf, to_graphics_file); // FAD/LAD tip range bars: axis-aligned rects -> ride R
-                paintAnnotationColumnsVertical(g);
+                paintAnnotationColumnsVertical(g, to_pdf || to_graphics_file);
+                paintMatrixColumnDendrogram(g, to_pdf, to_graphics_file); // logical; g carries R, so it rides along
                 if (!to_pdf && !to_graphics_file) {
                     paintAnnotationColumnDragMarker(g); // logical coords; g carries R -> lands between the bands
                 }
@@ -15653,7 +15892,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  scale-axis reserve so the ruler band is inside the canvas; the tree is shifted down by MOVE + the header reserve
      *  (see the root Ycoord in paintPhylogeny), so the scroll/paint extents agree. */
     private int treeBreadthExtent() {
-        return TreePanel.MOVE + (2 * verticalBreadthPad()) + annotationHeaderTopReserve() + verticalScaleAxisReserve()
+        return TreePanel.MOVE + (2 * verticalBreadthPad()) + annotationHeaderTopReserve()
+                + matrixDendrogramBandHeight() + verticalScaleAxisReserve()
                 + scaleAxisBottomReserve() // horizontal-orientation bottom axis band (0 in vertical; mutually exclusive)
                 + msaRulerReserve() // the MSA column ruler's bottom band (root-left only; 0 otherwise)
                 + msaConservationReserve() // ...and the conservation/consensus band just above it

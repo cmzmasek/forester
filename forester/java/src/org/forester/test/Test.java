@@ -1586,6 +1586,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Matrix column dendrogram (render): ");
+        if (org.forester.archaeopteryx.MatrixDendrogramRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Annotation cell rollover: ");
         if (org.forester.archaeopteryx.AnnotationCellHoverTest.test()) {
             System.out.println("OK.");

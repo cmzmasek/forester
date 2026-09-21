@@ -53,7 +53,8 @@ public final class MatrixColumnOrderTest {
     }
 
     public static boolean test() {
-        return testDistancesMatchR() && testMissingIsNotZero() && testNoOverlap() && testClusteredOrderMatchesR()
+        return testDendrogramMatchesR() && testDendrogramGuards() && testDistancesMatchR() && testMissingIsNotZero() && testNoOverlap()
+                && testClusteredOrderMatchesR()
                 && testLinkageIsComplete()
                 && testClusteredIgnoresIncomingOrder() && testFrequency() && testAlphabetical() && testTableOrder()
                 && testManualAndEdges() && testApplyIsSlotPreserving() && testDialogResolution() && testDeterministic()
@@ -120,6 +121,158 @@ public final class MatrixColumnOrderTest {
                                                        new Integer[] { 4, 4, 4, 0, 0, 1 },
                                                        new Integer[] { 4, 3, 4, 1, 0, 0 },
                                                        new Integer[] { 2, 2, 2, 2, 2, 2 } );
+
+    // ---- the dendrogram itself ---------------------------------------------------------------------------------
+
+    /**
+     * The whole clustering, not just the order it reads out to: {@link MatrixColumnOrder#completeLinkage} against R's
+     * {@code hclust} object field for field -- {@code $merge} (which two clusters joined, in R's node-id convention),
+     * {@code $height} (the distance they joined AT) and {@code $order}. The order alone was pinned before; the merges
+     * and heights are what a DRAWN dendrogram is made of, so they have to be pinned before anything draws them.
+     * <p>
+     * Four matrices, R 4.5.3: the no-ties case, the 6x6 that separates the linkages, and the double-zero matrix under
+     * BOTH distances -- the last pair matters most, because the two share every leaf and differ only in how they
+     * group them, which is exactly what the picture claims to show.
+     */
+    private static boolean testDendrogramMatchesR() {
+        // R: hclust(dist(t(m)), "complete") -- merge rows, heights, order (R is 1-based; the order is 0-based here)
+        if ( !dendrogramIs( "no-ties", MatrixColumnOrder.completeLinkage( euclid( NT_GENES, NT ) ),
+                            new int[][] { { -1, -2 }, { -3, -4 }, { -5, 1 }, { 2, 3 } },
+                            new double[] { 1.414213562, 1.732050808, 4.242640687, 8.774964387 },
+                            new int[] { 2, 3, 4, 0, 1 } ) ) {
+            return false;
+        }
+        if ( !dendrogramIs( "6x6 linkage", MatrixColumnOrder.completeLinkage( euclid( L6_GENES, L6 ) ),
+                            new int[][] { { -3, -5 }, { -1, -2 }, { -4, 2 }, { 1, 3 }, { -6, 4 } },
+                            new double[] { 4.0, 4.795831523, 5.830951895, 6.324555320, 7.141428429 },
+                            new int[] { 5, 2, 4, 3, 0, 1 } ) ) {
+            return false;
+        }
+        if ( !dendrogramIs( "double-zero, euclidean", MatrixColumnOrder.completeLinkage( euclid( DZ_GENES, DZ ) ),
+                            new int[][] { { -1, -2 }, { -5, -6 }, { -4, 1 }, { -3, 2 }, { 3, 4 } },
+                            new double[] { 1.0, 5.656854249, 8.0, 8.944271910, 11.313708499 },
+                            new int[] { 3, 0, 1, 2, 4, 5 } ) ) {
+            return false;
+        }
+        // the SAME leaves, grouped differently: vegan::vegdist(t(m), "bray") + hclust complete
+        if ( !dendrogramIs( "double-zero, Bray-Curtis",
+                            MatrixColumnOrder.completeLinkage( MatrixColumnOrder
+                                    .brayCurtisDistances( MatrixColumnOrder.values( refs( DZ_GENES ),
+                                                                                    tree( DZ_GENES, DZ ) ) ) ),
+                            new int[][] { { -1, -2 }, { -4, 1 }, { -3, -5 }, { -6, 2 }, { 3, 4 } },
+                            new double[] { 0.015873016, 0.333333333, 0.6, 0.777777778, 1.0 },
+                            new int[] { 2, 4, 5, 3, 0, 1 } ) ) {
+            return false;
+        }
+        // degenerate sizes: no merges to draw, and never an exception
+        final MatrixColumnOrder.Dendrogram none = MatrixColumnOrder.completeLinkage( new double[ 0 ][ 0 ] );
+        final MatrixColumnOrder.Dendrogram one = MatrixColumnOrder.completeLinkage( new double[ 1 ][ 1 ] );
+        if ( ( none.stages() != 0 ) || ( none.order().length != 0 ) || ( one.stages() != 0 )
+                || ( one.order().length != 1 ) || ( one.order()[ 0 ] != 0 ) ) {
+            return fail( "0 and 1 columns must give a dendrogram with no merges, got " + none.stages() + " / "
+                    + one.stages() );
+        }
+        // a pair that shares no assessed tip has no distance, so its merge has no finite height: whatever draws the
+        // dendrogram has to cope, and this is where that is stated
+        final String[] gone = { "P", "Q", "Q2" };
+        final MatrixColumnOrder.Dendrogram inf = MatrixColumnOrder
+                .completeLinkage( MatrixColumnOrder.distances( MatrixColumnOrder
+                        .values( refs( gone ), tree( gone, columns( new Integer[] { 1, 1, null, null },
+                                                                    new Integer[] { null, null, 2, 2 },
+                                                                    new Integer[] { null, null, 2, 3 } ) ) ) ) );
+        if ( !Double.isInfinite( inf.height()[ inf.stages() - 1 ] ) ) {
+            return fail( "the last merge of an unmeasurable pair must have an infinite height, got "
+                    + inf.height()[ inf.stages() - 1 ] );
+        }
+        return true;
+    }
+
+    /**
+     * {@link MatrixColumnOrder#dendrogramFor}'s two guards, each isolated -- they cover for each other in the running
+     * program, so neither is pinned unless the other is held out of the way (measured: removing either one alone
+     * changed nothing anywhere).
+     * <ul>
+     * <li>the MODE gate: a mode whose order did not come from a clustering gets no dendrogram, even when the columns
+     * happen to be sitting in exactly the clustered order;</li>
+     * <li>the drawn-order SELF-CHECK: a clustered mode whose columns are NOT in the clustering's order gets none
+     * either -- that is a restored figure, or a cache that outlived an edit, and drawing over it would assert a
+     * grouping the columns do not have.</li>
+     * </ul>
+     */
+    private static boolean testDendrogramGuards() {
+        final Phylogeny phy = tree( DZ_GENES, DZ );
+        final List<String> clustered = MatrixColumnOrder.order( refs( DZ_GENES ), MatrixColumnOrder.Mode.CLUSTERED,
+                                                                phy );
+        if ( MatrixColumnOrder.dendrogramFor( clustered, MatrixColumnOrder.Mode.CLUSTERED, phy ) == null ) {
+            return fail( "the clustered order must have a dendrogram, or the guards below prove nothing" );
+        }
+        // the SAME columns in the SAME order, under a mode that did not produce it: no dendrogram
+        for( final MatrixColumnOrder.Mode m : new MatrixColumnOrder.Mode[] { MatrixColumnOrder.Mode.TABLE,
+                MatrixColumnOrder.Mode.ALPHABETICAL, MatrixColumnOrder.Mode.FREQUENCY,
+                MatrixColumnOrder.Mode.MANUAL } ) {
+            if ( MatrixColumnOrder.dendrogramFor( clustered, m, phy ) != null ) {
+                return fail( m + " did not come from a clustering, so it has no dendrogram -- even when the columns"
+                        + " happen to be in the clustered order" );
+            }
+        }
+        // ...and the same holding the OTHER clustered distance's order. Without this the mode gate is invisible:
+        // with it removed, every non-clustered mode falls to the Bray-Curtis branch, whose order differs from the
+        // Euclidean one above, so the self-check quietly does the gate's job and nothing fails (measured).
+        final List<String> presence = MatrixColumnOrder.order( refs( DZ_GENES ),
+                                                               MatrixColumnOrder.Mode.CLUSTERED_PRESENCE, phy );
+        if ( presence.equals( clustered ) ) {
+            return fail( "fixture: the two clustered orders must differ, or the check below tests nothing" );
+        }
+        for( final MatrixColumnOrder.Mode m : new MatrixColumnOrder.Mode[] { MatrixColumnOrder.Mode.TABLE,
+                MatrixColumnOrder.Mode.ALPHABETICAL, MatrixColumnOrder.Mode.FREQUENCY,
+                MatrixColumnOrder.Mode.MANUAL } ) {
+            if ( MatrixColumnOrder.dendrogramFor( presence, m, phy ) != null ) {
+                return fail( m + " must get no dendrogram even when its columns sit in the ignoring-shared-absence"
+                        + " order" );
+            }
+        }
+        // a clustered MODE whose columns are not in the clustering's order: no dendrogram either
+        final List<String> scrambled = new ArrayList<String>( clustered );
+        scrambled.add( 0, scrambled.remove( scrambled.size() - 1 ) );
+        if ( MatrixColumnOrder.dendrogramFor( scrambled, MatrixColumnOrder.Mode.CLUSTERED, phy ) != null ) {
+            return fail( "a matrix the clustering does not describe must get no dendrogram, whatever the mode says" );
+        }
+        if ( MatrixColumnOrder.dendrogramFor( clustered.subList( 0, 2 ), MatrixColumnOrder.Mode.CLUSTERED,
+                                              phy ) != null ) {
+            return fail( "fewer than three columns are not clustered at all, so there is nothing to draw" );
+        }
+        return true;
+    }
+
+    private static double[][] euclid( final String[] genes, final Integer[][] m ) {
+        return MatrixColumnOrder.distances( MatrixColumnOrder.values( refs( genes ), tree( genes, m ) ) );
+    }
+
+    private static boolean dendrogramIs( final String what, final MatrixColumnOrder.Dendrogram d, final int[][] merge,
+                                         final double[] height, final int[] order ) {
+        if ( d.stages() != merge.length ) {
+            return fail( what + ": expected " + merge.length + " merges, got " + d.stages() );
+        }
+        for( int i = 0; i < merge.length; ++i ) {
+            if ( ( d.left()[ i ] != merge[ i ][ 0 ] ) || ( d.right()[ i ] != merge[ i ][ 1 ] ) ) {
+                return fail( what + ": merge " + ( i + 1 ) + " should be R's (" + merge[ i ][ 0 ] + ", "
+                        + merge[ i ][ 1 ] + "), got (" + d.left()[ i ] + ", " + d.right()[ i ] + ")" );
+            }
+            if ( Math.abs( d.height()[ i ] - height[ i ] ) > EPS ) {
+                return fail( what + ": height " + ( i + 1 ) + " should be R's " + height[ i ] + ", got "
+                        + d.height()[ i ] );
+            }
+            if ( ( i > 0 ) && ( d.height()[ i ] < d.height()[ i - 1 ] ) ) {
+                return fail( what + ": heights must not decrease (complete linkage has no inversions), "
+                        + d.height()[ i - 1 ] + " then " + d.height()[ i ] );
+            }
+        }
+        if ( !java.util.Arrays.equals( d.order(), order ) ) {
+            return fail( what + ": leaf order should be " + java.util.Arrays.toString( order ) + ", got "
+                    + java.util.Arrays.toString( d.order() ) );
+        }
+        return true;
+    }
 
     // ---- distance -------------------------------------------------------------------------------------------------
 
@@ -226,12 +379,17 @@ public final class MatrixColumnOrderTest {
      * average, single and McQuitty linkage give four DIFFERENT orders -- so it isolates the linkage and nothing else.
      * R: complete 6 3 5 4 1 2; average 6 1 4 2 3 5; single 1 6 4 2 3 5; mcquitty 6 4 1 2 3 5.
      */
+    private static final String[]    L6_GENES = { "h1", "h2", "h3", "h4", "h5", "h6" };
+    private static final Integer[][] L6       = columns( new Integer[] { 4, 4, 3, 3, 3, 2 },
+                                                         new Integer[] { 1, 1, 4, 3, 3, 0 },
+                                                         new Integer[] { 1, 3, 4, 1, 0, 0 },
+                                                         new Integer[] { 0, 4, 4, 1, 1, 4 },
+                                                         new Integer[] { 2, 0, 2, 0, 0, 1 },
+                                                         new Integer[] { 4, 1, 0, 0, 2, 4 } );
+
     private static boolean testLinkageIsComplete() {
-        final String[] genes = { "h1", "h2", "h3", "h4", "h5", "h6" };
-        final Phylogeny phy = tree( genes, columns( new Integer[] { 4, 4, 3, 3, 3, 2 }, new Integer[] { 1, 1, 4, 3, 3, 0 },
-                                                    new Integer[] { 1, 3, 4, 1, 0, 0 }, new Integer[] { 0, 4, 4, 1, 1, 4 },
-                                                    new Integer[] { 2, 0, 2, 0, 0, 1 },
-                                                    new Integer[] { 4, 1, 0, 0, 2, 4 } ) );
+        final String[] genes = L6_GENES;
+        final Phylogeny phy = tree( genes, L6 );
         final List<String> o = MatrixColumnOrder.clustered( refs( genes ), phy );
         if ( !o.equals( refs( "h6", "h3", "h5", "h4", "h1", "h2" ) ) ) {
             return fail( "complete linkage must give R's order 6 3 5 4 1 2 (average/single/McQuitty each differ), got "
@@ -310,6 +468,23 @@ public final class MatrixColumnOrderTest {
         want.add( "tax:scientific_name" );
         if ( !o.equals( want ) ) {
             return fail( "TABLE must restore the source order and keep an unplaceable ref at the end, got " + o );
+        }
+        // Unplaceable refs are sorted among themselves, so the result depends on the inputs as a SET and not on the
+        // order they arrived in. Two of them, fed both ways round, must come out the same -- an incoming-order tail
+        // made the column order and the dendrogram that describes it disagree, and the dendrogram then vanished.
+        final List<String> a = new ArrayList<String>( refs( "mu", "zeta" ) );
+        a.add( "tax:scientific_name" );
+        a.add( "seq:name" );
+        final List<String> b = new ArrayList<String>( refs( "zeta", "mu" ) );
+        b.add( "seq:name" );
+        b.add( "tax:scientific_name" );
+        final List<String> oa = MatrixColumnOrder.order( a, MatrixColumnOrder.Mode.TABLE, phy );
+        final List<String> ob = MatrixColumnOrder.order( b, MatrixColumnOrder.Mode.TABLE, phy );
+        if ( !oa.equals( ob ) ) {
+            return fail( "TABLE must not depend on the incoming order of unplaceable refs: " + oa + " vs " + ob );
+        }
+        if ( !oa.subList( oa.size() - 2, oa.size() ).equals( Arrays.asList( "seq:name", "tax:scientific_name" ) ) ) {
+            return fail( "the unplaceable refs must be sorted among themselves, got " + oa );
         }
         return true;
     }
