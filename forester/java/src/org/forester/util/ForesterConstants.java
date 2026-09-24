@@ -41,7 +41,16 @@ public final class ForesterConstants {
     public final static String  UTF_8                            = "UTF-8";
     public final static String  ISO_8859_1                       = "ISO-8859-1";
     public final static String GO_LINK                        = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";
-    public final static String PFAM_FAMILY_ID_LINK            = "http://pfam.xfam.org/family/";
+    /**
+     * A Pfam family by NAME. pfam.xfam.org is gone: it 301s to InterPro's index page and DROPS the family,
+     * so every link built on it lands on a generic list rather than 404ing, which is harder to notice.
+     * InterPro addresses a family by ACCESSION, not by name -- /entry/pfam/NB-ARC/ is a 404 while
+     * /entry/pfam/PF00931/ is a 200 -- so a name can only be searched for. Use
+     * {@link #INTERPRO_PFAM_ENTRY_LINK} when an accession is in hand.
+     */
+    public final static String PFAM_FAMILY_ID_LINK            = "https://www.ebi.ac.uk/interpro/search/text/";
+    /** A Pfam family by ACCESSION (PF#####), which addresses the entry itself. */
+    public final static String INTERPRO_PFAM_ENTRY_LINK       = "https://www.ebi.ac.uk/interpro/entry/pfam/";
 
     
     public final static String  PHYLO_XML_REFERENCE              = "Han MV and Zmasek CM (2009): \"phyloXML: XML for evolutionary biology and comparative genomics\", BMC Bioinformatics 10:356";

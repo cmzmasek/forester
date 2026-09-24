@@ -811,6 +811,36 @@ public final class DemoTreesTest {
         if ( n < min_tips ) {
             return note( file_name + " must carry domain architectures on >= " + min_tips + " tips, found " + n );
         }
+        // The domain rollover offers two different links, and the README says so, so the demo has to show
+        // BOTH: a domain with a Pfam accession opens its entry, one with only a name can be looked up. If
+        // every domain gained an accession -- or lost one -- half of what the gallery entry promises would
+        // silently stop being demonstrated while this check stayed green.
+        int with_acc = 0;
+        int without_acc = 0;
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            if ( !tip.getNodeData().isHasSequence()
+                    || ( tip.getNodeData().getSequence().getDomainArchitecture() == null ) ) {
+                continue;
+            }
+            final org.forester.phylogeny.data.DomainArchitecture da = tip.getNodeData().getSequence()
+                    .getDomainArchitecture();
+            for( int k = 0; k < da.getNumberOfDomains(); ++k ) {
+                if ( NodeHoverText.pfamAccession( da.getDomain( k ) ) != null ) {
+                    ++with_acc;
+                }
+                else {
+                    ++without_acc;
+                }
+            }
+        }
+        if ( with_acc < 1 ) {
+            return note( file_name + " must carry at least one real Pfam accession, so the rollover's "
+                    + "entry link is demonstrated; found none" );
+        }
+        if ( without_acc < 1 ) {
+            return note( file_name + " must leave at least one domain WITHOUT an accession, so the "
+                    + "look-it-up-by-name route is demonstrated too; all " + with_acc + " have one" );
+        }
         return true;
     }
 

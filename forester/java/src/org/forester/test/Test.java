@@ -2348,6 +2348,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Domain rollover: ");
+        if (org.forester.archaeopteryx.DomainHoverTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Zero is a value, not an absence: ");
         if (org.forester.archaeopteryx.ZeroValueDisplayTest.test()) {
             System.out.println("OK.");

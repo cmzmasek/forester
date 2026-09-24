@@ -380,6 +380,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private NodeHoverCard _hover_card;
     private PhylogenyNode _hover_card_node;
     private AnnotationCell _hover_card_cell;
+    private DomainHit      _hover_card_domain;
     private int _hover_card_x;
     private int _hover_card_y;
     private long _hover_card_shown_at;
@@ -521,6 +522,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _circular_center_y = 0;
     private int _circular_radius = 0;
     final private HashMap<Long, Double> _urt_nodeid_angle_map = new HashMap<>();
+    /** The UNROOTED layout's per-tip spoke angle, recorded as the tips are painted. Unlike the circular
+     *  layout's map above, this angle is only ever a recursion parameter, so without recording it the domain
+     *  rollover could not find the track it is looking at without re-running the layout. */
+    final private HashMap<Long, Double> _unrooted_tip_angle_map = new HashMap<>();
+
+    /** Node ids whose domain track the last SCREEN paint actually DREW -- what {@link #domainAt} hit-tests against.
+     *  The painters drop a tip's track for reasons the geometry cannot see: "Auto-hide Labels" keeps only every
+     *  n-th tip (paintNodeRectangular returns before the data), viewport culling drops an off-screen node
+     *  (isNodeDataInvisible), a collapsed clade hides its tips. Re-deriving each of those rules in the hit-test is
+     *  the defect that keeps coming back -- the rollover reported a domain nobody could see -- so instead the
+     *  DRAWING code records what it drew and the hit-test asks it. One rule per painter, kept in step by
+     *  construction, in every layout.
+     *  <p>
+     *  Screen paints only: an export runs the same painters with the culls switched OFF, so recording one would
+     *  hand the rollover a set that does not match the screen. {@link #_recording_domain_paints} is the gate, set
+     *  once per {@link #paintPhylogeny}.
+     *  <p>
+     *  MEASURED, so that the next reader does not have to guess why three sabotages of this survive. Only the
+     *  RECTANGULAR family drops a track today: paintNodeRectangular returns before the node data when
+     *  "Auto-hide Labels" is not keeping this tip. The two radial painters draw every external, non-collapsed
+     *  tip that has an architecture and an angle -- which is exactly what the radial hit-tests filter on
+     *  themselves, down to the radius and row-unit guards -- so there the record cannot currently differ from
+     *  the loop, and removing the check changes nothing. It stays in all three because it is the SAME rule in
+     *  all three: a hiding rule added to a radial painter later must not be able to reopen this. Likewise the
+     *  export gate: an export's set is a SUPERSET (it skips viewport culling), and the pointer is always inside
+     *  the viewport, so today it cannot produce a wrong hit -- it guards against an export laid out at another
+     *  SIZE leaving a record that has nothing to do with the screen. */
+    final private java.util.HashSet<Long> _domains_painted = new java.util.HashSet<>();
+    private boolean _recording_domain_paints = false;
     final private HashMap<Long, Integer> _urt_nodeid_index_map = new HashMap<>();
     private double _urt_starting_angle = (float) (Math.PI
             / 2);
@@ -1964,6 +1994,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private boolean isInOv() {
         return _in_ov;
+    }
+
+    /** Record that {@code node}'s domain track was just DRAWN. Called from every domain painter, right where it
+     *  draws, so the record cannot drift from the drawing. No-op on an export (see {@link #_domains_painted}). */
+    final private void recordDomainPainted(final PhylogenyNode node) {
+        if (_recording_domain_paints) {
+            _domains_painted.add(node.getId());
+        }
+    }
+
+    /** Whether the last screen paint drew {@code node}'s domain track -- the hit-test's licence to report a domain
+     *  on that tip. False before the first paint, which is correct: nothing has been drawn yet. */
+    final private boolean domainTrackWasPainted(final PhylogenyNode node) {
+        return _domains_painted.contains(node.getId());
     }
 
     final private boolean isNodeDataInvisible(final PhylogenyNode node) {
@@ -4393,6 +4437,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // draw in the COMMON aligned column (past the deepest tip + the longest label's depth footprint) so every
         // tip's track lines up -- the alignment the horizontal layout gives via alignedPhylogramDomainColumnX(), and
         // exactly the depth depthLabelReserve() reserves. Rides R into a vertical bar.
+        recordDomainPainted(node);
         rds.render(verticalDomainColumnStart(), node.getYcoord() - (hgt / 2.0f), g, this, to_pdf, false);
     }
 
@@ -4537,6 +4582,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // Domain architectures always line up in a common right-edge column, so they can be
                 // compared across tips; the phylogram column is past the deepest tip + longest
                 // label, the cladogram column just past the aligned tips.
+                recordDomainPainted(node);
                 if (getControlPanel().isDrawPhylogram()) {
                     rds.render(alignedPhylogramDomainColumnX(),
                             node.getYcoord() - (h / 2.0f),
@@ -6363,6 +6409,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     isInFoundNodes(n));
             // the tip's domain architecture rides its spoke, extending outward past the label (like circular) -- only
             // with RADIAL labels; under horizontal labels it would clash with the upright labels (see domainBoxesDrawn)
+            _unrooted_tip_angle_map.put(n.getId(), (high_angle + low_angle) / 2);
             if (radial_labels && (getControlPanel() != null) && shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)) {
                 final int num_ext = _phylogeny.getNumberOfExternalNodes();
                 // tips sit near the periphery (radius ~ radialDiameter/2); estimate the arc between adjacent tips there
@@ -6799,6 +6846,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _hover_card = null;
             _hover_card_node = null;
             _hover_card_cell = null;
+            _hover_card_domain = null;
             stopHoverCardFade();
             repaint();
         }
@@ -6838,6 +6886,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 NodeHoverCard.isDarkTheme());
         _hover_card_node = node;
         _hover_card_cell = null;
+        _hover_card_domain = null;
         _hover_card_x = e.getX();
         _hover_card_y = e.getY();
         _hover_card_shown_at = System.currentTimeMillis();
@@ -6865,11 +6914,123 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 NodeHoverCard.isDarkTheme());
         _hover_card_node = null;
         _hover_card_cell = cell;
+        _hover_card_domain = null;
         _hover_card_x = e.getX();
         _hover_card_y = e.getY();
         _hover_card_shown_at = System.currentTimeMillis();
         startHoverCardFade();
         repaint();
+    }
+
+    /**
+     * The rollover for a protein DOMAIN. Domain architectures line up in a column of their own, so a box out
+     * there says nothing about which protein it belongs to or how good the hit is -- the card supplies both.
+     */
+    final private void showDomainPopup(final MouseEvent e, final DomainHit hit) {
+        // IDENTITY, not equality: DomainHit is a record, so equals() would route to PhylogenyNode.equals,
+        // which calls two distinct tips of the same name and sequence equal (and throws on a foreign class).
+        // The card would then refuse to follow the pointer from one such tip to the other. Same == the
+        // annotation-cell path beside this one uses.
+        if ((_hover_card != null) && (_hover_card_domain != null)
+                && (_hover_card_domain.node() == hit.node()) && (_hover_card_domain.domain() == hit.domain())) {
+            return; // same domain: leave the card where it is rather than restart its fade under the pointer
+        }
+        int protein_length = 0;
+        if (hit.node().getNodeData().isHasSequence()
+                && (hit.node().getNodeData().getSequence().getDomainArchitecture() != null)) {
+            protein_length = hit.node().getNodeData().getSequence().getDomainArchitecture().getTotalLength();
+        }
+        final java.util.List<NodeHoverText.Row> rows = NodeHoverText.domainRows(hit.node(), hit.domain(),
+                                                                                protein_length);
+        final Font base = UIManager.getFont("Label.font");
+        _hover_card = new NodeHoverCard(rows, (base != null) ? base : getFont(), this::getFontMetrics,
+                NodeHoverCard.isDarkTheme());
+        _hover_card_node = null;
+        _hover_card_cell = null;
+        _hover_card_domain = hit;
+        _hover_card_x = e.getX();
+        _hover_card_y = e.getY();
+        _hover_card_shown_at = System.currentTimeMillis();
+        startHoverCardFade();
+        repaint();
+    }
+
+    /**
+     * Opens a domain's Pfam entry in the browser, returning whether there was one to open.
+     *
+     * Only ever a LINK, never a fetch: Archaeopteryx has no server and asks none for this. A domain whose file
+     * carries no accession -- the common case, since most writers record only the name -- opens nothing.
+     */
+    boolean openPfamPage(final ProteinDomain d) {
+        final String url = domainUrl(d);
+        if (url == null) {
+            return false;
+        }
+        try {
+            AptxUtil.openWebsite(url); // the one launcher, as openSeqWeb/openTaxWeb use
+            return true;
+        }
+        catch (final Exception ex) {
+            AptxUtil.showErrorMessage(this, "Could not open " + url + "\n" + ex.getMessage());
+            return true; // there WAS a page; the browser is what failed
+        }
+    }
+
+    /**
+     * Where a domain's box links to, or null when nothing names it.
+     *
+     * Two routes, chosen by the data rather than by preference: an ACCESSION addresses an InterPro entry,
+     * an IDENTIFIER does not. Measured: /entry/pfam/PF00931/ is a 200, /entry/pfam/NB-ARC/ is a 404 -- so a
+     * domain carrying only its name gets a text search, which is a weaker promise and is labelled as one.
+     * Most files are in that case: our own apaf demo names all 166 of its domains and gives none an id.
+     */
+    static String domainUrl(final ProteinDomain d) {
+        final String acc = NodeHoverText.pfamAccession(d);
+        if (acc != null) {
+            return pfamUrl(acc);
+        }
+        if ((d == null) || ForesterUtil.isEmpty(d.getName())) {
+            return null;
+        }
+        return interProSearchUrl(d.getName());
+    }
+
+    /** A plain single left click: no other button, no modifier, not the second of a double click. */
+    private static boolean isPlainSingleLeftClick(final MouseEvent e) {
+        return SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 1)
+                && ((e.getModifiersEx() & (InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK
+                        | InputEvent.ALT_DOWN_MASK | InputEvent.META_DOWN_MASK)) == 0);
+    }
+
+    /** Test hook for {@link #isPlainSingleLeftClick} -- the gate that keeps a right-click, a modified click
+     *  and the second event of a double click from launching a browser. */
+    static boolean isPlainSingleLeftClickForTest(final MouseEvent e) {
+        return isPlainSingleLeftClick(e);
+    }
+
+    /** Pfam entries live under InterPro, addressed by ACCESSION. The base is its own constant: the surfacing
+     *  HTML reports link by NAME and so use {@link ForesterConstants#PFAM_FAMILY_ID_LINK} instead. */
+    static String pfamUrl(final String accession) {
+        return ForesterConstants.INTERPRO_PFAM_ENTRY_LINK + accession + "/";
+    }
+
+    /**
+     * URLEncoder is form encoding, not path encoding: it turns a space into '+', which in a PATH segment is a
+     * literal plus, so "Bcl-2 like" searched for the string "Bcl-2+like" and found nothing. The multi-argument
+     * URI constructor escapes for the path, giving %20.
+     */
+    static String interProSearchUrl(final String name) {
+        final java.net.URI base = java.net.URI.create(ForesterConstants.PFAM_FAMILY_ID_LINK);
+        try {
+            return new java.net.URI(base.getScheme(), base.getHost(), base.getPath() + name + "/", null)
+                    .toASCIIString();
+        }
+        catch (final java.net.URISyntaxException e) {
+            // Everything comes from the ONE base above, and the name keeps its own characters: falling back to
+            // URLEncoder here would reintroduce the '+' this method exists to avoid, and spelling the host out
+            // again would be a second copy of the constant that a later edit would leave behind.
+            return ForesterConstants.PFAM_FAMILY_ID_LINK + name + "/";
+        }
     }
 
     /** The fade-in: repaint at ~60 Hz until the card is fully opaque, then stop. Hiding is always instant. */
@@ -10377,8 +10538,188 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.fill(new java.awt.geom.Rectangle2D.Double(x - bx, y - by, w + (2 * bx), h + (2 * by)));
     }
 
+    /** A protein domain under the pointer, and the tip whose architecture it belongs to. */
+    record DomainHit(PhylogenyNode node, ProteinDomain domain) {
+    }
+
     /** A cell of an annotation column: the DRAWN column and the tip whose row it is on. */
     record AnnotationCell(int column, PhylogenyNode tip) {
+    }
+
+    /**
+     * The protein domain under the pointer, or null.
+     *
+     * Recomputes the track's origin exactly as the painter does -- the aligned domain column for a phylogram,
+     * the aligned tips plus the longest label for a cladogram -- and then asks the renderable itself which of
+     * its domains is at that x, so the geometry and the E-value threshold are not duplicated here. Rectangular
+     * layouts only for now: the radial track is drawn along a rotated arc, which needs its own test.
+     */
+    DomainHit domainAt(final int x, final int y) {
+        // domainBoxesDrawnInCurrentLayout is the painters' OWN predicate -- it also refuses a radial layout
+        // whose labels are not radial, which is when no boxes are drawn there at all.
+        if (!domainBoxesDrawnInCurrentLayout() || !isShowExternalDataForThisTab() || (getPhylogeny() == null)
+                || getPhylogeny().isEmpty()) {
+            return null; // a hit on something not drawn is a lie
+        }
+        final PHYLOGENY_GRAPHICS_TYPE t = getPhylogenyGraphicsType();
+        if (t == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
+            return circularDomainAt(x, y);
+        }
+        if (t == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
+            return unrootedDomainAt(x, y);
+        }
+        // Everything the two radial branches above did not take is painted by paintNodeRectangular -- that is
+        // the paint loop's own test, and TRIANGULAR falls in it. Listing the types instead left the rollover
+        // dead in TRIANGULAR while the boxes were drawn there: the same defect as gating on a rule the painter
+        // does not use, one enum constant over.
+        if (isVerticalOrientation() && (_orientation_R_inverse == null)) {
+            return null; // R is built during paint; before the first vertical paint the point cannot be un-rotated
+        }
+        final Point2D.Double p = toLogicalPoint(x, y);
+        // The vertical orientations start the track somewhere else entirely -- paintDomainsVertical uses
+        // verticalDomainColumnStart(), tens to hundreds of px from the horizontal column -- so taking the
+        // horizontal origin there put every hit on a neighbouring domain or on none.
+        final float x1;
+        if (isVerticalOrientation()) {
+            x1 = verticalDomainColumnStart();
+        }
+        else if (getControlPanel().isDrawPhylogram()) {
+            x1 = alignedPhylogramDomainColumnX();
+        }
+        else {
+            x1 = getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text;
+        }
+        final float start = x1 + RenderableDomainArchitecture.TRACK_LEFT_PAD;
+        if (p.x < start) {
+            return null;
+        }
+        final int h = TreePanelUtil.domainBoxHeight(getYdistance(), DOMAIN_STRUCTURE_HEIGHT_MIN,
+                                                    DOMAIN_STRUCTURE_HEIGHT_MAX);
+        for (final PhylogenyNode node : visibleExternalTips()) {
+            if (!domainTrackWasPainted(node)) {
+                continue; // "Auto-hide Labels" (and viewport culling) drop tracks the geometry would still find
+            }
+            if (!node.getNodeData().isHasSequence()
+                    || !(node.getNodeData().getSequence().getDomainArchitecture() instanceof
+                            RenderableDomainArchitecture)) {
+                continue;
+            }
+            final double y1 = node.getYcoord() - (h / 2.0);
+            if ((p.y < y1) || (p.y > (y1 + h))) {
+                continue;
+            }
+            final RenderableDomainArchitecture rds = (RenderableDomainArchitecture) node.getNodeData()
+                    .getSequence().getDomainArchitecture();
+            final ProteinDomain d = rds.domainAtX(start, (float) p.x);
+            if (d != null) {
+                return new DomainHit(node, d);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The domain under the pointer in the CIRCULAR layout.
+     *
+     * Each tip's track rides its own spoke: the painter rotates the graphics by the tip's angle about the
+     * centre and then draws the ordinary horizontal bar. So the test is the same one the rectangular layout
+     * does, after rotating the POINT back by that angle -- which keeps one geometry rather than deriving a
+     * polar one. Every quantity is the painter's own: the common start radius past the longest label, the box
+     * thickness clamped to the arc between adjacent spokes, and the per-tip angle out of the spoke map.
+     */
+    private DomainHit circularDomainAt(final int x, final int y) {
+        if ((_circular_radius <= 0) || _urt_nodeid_angle_map.isEmpty()) {
+            return null; // nothing laid out yet (the map is final, so it is never null -- only ever empty)
+        }
+        final double displayed = circularRowUnits();
+        if (displayed <= 0) {
+            return null;
+        }
+        final double start_r = _circular_radius + _length_of_longest_text_only + DOMAIN_RADIAL_GAP;
+        final int h = TreePanelUtil.domainBoxHeight((float) (start_r * (TWO_PI / displayed)),
+                                                     DOMAIN_STRUCTURE_HEIGHT_MIN, DOMAIN_STRUCTURE_HEIGHT_MAX);
+        final double dx = x - _circular_center_x;
+        final double dy = y - _circular_center_y;
+        for (final java.util.Iterator<PhylogenyNode> it = getPhylogeny().iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            if (!node.isExternal() || isHiddenUnderCollapse(node) || !domainTrackWasPainted(node)) {
+                continue;
+            }
+            final RenderableDomainArchitecture rds = renderableDomainArchitectureOf(node);
+            final Double a = _urt_nodeid_angle_map.get(node.getId());
+            if ((rds == null) || (a == null)) {
+                continue;
+            }
+            // rotate the point by -angle about the centre: the inverse of the painter's g.rotate(angle, c)
+            final double cos = Math.cos(a);
+            final double sin = Math.sin(a);
+            final double ly = _circular_center_y - (dx * sin) + (dy * cos);
+            final double y1 = _circular_center_y - (h / 2.0);
+            if ((ly < y1) || (ly > (y1 + h))) {
+                continue;
+            }
+            final double lx = _circular_center_x + (dx * cos) + (dy * sin);
+            final float start = (float) (_circular_center_x + start_r)
+                    + RenderableDomainArchitecture.TRACK_LEFT_PAD;
+            if (lx < start) {
+                continue;
+            }
+            final ProteinDomain d = rds.domainAtX(start, (float) lx);
+            if (d != null) {
+                return new DomainHit(node, d);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The domain under the pointer in the UNROOTED layout.
+     *
+     * The same rotate-the-point-back test as {@link #circularDomainAt}, but each tip's track pivots on the
+     * TIP ITSELF rather than on a common centre, and starts a fixed distance out past the longest label.
+     * The angle comes from {@link #_unrooted_tip_angle_map}, filled as the tips are painted.
+     */
+    private DomainHit unrootedDomainAt(final int x, final int y) {
+        if (_unrooted_tip_angle_map.isEmpty()) {
+            return null; // nothing painted yet, so nothing to point at
+        }
+        final int num_ext = getPhylogeny().getNumberOfExternalNodes();
+        final double spacing = (Math.PI * radialDiameter()) / Math.max(1, num_ext);
+        final int h = TreePanelUtil.domainBoxHeight((float) spacing, DOMAIN_STRUCTURE_HEIGHT_MIN,
+                                                     DOMAIN_STRUCTURE_HEIGHT_MAX);
+        final double start_dist = _length_of_longest_text_only + DOMAIN_RADIAL_GAP;
+        for (final java.util.Iterator<PhylogenyNode> it = getPhylogeny().iteratorPreorder(); it.hasNext();) {
+            final PhylogenyNode node = it.next();
+            if (!node.isExternal() || isHiddenUnderCollapse(node) || !domainTrackWasPainted(node)) {
+                continue;
+            }
+            final RenderableDomainArchitecture rds = renderableDomainArchitectureOf(node);
+            final Double a = _unrooted_tip_angle_map.get(node.getId());
+            if ((rds == null) || (a == null)) {
+                continue;
+            }
+            final double px = node.getXcoord();
+            final double py = node.getYcoord();
+            final double dx = x - px;
+            final double dy = y - py;
+            final double cos = Math.cos(a);
+            final double sin = Math.sin(a);
+            final double ly = py - (dx * sin) + (dy * cos);
+            final double y1 = py - (h / 2.0);
+            if ((ly < y1) || (ly > (y1 + h))) {
+                continue;
+            }
+            final double lx = px + (dx * cos) + (dy * sin);
+            final float start = (float) (px + start_dist) + RenderableDomainArchitecture.TRACK_LEFT_PAD;
+            if (lx < start) {
+                continue;
+            }
+            final ProteinDomain d = rds.domainAtX(start, (float) lx);
+            if (d != null) {
+                return new DomainHit(node, d);
+            }
+        }
+        return null;
     }
 
     /**
@@ -11977,6 +12318,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         rds.setRenderingHeight(height);
+        recordDomainPainted(node);
         final java.awt.geom.AffineTransform saved = g.getTransform();
         g.rotate(angle, pivot_x, pivot_y); // the spoke at `angle` becomes the local +x axis
         rds.render((float) (pivot_x + start_dist), (float) (pivot_y - (height / 2.0)), g, this, to_pdf, false);
@@ -12620,7 +12962,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // DIFFERENT tips -- NOT getLongestExtNodeInfo() (a per-tip max of text+domain, which under-reserves and
             // clips when they differ). Reserve the sum so both fit on fit-to-window; floor the ring so it can't
             // collapse (this SHRINKS the ring rather than clipping -- the user wants domains + labels to fit).
-            final double reach = _length_of_longest_text_only + _longest_rendered_domain + DOMAIN_RADIAL_GAP + 20;
+            final double reach = _length_of_longest_text_only + _longest_rendered_domain + DOMAIN_RADIAL_GAP
+                + RenderableDomainArchitecture.TRACK_LEFT_PAD;
             return (int) Math.max(avail - reach, avail * RADIAL_MIN_TREE_RATIO);
         }
         final int label = (int) Math.min(getLongestExtNodeInfo(), avail * RADIAL_LABEL_MAX_RATIO);
@@ -14622,6 +14965,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             repaint();
         } else {
             final PhylogenyNode node = findNode(e.getX(), e.getY());
+            if ((node == null) && isPlainSingleLeftClick(e) && shows(DisplayOption.NODE_DATA_POPUP)) {
+                // Out past the labels: a domain box opens its Pfam entry (or an InterPro lookup). Deliberately
+                // narrow. A PLAIN SINGLE LEFT click only: a right or ctrl click belongs to the context menu, a
+                // shift click to selection, and a double click delivers two MOUSE_CLICKED events, which would
+                // open two browser tabs. Gated on the Rollover option as well, because that is what draws the
+                // card and the hand cursor -- without them the click would have no affordance at all.
+                final DomainHit hit = domainAt(e.getX(), e.getY());
+                if ((hit != null) && openPfamPage(hit.domain())) {
+                    return;
+                }
+            }
             if (node != null) {
                 if (!node.isRoot() && node.getParent().isCollapse()) {
                     return;
@@ -14795,11 +15149,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // branch to preview anyway.
                 final AnnotationCell cell = shows(DisplayOption.NODE_DATA_POPUP)
                         ? annotationCellAt(e.getX(), e.getY()) : null;
+                final DomainHit domain = ((cell == null) && shows(DisplayOption.NODE_DATA_POPUP))
+                        ? domainAt(e.getX(), e.getY()) : null;
                 if (cell != null) {
                     showAnnotationCellPopup(e, cell);
                     card_wanted = true;
                     applyHover(null, false); // no node under the pointer -> no focus glow left behind
                     setCursor(ARROW_CURSOR);
+                } else if (domain != null) {
+                    // a domain box: name it, say how good the hit is and whose protein it is on. The hand
+                    // cursor says it is clickable -- a domain with a Pfam accession opens its Pfam page.
+                    showDomainPopup(e, domain);
+                    card_wanted = true;
+                    applyHover(null, false);
+                    setCursor(NodeHoverText.hasLink(domain.domain()) ? HAND_CURSOR : ARROW_CURSOR);
                 } else {
                     // over a branch (Select-Node(s) mode) -> hand cursor + preview the subtree
                     final PhylogenyNode branch = select_mode ? findBranch(e.getX(), e.getY()) : null;
@@ -15152,6 +15515,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         refreshCollapsedRowWeights(); // collapsing, undo and tree swaps all change the rows; one refresh per paint
+        // Start this paint's record of the domain tracks actually drawn (see _domains_painted). A partial repaint
+        // still walks the whole tree and culls against the VIEWPORT (not the damaged clip), so every screen paint
+        // records the same set; an export records nothing and leaves the screen's set alone.
+        _recording_domain_paints = !to_pdf && !to_graphics_file;
+        if (_recording_domain_paints) {
+            _domains_painted.clear();
+        }
         // The support scale ceiling (a single preorder scan) feeds both the support symbols and the "min.
         // confidence shown" label filter (a fraction of this ceiling). Skip the scan -- keeping the cheap 1.0
         // fallback -- when neither consumer is active (the default), so plain repaints on the hot hover/scroll/

@@ -2290,9 +2290,32 @@ public final class DemoTreeGenerator {
         return n;
     }
 
-    /** A protein domain with a strong (well below the default 1e-3 threshold) e-value so it is drawn. */
+    /**
+     * A protein domain with a strong (well below the default 1e-3 threshold) e-value so it is drawn, and its
+     * real Pfam accession, which is what makes the domain's rollover able to link out to its Pfam entry.
+     * <p>
+     * The accessions were read out of Pfam 38.0 rather than remembered. The DRAWN names are the colloquial
+     * ones a biologist says -- SH3, SAM, Ig -- while Pfam's own names for those entries are SH3_1, SAM_1 and
+     * ig; the accession is what identifies the entry, so the two need not match.
+     */
+    private static final java.util.Map<String, String> PFAM_ACCESSIONS = java.util.Map.of( "SH3",
+                                                                                           "PF00018",
+                                                                                           "SH2",
+                                                                                           "PF00017",
+                                                                                           "Pkinase",
+                                                                                           "PF00069",
+                                                                                           "PH",
+                                                                                           "PF00169",
+                                                                                           "SAM",
+                                                                                           "PF00536" );
+    // "Ig" deliberately has NO accession, which gives the demo both halves of the pair: five domains that
+    // link straight to their Pfam entry and one that can only be looked up by name. It is also the honest
+    // answer -- Pfam has both "ig" (PF00047) and "I-set" (PF07679), so "Ig" does not identify one entry.
+
     private static ProteinDomain dom( final String name, final int from, final int to ) {
-        return new ProteinDomain( name, from, to, 1e-6 );
+        final String acc = PFAM_ACCESSIONS.get( name );
+        return ( acc == null ) ? new ProteinDomain( name, from, to, 1e-6 )
+                               : new ProteinDomain( name, from, to, acc, 1e-6 );
     }
 
     // ----- "Heat map matrix": each tip carries a row of numeric values across six samples (s1..s6). Add s1..s6 as

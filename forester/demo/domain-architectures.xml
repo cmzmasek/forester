@@ -13,9 +13,9 @@
         <sequence>
           <name>kinase_a</name>
           <domain_architecture length="500">
-            <domain from="10" to="60" confidence="1.0E-6">SH3</domain>
-            <domain from="75" to="165" confidence="1.0E-6">SH2</domain>
-            <domain from="185" to="445" confidence="1.0E-6">Pkinase</domain>
+            <domain from="10" to="60" confidence="1.0E-6" id="PF00018">SH3</domain>
+            <domain from="75" to="165" confidence="1.0E-6" id="PF00017">SH2</domain>
+            <domain from="185" to="445" confidence="1.0E-6" id="PF00069">Pkinase</domain>
           </domain_architecture>
         </sequence>
       </clade>
@@ -25,8 +25,8 @@
         <sequence>
           <name>kinase_b</name>
           <domain_architecture length="450">
-            <domain from="20" to="110" confidence="1.0E-6">SH2</domain>
-            <domain from="130" to="400" confidence="1.0E-6">Pkinase</domain>
+            <domain from="20" to="110" confidence="1.0E-6" id="PF00017">SH2</domain>
+            <domain from="130" to="400" confidence="1.0E-6" id="PF00069">Pkinase</domain>
           </domain_architecture>
         </sequence>
       </clade>
@@ -36,8 +36,8 @@
         <sequence>
           <name>kinase_c</name>
           <domain_architecture length="470">
-            <domain from="15" to="120" confidence="1.0E-6">PH</domain>
-            <domain from="145" to="410" confidence="1.0E-6">Pkinase</domain>
+            <domain from="15" to="120" confidence="1.0E-6" id="PF00169">PH</domain>
+            <domain from="145" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
           </domain_architecture>
         </sequence>
       </clade>
@@ -50,9 +50,9 @@
         <sequence>
           <name>adaptor_d</name>
           <domain_architecture length="300">
-            <domain from="5" to="55" confidence="1.0E-6">SH3</domain>
-            <domain from="70" to="120" confidence="1.0E-6">SH3</domain>
-            <domain from="140" to="235" confidence="1.0E-6">SH2</domain>
+            <domain from="5" to="55" confidence="1.0E-6" id="PF00018">SH3</domain>
+            <domain from="70" to="120" confidence="1.0E-6" id="PF00018">SH3</domain>
+            <domain from="140" to="235" confidence="1.0E-6" id="PF00017">SH2</domain>
           </domain_architecture>
         </sequence>
       </clade>
@@ -62,8 +62,8 @@
         <sequence>
           <name>kinase_e</name>
           <domain_architecture length="430">
-            <domain from="30" to="300" confidence="1.0E-6">Pkinase</domain>
-            <domain from="330" to="400" confidence="1.0E-6">SAM</domain>
+            <domain from="30" to="300" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+            <domain from="330" to="400" confidence="1.0E-6" id="PF00536">SAM</domain>
           </domain_architecture>
         </sequence>
       </clade>
@@ -75,7 +75,7 @@
           <domain_architecture length="650">
             <domain from="20" to="110" confidence="1.0E-6">Ig</domain>
             <domain from="130" to="220" confidence="1.0E-6">Ig</domain>
-            <domain from="360" to="630" confidence="1.0E-6">Pkinase</domain>
+            <domain from="360" to="630" confidence="1.0E-6" id="PF00069">Pkinase</domain>
           </domain_architecture>
         </sequence>
       </clade>

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.Event;
@@ -74,6 +75,95 @@ final class NodeHoverText {
         public String toString() {
             return isHeading() ? "[" + key + "]" : key + ": " + value;
         }
+    }
+
+    /** Pfam accessions are "PF" plus at least five digits -- five today, and {5,} will not truncate a sixth. */
+    private static final java.util.regex.Pattern PFAM_ACC = java.util.regex.Pattern
+            .compile( "(PF\\d{5,})(\\.\\d+)?" );
+
+    /**
+     * The rollover for a protein DOMAIN: what it is, how good the hit is, where it sits, and which tip's
+     * protein it belongs to -- the architectures line up in a column of their own, far from the labels, so
+     * the tip has to be named here just as it is for an annotation-column cell.
+     */
+    static List<Row> domainRows( final PhylogenyNode node, final ProteinDomain d, final int protein_length ) {
+        final List<Row> rows = new ArrayList<Row>();
+        if ( d == null ) {
+            return rows;
+        }
+        // The domain's name is DATA, so it is a value row: a heading is drawn small-caps uppercase and would
+        // misrepresent a name that is case-sensitive ("Bcl-2", "wnt").
+        rows.add( Row.line( "Domain", ForesterUtil.isEmpty( d.getName() ) ? "(unnamed)" : d.getName() ) );
+        if ( d.getConfidence() >= 0 ) { // ProteinDomain.asText's own test for "has a confidence"
+            rows.add( Row.line( "E-value", formatEValue( d.getConfidence() ) ) );
+        }
+        final int len = d.getLength(); // not a second copy of the 1-based inclusive convention
+        rows.add( Row.line( "Residues", d.getFrom() + "\u2013" + d.getTo() + " (" + len + " aa)" ) );
+        if ( protein_length > 0 ) {
+            rows.add( Row.line( "Protein length", protein_length + " aa" ) );
+        }
+        rows.add( Row.line( "Tip", AnnotationColumns.tipLabel( node ) ) );
+        // The row is "Accession", not "Pfam": phyloXML's domain id is whatever the annotation source used,
+        // and a SMART or CDD accession called "Pfam" would be wrong in the same way the 404 below is. It is
+        // shown whatever it is -- dropping it because it is not Pfam would lose a real identifier -- while
+        // only a Pfam accession earns the entry LINK. (Archaeopteryx.js draws the same distinction.)
+        if ( !ForesterUtil.isEmpty( d.getId() ) ) {
+            rows.add( Row.line( "Accession", d.getId().trim() ) );
+        }
+        final String pfam = pfamAccession( d );
+        // Say WHICH promise the click makes. A Pfam accession addresses an entry; a Pfam IDENTIFIER does not
+        // -- measured against InterPro, /entry/pfam/NB-ARC/ is a 404 while /entry/pfam/PF00931/ is a 200 --
+        // so a domain that carries only its name can be looked up but not linked to, and a user told
+        // "the Pfam entry" who lands on a list of search results has been misled.
+        if ( pfam != null ) {
+            rows.add( Row.line( "Click", "the Pfam entry" ) );
+        }
+        else if ( !ForesterUtil.isEmpty( d.getName() ) ) {
+            rows.add( Row.line( "Click", "to look this domain up at InterPro" ) );
+        }
+        return rows;
+    }
+
+    /** Whether a domain can be linked at all, and which of the two routes applies. */
+    static boolean hasLink( final ProteinDomain d ) {
+        return ( d != null ) && ( ( pfamAccession( d ) != null ) || !ForesterUtil.isEmpty( d.getName() ) );
+    }
+
+    /**
+     * The Pfam accession of a domain, or null. phyloXML puts it in the {@code <domain>} element's {@code id}
+     * attribute; a file that names its domains but carries no accession (which is the common case) gets none,
+     * and the rollover then simply has no Pfam row.
+     */
+    static String pfamAccession( final ProteinDomain d ) {
+        if ( ( d == null ) || ForesterUtil.isEmpty( d.getId() ) ) {
+            return null;
+        }
+        // ANCHORED, not a substring search: an id that merely CONTAINS an accession -- "SM00109_PF00018",
+        // a pipe-joined composite -- is not a Pfam accession, and linking it to that entry would send the
+        // user to a different family. A trailing ".25" version suffix is allowed, nothing else is.
+        final java.util.regex.Matcher m = PFAM_ACC.matcher( d.getId().trim().toUpperCase( java.util.Locale.US ) );
+        return m.matches() ? m.group( 1 ) : null;
+    }
+
+    /**
+     * An E-value reads as a power of ten: 1.2e-40 rather than 0.00000000000000000000000000000000000000012.
+     * Values at or above 0.001 are written plainly, since that is where they stop being exponents.
+     */
+    // Per call, deliberately. DecimalFormat is NOT thread-safe, and this is a package-private static on a
+    // stateless class -- the suite already calls its neighbours off the EDT, and two threads inside format()
+    // share its internal DigitList and return interleaved digits rather than failing. A rollover formats one
+    // number per pointer move, so there is nothing here worth a shared instance or a ThreadLocal.
+    private static java.text.DecimalFormat format( final String pattern ) {
+        return new java.text.DecimalFormat( pattern,
+                                            java.text.DecimalFormatSymbols.getInstance( java.util.Locale.US ) );
+    }
+
+    static String formatEValue( final double v ) {
+        if ( v == 0 ) {
+            return "0";
+        }
+        return ( ( Math.abs( v ) >= 0.001 ) && ( Math.abs( v ) < 1000 ) ) ? format( "0.###" ).format( v )
+                                                                          : format( "0.##E0" ).format( v );
     }
 
     private NodeHoverText() {

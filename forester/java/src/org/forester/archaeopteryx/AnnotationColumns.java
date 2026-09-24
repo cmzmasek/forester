@@ -553,8 +553,9 @@ final class AnnotationColumns {
     }
 
     /** What to call the tip the cell sits on: its name, else whatever else identifies it, else a placeholder -- the
-     *  heading has to say WHICH row this is, which is the whole reason it is there. */
-    private static String tipLabel( final PhylogenyNode node ) {
+     *  heading has to say WHICH row this is, which is the whole reason it is there. Package-private so that the
+     *  domain rollover, which is equally far from the labels, names a tip the same way. */
+    static String tipLabel( final PhylogenyNode node ) {
         if ( !ForesterUtil.isEmpty( node.getName() ) ) {
             return node.getName();
         }

@@ -237,7 +237,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                         final boolean draw_labels ) {
         final float f = getRenderingFactorWidth();
         final float y = y1 + ( _rendering_height / 2 );
-        final float start = x1 + 20;
+        final float start = x1 + TRACK_LEFT_PAD;
         final Stroke s = g.getStroke();
         g.setStroke( STROKE_1 );
         g.setColor( to_pdf ? AptxConstants.DOMAIN_BASE_COLOR_FOR_PDF
@@ -247,12 +247,12 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         // "Labels on domains" draws the name centred inside each box; "Legend" and "No labels" draw none here (the
         // legend is a separate, draggable, E-value-aware slot painted by the TreePanel).
         final boolean glow = tree_panel.getMainPanel().getOptions().isShowDomainGlow();
+        final double thr = Math.pow( 10, _e_value_threshold_exp ); // hoisted, and identical to domainAtX's gate
         final boolean on_domain_labels = draw_labels
                 && tree_panel.getMainPanel().getOptions().isDomainLabelsOnDomains()
                 && ( tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getHeight() > 4 );
-        for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
-            final ProteinDomain d = _domain_structure.getDomain( i );
-            if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
+        for( final ProteinDomain d : _domain_structure.getDomains().values() ) {
+            if ( d.getConfidence() <= thr ) {
                 final float[] extent = domainExtent( start, d.getFrom(), d.getTo(), f );
                 final float xa = extent[ 0 ];
                 final float xb = extent[ 1 ];
@@ -273,6 +273,34 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         }
         g.setStroke( s );
     }
+
+    /**
+     * The domain drawn at x on a track whose residue 1 starts at {@code start}, or null if none is.
+     *
+     * Lives here rather than in the hit-testing code so that it shares BOTH the geometry and the E-value gate
+     * with {@link #render}: a second copy of either would eventually answer for a domain that is not on
+     * screen, or miss one that is. The LAST match wins, because that is the one drawn on top.
+     */
+    public ProteinDomain domainAtX( final float start, final float x ) {
+        final float f = getRenderingFactorWidth();
+        final double thr = Math.pow( 10, _e_value_threshold_exp ); // hoisted: the same for every domain
+        ProteinDomain hit = null;
+        // values(), not getDomain(i): that indexer copies the whole map to an array on EVERY call, so an
+        // indexed walk allocates one array per domain -- on the pointer-motion path, for an architecture that
+        // can carry a hundred of them. The map is sorted, so the iteration order is the indexer's order.
+        for( final ProteinDomain d : _domain_structure.getDomains().values() ) {
+            if ( d.getConfidence() <= thr ) {
+                final float[] extent = domainExtent( start, d.getFrom(), d.getTo(), f );
+                if ( ( x >= extent[ 0 ] ) && ( x <= extent[ 1 ] ) ) {
+                    hit = d;
+                }
+            }
+        }
+        return hit;
+    }
+
+    /** The offset from the track's x to residue 1 -- {@link #render} starts the backbone 20 px in. */
+    public static final float TRACK_LEFT_PAD = 20;
 
     /**
      * The x extent {@code [x0, x1]} of a domain {@code from..to} (1-based, inclusive) on a track whose residue 1 starts
