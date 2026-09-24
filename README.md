@@ -47,8 +47,6 @@ What's in forester
   reconcile a gene tree against a species tree to infer gene duplications and
   speciations.
 - **RIO** (`org.forester.rio`) — Resampled Inference of Orthologs.
-- **cladinator** (`org.forester.clade_analysis`) — classify / place query
-  sequences against annotated reference clades.
 - **surfacing** (`org.forester.surfacing`) — genome-wide protein-domain-architecture
   analysis and comparison.
 - **MSA tools** (`org.forester.msa`, `org.forester.msa_compactor`) —
@@ -59,7 +57,7 @@ What's in forester
   sequence/taxonomy web-service clients (`ws`), and general utilities.
 
 **Command-line tools** live in `org.forester.application` — among them `gsdi`,
-`rio`, `cladinator`, `decorator`, `count_support`, `confadd`, `nj`,
+`rio`, `decorator`, `count_support`, `confadd`, `nj`,
 `phyloxml_converter`, the `msa_*` alignment utilities, and `aptx_render`. Each is
 a `main`-class you can run from the built jar, e.g.:
 

@@ -37,7 +37,6 @@ alias fasta_split='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.f
 alias pplacer_summary='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.pplacer_summary'
 alias rename='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rename'
 alias rename_fasta='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rename_fasta'
-alias cladinator='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.cladinator'
 alias rid='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.rid'
 alias m_label='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.m_label'
 alias table2tree='java -Xms256m -Xmx2048m -cp $FORESTER/java/forester.jar org.forester.application.table2tree'

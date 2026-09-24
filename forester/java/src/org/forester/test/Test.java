@@ -37,7 +37,6 @@ import java.util.SortedSet;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.TreePanelUtil;
-import org.forester.clade_analysis.CladeAnalysisTest;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
@@ -2502,14 +2501,6 @@ public final class Test {
         }
         System.out.print("RIO: ");
         if (TestRIO.test()) {
-            System.out.println("OK.");
-            succeeded++;
-        } else {
-            System.out.println("failed.");
-            failed++;
-        }
-        System.out.print("Clade analyis: ");
-        if (CladeAnalysisTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {
