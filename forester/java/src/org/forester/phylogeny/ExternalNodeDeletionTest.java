@@ -41,6 +41,56 @@ public final class ExternalNodeDeletionTest {
             { "B", "D", "A" }, { "D", "A", "B" }, { "D", "B", "A" } };
     private static final double     EPS              = 1e-12;
 
+    /**
+     * setRoot must drop the external-node cache.
+     * <p>
+     * getExternalNodes() memoises, and every structural mutator here invalidates -- except setRoot, which
+     * replaces the whole topology and so has the most to invalidate. A tree whose count had been asked for
+     * once and was then given a bigger root went on reporting the OLD number, and anything guarding on size
+     * walked straight past it: a two-tip tree given a 5000-tip root drew all 5000 lines.
+     * <p>
+     * Checked against a walk of the tree rather than against another cached read, which would only have
+     * agreed with itself.
+     */
+    private static boolean testSetRootDropsTheExternalNodeCache() {
+        try {
+            final Phylogeny phy = Phylogeny.createInstanceFromNhxString( "(A,B)" );
+            if ( phy.getNumberOfExternalNodes() != 2 ) { // warms the cache at 2
+                System.out.println( "[ExternalNodeDeletionTest] the fixture does not start with two tips" );
+                return false;
+            }
+            final Phylogeny bigger = Phylogeny.createInstanceFromNhxString( "(C,D,E,F,G)" );
+            phy.setRoot( bigger.getRoot() );
+            int walked = 0;
+            for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy
+                    .iteratorPostorder(); it.hasNext(); ) {
+                if ( it.next().isExternal() ) {
+                    ++walked;
+                }
+            }
+            if ( walked != 5 ) {
+                System.out.println( "[ExternalNodeDeletionTest] the fixture's new root does not hold five "
+                        + "tips, it holds " + walked );
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != walked ) {
+                System.out.println( "[ExternalNodeDeletionTest] after setRoot the tree reports "
+                        + phy.getNumberOfExternalNodes() + " external nodes but walking it finds " + walked );
+                return false;
+            }
+            if ( phy.getExternalNodes().size() != walked ) {
+                System.out.println( "[ExternalNodeDeletionTest] after setRoot getExternalNodes() holds "
+                        + phy.getExternalNodes().size() + " nodes but walking finds " + walked );
+                return false;
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+    }
+
     public static void main( final String[] args ) {
         System.out.println( "ExternalNodeDeletion: " + ( test() ? "OK." : "FAILED." ) );
     }
@@ -56,6 +106,7 @@ public final class ExternalNodeDeletionTest {
             ok &= testPositiveSelection();
             ok &= testNothingDeleted();
             ok &= testEverythingDeleted();
+            ok &= testSetRootDropsTheExternalNodeCache();
             return ok;
         }
         catch ( final Exception e ) {

@@ -2355,6 +2355,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Tree as ASCII: ");
+        if (org.forester.phylogeny.PhylogenyAsciiTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("An export does not aim the hit-tests at its own canvas: ");
         if (org.forester.archaeopteryx.RadialExportGeometryTest.test()) {
             System.out.println("OK.");

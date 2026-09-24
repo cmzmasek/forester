@@ -51,6 +51,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostorderTreeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.FailedConditionCheckException;
+import org.forester.util.ForesterUtil;
 
 public class Phylogeny {
 
@@ -1176,8 +1177,22 @@ public class Phylogeny {
         _rerootable = rerootable;
     }
 
+    /**
+     * Sets the root of this Phylogeny, and drops the external-node cache with it.
+     * <p>
+     * The cache ({@link #getExternalNodes()}, and so {@link #getNumberOfExternalNodes()}) describes the tree
+     * that HUNG OFF THE OLD ROOT. Replacing the root replaces the topology wholesale, so a cache that
+     * survives it answers about a tree this Phylogeny no longer is -- measured, a two-tip tree whose count
+     * had been asked for once and was then given a five-tip root went on reporting two. Every other
+     * structural mutator here already invalidates; this was the one that did not.
+     * <p>
+     * The one caller that reaches this on a warm cache, {@code PhylogenyMethods.removeNode}'s root branch,
+     * happens to be unharmed -- it drops a root with a single descendant, which changes no node's
+     * externality -- so this fixes a defect that was latent there and live for anyone else.
+     */
     public void setRoot( final PhylogenyNode n ) {
         _root = n;
+        externalNodesHaveChanged();
     }
 
     /**
@@ -1211,6 +1226,165 @@ public class Phylogeny {
 
     public void setType( final String type ) {
         _type = type;
+    }
+
+    /**
+     * The largest tree {@link #toAscii()} will draw, in external nodes -- and, because a tree deeper than it
+     * is wide is just as unprintable, the deepest as well.
+     * <p>
+     * Chosen against the trees this project actually handles rather than picked: the largest shipped demo is
+     * ~530 tips and the largest real trees built with it are ~830, so it refuses only output nobody could
+     * look at. Note it counts TIPS, not lines: a named internal node earns a line of its own, so a tree with
+     * a name on every internal node draws up to about twice this many.
+     */
+    public final static int MAX_ASCII_EXTERNAL_NODES = 1000;
+
+    /**
+     * This tree drawn as plain ASCII, one line per tip, for looking at on a terminal while developing.
+     * <p>
+     * Structure and names, nothing else: no branch lengths, no support values, no dates, no domains. A node's
+     * name is the one {@link #toNewHampshire()} would write for it -- {@code newHampshireLabel}, which falls
+     * back from the node's own name through its taxonomy and its sequence -- so the two can never disagree
+     * about what a node is called, and a tree whose tips carry their identity in {@code <taxonomy>} rather
+     * than in {@code <name>} (much of real phyloXML) does not draw as a column of blank lines.
+     * <p>
+     * A node earns a line only by being a tip or by carrying a label. An unnamed internal node -- in a gene
+     * tree, most of them -- contributes its elbow and nothing else, so its first child continues on the same
+     * line: the elbows already say a branch point is there, and a line repeating it is a line wasted.
+     * <p>
+     * ASCII only, deliberately -- box-drawing characters turn to mojibake on a terminal with the wrong
+     * encoding, which is exactly where this gets used.
+     *
+     * <pre>
+     * +--+-- Primates
+     *    |  +-- Human
+     *    |  `-- Chimp
+     *    `-- Mouse
+     * </pre>
+     *
+     * @return the drawing, ending in a line separator; "" for an empty tree
+     * @throws FailedConditionCheckException if the tree has more than {@link #MAX_ASCII_EXTERNAL_NODES}
+     *             external nodes, or is more than that many nodes deep
+     */
+    public String toAscii() {
+        if ( isEmpty() ) {
+            return "";
+        }
+        checkAsciiSize();
+        final StringBuilder sb = new StringBuilder();
+        appendAscii( getRoot(), "+--", "   ", sb );
+        return sb.toString();
+    }
+
+    /**
+     * Refuses a tree {@link #toAscii()} cannot usefully draw, counting it afresh.
+     * <p>
+     * Deliberately NOT {@code getNumberOfExternalNodes()}: that is served from a cache which
+     * {@link #setRoot(PhylogenyNode)} does not invalidate, so a tree re-rooted onto a larger one reports the
+     * old count and walks straight past the guard -- measured, a two-tip tree given a 5000-tip root drew all
+     * 5000 lines. A guard that can be told the wrong size is not a guard.
+     * <p>
+     * DEPTH is checked for a reason the tip count cannot cover: the drawing recurses once per level, so a
+     * chain of unnamed nodes ending in a single tip passes any tip limit and then dies with a
+     * StackOverflowError instead of the refusal this method documents (measured at depth 5000). Bounding
+     * depth by the same constant keeps the recursion shallower than the tip limit already allows, and needs
+     * no second number to justify. The walk itself is iterative, so counting a deep tree cannot overflow
+     * while checking whether drawing it would.
+     */
+    private void checkAsciiSize() {
+        final java.util.Deque<PhylogenyNode> nodes = new java.util.ArrayDeque<PhylogenyNode>();
+        final java.util.Deque<Integer> depths = new java.util.ArrayDeque<Integer>();
+        nodes.push( getRoot() );
+        depths.push( Integer.valueOf( 1 ) );
+        int tips = 0;
+        int deepest = 0;
+        while ( !nodes.isEmpty() ) {
+            final PhylogenyNode n = nodes.pop();
+            final int d = depths.pop().intValue();
+            if ( d > deepest ) {
+                deepest = d;
+            }
+            if ( n.isExternal() ) {
+                ++tips;
+            }
+            for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
+                nodes.push( n.getChildNode( i ) );
+                depths.push( Integer.valueOf( d + 1 ) );
+            }
+        }
+        if ( tips > MAX_ASCII_EXTERNAL_NODES ) {
+            throw new FailedConditionCheckException( "cannot draw a tree of " + tips
+                    + " external nodes as ASCII (the limit is " + MAX_ASCII_EXTERNAL_NODES
+                    + "): write it to a file instead, e.g. with toNewHampshire()" );
+        }
+        if ( deepest > MAX_ASCII_EXTERNAL_NODES ) {
+            throw new FailedConditionCheckException( "cannot draw a tree " + deepest
+                    + " nodes deep as ASCII (the limit is " + MAX_ASCII_EXTERNAL_NODES
+                    + "): write it to a file instead, e.g. with toNewHampshire()" );
+        }
+    }
+
+    /**
+     * One line for {@code node} if it has anything to say, then its children.
+     *
+     * @param pre what this node's own line starts with, the elbow included -- it already carries any elbows
+     *            inherited from unnamed ancestors that share this line
+     * @param cont what the lines BELOW this node start with: the same width as {@code pre}, with each elbow
+     *            replaced by the bar that continues it (or by blanks, where that branch is finished)
+     */
+    private static void appendAscii( final PhylogenyNode node,
+                                     final String pre,
+                                     final String cont,
+                                     final StringBuilder sb ) {
+        // false: a name beats an accession, as the two-argument toNewHampshire does. null: no placeholder --
+        // a tip that nothing names draws as its elbow alone rather than as an invented "node7".
+        final String label = asciiLabel( node.newHampshireLabel( false, null ) );
+        final boolean own_line = node.isExternal() || !ForesterUtil.isEmpty( label );
+        if ( own_line ) {
+            sb.append( pre );
+            if ( !ForesterUtil.isEmpty( label ) ) {
+                sb.append( ' ' ).append( label ); // the space belongs to the LABEL, so a nameless tip leaves
+            }                                     // no trailing blank for a diff or an editor to complain about
+            sb.append( ForesterUtil.LINE_SEPARATOR );
+        }
+        final int n = node.getNumberOfDescendants();
+        for( int i = 0; i < n; ++i ) {
+            final boolean last = ( i == ( n - 1 ) );
+            // The first child of a node that drew NO line shares that node's line, so it starts from `pre`;
+            // every other line in the subtree starts from `cont`.
+            appendAscii( node.getChildNode( i ),
+                         ( !own_line && ( i == 0 ) ? pre : cont ) + ( last ? "`--" : "+--" ),
+                         cont + ( last ? "   " : "|  " ),
+                         sb );
+        }
+    }
+
+    /**
+     * A node's name made safe to put on one line of a drawing.
+     * <p>
+     * A name is free text -- phyloXML {@code <name>} and a joined table cell can both carry a line break or a
+     * trailing space -- and appending it raw broke the two things the drawing promises: a newline split one
+     * node across two lines, the second with no prefix at all (so it no longer read as a tree), and a
+     * trailing space left whitespace at the end of a line. Newick has the same problem and answers it by
+     * QUOTING ({@code ForesterUtil.santitizeStringForNH}); a drawing cannot, because the quotes would be in
+     * the picture, so control characters become spaces and the end is trimmed.
+     */
+    private static String asciiLabel( final String label ) {
+        if ( ForesterUtil.isEmpty( label ) ) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder( label.length() );
+        for( int i = 0; i < label.length(); ++i ) {
+            final char c = label.charAt( i );
+            sb.append( ( ( c == '\n' ) || ( c == '\r' ) || ( c == '\t' ) || Character.isISOControl( c ) ) ? ' '
+                    : c );
+        }
+        int end = sb.length();
+        while ( ( end > 0 ) && Character.isWhitespace( sb.charAt( end - 1 ) ) ) {
+            --end;
+        }
+        sb.setLength( end );
+        return sb.toString();
     }
 
     public String toNewHampshire() {

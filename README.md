@@ -42,7 +42,26 @@ What's in forester
   as a plain `nh:comment` property instead, as earlier versions did. The phyloXML
   schema is bundled in this repository under `forester/resources/phyloxml_schema/`; the `phyloxml.org`
   domain is no longer under the format authors' control and should not be used
-  as a source for it.
+  as a source for it. A `Phylogeny` writes itself back out with
+  `toNewHampshire()`, `toNewHampshireX()`, `toNexus()` and `toPhyloXML(level)`;
+  `toAscii()` draws it instead, as plain ASCII for a terminal, which is a quicker
+  way to see what you just parsed than opening a viewer:
+
+  ```
+  +-- Archosauria
+     +-- Crocodylia
+     `-- Dinosauria
+        +-- Ornithischia
+        |  +-- Stegosaurus
+        |  `-- Triceratops
+        `-- Saurischia
+  ```
+
+  Structure and names only — a node is named the way `toNewHampshire()` would name
+  it, so a tree carrying its identity in `<taxonomy>` or `<sequence>` rather than
+  in `<name>` still reads. It refuses a tree of more than
+  `Phylogeny.MAX_ASCII_EXTERNAL_NODES` (1000) tips, or one that many nodes deep,
+  rather than flooding a terminal.
 - **SDI / GSDI / GSDIR** (`org.forester.sdi`) — speciation–duplication inference:
   reconcile a gene tree against a species tree to infer gene duplications and
   speciations.
