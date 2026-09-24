@@ -550,6 +550,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  the viewport, so today it cannot produce a wrong hit -- it guards against an export laid out at another
      *  SIZE leaving a record that has nothing to do with the screen. */
     final private java.util.HashSet<Long> _domains_painted = new java.util.HashSet<>();
+    private boolean _layout_is_screen_layout = true;
     private boolean _recording_domain_paints = false;
     final private HashMap<Long, Integer> _urt_nodeid_index_map = new HashMap<>();
     private double _urt_starting_angle = (float) (Math.PI
@@ -6374,16 +6375,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  panel, so centring at getWidth()/2 would push the ring off the export canvas. On screen, and for a visible-only
      *  export (whose Graphics is translated to crop), the drawing space is the panel's own width, so getWidth() is
      *  correct. (For the ordinary full export the caller passes getWidth() as the canvas, so the two agree.) */
+    /** Whether a paint with these flags centres the radial canvas on the EXPORT frame rather than on the panel.
+     *  The single definition: {@link #radialCanvasCenterX}/{@code Y} place the ring by it, and the layout-validity
+     *  latch in {@link #paintPhylogeny} decides by it whether the coordinates just written are still the screen's.
+     *  A VISIBLE-ONLY export falls back to the panel's own size, so it moves nothing and invalidates nothing. */
+    private boolean isFullCanvasExport(final boolean to_pdf, final boolean to_graphics_file) {
+        return (to_pdf || to_graphics_file) && !getOptions().isGraphicsExportVisibleOnly();
+    }
+
     private int radialCanvasCenterX(final int graphics_file_width, final boolean to_pdf,
                                     final boolean to_graphics_file) {
-        final boolean full_export = (to_pdf || to_graphics_file) && !getOptions().isGraphicsExportVisibleOnly();
-        return (full_export ? graphics_file_width : getWidth()) / 2;
+        return (isFullCanvasExport(to_pdf, to_graphics_file) ? graphics_file_width : getWidth()) / 2;
     }
 
     private int radialCanvasCenterY(final int graphics_file_height, final boolean to_pdf,
                                     final boolean to_graphics_file) {
-        final boolean full_export = (to_pdf || to_graphics_file) && !getOptions().isGraphicsExportVisibleOnly();
-        return (full_export ? graphics_file_height : getHeight()) / 2;
+        return (isFullCanvasExport(to_pdf, to_graphics_file) ? graphics_file_height : getHeight()) / 2;
     }
 
     final private void paintUnrooted(final PhylogenyNode n,
@@ -6860,6 +6867,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Test hook: the circular layout's ring centre (device), or null before it has been laid out. */
     final java.awt.Point circularCenterForTest() {
         return (_circular_radius <= 0) ? null : new java.awt.Point(_circular_center_x, _circular_center_y);
+    }
+
+    /** Test hook: the ring's radius, beside {@link #circularCenterForTest} -- together they are the geometry a
+     *  full-canvas export moves out from under the panel. */
+    final int circularRadiusForTest() {
+        return _circular_radius;
     }
 
     /** Test hook: the annotation-column cell the showing rollover is for, or null (a node card, or no card). */
@@ -10558,7 +10571,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // domainBoxesDrawnInCurrentLayout is the painters' OWN predicate -- it also refuses a radial layout
         // whose labels are not radial, which is when no boxes are drawn there at all.
         if (!domainBoxesDrawnInCurrentLayout() || !isShowExternalDataForThisTab() || (getPhylogeny() == null)
-                || getPhylogeny().isEmpty()) {
+                || getPhylogeny().isEmpty() || !hitTestableLayout()) {
             return null; // a hit on something not drawn is a lie
         }
         final PHYLOGENY_GRAPHICS_TYPE t = getPhylogenyGraphicsType();
@@ -10734,7 +10747,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * {@link #paintAnnotationColumnsCircular} for the arc -- so what reads out is exactly the cell that was drawn.
      */
     AnnotationCell annotationCellAt(final int x, final int y) {
-        if (!hasAnnotationColumns() || (_annotation_columns == null)
+        if (!hasAnnotationColumns() || (_annotation_columns == null) || !hitTestableLayout()
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
             return null;
         }
@@ -10843,8 +10856,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * layout draws no columns, so nothing there can be grabbed.
      */
     int annotationColumnGrabbedAt(final int x, final int y) {
-        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
-            return -1;
+        if ((getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) || !hitTestableLayout()) {
+            return -1; // laid out for an export canvas; see paintPhylogeny. This one MOVES a column.
         }
         return (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) ? circularAnnotationRingAt(x, y)
                 : annotationHeaderColumnAt(x, y);
@@ -10945,7 +10958,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * pointer however far it strays sideways from the columns.
      */
     int annotationColumnInsertionSlotAt(final int x, final int y) {
-        if (!hasAnnotationColumns() || (_annotation_columns == null)) {
+        if (!hasAnnotationColumns() || (_annotation_columns == null) || !hitTestableLayout()) {
             return -1;
         }
         final double[] b = annotationColumnSlotPositions();
@@ -14178,8 +14191,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * @return pointer to the node at x,y, null if not found
      */
     final PhylogenyNode findNode(final int x, final int y) {
-        if ((_phylogeny == null) || _phylogeny.isEmpty()) {
-            return null;
+        if ((_phylogeny == null) || _phylogeny.isEmpty() || !hitTestableLayout()) {
+            return null; // laid out for an export canvas; see paintPhylogeny
         }
         // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
         final Point2D.Double p = toLogicalPoint(x, y);
@@ -15236,6 +15249,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     final int[] layoutForExportSize(final int w, final int h) {
         final int[] prior = { getWidth(), getHeight(), _radial_diameter };
+        // This re-lays out EVERY display type for the export frame, so from here the coordinates are not the
+        // panel's -- in the rectangular family too, which the paint itself never re-centres. restoreLayoutAfterExport
+        // puts the distances back and repaints; the node coordinates only return with that paint, and until it
+        // runs a queued mouse event would otherwise hit-test the export's layout.
+        invalidateScreenLayout();
         if (isRadialLayout()) {
             // the radial canvas is a SQUARE driven by _radial_diameter; fit it to the export frame BEFORE
             // calcParametersForPainting so setUpUrtFactor (invoked from there) reads the fitted diameter
@@ -15504,6 +15522,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         paintCircularsLite(phy.getRoot(), phy, center_x, center_y, radius, g);
     }
 
+    /**
+     * Paints the tree -- on screen, and into every export.
+     * <p>
+     * The radial layouts centre the figure on the CANVAS ({@link #radialCanvasCenterX}), which for a full export
+     * is the EXPORT size, not the panel's. That layout is not local to the paint: the ring's centre and radius
+     * live on the panel and every node's x/y is rewritten as it is drawn. So after a fixed-size PDF/PNG/SVG of a
+     * circular or unrooted tree, the panel describes the export -- measured on a 900x700 panel exported at
+     * 2400x1800, the centre moved from (450,350) to (1200,900) and all 50 node coordinates with it.
+     * <p>
+     * The export's layout is deliberately LEFT in place: rendering at a size and then reading the coordinates it
+     * produced is how this codebase checks its own drawing, and restoring them here blinded sixteen render tests
+     * to the thing they render. What is fixed instead is the wrong answer that followed -- the panel now knows
+     * its layout is not the screen's, {@link #hitTestableLayout} says so, and the hit-tests that map a SCREEN
+     * point onto the tree decline until the repaint this schedules has laid the tree out for the panel again.
+     * Declining for one repaint is a rollover that does not appear; the alternative was a rollover, a click
+     * target and a legend anchor that pointed at a canvas the user never saw.
+     */
     final void paintPhylogeny(final Graphics2D g,
                               final boolean to_pdf,
                               final boolean to_graphics_file,
@@ -15511,6 +15546,54 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                               final int graphics_file_height,
                               final int graphics_file_x,
                               final int graphics_file_y) {
+        final boolean to_screen = !to_pdf && !to_graphics_file;
+        try {
+            paintPhylogenyImpl(g, to_pdf, to_graphics_file, graphics_file_width, graphics_file_height,
+                    graphics_file_x, graphics_file_y);
+        } finally {
+            if (to_screen) {
+                // the ONLY way back: this paint has just laid the tree out for the panel
+                _layout_is_screen_layout = true;
+            }
+            // Did this paint put the ring somewhere a screen paint would not? That is the whole question, so it
+            // is asked directly rather than approximated: radialCanvasCenterX/Y centre a full-canvas export on
+            // the EXPORT frame, and with the centre goes every node coordinate. Asking it this way covers for
+            // free the two exports that move nothing -- a VISIBLE-ONLY one (which falls back to the panel's own
+            // size) and one whose canvas simply IS the panel's -- neither of which should cost a frame of
+            // rollover. The rectangular family is never re-centred here; it is re-laid-out by
+            // layoutForExportSize on the fixed-size paths, which invalidates there instead.
+            else if (isRadialLayout()
+                    && ((radialCanvasCenterX(graphics_file_width, to_pdf, to_graphics_file) != (getWidth() / 2))
+                            || (radialCanvasCenterY(graphics_file_height, to_pdf,
+                                    to_graphics_file) != (getHeight() / 2)))) {
+                invalidateScreenLayout();
+            }
+        }
+    }
+
+    /** Whether the coordinates currently on the tree are the ones the panel is showing -- false between an
+     *  EXPORT paint and the repaint that follows it. Every hit-test that turns a screen point into a node, a
+     *  cell, a domain or an annotation-column ring asks this first: during that window the tree is laid out for
+     *  a canvas that was never on screen, and any answer would be about that canvas. */
+    final boolean hitTestableLayout() {
+        return _layout_is_screen_layout;
+    }
+
+    /** The tree is now laid out for something other than this panel; decline screen hit-tests and ask for the
+     *  repaint that puts it back. A LATCH -- only a screen paint clears it, so a second export cannot declare
+     *  the layout good again while the repaint the first one asked for is still queued. */
+    final private void invalidateScreenLayout() {
+        _layout_is_screen_layout = false;
+        repaint();
+    }
+
+    final private void paintPhylogenyImpl(final Graphics2D g,
+                                          final boolean to_pdf,
+                                          final boolean to_graphics_file,
+                                          final int graphics_file_width,
+                                          final int graphics_file_height,
+                                          final int graphics_file_x,
+                                          final int graphics_file_y) {
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return;
         }
