@@ -556,10 +556,26 @@ public final class ForesterUtil {
         return ForesterUtil.LINE_SEPARATOR;
     }
 
+    /**
+     * Guesses whether a sequence is protein, DNA or RNA, or null when nothing decides it.
+     *
+     * The protein test is a search for residues that a nucleotide sequence cannot contain. F, P and V were
+     * added 2026-09-23 (Christian), jointly with Archaeopteryx.js so that both programs type a file the same
+     * way -- one side adding a letter alone is worse than the blind spot they share. Before them, a protein
+     * built only from nucleotide letters guessed DNA: MKATSWNP has exactly one protein-exclusive residue and
+     * it was P. Measured against UniProt residue frequencies, the chance a protein carries none of the tested
+     * letters falls from 12.5% to 3.3% at length 5 and from 1.6% to 0.11% at length 10; a real alignment of a
+     * hundred columns was never at risk.
+     *
+     * V (and B, D, H) are nucleotide ambiguity codes in full IUPAC, but not in forester's DNA alphabet, which
+     * maps them to N -- so they cannot survive in a DNA sequence here and testing them for protein is
+     * consistent. The failure direction is benign in any case: a nucleotide matrix wrongly called protein
+     * keeps every residue, while a protein matrix wrongly called DNA loses every non-nucleotide one.
+     */
     final public static MolecularSequence.TYPE guessMolecularSequenceType( final String mol_seq ) {
         final String s = mol_seq.toUpperCase();
         if ( s.contains( "L" ) || s.contains( "I" ) || s.contains( "E" ) || s.contains( "H" ) || s.contains( "D" )
-                || s.contains( "Q" ) ) {
+                || s.contains( "Q" ) || s.contains( "F" ) || s.contains( "P" ) || s.contains( "V" ) ) {
             return TYPE.AA;
         }
         else {

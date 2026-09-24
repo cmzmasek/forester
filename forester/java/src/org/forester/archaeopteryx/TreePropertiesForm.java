@@ -41,6 +41,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
@@ -162,7 +163,7 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
             return true;
         }
         if ( _tree_panel != null ) {
-            _tree_panel.pushUndoCheckpoint( "Edit Tree Properties" ); // Phylogeny.copy() carries all six fields
+            _tree_panel.pushUndoCheckpoint( "Edit Tree Properties" ); // Phylogeny.copy() carries every field here
         }
         draft.writeTo( _phylogeny );
         _baseline = draft.normalized();
@@ -170,6 +171,10 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
             if ( changed.contains( "name" ) && ( _tree_panel.getMainPanel() != null ) ) {
                 _tree_panel.getMainPanel().syncTabTitle( _tree_panel ); // the tab label IS the tree name
             }
+            // setEdited(true) re-syncs the Edit menu (it clears the redo history and notifies), and that sync is
+            // what re-enables or re-greys MAD-Root, Midpoint-Root and the two GSDIR items after the "re-rootable"
+            // flag changes. It runs AFTER writeTo, so the menus see the new value -- unlike the checkpoint's own
+            // sync above, which runs before it. An explicit refresh here was measured to be dead code.
             _tree_panel.setEdited( true );
             _tree_panel.repaint();
         }
@@ -193,6 +198,10 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
             d.idProvider = text( TreePropertiesDraft.ID_PROVIDER );
             d.type = text( TreePropertiesDraft.TYPE );
             d.distanceUnit = text( TreePropertiesDraft.DISTANCE_UNIT );
+            // The fallback is the tree's CURRENT value, not "true": if the checkbox is ever absent -- a
+            // read-only or partial form, which the section machinery already allows -- a write of some other
+            // field would otherwise silently make a deliberately rerootable="false" tree re-rootable again.
+            d.rerootable = checked( TreePropertiesDraft.REROOTABLE, _baseline.rerootable );
             _current = d;
         }
         return _current;
@@ -260,6 +269,15 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
         }
     }
 
+    /** Test hook: ticks a checkbox the way a click would, change notification included. */
+    void setCheckedForTest( final String key, final boolean on ) {
+        final JComponent c = _fields.get( key );
+        if ( c instanceof JCheckBox ) {
+            ( (JCheckBox) c ).setSelected( on );
+            fireChanged();
+        }
+    }
+
     boolean hasSectionForTest( final String title ) {
         return _sections.containsKey( title );
     }
@@ -318,8 +336,17 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
             final JTextField unit = editField( d.distanceUnit, "e.g. substitutions/site, Ma" );
             register( TreePropertiesDraft.DISTANCE_UNIT, unit );
             g.row( "Type", type, "Branch-length unit", unit );
+            final JCheckBox rerootable = new JCheckBox( "Re-rootable", d.rerootable );
+            rerootable.setToolTipText( "<html>phyloXML's <code>rerootable</code> attribute. Clear it to declare that "
+                    + "this tree's root is fixed -- a published or curated rooting.<br>Tools that have to choose a new "
+                    + "root are then greyed out: <i>MAD-Root</i>, <i>Midpoint-Root</i>, both <i>GSDIR</i> "
+                    + "reconciliations, and the <i>Root/Reroot</i> click option.</html>" );
+            rerootable.addActionListener( e -> fireChanged() );
+            register( TreePropertiesDraft.REROOTABLE, rerootable );
+            g.row( "Rooting", rerootable, false );
+            // a tree that says it must NOT be re-rooted is exactly the one whose owner needs to find this box
             final boolean any = !d.idValue.isEmpty() || !d.idProvider.isEmpty() || !d.type.isEmpty()
-                    || !d.distanceUnit.isEmpty();
+                    || !d.distanceUnit.isEmpty() || !d.rerootable;
             addSection( SEC_IDENTITY, null, g, any );
         }
     }
@@ -386,6 +413,19 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
         return ( c instanceof JTextComponent ) ? ( (JTextComponent) c ).getText() : "";
     }
 
+    /** A registered checkbox's state, or {@code fallback} when the form has no such widget (a read-only view). */
+    private boolean checked( final String key, final boolean fallback ) {
+        final JComponent c = _fields.get( key );
+        return ( c instanceof JCheckBox ) ? ( (JCheckBox) c ).isSelected() : fallback;
+    }
+
+    private void setChecked( final String key, final boolean on ) {
+        final JComponent c = _fields.get( key );
+        if ( c instanceof JCheckBox ) {
+            ( (JCheckBox) c ).setSelected( on );
+        }
+    }
+
     /** Puts {@code d}'s values into the widgets without firing per-keystroke change events. */
     private void load( final TreePropertiesDraft d ) {
         _loading = true;
@@ -394,6 +434,7 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
             setText( TreePropertiesDraft.DESCRIPTION, d.description );
             setText( TreePropertiesDraft.ID_VALUE, d.idValue );
             setText( TreePropertiesDraft.ID_PROVIDER, d.idProvider );
+            setChecked( TreePropertiesDraft.REROOTABLE, d.rerootable );
             setText( TreePropertiesDraft.TYPE, d.type );
             setText( TreePropertiesDraft.DISTANCE_UNIT, d.distanceUnit );
         }

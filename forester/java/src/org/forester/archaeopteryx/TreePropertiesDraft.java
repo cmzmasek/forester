@@ -49,6 +49,7 @@ final class TreePropertiesDraft {
     static final String ID_PROVIDER   = "id.provider";
     static final String TYPE          = "type";
     static final String DISTANCE_UNIT = "distance_unit";
+    static final String REROOTABLE    = "rerootable";
 
     String name          = "";
     String description   = "";
@@ -56,6 +57,10 @@ final class TreePropertiesDraft {
     String idProvider    = "";
     String type          = "";
     String distanceUnit  = "";
+    /** phyloXML's {@code rerootable} attribute. Its default is TRUE, and it is the only tree-level field here that
+     *  is not free text: unticking it greys out MAD-Root, Midpoint-Root and both GSDIR reconciliations, which have
+     *  no way to run without choosing a new root (see Rerooting.refusal). */
+    boolean rerootable   = true;
 
     static TreePropertiesDraft from( final Phylogeny phy ) {
         final TreePropertiesDraft d = new TreePropertiesDraft();
@@ -70,6 +75,7 @@ final class TreePropertiesDraft {
         }
         d.type = nn( phy.getType() );
         d.distanceUnit = nn( phy.getDistanceUnit() );
+        d.rerootable = phy.isRerootable();
         return d;
     }
 
@@ -81,6 +87,7 @@ final class TreePropertiesDraft {
         d.idProvider = idProvider;
         d.type = type;
         d.distanceUnit = distanceUnit;
+        d.rerootable = rerootable;
         return d;
     }
 
@@ -93,6 +100,8 @@ final class TreePropertiesDraft {
         d.idProvider = idProvider.trim();
         d.type = ForesterUtil.collapseWhiteSpace( type ).trim();
         d.distanceUnit = ForesterUtil.collapseWhiteSpace( distanceUnit ).trim();
+        d.rerootable = rerootable; // a flag has nothing to normalize, but it must still be CARRIED: writeTo and
+                                   // changedFields both read the normalized copy, not this one
         return d;
     }
 
@@ -129,6 +138,9 @@ final class TreePropertiesDraft {
         if ( !a.distanceUnit.equals( b.distanceUnit ) ) {
             out.add( "branch-length unit" );
         }
+        if ( a.rerootable != b.rerootable ) {
+            out.add( "re-rootable" );
+        }
         return out;
     }
 
@@ -141,6 +153,7 @@ final class TreePropertiesDraft {
                 : new Identifier( n.idValue, n.idProvider.isEmpty() ? null : n.idProvider ) );
         phy.setType( n.type );
         phy.setDistanceUnit( n.distanceUnit );
+        phy.setRerootable( n.rerootable );
     }
 
     @Override
@@ -150,18 +163,20 @@ final class TreePropertiesDraft {
         }
         final TreePropertiesDraft d = (TreePropertiesDraft) o;
         return name.equals( d.name ) && description.equals( d.description ) && idValue.equals( d.idValue )
-                && idProvider.equals( d.idProvider ) && type.equals( d.type ) && distanceUnit.equals( d.distanceUnit );
+                && idProvider.equals( d.idProvider ) && type.equals( d.type ) && distanceUnit.equals( d.distanceUnit )
+                && ( rerootable == d.rerootable );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash( name, description, idValue, idProvider, type, distanceUnit );
+        return Objects.hash( name, description, idValue, idProvider, type, distanceUnit,
+                             Boolean.valueOf( rerootable ) );
     }
 
     @Override
     public String toString() {
         return "TreePropertiesDraft[name=" + name + ", id=" + idValue + "/" + idProvider + ", type=" + type
-                + ", unit=" + distanceUnit + "]";
+                + ", unit=" + distanceUnit + ", rerootable=" + rerootable + "]";
     }
 
     private static String nn( final String s ) {

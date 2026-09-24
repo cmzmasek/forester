@@ -43,7 +43,7 @@ public final class TreePropertiesDraftTest {
 
     public static boolean test() {
         try {
-            return read() && normalization() && validation() && changes() && write() && equality();
+            return read() && normalization() && validation() && changes() && write() && equality() && rerooting();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -265,5 +265,48 @@ public final class TreePropertiesDraftTest {
     }
 
     private TreePropertiesDraftTest() {
+    }
+
+    /**
+     * The {@code rerootable} flag: the one field here that is not free text, and the one that DISABLES tools (both
+     * GSDIR reconciliations, MAD-Root, Midpoint-Root) rather than just labelling the tree. It has to survive every
+     * stage of the view-model -- and normalized() in particular, because writeTo and changedFields both read the
+     * normalized copy, so a flag dropped there would be silently written as its default.
+     */
+    private static boolean rerooting() {
+        final Phylogeny phy = new Phylogeny();
+        phy.setRoot( new PhylogenyNode() );
+        phy.setRerootable( false );
+        final TreePropertiesDraft read = TreePropertiesDraft.from( phy );
+        if ( read.rerootable ) {
+            return TestFail.here( "from() must read rerootable=\"false\" off the tree" );
+        }
+        if ( read.copy().rerootable || read.normalized().rerootable ) {
+            return TestFail.here( "copy() and normalized() must carry the flag, not reset it to the default" );
+        }
+        final TreePropertiesDraft on = read.copy();
+        on.rerootable = true;
+        if ( !on.changedFields( read ).contains( "re-rootable" ) ) {
+            return TestFail.here( "flipping the flag must be reported as a change, got " + on.changedFields( read ) );
+        }
+        if ( !read.changedFields( read ).isEmpty() ) {
+            return TestFail.here( "an unchanged draft must report no change" );
+        }
+        if ( on.equals( read ) || ( on.hashCode() == read.hashCode() ) ) {
+            return TestFail.here( "two drafts differing only in the flag must not be equal" );
+        }
+        on.writeTo( phy );
+        if ( !phy.isRerootable() ) {
+            return TestFail.here( "writeTo must apply the flag to the tree" );
+        }
+        read.writeTo( phy ); // ...and back, so it is not a one-way switch
+        if ( phy.isRerootable() ) {
+            return TestFail.here( "writeTo must be able to clear the flag as well as set it" );
+        }
+        // a fresh tree is re-rootable, and a draft built from nothing must say so rather than default to false
+        if ( !TreePropertiesDraft.from( new Phylogeny() ).rerootable || !new TreePropertiesDraft().rerootable ) {
+            return TestFail.here( "the default is re-rootable: phyloXML's own default for the attribute" );
+        }
+        return true;
     }
 }

@@ -51,7 +51,7 @@ public final class TreePropertiesEditTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true; // GUI integration test; needs a display toolkit
         }
-        return mainScenario() && emptyNameUndoScenario();
+        return mainScenario() && emptyNameUndoScenario() && rerootableScenario();
     }
 
     /**
@@ -392,5 +392,102 @@ public final class TreePropertiesEditTest {
     }
 
     private TreePropertiesEditTest() {
+    }
+
+    /**
+     * The re-rootable checkbox, end to end -- the reason it exists.
+     * <p>
+     * A tree whose phyloXML says {@code rerootable="false"} has MAD-Root, Midpoint-Root and BOTH GSDIR
+     * reconciliations greyed out, and until this checkbox there was no way to lift that from the GUI at all: the
+     * only route was editing the file by hand. So what is asserted is the whole journey -- the tools start
+     * disabled, ticking the box and writing enables them, and undo puts both the flag and the greying back.
+     * <p>
+     * The menu state is the point, not a detail: the write pushes an undo checkpoint, and that checkpoint re-syncs
+     * the Edit menu BEFORE the new value is written, so without an explicit refresh afterwards the user ticks the
+     * box, writes, and watches nothing happen.
+     */
+    private static boolean rerootableScenario() {
+        try {
+            final Phylogeny phy = threeLevel( "fixed root" );
+            phy.setRerootable( false );
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { phy }, new Configuration(), "fixed root" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                try {
+                    final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                    mf[ 0 ].updateEditMenu(); // the state the user would find the menus in
+                    if ( rootingToolsEnabled( mf[ 0 ] ) ) {
+                        fail( ok, "fixture: a rerootable=\"false\" tree must start with its rooting tools greyed out,"
+                                + " or the check below proves nothing" );
+                    }
+                    final TreePropertiesForm form = new TreePropertiesForm( tp );
+                    form.setCheckedForTest( TreePropertiesDraft.REROOTABLE, true );
+                    if ( !form.collect().changedFields( form.baseline() ).contains( "re-rootable" ) ) {
+                        fail( ok, "ticking the box must register as a change" );
+                    }
+                    if ( !form.write() ) {
+                        fail( ok, "the write should have been accepted" );
+                    }
+                    if ( !tp.getPhylogeny().isRerootable() ) {
+                        fail( ok, "the tree must now be re-rootable" );
+                    }
+                    if ( Rerooting.refusal( tp.getPhylogeny() ) != null ) {
+                        fail( ok, "...so nothing may refuse to re-root it: "
+                                + Rerooting.refusal( tp.getPhylogeny() ) );
+                    }
+                    if ( !rootingToolsEnabled( mf[ 0 ] ) ) {
+                        fail( ok, "...and the rooting tools must be enabled WITHOUT another sync -- the checkpoint's"
+                                + " own sync runs before the value is written" );
+                    }
+                    // ...and the other way round. Only this direction can see a collect() that ignores the
+                    // checkbox: an unread field falls back to the draft's default, which IS true, so clearing the
+                    // box is the one move that tells a read-back from a default (measured -- the false->true half
+                    // passed with the read-back deleted).
+                    final TreePropertiesForm off = new TreePropertiesForm( tp );
+                    off.setCheckedForTest( TreePropertiesDraft.REROOTABLE, false );
+                    if ( !off.collect().changedFields( off.baseline() ).contains( "re-rootable" ) ) {
+                        fail( ok, "clearing the box must register as a change" );
+                    }
+                    if ( !off.write() || tp.getPhylogeny().isRerootable() ) {
+                        fail( ok, "clearing the box must make the tree not re-rootable again" );
+                    }
+                    if ( rootingToolsEnabled( mf[ 0 ] ) ) {
+                        fail( ok, "...and grey the rooting tools without another sync" );
+                    }
+                    mf[ 0 ].undo(); // back to re-rootable for the undo check below
+                    if ( !tp.getPhylogeny().isRerootable() ) {
+                        fail( ok, "undo of the clear must restore the ticked state" );
+                    }
+                    // undo restores the flag and the greying with it
+                    mf[ 0 ].undo();
+                    if ( mf[ 0 ].getMainPanel().getCurrentTreePanel().getPhylogeny().isRerootable() ) {
+                        fail( ok, "undo must put the flag back" );
+                    }
+                    if ( rootingToolsEnabled( mf[ 0 ] ) ) {
+                        fail( ok, "...and grey the rooting tools again" );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, "unexpected: " + t );
+                    t.printStackTrace();
+                }
+                finally {
+                    ( ( javax.swing.JFrame ) mf[ 0 ] ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Whether every tool that has to choose a new root is available. */
+    private static boolean rootingToolsEnabled( final MainFrame mf ) {
+        return ( mf._mad_root_item != null ) && mf._mad_root_item.isEnabled() && mf._midpoint_root_item.isEnabled()
+                && mf._gsdir_item.isEnabled() && mf._gsdir_taxonomy_item.isEnabled();
     }
 }

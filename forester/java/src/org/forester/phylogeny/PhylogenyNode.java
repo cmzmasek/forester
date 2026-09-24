@@ -905,9 +905,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     final public String toNewHampshire( final boolean write_distance_to_parent,
                                         final NH_CONVERSION_SUPPORT_VALUE_STYLE svs
                                         ) {
-        return toNewHampshire(  write_distance_to_parent,
-                                svs,
-                                true );
+        return toNewHampshire( write_distance_to_parent, svs, false, null );
         
     }
     
@@ -915,6 +913,23 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     final public String toNewHampshire( final boolean write_distance_to_parent,
                                         final NH_CONVERSION_SUPPORT_VALUE_STYLE svs,
                                         final boolean forse_seq_ids) {
+        return toNewHampshire( write_distance_to_parent, svs, forse_seq_ids, null );
+    }
+
+    /**
+     * @param forse_seq_ids  put a sequence accession ahead of everything else. Off by default since
+     *                       2026-09-23 (Christian): the NAME wins, and an accession is only used when
+     *                       nothing else names the node. Archaeopteryx.js writes the name too.
+     * @param fallback_label used for an EXTERNAL node that nothing at all names. Without it such a node is
+     *                       written as an empty label, which produces "(HUMAN,);" and a Nexus file whose
+     *                       TaxLabels is shorter than its NTax -- unreadable, and the matrix row for that
+     *                       tip is silently dropped on the way back in. An unlabeled INTERNAL node is
+     *                       normal and is left alone. Writers pass "node1", "node2", ... by tip index.
+     */
+    final public String toNewHampshire( final boolean write_distance_to_parent,
+                                        final NH_CONVERSION_SUPPORT_VALUE_STYLE svs,
+                                        final boolean forse_seq_ids,
+                                        final String fallback_label ) {
         String data = "";
         // the support value is never a MAD ancestor deviation (BranchData.getSupportConfidence)
         final Confidence support = isExternal() ? null : getBranchData().getSupportConfidence();
@@ -925,35 +940,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                                                             PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) );
             }
         }
-        else if (forse_seq_ids && getNodeData().isHasSequence() &&  getNodeData().getSequence().getAccession() != null) {
-            if ( getNodeData().isHasSequence() &&  getNodeData().getSequence().getAccession() != null)  {
-                data = getNodeData().getSequence().getAccession().getValue();
-            }
-        }
-        else if ( !ForesterUtil.isEmpty( getName() ) ) {
-            data = getName();
-        }
-        else if ( getNodeData().isHasTaxonomy() ) {
-            if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-                data = getNodeData().getTaxonomy().getTaxonomyCode();
-            }
-            else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getScientificName() ) ) {
-                data = getNodeData().getTaxonomy().getScientificName();
-            }
-            else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getCommonName() ) ) {
-                data = getNodeData().getTaxonomy().getCommonName();
-            }
-        }
-        else if ( getNodeData().isHasSequence() ) {
-            if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getName() ) ) {
-                data = getNodeData().getSequence().getName();
-            }
-            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getSymbol() ) ) {
-                data = getNodeData().getSequence().getSymbol();
-            }
-            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getGeneName() ) ) {
-                data = getNodeData().getSequence().getGeneName();
-            }
+        else {
+            data = newHampshireLabel( forse_seq_ids, fallback_label );
         }
         final StringBuilder sb = ForesterUtil.santitizeStringForNH( data );
         if ( write_distance_to_parent && ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
@@ -975,11 +963,87 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Converts this PhylogenyNode to a New Hampshire X (NHX) String
      * representation.
      */
+    /**
+     * The label a node is written under in New Hampshire and NHX alike.
+     *
+     * One method for both, because two copies drift: NHX used to write only getName(), so a tip that plain
+     * Newick called HUMAN (from its taxonomy) NHX called nothing at all, and the placeholder for a nameless
+     * tip reached Newick but not NHX -- two of our own writers disagreeing about the same tree's tip names.
+     * Christian, 2026-09-23: "NHX writer should behave the same as NH."
+     *
+     * A chain of fallbacks, each tried only when the ones before produced nothing. Sequential rather than
+     * else-if on purpose: a node that HAS a taxonomy whose fields are all empty used to stop there and be
+     * written nameless, even when its sequence could have named it.
+     */
+    final String newHampshireLabel( final boolean forse_seq_ids, final String fallback_label ) {
+        String data = "";
+        // A chain of fallbacks, each tried only when the ones before it produced nothing. They are
+        // sequential rather than else-if on purpose: a node that HAS a taxonomy whose fields are all
+        // empty used to stop there and be written nameless, even when its sequence could name it.
+        if ( forse_seq_ids && getNodeData().isHasSequence()
+                && ( getNodeData().getSequence().getAccession() != null ) ) {
+            data = getNodeData().getSequence().getAccession().getValue();
+        }
+        if ( ForesterUtil.isEmpty( data ) && !ForesterUtil.isEmpty( getName() ) ) {
+            data = getName();
+        }
+        if ( ForesterUtil.isEmpty( data ) && getNodeData().isHasTaxonomy() ) {
+            if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                data = getNodeData().getTaxonomy().getTaxonomyCode();
+            }
+            else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getScientificName() ) ) {
+                data = getNodeData().getTaxonomy().getScientificName();
+            }
+            else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getCommonName() ) ) {
+                data = getNodeData().getTaxonomy().getCommonName();
+            }
+        }
+        if ( ForesterUtil.isEmpty( data ) && getNodeData().isHasSequence() ) {
+            if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getName() ) ) {
+                data = getNodeData().getSequence().getName();
+            }
+            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getSymbol() ) ) {
+                data = getNodeData().getSequence().getSymbol();
+            }
+            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getGeneName() ) ) {
+                data = getNodeData().getSequence().getGeneName();
+            }
+        }
+        // An accession is a real identifier, so it beats a placeholder even though it loses to a name.
+        if ( ForesterUtil.isEmpty( data ) && getNodeData().isHasSequence()
+                && ( getNodeData().getSequence().getAccession() != null ) ) {
+            data = getNodeData().getSequence().getAccession().getValue();
+        }
+        // Nothing names this tip at all.
+        if ( ForesterUtil.isEmpty( data ) && isExternal() && !ForesterUtil.isEmpty( fallback_label ) ) {
+            data = fallback_label;
+        }
+        return data;
+    }
+
     final public String toNewHampshireX() {
+        return toNewHampshireX( null );
+    }
+
+    /**
+     * @param fallback_label for an EXTERNAL node that has no name, the same "node1", "node2", ... that New
+     *        Hampshire uses -- so the two writers agree about a nameless tip, which they did not before
+     *        (Christian, 2026-09-23).
+     *        <p>
+     *        Deliberately only the placeholder, NOT the rest of NH's chain: NHX already carries a node's
+     *        taxonomy and sequence in its tags, so labelling a node from them would duplicate what the tags
+     *        say and a write/read/write cycle would give a name to a node that never had one.
+     *        Test.testNHXParsing pins the opposite -- a tagged tree comes back byte for byte -- and that
+     *        property is worth more here than labelling a node NHX can already describe.
+     */
+    final public String toNewHampshireX( final String fallback_label ) {
         final StringBuilder sb = new StringBuilder();
         final StringBuffer s_nhx = new StringBuffer();
         if ( !ForesterUtil.isEmpty( getName() ) ) {
             sb.append( ForesterUtil.santitizeStringForNH( getName() ) );
+        }
+        else if ( isExternal() && !ForesterUtil.isEmpty( fallback_label ) ) {
+            sb.append( ForesterUtil.santitizeStringForNH( fallback_label ) );
         }
         if ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
             sb.append( ":" );

@@ -2348,6 +2348,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Zero is a value, not an absence: ");
+        if (org.forester.archaeopteryx.ZeroValueDisplayTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Nexus/phyloXML round trips: ");
+        if (org.forester.io.writers.NexusPhyloXmlRoundTripTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Nexus sequence export: ");
+        if (org.forester.io.writers.NexusSequenceExportTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("MAD rooting: ");
         if (Test.testMADrooting()) {
             System.out.println("OK.");

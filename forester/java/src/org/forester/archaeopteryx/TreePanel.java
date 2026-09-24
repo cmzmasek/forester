@@ -1080,6 +1080,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 + _length_of_longest_text + _phylogeny.getRoot().getXcoord());
     }
 
+    /** Test hooks for the two gates that decide whether a branch's numbers are drawn. Both must treat a
+     *  value of ZERO as a value: a zero-length branch and a support of zero are facts about the tree, and the
+     *  absence of either is carried by a sentinel, never by the number being 0. */
+    final boolean shouldWriteBranchLengthForTest( final PhylogenyNode node ) {
+        return shouldWriteBranchLength( node );
+    }
+
+    final boolean isShowConfidenceValuesForNodeForTest( final PhylogenyNode node ) {
+        return isShowConfidenceValuesForNode( node );
+    }
+
     /** Test hook: the right edge of the widest aligned domain track in a phylogram (column x + the widest drawn
      *  architecture, which fills {@code effectiveDomainStructureWidth * 0.9}); must stay within the preferred width. */
     final float alignedDomainColumnRightEdgeForTest() {

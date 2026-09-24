@@ -71,6 +71,17 @@ public final class ResetToDefaultsTest {
      *  {@link Options#createInstance} produces -- across the persisted + display fields. A field that init() forgets
      *  would come back non-default here. */
     private static boolean optionsResetOk() {
+        // Christian, 2026-09-23: support values are DATA. With NONE a Save As Nexus or Newick dropped them
+        // without saying so, and the phyloXML <-> Nexus round trips are lossless only with brackets. Pinned
+        // here because the reflective comparison below cannot catch it: it only checks that a reset RESTORES
+        // the default, so a silent change OF the default would pass unnoticed.
+        if ( Options.createInstance()
+                .getNhConversionSupportValueStyle() != PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ) {
+            System.out.println( "  [ResetToDefaultsTest] the default NH/Nexus support style is no longer "
+                    + "IN_SQUARE_BRACKETS, so saving a tree drops its support values: "
+                    + Options.createInstance().getNhConversionSupportValueStyle() );
+            return false;
+        }
         final Options o = Options.createInstance();
         // drive a broad set of fields away from their defaults
         o.setShowScale( true );
@@ -146,7 +157,8 @@ public final class ResetToDefaultsTest {
         o.setReplaceUnderscoresInNhParsing( true );
         o.setAllowErrorsInDistanceToParent( true );
         o.setParseBeastStyleExtendedNexusTags( false );
-        o.setNhConversionSupportValueStyle( PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
+        // must differ from the default, which is IN_SQUARE_BRACKETS since 2026-09-23
+        o.setNhConversionSupportValueStyle( PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES );
         o.setCladogramType( Options.CLADOGRAM_TYPE.NON_LINED_UP );
         o.setShowConfidenceStddev( true );
         o.setShowMadConfidence( true );

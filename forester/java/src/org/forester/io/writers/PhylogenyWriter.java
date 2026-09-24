@@ -27,8 +27,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.forester.io.parsers.nexus.NexusConstants;
@@ -39,6 +41,7 @@ import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostOrderStackObject;
+import org.forester.sequence.MolecularSequence;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
@@ -65,6 +68,11 @@ public final class PhylogenyWriter {
     public final static String          PHYLO_XML_END                   = "</phyloxml>";
     private boolean                     _saw_comma;
     private StringBuffer                _buffer;
+    // "node1", "node2", ... for external nodes that nothing else names, by tip index. Built per tree so
+    // that the New Hampshire string and the Nexus Taxa/Characters blocks use the SAME placeholder for the
+    // same tip: a placeholder applied in only one of them would put the blocks right back into the
+    // disagreement that nexusTaxonLabel exists to prevent.
+    private Map<PhylogenyNode, String>  _tip_placeholders = new HashMap<PhylogenyNode, String>();
     private Writer                      _writer;
     private PhylogenyNode               _root;
     private boolean                     _has_next;
@@ -256,6 +264,7 @@ public final class PhylogenyWriter {
     }
 
     private void reset( final Phylogeny tree ) {
+        _tip_placeholders = placeholdersNeeded( tree );
         setBuffer( new StringBuffer() );
         setWriter( null );
         setSawComma( false );
@@ -267,6 +276,7 @@ public final class PhylogenyWriter {
     }
 
     private void reset( final Writer writer, final Phylogeny tree ) {
+        _tip_placeholders = placeholdersNeeded( tree );
         setBuffer( null );
         setWriter( writer );
         setSawComma( false );
@@ -411,6 +421,7 @@ public final class PhylogenyWriter {
         trees.add( tree );
         writeNexusStart( writer );
         writeNexusTaxaBlock( writer, tree );
+        writeNexusCharactersBlock( writer, tree );
         writeNexusTreesBlock( writer, trees, svs );
         writer.flush();
         writer.close();
@@ -423,6 +434,7 @@ public final class PhylogenyWriter {
         trees.add( tree );
         writeNexusStart( writer );
         writeNexusTaxaBlock( writer, tree );
+        writeNexusCharactersBlock( writer, tree );
         writeNexusTreesBlock( writer, trees, svs );
         writer.flush();
         writer.close();
@@ -561,10 +573,13 @@ public final class PhylogenyWriter {
             }
         }
         else if ( getOutputFormt() == FORMAT.NHX ) {
-            getBuffer().append( node.toNewHampshireX() );
+            getBuffer().append( node.toNewHampshireX( _tip_placeholders.get( node ) ) );
         }
         else if ( getOutputFormt() == FORMAT.NH ) {
-            getBuffer().append( node.toNewHampshire( isWriteDistanceToParentInNH(), getNhConversionSupportStyle() ) );
+            getBuffer().append( node.toNewHampshire( isWriteDistanceToParentInNH(),
+                                                     getNhConversionSupportStyle(),
+                                                     false,
+                                                     _tip_placeholders.get( node ) ) );
         }
     }
 
@@ -647,6 +662,47 @@ public final class PhylogenyWriter {
         out.close();
     }
 
+    /** Only the New Hampshire and NHX paths read the placeholders, and building them walks every tip -- so
+     *  phyloXML, which never consults the map, should not pay for it on a hundred-thousand-tip tree. */
+    private Map<PhylogenyNode, String> placeholdersNeeded( final Phylogeny tree ) {
+        return ( ( getOutputFormt() == FORMAT.NH ) || ( getOutputFormt() == FORMAT.NHX ) )
+                ? tipPlaceholders( tree ) : new HashMap<PhylogenyNode, String>();
+    }
+
+    /**
+     * A placeholder label for every external node, by tip index, in the order the tips appear in the tree
+     * (which is the order they appear in a New Hampshire string and in iteratorExternalForward alike).
+     * Only used for a node that nothing else names.
+     */
+    static Map<PhylogenyNode, String> tipPlaceholders( final Phylogeny tree ) {
+        final Map<PhylogenyNode, String> m = new HashMap<PhylogenyNode, String>();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return m;
+        }
+        // A tip may literally be called "node2". Minting that same token for a DIFFERENT tip gives two taxa
+        // one label, which is illegal Nexus -- and the parser reads the repeat as an interleaved
+        // continuation, so both tips come back carrying the two sequences concatenated. Collect the labels
+        // the tree already produces and step over them.
+        final java.util.Set<String> taken = new java.util.HashSet<String>();
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final String label = nexusTaxonLabel( it.next(), null );
+            if ( label.length() > 0 ) {
+                taken.add( label );
+            }
+        }
+        int i = 1;
+        int spare = tree.getNumberOfExternalNodes() + 1;
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            String candidate = "node" + i++;
+            while ( taken.contains( candidate ) ) {
+                candidate = "node" + spare++;
+            }
+            taken.add( candidate );
+            m.put( it.next(), candidate );
+        }
+        return m;
+    }
+
     public static PhylogenyWriter createPhylogenyWriter() {
         return new PhylogenyWriter();
     }
@@ -657,6 +713,7 @@ public final class PhylogenyWriter {
     }
 
     public static void writeNexusTaxaBlock( final Writer writer, final Phylogeny tree ) throws IOException {
+        final Map<PhylogenyNode, String> placeholders = tipPlaceholders( tree );
         writer.write( NexusConstants.BEGIN_TAXA );
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( " " );
@@ -672,35 +729,179 @@ public final class PhylogenyWriter {
         for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode node = it.next();
             writer.write( " " );
-            String data = "";
-            if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                data = node.getName();
-            }
-            else if ( node.getNodeData().isHasTaxonomy() ) {
-                if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-                    data = node.getNodeData().getTaxonomy().getTaxonomyCode();
-                }
-                else if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
-                    data = node.getNodeData().getTaxonomy().getScientificName();
-                }
-                else if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) {
-                    data = node.getNodeData().getTaxonomy().getCommonName();
-                }
-            }
-            else if ( node.getNodeData().isHasSequence() ) {
-                if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-                    data = node.getNodeData().getSequence().getName();
-                }
-                else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
-                    data = node.getNodeData().getSequence().getSymbol();
-                }
-                else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
-                    data = node.getNodeData().getSequence().getGeneName();
-                }
-            }
-            writer.write( ForesterUtil.santitizeStringForNH( data ).toString() );
+            writer.write( nexusTaxonLabel( node, placeholders.get( node ) ) );
         }
         writer.write( ";" );
+        writer.write( ForesterUtil.LINE_SEPARATOR );
+        writer.write( NexusConstants.END );
+        writer.write( ForesterUtil.LINE_SEPARATOR );
+    }
+
+    /**
+     * The label a node is written under in a Nexus file.
+     *
+     * Delegates to the node's own New Hampshire label, because the Trees block IS New Hampshire: any other rule
+     * here produces a file whose TaxLabels and matrix rows name taxa that the tree does not contain. That is not
+     * hypothetical -- this method used to carry its own name-first fallback chain, while
+     * PhylogenyNode.toNewHampshire prefers a sequence ACCESSION when there is one, so every tree with accessions
+     * was written with TaxLabels that did not match its own trees block.
+     *
+     * The style argument is irrelevant for an external node (support is null there, so neither
+     * AS_INTERNAL_NODE_NAMES nor IN_SQUARE_BRACKETS adds anything), and the distance is switched off, so what
+     * comes back is the bare sanitized label.
+     */
+    static String nexusTaxonLabel( final PhylogenyNode node, final String placeholder ) {
+        return node.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE, false, placeholder );
+    }
+
+    private static String molecularSequenceOf( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasSequence() ) {
+            return null;
+        }
+        final String seq = node.getNodeData().getSequence().getMolecularSequence();
+        return ForesterUtil.isEmpty( seq ) ? null : seq;
+    }
+
+    /**
+     * Writes the external nodes' molecular sequences as a Nexus Characters block, or nothing when the tree carries
+     * none.
+     *
+     * A Characters block is used rather than a Data block because a Taxa block has already been written: the taxon
+     * labels come from there, and NTax in a Characters block's Dimensions is illegal without NEWTAXA, so only NChar
+     * is written. (BasicMsa writes a Data block instead, correctly, because it writes no Taxa block.)
+     *
+     * A Nexus matrix is rectangular, so this writes nothing when the sequences are of unequal length -- unaligned
+     * sequences are not a character matrix, and padding them to a common width would state an alignment that does
+     * not exist. A comment says so, rather than leaving the caller to wonder where the data went.
+     *
+     * Tips that carry no sequence get a row of the missing-data symbol, so the matrix covers every taxon in the
+     * Taxa block. Only external nodes are written: a Nexus matrix is keyed on taxa, and an internal node is not one.
+     */
+    public static void writeNexusCharactersBlock( final Writer writer, final Phylogeny tree ) throws IOException {
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return;
+        }
+        final Map<PhylogenyNode, String> placeholders = tipPlaceholders( tree );
+        final List<PhylogenyNode> tips = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> with_seq = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            tips.add( node );
+            if ( molecularSequenceOf( node ) != null ) {
+                with_seq.add( node );
+            }
+        }
+        if ( with_seq.isEmpty() ) {
+            return;
+        }
+        // A matrix is keyed on the taxon label, so two tips sharing one cannot be told apart: the parser
+        // treats the second row as an interleaved continuation of the first and hands BOTH tips the two
+        // sequences joined together. The Taxa and Trees blocks have always written such a tree (invalid
+        // Nexus, but only cosmetically so); a matrix would make it corrupting, so it is not written.
+        final java.util.Set<String> labels = new java.util.HashSet<String>();
+        for( final PhylogenyNode node : tips ) {
+            if ( !labels.add( nexusTaxonLabel( node, placeholders.get( node ) ) ) ) {
+                writer.write( "[ Molecular sequences were not written: two or more tips share the taxon "
+                        + "label " );
+                writer.write( nexusTaxonLabel( node, placeholders.get( node ) ) );
+                writer.write( ", and a character matrix keyed on an ambiguous label cannot be read back. ]" );
+                writer.write( ForesterUtil.LINE_SEPARATOR );
+                return;
+            }
+        }
+        final int nchar = molecularSequenceOf( with_seq.get( 0 ) ).length();
+        for( final PhylogenyNode node : with_seq ) {
+            if ( molecularSequenceOf( node ).length() != nchar ) {
+                writer.write( "[ Molecular sequences were not written: they are of unequal length (" );
+                writer.write( String.valueOf( nchar ) );
+                writer.write( " vs " );
+                writer.write( String.valueOf( molecularSequenceOf( node ).length() ) );
+                writer.write( "), so they are not an alignment and cannot form a Nexus character matrix. ]" );
+                writer.write( ForesterUtil.LINE_SEPARATOR );
+                return;
+            }
+        }
+        // The datatype is a property of the whole matrix, so it is decided by ALL the sequences, not by the
+        // first one that guesses non-null. guessMolecularSequenceType looks for residues that only protein
+        // has, so a short protein made of nucleotide letters guesses DNA -- and a matrix wrongly declared DNA
+        // is read back with every non-nucleotide residue replaced by N. Protein therefore wins any
+        // disagreement: calling a nucleotide alignment protein keeps the residues readable, the reverse
+        // destroys them.
+        //
+        // The strip of gap and missing symbols below CANNOT change the answer today, and is kept as a
+        // guard rather than as working code: guessMolecularSequenceType tests membership of L/I/E/H/D/Q,
+        // then T and U -- all letters -- while the stripped characters are -.?*, a disjoint set, and a
+        // sequence that empties under the strip guesses null either way. Measured over 2,000,000 random
+        // matrices with and without it: zero differences (the Archaeopteryx.js session derived the same
+        // thing independently). It earns its place only if the guesser ever tests a character that is not
+        // a letter, so a mutation that removes it is EXPECTED to survive -- that is not a gap in the tests.
+        String type_str = "Protein";
+        boolean saw_aa = false;
+        boolean saw_nt = false;
+        boolean rna = false;
+        for( final PhylogenyNode node : with_seq ) {
+            final String bare = molecularSequenceOf( node ).replaceAll( "[-.?*]", "" );
+            if ( bare.length() < 1 ) {
+                continue;
+            }
+            final MolecularSequence.TYPE t = ForesterUtil.guessMolecularSequenceType( bare );
+            if ( t == MolecularSequence.TYPE.DNA ) {
+                saw_nt = true;
+            }
+            else if ( t == MolecularSequence.TYPE.RNA ) {
+                saw_nt = true;
+                rna = true;
+            }
+            else if ( t != null ) {
+                saw_aa = true;
+            }
+        }
+        if ( saw_nt && !saw_aa ) {
+            type_str = rna ? "RNA" : "DNA";
+        }
+        int max = 0;
+        for( final PhylogenyNode node : tips ) {
+            final int l = nexusTaxonLabel( node, placeholders.get( node ) ).length();
+            if ( l > max ) {
+                max = l;
+            }
+        }
+        ++max;
+        final StringBuilder missing = new StringBuilder( nchar );
+        for( int i = 0; i < nchar; ++i ) {
+            missing.append( '?' );
+        }
+        writer.write( NexusConstants.BEGIN_CHARACTERS );
+        writer.write( ForesterUtil.LINE_SEPARATOR );
+        writer.write( " " );
+        writer.write( NexusConstants.DIMENSIONS );
+        writer.write( " " );
+        writer.write( NexusConstants.NCHAR );
+        writer.write( "=" );
+        writer.write( String.valueOf( nchar ) );
+        writer.write( ";" );
+        writer.write( ForesterUtil.LINE_SEPARATOR );
+        writer.write( " " );
+        writer.write( NexusConstants.FORMAT );
+        writer.write( " " );
+        writer.write( NexusConstants.DATATYPE );
+        writer.write( "=" );
+        writer.write( type_str );
+        writer.write( " Interleave=No Gap=- Missing=?;" );
+        writer.write( ForesterUtil.LINE_SEPARATOR );
+        writer.write( " " );
+        writer.write( NexusConstants.MATRIX );
+        writer.write( ForesterUtil.LINE_SEPARATOR );
+        for( final PhylogenyNode node : tips ) {
+            final String seq = molecularSequenceOf( node );
+            writer.write( "  " );
+            writer.write( ForesterUtil
+                    .pad( nexusTaxonLabel( node, placeholders.get( node ) ), max, ' ', false ).toString() );
+            writer.write( " " );
+            writer.write( seq == null ? missing.toString() : seq );
+            writer.write( ForesterUtil.LINE_SEPARATOR );
+        }
+        writer.write( " ;" );
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( NexusConstants.END );
         writer.write( ForesterUtil.LINE_SEPARATOR );

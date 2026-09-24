@@ -501,7 +501,10 @@ final public class Options {
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = false;
         _show_mad_confidence = false;
-        _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
+        // Christian, 2026-09-23: support values are DATA, and NONE dropped them silently on every Newick
+        // and Nexus save. Brackets is also what Archaeopteryx.js writes by default, so the same tree saved
+        // by the two programs now matches, and the phyloXML <-> Nexus round trips are lossless as saved.
+        _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS;
         _search_properties = true;
         _default_branch_width = 1.5f; // a touch bolder than a hairline -> a more solid, publication-ready line
     }

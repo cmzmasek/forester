@@ -25,8 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,6 +72,8 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     final private static Pattern           TRANSLATE_PATTERN         = Pattern.compile( "([0-9A-Za-z]+)\\s+(.+)" );
     final private static Pattern           RESIDUES_PATTERN          = Pattern.compile( "[A-Za-z\\-_\\*\\?\\.]+" );
     final private static Pattern           MATCHCHAR_PATTERN         = Pattern.compile( "matchchar\\s?.\\s?(\\S)" );
+    final private static Pattern           MISSING_PATTERN           = Pattern.compile( "missing\\s?.\\s?(\\S)" );
+    final private static Pattern           GAP_PATTERN               = Pattern.compile( "gap\\s?.\\s?(\\S)" );
     final private static String            matrix                    = NexusConstants.MATRIX.toLowerCase();
     final private static Pattern           DATATYPE_PATTERN          = Pattern.compile( "datatype\\s?.\\s?([a-z]+)" );
     //final private static Pattern           LINK_TAXA_PATTERN         = Pattern.compile( "link\\s+taxa\\s?.\\s?([^;]+)",
@@ -105,7 +109,18 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     private Map<String, String>            _translate_map;
     private StringBuilder                  _translate_sb;
     private Map<String, MolecularSequence> _seqs;
+    // Ids whose matrix row carried at least one real residue. A row of nothing but the missing and gap
+    // symbols states that the taxon has NO data, and must not become a sequence -- otherwise a tree written
+    // with such rows (our own writer emits them, to keep the matrix rectangular) comes back with invented
+    // sequences. It is tracked here rather than checked on the finished sequence because createAaSequence
+    // turns '?' into 'X', after which a missing row is indistinguishable from a genuinely ambiguous one.
+    private Set<String>                    _seq_ids_with_residues;
     private char                           _matchchar;
+    // The symbols a block DECLARES for missing data and for a gap. Nexus lets a file choose them, so
+    // assuming '?' and '-' reads an all-missing row of a "Missing=N" file as real residues -- which is the
+    // invented-sequence bug the residue scan exists to prevent. Defaults are the Nexus conventions.
+    private char                           _missing_char;
+    private char                           _gap_char;
     private String                         _matrix_reference_id;
     private final boolean                  _add_sequences            = true;
     private boolean                       _parse_beast_style_extended_tags           = NHXParser.PARSE_BRACKET_ANNOTATIONS_DEFAULT;
@@ -165,8 +180,11 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _rooted_info_present = false;
         _is_rooted = false;
         _matchchar = 0;
+        _missing_char = '?';
+        _gap_char = '-';
         _matrix_reference_id = null;
         _seqs = new HashMap<String, MolecularSequence>();
+        _seq_ids_with_residues = new HashSet<String>();
         _br = ParserUtils.createReader( _nexus_source, ForesterConstants.UTF_8 );
         getNext();
     }
@@ -237,7 +255,9 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             // may be quoted. Last-wins on a key collision (taxa should not collide under this key).
             final Map<String, MolecularSequence> seqs_by_key = new HashMap<String, MolecularSequence>();
             for( final String seq_id : _seqs.keySet() ) {
-                seqs_by_key.put( joinKey( seq_id ), _seqs.get( seq_id ) );
+                if ( _seq_ids_with_residues.contains( seq_id ) ) {
+                    seqs_by_key.put( joinKey( seq_id ), _seqs.get( seq_id ) );
+                }
             }
             final boolean tips_are_taxlabels_indices = tipsAreTaxlabelsIndices( p, _taxlabels );
             final PhylogenyNodeIterator it = p.iteratorExternalForward();
@@ -324,11 +344,14 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     _in_data_comment = false;
                     _datatype = null;
                     _matchchar = 0;
+        _missing_char = '?';
+        _gap_char = '-';
                     _matrix_reference_id = null;
                     // Scope the sequence rows to THIS matrix block, so an interleaved matrix
                     // concatenates within its own block and a later DATA/CHARACTERS block does
                     // not cross-contaminate an earlier one (multi-block Nexus).
                     _seqs = new HashMap<String, MolecularSequence>();
+        _seq_ids_with_residues = new HashSet<String>();
                 }
                 else if ( _in_trees_block ) {
                     if ( line_lc.startsWith( "title" ) ) {
@@ -476,6 +499,14 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         if ( matchchar_matcher.find() ) {
                             _matchchar = matchchar_matcher.group( 1 ).charAt( 0 );
                         }
+                        final Matcher missing_matcher = MISSING_PATTERN.matcher( dlc );
+                        if ( missing_matcher.find() ) {
+                            _missing_char = missing_matcher.group( 1 ).charAt( 0 );
+                        }
+                        final Matcher gap_matcher = GAP_PATTERN.matcher( dlc );
+                        if ( gap_matcher.find() ) {
+                            _gap_char = gap_matcher.group( 1 ).charAt( 0 );
+                        }
                         if ( dlc.equals( matrix ) || dlc.startsWith( matrix + " " ) ) {
                             _in_matrix = true;
                             String after = line.substring( matrix.length() ).trim();
@@ -591,6 +622,15 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                 }
             }
             block = sb.toString();
+        }
+        // '*' is NOT absence: it is a legitimate residue, the stop codon of a translated alignment.
+        for( int j = 0; j < block.length(); ++j ) {
+            final char c = Character.toLowerCase( block.charAt( j ) );
+            if ( ( c != Character.toLowerCase( _missing_char ) ) && ( c != Character.toLowerCase( _gap_char ) )
+                    && ( c != '.' ) ) {
+                _seq_ids_with_residues.add( id );
+                break;
+            }
         }
         String seq = block;
         if ( _seqs.containsKey( id ) ) {

@@ -884,7 +884,7 @@ public final class BeastAnnotationParserTest {
 
     /** Non-behaviour: what BEAST trees did before Increment B they still do. A date= beside a height* stays the
      *  desc, the height stays the value, and an age gets NO unit -- whether the date is a calendar string
-     *  (test_trees/peartree_example.nexus) or a bare decimal year (a tip-dated BEAST tree: promoting it would put the
+     *  (as a local BEAST-style fixture has) or a bare decimal year (a tip-dated BEAST tree: promoting it would put the
      *  tips on calendar years and the internals on ages, one axis over two scales). */
     private static boolean testBeastDatesUntouchedByAuspiceVocabulary() {
         final String[][] cases = { { "&height_median=1.2,date=\"2014-03-17\"", "1.2", "2014-03-17" },
