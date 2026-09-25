@@ -130,6 +130,18 @@ public final class MsaConservationTest {
         if ( nuc.informationAt( 0 ) >= as_protein.informationAt( 0 ) ) {
             return fail( "a 2-of-4-letter split is less surprising than a 2-of-20 one, so it must score LOWER" );
         }
+        // ...and the same two columns as LITERALS, not only as this file's own restatement of the formula. Every
+        // expectation above recomputes (log2(K) - H) / log2(K) here, so the code and the test agree by
+        // construction whenever both would misread the rule the same way -- the one failure mode a restated rule
+        // cannot catch. These two are derived independently, and the second is the value the archaeopteryx.js
+        // session pins for the identical case, so a divergence between the two viewers shows up here first.
+        // One bit of uncertainty is a smaller share of a bigger alphabet: half of a 4-letter column's information
+        // is gone, but only 23% of a 20-letter one's.
+        if ( !near( "an even two-way NUCLEOTIDE split keeps exactly half", nuc.informationAt( 0 ), 0.5 )
+                || !near( "an even two-way PROTEIN split keeps 1 - 1/log2(20)", as_protein.informationAt( 0 ),
+                          0.768621786840 ) ) {
+            return false;
+        }
         return true;
     }
 

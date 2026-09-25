@@ -155,6 +155,11 @@ public final class DemoTreesTest {
         ok &= hasBranchLengths( "crowded-tracks.xml" );
         ok &= hasLongTipLabels( "crowded-tracks.xml", 30 );
 
+        // The sequence-logo demo has to SHOW the cases its description promises, or it teaches nothing: a
+        // fully conserved column, a graded one, a conserved-but-half-gapped one, and an all-gap one.
+        ok &= alignmentDemoOk( "sequence-logo.xml" );
+        ok &= sequenceLogoDemoOk( "sequence-logo.xml" );
+
         // "Auto-hide crowded data": the nest must actually BE a nest -- near-zero internal branches carrying
         // support -- and must still contain the contrasting roomy branches, including the lone zero-length one
         // whose number is kept ("zero is a value, not an absence").
@@ -602,6 +607,69 @@ public final class DemoTreesTest {
                     + "case whose number must be KEPT (zero is a value, not an absence)" );
         }
         return true;
+    }
+
+    /**
+     * The sequence-logo demo, checked against what its description claims rather than against its own existence.
+     * <p>
+     * A demo of a display is worthless if the data does not exercise the display -- the auto-hide demo shipped once
+     * with seventeen tips and suppressed nothing at all. So this asserts the four columns that carry the lesson:
+     * one at FULL information (a single letter filling the band), one GRADED (a tall letter over a short one), one
+     * conserved but HALF GAPPED (full letter, half height -- the rule that gaps scale a stack instead of joining
+     * it), and one ALL GAP (nothing drawn, which must not look like zero conservation).
+     */
+    private static boolean sequenceLogoDemoOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final java.util.List<String> rows = new java.util.ArrayList<String>();
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( ext.getNodeData().isHasSequence()
+                    && ext.getNodeData().getSequence().isMolecularSequenceAligned() ) {
+                rows.add( ext.getNodeData().getSequence().getMolecularSequence() );
+            }
+        }
+        if ( rows.size() < 8 ) {
+            return note( file_name + " needs at least 8 aligned rows for a logo to mean anything, has "
+                    + rows.size() );
+        }
+        final int len = rows.get( 0 ).length();
+        final MsaConservation c = MsaConservation.compute( rows, len, false );
+        boolean full = false, graded = false, half_gapped = false, all_gap = false;
+        for( int col = 0; col < len; col++ ) {
+            final char[] res = c.stackResiduesAt( col );
+            final double h = c.informationAt( col );
+            if ( ( res.length == 1 ) && ( h > 0.99 ) ) {
+                full = true;
+            }
+            // one residue, yet well under full height: the column is gapped, not variable
+            if ( ( res.length == 1 ) && ( h > 0.3 ) && ( h < 0.7 ) ) {
+                half_gapped = true;
+            }
+            // two or more letters of clearly DIFFERENT heights -- what makes the stacking order readable
+            if ( ( res.length >= 2 ) && ( c.stackFractionsAt( col )[ 0 ] > ( 2 * c.stackFractionsAt( col )[ 1 ] ) ) ) {
+                graded = true;
+            }
+            if ( res.length == 0 ) {
+                all_gap = true;
+            }
+        }
+        boolean ok = true;
+        if ( !full ) {
+            ok = note( file_name + " has no fully conserved column, so the logo never fills the band" );
+        }
+        if ( !graded ) {
+            ok = note( file_name + " has no column with a tall letter over a clearly shorter one" );
+        }
+        if ( !half_gapped ) {
+            ok = note( file_name + " has no conserved-but-gapped column, so it never shows that gaps scale the "
+                    + "stack rather than joining it" );
+        }
+        if ( !all_gap ) {
+            ok = note( file_name + " has no all-gap column, so it never shows that 'no data' draws nothing" );
+        }
+        return ok;
     }
 
     private static boolean alignmentDemoOk( final String file_name ) {

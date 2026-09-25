@@ -375,6 +375,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float _last_drag_point_y = 0;
     private final Line2D _line = new Line2D.Float();
     private int _longest_ext_node_info = 0;
+    /**
+     * A hard pixel cap on the DRAWN width of a tip's text label, or {@link Integer#MAX_VALUE} for none -- what the
+     * rectangular layouts fall back on once the label font auto-fit has reached its readability floor and the labels
+     * still overflow the width the budget leaves them. Above that floor the fit is done by SHRINKING the font, which
+     * keeps every character; only below it does shortening the text become the lesser evil. Reset at the top of every
+     * layout pass, so a pass never inherits the previous pass's cap and mistakes a capped label for a short one.
+     * <p>
+     * Read through {@link #maxTipLabelTextWidth()} by both the reservation and the paint, exactly as the radial
+     * layouts' {@link #radialMaxLabelWidth()} is -- a label measured at one width and drawn at another is how a label
+     * ends up sitting on top of the alignment.
+     */
+    private int _tip_label_pixel_cap = Integer.MAX_VALUE;
     private PhylogenyNode _ext_node_with_longest_txt_info = null;
     private MainPanel _main_panel = null;
     private double _max_distance_to_root = -1;
@@ -2623,7 +2635,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float bl_baseline = node.getYcoord() - getTreeFontSet().getSmallMaxDescent();
         // ...and the branch length from the branch line UP, for the same reason (see paintConfidenceValues).
         final float bl_h = getTreeFontSet().getFontMetricsSmall().getHeight();
-        if (!claimNumberSpace(bl_x, node.getYcoord() - bl_h,
+        if (!claimNumberSpace(node, bl_x, node.getYcoord() - bl_h,
                 getTreeFontSet().getFontMetricsSmall().stringWidth(bl_str), bl_h)) {
             return;
         }
@@ -3203,7 +3215,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Font font = collapsedLabelFont(look.full);
             g.setFont(font);
             g.setColor(look.ink);
-            TreePanel.drawString(look.label, label_x, y + (getFontMetrics(font).getAscent() / 3.0f), g);
+            // truncated to the same cap its reservation used (calculateLongestExtNodeInfo), so a collapsed label
+            // gives ground with the tip labels instead of being the one thing that keeps overflowing
+            final String text = TreePanelUtil.truncateToPixelWidth(getFontMetrics(font), look.label,
+                                                                   maxTipLabelTextWidth());
+            TreePanel.drawString(text, label_x, y + (getFontMetrics(font).getAscent() / 3.0f), g);
             g.setFont(saved_font);
             g.setColor(saved_color);
         });
@@ -3252,7 +3268,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Font font = collapsedLabelFont(look.full);
         final FontMetrics fm = getFontMetrics(font);
-        final String text = TreePanelUtil.truncateToPixelWidth(fm, look.label, Math.max(0, radialMaxLabelWidth()));
+        final String text = TreePanelUtil.truncateToPixelWidth(fm, look.label, Math.max(0, maxTipLabelTextWidth()));
         final float gap = effectiveNodeHalfBoxSize(clade) + 3f;
         final double total_w = gap + fm.stringWidth(text);
         double m = angle % TWO_PI;
@@ -3376,7 +3392,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // their boxes would otherwise share the single pixel at the line (conf top = Ycoord - 1, length
             // bottom = Ycoord) -- enough for a node's own two numbers to refuse each other on a short branch
             // although no ink overlaps.
-            if (!claimNumberSpace(conf_x, node.getYcoord(), conf_w,
+            if (!claimNumberSpace(node, conf_x, node.getYcoord(), conf_w,
                     getTreeFontSet().getFontMetricsSmall().getHeight())) {
                 return;
             }
@@ -3423,7 +3439,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // Drawn in the BASE frame (the numbers stay horizontal beside a branch that runs down the screen), so the
         // box claimed here is in device coordinates like every other -- the one occupancy map covers both.
         final String whole = support.isEmpty() ? length : (length.isEmpty() ? support : (support + " " + length));
-        if (!claimNumberSpace(x, baseline - getTreeFontSet().getSmallMaxAscent(),
+        if (!claimNumberSpace(node, x, baseline - getTreeFontSet().getSmallMaxAscent(),
                 getTreeFontSet().getFontMetricsSmall().stringWidth(whole),
                 getTreeFontSet().getFontMetricsSmall().getHeight())) {
             g.setTransform(saved);
@@ -3483,7 +3499,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int line_h = fm.getHeight();
         final double rot_w = Math.abs(total_w * Math.cos(branch_angle)) + Math.abs(line_h * Math.sin(branch_angle));
         final double rot_h = Math.abs(total_w * Math.sin(branch_angle)) + Math.abs(line_h * Math.cos(branch_angle));
-        if (!claimNumberSpace((float) (mid_x - (rot_w / 2)), (float) (mid_y - (rot_h / 2)), (float) rot_w,
+        if (!claimNumberSpace(node, (float) (mid_x - (rot_w / 2)), (float) (mid_y - (rot_h / 2)), (float) rot_w,
                 (float) rot_h)) {
             return;
         }
@@ -3668,7 +3684,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // value, so a smaller dot would report weaker support. Its own map, not the numbers' -- the symbol sits
         // ON the branch line and the numbers just above and below it, so one shared map would have a branch's
         // symbol block that same branch's numbers.
-        if (!claimSymbolSpace(cx - half, cy - half, diameter)) {
+        if (!claimSymbolSpace(node, cx - half, cy - half, diameter)) {
             return;
         }
         drawOvalFilled(cx - half, cy - half, diameter, diameter, g);
@@ -3915,11 +3931,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (the old paintTaxonomy did, and this flag used to read _sb.length()), so derive it from the
         // painted advance instead -- the collapsed-node label logic below depends on it.
         boolean saw_species = false;
+        // hoisted: the node-data segment below is truncated to what is left of the label cap AFTER the taxonomy,
+        // the same way the radial path splits the cap (see paintNodeDataUnrootedCirc)
+        int taxonomy_width = 0;
         if ((shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
                 || shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES) || shows(DisplayOption.SHOW_TAX_RANK))
                 && node.getNodeData().isHasTaxonomy()
                 && !TreePanelUtil.isDuplicateOfAncestorTaxon(node, this::internalTaxonomyLabelText)) {
-            final int taxonomy_width = paintTaxonomy(g, node, is_in_found_nodes, to_pdf, to_graphics_file, x);
+            taxonomy_width = paintTaxonomy(g, node, is_in_found_nodes, to_pdf, to_graphics_file, x,
+                                           (node.isExternal() || node.isCollapse()) ? maxTipLabelTextWidth()
+                                                                                    : Integer.MAX_VALUE);
             x += taxonomy_width;
             saw_species = taxonomy_width > 0;
         }
@@ -3962,12 +3983,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 pos_x -= add;
             }
         }
-        final String sb_str = _sb.toString();
+        // Only a TIP's (or collapsed clade's) label is part of the width reservation, so only it is capped: an
+        // internal clade name consumes no reserved column and shortening it would lose data for nothing.
+        final String sb_str = (node.isExternal() || node.isCollapse())
+                ? TreePanelUtil.truncateToPixelWidth(getFontMetrics(g.getFont()), _sb.toString(),
+                                                     Math.max(0, maxTipLabelTextWidth() - taxonomy_width))
+                : _sb.toString();
         if (sb_str.length() > 0) {
             TreePanel.drawString(sb_str, pos_x, pos_y, g);
-        }
-        if (_sb.length() > 0) {
-            x += labelStringWidth(g, _sb.toString(), using_visual_font, is_in_found_nodes, to_pdf) + 5;
+            // the TRUNCATED string, so what the next segment is offset by is what was actually drawn
+            x += labelStringWidth(g, sb_str, using_visual_font, is_in_found_nodes, to_pdf) + 5;
         }
         return x;
     }
@@ -4235,9 +4260,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // Radial layouts: a full label in a circle runs ~twice the radius (off the canvas), so truncate the node-name/
         // sequence part with an ellipsis to the label budget left after the taxonomy, keeping tree + labels + domains
         // on-canvas. (No cap in a rectangular layout -- radialMaxLabelWidth returns MAX_VALUE there.)
-        if ((rest.length() > 0) && isRadialLayout()) {
+        if (rest.length() > 0) {
             rest = TreePanelUtil.truncateToPixelWidth(getFontMetrics(base_font), rest,
-                    Math.max(0, radialMaxLabelWidth() - tax_w));
+                    Math.max(0, maxTipLabelTextWidth() - tax_w));
         }
         final int rest_w = getFontMetrics(base_font).stringWidth(rest);
         final double total_w = gap + tax_w + rest_w; // full extent from the node, for the left-half flip
@@ -4269,7 +4294,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         float x = x_coord + gap;
         if (show_tax) {
-            x += taxonomyLabel(g, node.getNodeData().getTaxonomy(), x, y_coord, to_pdf, true);
+            x += taxonomyLabel(g, node.getNodeData().getTaxonomy(), x, y_coord, to_pdf, true,
+                               maxTipLabelTextWidth());
         }
         if (rest.length() > 0) {
             g.setFont(base_font);
@@ -4611,7 +4637,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (node.getNodeData().isHasTaxonomy()) {
             w += taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base);
         }
-        return w;
+        // A capped label is DRAWN truncated (paintNodeWithRenderableData), so it must be MEASURED truncated too --
+        // here, in the one shared measurement, rather than at each consumer.
+        return Math.min(w, maxTipLabelTextWidth());
     }
 
     /** The width of an upright horizontal tip label, for centring it -- in the font it is actually DRAWN in, so a
@@ -6359,12 +6387,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setStroke(s);
     }
 
+    /** @param max_px the widest this taxonomy segment may be DRAWN ({@link Integer#MAX_VALUE} for no cap) -- the
+     *                 tip-label cap, so the taxonomy gives ground with the rest of the label instead of being the
+     *                 one segment that keeps overflowing the width reserved for it */
     final private int paintTaxonomy(final Graphics2D g,
                                     final PhylogenyNode node,
                                     final boolean is_in_found_nodes,
                                     final boolean to_pdf,
                                     final boolean to_graphics_file,
-                                    final float x_shift) {
+                                    final float x_shift,
+                                    final int max_px) {
         final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
         final boolean using_visual_font = setFont(g, node);
         setColor(g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor());
@@ -6382,7 +6414,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             start_y = node.getYcoord()
                     + (getFontMetrics(g.getFont()).getAscent() / (node.getNumberOfDescendants() == 1 ? 1 : 3.0f));
         }
-        return taxonomyLabel(g, taxonomy, start_x, start_y, to_pdf, true);
+        return taxonomyLabel(g, taxonomy, start_x, start_y, to_pdf, true, max_px);
     }
 
     /**
@@ -6394,21 +6426,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     private int taxonomyLabel(final Graphics2D g, final Taxonomy taxonomy, final float start_x,
                               final float baseline_y, final boolean to_pdf, final boolean draw) {
+        return taxonomyLabel(g, taxonomy, start_x, baseline_y, to_pdf, draw, Integer.MAX_VALUE);
+    }
+
+    /** As above, but no wider than {@code max_px}: the part that runs out of room is cut with an ellipsis and the
+     *  parts after it are dropped. Only a TIP's taxonomy is capped -- an internal label consumes no reserved
+     *  column. Without this the cap applied to the node-data segment alone, so a tip whose taxonomy was already
+     *  wider than the cap was still drawn at full width over the track beside it: measured one way, drawn
+     *  another. */
+    private int taxonomyLabel(final Graphics2D g, final Taxonomy taxonomy, final float start_x,
+                              final float baseline_y, final boolean to_pdf, final boolean draw,
+                              final int max_px) {
         final Font base = g.getFont();
         final Font italic = getOptions().isUseItalicScientificNames() ? italicOf(base) : base;
         final int[] w = { 0 };
         forEachTaxonomyLabelPart(taxonomy, (text, scientific) -> {
-            if (text.isEmpty()) {
+            if (text.isEmpty() || (w[0] >= max_px)) {
                 return;
             }
             // The scientific-name part uses an italic-derived font; the SVG/EPS backend turns all text
             // (italic included) into glyph outlines so the bundled face is not substituted by the viewer
             // (see OutliningVectorGraphics2D). PDF and screen draw with the real font.
             g.setFont(scientific ? italic : base);
-            if (draw) {
-                TreePanel.drawString(text, start_x + w[0], baseline_y, g);
+            final String shown = (max_px == Integer.MAX_VALUE) ? text
+                    : TreePanelUtil.truncateToPixelWidth(getFontMetrics(g.getFont()), text, max_px - w[0]);
+            if (shown.isEmpty()) {
+                return;
             }
-            w[0] += to_pdf ? fractionalAdvanceWidth(g, text) : getFontMetrics(g.getFont()).stringWidth(text);
+            if (draw) {
+                TreePanel.drawString(shown, start_x + w[0], baseline_y, g);
+            }
+            w[0] += to_pdf ? fractionalAdvanceWidth(g, shown) : getFontMetrics(g.getFont()).stringWidth(shown);
         });
         g.setFont(base);
         return w[0];
@@ -7263,6 +7311,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         invalidateAlignmentLength(); // a fresh pass: everything below may ask for it many times
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             initNodeData();
+            // A fresh pass measures the labels WHOLE: last pass's cap would look like a short label to the auto-fit
+            // below, which would then grow the font back and re-overflow -- an oscillation between two sizes.
+            _tip_label_pixel_cap = Integer.MAX_VALUE;
             calculateLongestExtNodeInfo();
             // Fit the labels to the width the BUDGET leaves them, not to a fixed 60/70% of the panel. The old
             // fractions were blind to the alignment and the annotation columns, so on a tree carrying both, the
@@ -7289,9 +7340,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             // The labels have settled: now divide the width for real, once, for every reserve below to read.
             computeWidthBudget(x);
+            // The font auto-fit has done all it can. If the labels STILL overflow their cap it is because the font
+            // hit its readability floor, and the only remaining way to honour the tree's share is to shorten the
+            // TEXT. Measured before this existed: on a 360-tip tree carrying domains and an alignment the tree
+            // stalled at 52% of the width however far the share was raised, because the labels could not give up
+            // another pixel past font 6.
+            //
+            // But only while it buys the TREE something. Where the side tracks are ALREADY squeezed to their
+            // minimums the width the labels give up goes to the alignment instead, and the text would have been
+            // cut for nothing -- measured on apaf_deep at the default share, where the tree sat at 544 px whether
+            // the labels were shortened or not. So: try it, keep it only if the tree is wider, and otherwise hand
+            // the characters back. That is what keeps the default behaviour of 101 of the 102 trees on hand
+            // byte-identical to before this existed.
+            if (_width_budget != null) {
+                final int tree_before = _width_budget.treeWidth();
+                applyTipLabelPixelCap(label_cap);
+                if (_tip_label_pixel_cap != Integer.MAX_VALUE) {
+                    computeWidthBudget(x);
+                    if ((_width_budget.treeWidth() - tree_before) < worthwhileTreeGain(x)) {
+                        _tip_label_pixel_cap = Integer.MAX_VALUE;
+                        calculateLongestExtNodeInfo();
+                        computeWidthBudget(x);
+                    }
+                }
+            }
             // the overlap auto-fit above may have changed the displayed font size -> reflect it in the slider
             if (getControlPanel() != null) {
                 getControlPanel().updateFontSizeSlider();
+                // ...and the budget just decided whether "Tree share" can do anything for THIS tree
+                getControlPanel().updateTreeShareSlider();
             }
             _length_of_longest_text = calcLengthOfLongestText(); //~~~
             // resolve AUTO (fit) ONCE for this pass, BEFORE the breadth reserves below read it -- so the reserves and the
@@ -7456,12 +7533,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // taken: getGraphics() allocates a context per call that has to be disposed, and this runs per tip,
             // repeatedly, inside the font auto-fit loop.)
             final Font base = reservationFontFor(node);
+            // Already capped at maxTipLabelTextWidth() inside labelTextWidth -- radially to the label reach (see
+            // paintNodeDataUnrootedCirc), in a rectangular layout to the budget's label cap once the font auto-fit
+            // has bottomed out -- so the reservation, the domain start (radius/reserve + longest_text) and the drawn
+            // labels all agree.
             sum = labelTextWidth(node, base);
-            if (isRadialLayout()) {
-                // radial labels are truncated to this reach (see paintNodeDataUnrootedCirc) -- so the reservation, the
-                // domain start (radius + longest_text) and the drawn labels all agree, keeping everything on-canvas
-                sum = Math.min(sum, radialMaxLabelWidth());
-            }
             if (sum > longest_text_only) {
                 longest_text_only = sum; // capture BEFORE the domain track width is added
             }
@@ -7496,10 +7572,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (final PhylogenyNode clade : displayedCollapsedClades()) {
             final List<PhylogenyNode> tips = clade.getAllExternalDescendants();
             final String widest = CollapsedClade.label(collapsedCladeName(clade, tips), tips.size(), tips.size());
-            int w = getFontMetrics(collapsedLabelFont(true)).stringWidth(widest);
-            if (isRadialLayout()) {
-                w = Math.min(w, radialMaxLabelWidth());
-            }
+            final int w = Math.min(getFontMetrics(collapsedLabelFont(true)).stringWidth(widest),
+                                   maxTipLabelTextWidth());
             longest_text_only = Math.max(longest_text_only, w);
             longest = Math.max(longest, w);
         }
@@ -12512,6 +12586,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (int) ((radialDiameter() / 2.0) * RADIAL_LABEL_MAX_RATIO);
     }
 
+    /** THE cap on a tip label's drawn text width, whatever the layout: the radial reach in a circular/unrooted
+     *  layout, and in a rectangular one the width the budget leaves the labels once the font auto-fit has bottomed
+     *  out ({@link Integer#MAX_VALUE} while it has not, which is the usual case). One method so the reservation and
+     *  the paint cannot disagree about it. */
+    private int maxTipLabelTextWidth() {
+        return isRadialLayout() ? radialMaxLabelWidth() : _tip_label_pixel_cap;
+    }
+
+    /** Test hook: the cap a tip label's text is currently truncated to ({@link Integer#MAX_VALUE} = none). */
+    final int maxTipLabelTextWidthForTest() {
+        return maxTipLabelTextWidth();
+    }
+
+    /** Test hook: the widest tip label's TEXT alone, without the domain track or tip-image slot that ride the same
+     *  reservation -- the two apart are what distinguish a label that does not fit from a track that does not. */
+    final int lengthOfLongestTextOnlyForTest() {
+        return _length_of_longest_text_only;
+    }
+
 
     /** Protein-domain architectures for the CIRCULAR layout: each external tip's architecture rides its spoke, drawn
      *  as a bar extending radially OUTWARD from a common start radius just past the tip labels -- a clean
@@ -13674,17 +13767,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return msaShown() && getOptions().isShowMsaConservation();
     }
 
+    /** Whether the track draws a sequence LOGO rather than a bar chart. */
+    private boolean msaLogoShown() {
+        return msaConservationShown()
+                && (getOptions().getMsaConservationMeasure() == MsaConservation.Measure.LOGO);
+    }
+
     /** The consensus letters are drawn by the same rule the residue letters use -- only when a column is wide
-     *  enough to read one. The band height follows, so no space is reserved for letters that are not drawn. */
+     *  enough to read one. The band height follows, so no space is reserved for letters that are not drawn.
+     *  Never under a LOGO: the letter on top of each stack IS the consensus, so a second row of the same
+     *  characters would say it twice and cost the stack the height instead. */
     private boolean msaConsensusLettersDrawn() {
-        return getOptions().getMsaColumnWidth() >= MSA_LETTER_MIN_WIDTH;
+        return !msaLogoShown() && (getOptions().getMsaColumnWidth() >= MSA_LETTER_MIN_WIDTH);
     }
 
     /** Height of the bar area alone. ONE definition, used by the reserve below AND by the painter: were the two
      *  to drift, the band would either overlap the last alignment row or float clear of the ruler. */
     private int msaConservationBarHeight() {
-        return Math.max(AptxConstants.MSA_CONSERVATION_BAR_HEIGHT_MIN,
-                getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() * 2);
+        final int fh = getFontMetrics(getTreeFontSet().getSmallFont()).getHeight();
+        if (msaLogoShown()) {
+            // A stack has to hold several legible letters where a bar only had to have a readable height, so the
+            // logo band is taller. It takes the room from the tips, like every other reserve here.
+            return Math.max(AptxConstants.MSA_LOGO_BAND_HEIGHT_MIN, fh * 4);
+        }
+        return Math.max(AptxConstants.MSA_CONSERVATION_BAR_HEIGHT_MIN, fh * 2);
     }
 
     /** Height of the conservation band: a row naming the measure, the bar area, and -- when they are drawn -- a
@@ -14047,15 +14153,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int track_w = Math.round(origin_x + (shown * cw)) - track_x0;
         // ...but not on a transparent-background export, where a wide translucent fill would defeat the cut-out
         // (the same call the zebra stripes make). The bars themselves still draw; they just lose their backdrop.
-        if ((track_w > 0) && !(to_graphics_file && _export_transparent_background)) {
+        if ((track_w > 0) && !msaLogoShown() && !(to_graphics_file && _export_transparent_background)) {
             g.setColor(new Color(ink.getRed(), ink.getGreen(), ink.getBlue(), 26));
             g.fillRect(track_x0, bar_bottom - bar_h, track_w, bar_h);
+        }
+        final boolean logo = msaLogoShown();
+        if (logo) {
+            // where the stacks were actually drawn, for a render test to measure the LETTERS against
+            _msa_logo_band = new int[] { Math.round(origin_x), bar_bottom, bar_h, Math.round(cw) };
         }
         for (int i = 0; i < shown; ++i) {
             final int c = offset + i;
             final double score = cons.scoreAt(c, getOptions().getMsaConservationMeasure());
             final int cx = Math.round(origin_x + (i * cw));
             final int cell_w = Math.max(1, Math.round(origin_x + ((i + 1) * cw)) - cx);
+            if (logo) {
+                paintMsaLogoColumn(g, cons, c, cx, cell_w, bar_bottom, bar_h, ink);
+                continue; // the stack IS the column: no bar behind it and no consensus letter under it
+            }
             final int h = (int) Math.round(score * bar_h);
             if (h > 0) {
                 g.setColor(bar_color);
@@ -14092,6 +14207,88 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved_color);
         g.setFont(saved_font);
         g.setStroke(saved_stroke);
+    }
+
+    /**
+     * One column of the sequence logo: the residues present, stacked from the baseline UP in increasing frequency so
+     * the most frequent ends on TOP, each letter's height its share of the column's information content.
+     * <p>
+     * The letters are scaled NON-UNIFORMLY -- horizontally to fill the column edge to edge whatever the character's
+     * natural aspect, vertically to the height it earned. That is what a logo is; scaling uniformly leaves ragged
+     * columns. The vertical factor divides by the glyph's own INK height ({@link MsaLogoGlyphs}), never the font's
+     * line height, and the baseline is set the glyph's scaled DESCENT above where the ink must end -- without that,
+     * every G and Q hangs through the ruler below. Both are joint with archaeopteryx.js, whose stack this matches
+     * term for term.
+     * <p>
+     * Colours are {@link MsaColors#colorFor} -- the very colours the alignment cells above use, so a letter in the
+     * logo and the same residue in the alignment are never two different colours.
+     */
+    /** The face every logo letter is measured and drawn in -- one instance, so the glyph cache is hit rather than
+     *  re-keyed on an equal-but-new Font once per column per paint. Monospace to match the alignment cells. */
+    private final static Font MSA_LOGO_FONT = new Font(Font.MONOSPACED, Font.BOLD,
+                                                       AptxConstants.MSA_LOGO_GLYPH_MEASURE_SIZE);
+
+    private void paintMsaLogoColumn(final Graphics2D g, final MsaConservation cons, final int col, final int cx,
+                                    final int cell_w, final int bar_bottom, final int bar_h, final Color ink) {
+        final char[] residues = cons.stackResiduesAt(col);
+        if (residues.length < 1) {
+            return; // an all-gap column: nothing is known about it, so nothing is drawn
+        }
+        final double[] fractions = cons.stackFractionsAt(col);
+        final boolean nucleotide = msaIsNucleotide();
+        final Font measured = MSA_LOGO_FONT;
+        final AffineTransform saved = g.getTransform();
+        final Font saved_font = g.getFont();
+        double y = bar_bottom; // where the NEXT letter's ink must end; climbs as the stack grows
+        // least frequent first, so the most frequent letter finishes on top and the eye reads the consensus there
+        for (int k = residues.length - 1; k >= 0; --k) {
+            final double h_px = fractions[k] * bar_h;
+            if (h_px < AptxConstants.MSA_LOGO_MIN_LETTER_PX) {
+                continue;
+            }
+            final char ch = Character.toUpperCase(residues[k]);
+            final float[] box = MsaLogoGlyphs.metrics(measured, ch);
+            final float ink_h = box[1] + box[2];
+            if ((ink_h <= 0) || (box[0] <= 0)) {
+                y -= h_px; // a glyph the face cannot draw still owns its slice of the column
+                continue;
+            }
+            // x by the ADVANCE, y by the letter's own INK -- see MsaLogoGlyphs for why the two differ. The advance
+            // box then lands exactly on the column, so the side bearings become the gap between neighbours.
+            final double sy = h_px / ink_h;
+            final double sx = Math.max(1, cell_w) / (double) box[0];
+            final Color fill = MsaColors.colorFor(ch, nucleotide);
+            g.setColor((fill == null) ? ink : fill);
+            g.setFont(measured);
+            // Place the baseline so the ink ENDS at y: scale about the origin, then translate. The x translation
+            // puts the glyph's left edge at the cell's left edge, since the scaled advance fills the cell exactly.
+            g.translate(cx, y - (box[2] * sy));
+            g.scale(sx, sy);
+            TreePanel.drawString(String.valueOf(ch), 0, 0, g);
+            g.setTransform(saved);
+            y -= h_px;
+        }
+        g.setFont(saved_font);
+    }
+
+    /** Where the last paint put the logo band: {@code { originX, baselineY, bandHeight, columnWidth }}, or null
+     *  when no logo has been drawn. A render test needs the band to measure the LETTERS against; the letters
+     *  themselves it reads off the pixels. */
+    private int[] _msa_logo_band = null;
+
+    /** Test hook: {@code { originX, baselineY, bandHeight, columnWidth }} of the last logo drawn, or null. */
+    final int[] msaLogoBandForTest() {
+        return (_msa_logo_band == null) ? null : _msa_logo_band.clone();
+    }
+
+    /** Test hook: the residues the logo would stack for a 0-based alignment column, most frequent first. */
+    final char[] msaLogoResiduesForTest(final int col) {
+        return msaConservation().stackResiduesAt(col);
+    }
+
+    /** Test hook: each stacked residue's share of the band, in the same order. */
+    final double[] msaLogoFractionsForTest(final int col) {
+        return msaConservation().stackFractionsAt(col);
     }
 
     /**
@@ -14268,6 +14465,88 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int others = cladeBandsReserve() + msaTrackWidthMin() + annotationColumnsWidth()
                 + legendColumnReserveWanted();
         return Math.max(LABEL_CAP_MIN_PX, usable - tree_floor - others);
+    }
+
+    /**
+     * Shortens the tip labels with an ellipsis, as a LAST resort, when the font auto-fit has bottomed out and they
+     * still do not fit {@code label_cap}.
+     * <p>
+     * Why it is last: shrinking the font keeps every character, so it is always the better trade, and above
+     * {@link #autofitMinFontSize()} that is what happens. Below it the choice is between a label that loses its tail
+     * and a "Tree share" setting the program quietly ignores -- and ignoring it is what produced the complaint this
+     * whole budget exists for. A label is never shortened on a tree whose labels fit.
+     * <p>
+     * Converges by MEASURING the outcome rather than predicting it: {@code getLongestExtNodeInfo()} is the label text
+     * PLUS a tip image's slot and the domain track, neither of which the text cap shrinks, so the cap is reduced by
+     * whatever the overflow turns out to be and the reserve re-measured. Two or three rounds in practice; the guard
+     * and the {@link #LABEL_CAP_MIN_PX} floor bound it, and hitting either leaves the labels overflowing exactly as
+     * they did before -- a 40 px label column is the point at which shortening has stopped buying anything.
+     */
+    private void applyTipLabelPixelCap(final int label_cap) {
+        if (isRadialLayout()) {
+            return; // no label COLUMN: radialMaxLabelWidth() already caps these, against the radius
+        }
+        // The overflow test is a COST guard, not a rule: the body below caps the text at (label_cap - overhead),
+        // which is under the text only when the whole reservation is over label_cap, so removing this condition
+        // changes no pixel -- the loop would set a cap that truncates nothing and the worth-it check would hand it
+        // straight back. What it saves is the work: a full calculateLongestExtNodeInfo() plus a budget recompute on
+        // EVERY layout pass of every tree whose labels fit. Measured on a 687-tip tree at 1400x900, 60 passes:
+        // 0.78 ms best / 1.05 ms mean with it, 0.94 / 1.45 without. Kept for that, and a mutation of it survives
+        // the tests for the same reason it is invisible.
+        for (int round = 0; (round < 12) && (getLongestExtNodeInfo() > label_cap); ++round) {
+            // What shortening the TEXT cannot shrink: a tip image's slot and the domain track. Taking it off the cap
+            // aims straight at the right width instead of shaving pixels, and it can only UNDER-shoot (the widest
+            // total and the widest text can be different tips), never truncate more than the fit needs.
+            final int overhead = Math.max(0, getLongestExtNodeInfo() - _length_of_longest_text_only);
+            int next = label_cap - overhead;
+            if (next >= _tip_label_pixel_cap) {
+                // That estimate has stopped biting, so stop estimating and measure: give up exactly the overflow.
+                next = _tip_label_pixel_cap - (getLongestExtNodeInfo() - label_cap);
+            }
+            next = Math.max(LABEL_CAP_MIN_PX, next);
+            if (next >= _tip_label_pixel_cap) {
+                return; // at the floor, or nothing left to give: overflow, exactly as before this existed
+            }
+            _tip_label_pixel_cap = next;
+            calculateLongestExtNodeInfo(); // re-measure at the new cap -- the reserve must match what is DRAWN
+        }
+    }
+
+    /**
+     * The least the tree must gain for shortening the tip labels to be worth it: ONE PERCENT of the width being
+     * divided.
+     * <p>
+     * Not a tuned constant -- it is the resolution of the control the user is turning. The share slider moves in
+     * whole percent, so a tree that would grow by less than one percent cannot be what anybody asked for, and
+     * paying for it with every label on screen is a plainly bad trade. Measured on apaf_deep at the default share:
+     * the labels gave up 196 px of text and the tree grew by 4.
+     */
+    private int worthwhileTreeGain(final int x) {
+        return Math.max(1, Math.max(0, x - DEPTH_AXIS_FIXED_MARGIN) / 100);
+    }
+
+    /**
+     * Whether the "Tree share" setting can change anything for the tree on screen: false when the tree ALREADY has
+     * at least what the largest share would guarantee it, which is the common case on a tree with nothing but short
+     * tip labels beside it (measured: 81% of the width on a 34-tip tree, above the 80% maximum). The control panel
+     * greys the slider out and says so, rather than leaving the user to drag a control that cannot do anything.
+     */
+    final boolean treeShareCanAffectLayout() {
+        if (isRadialLayout() || (_width_budget == null)) {
+            return true; // radial trades the radius instead (circularRadius) -- the share always bites there
+        }
+        if (_tip_label_pixel_cap != Integer.MAX_VALUE) {
+            return true; // the labels are giving up TEXT for the share, which is as direct an effect as there is
+        }
+        if (_width_budget.wasSqueezed()) {
+            return true; // the side components ARE giving width up -- moving the share moves it back and forth
+        }
+        // Nothing was squeezed, so the tree is simply holding everything the side components did not want. The share
+        // can still matter if raising it would start squeezing them; it cannot if the tree is already past the most
+        // it could ever be promised.
+        final int usable = Math.max(0, getWidth() - DEPTH_AXIS_FIXED_MARGIN);
+        final int most = (int) Math.round(usable * AptxConstants.TREE_WIDTH_SHARE_MAX);
+        return _width_budget.treeWidth() < most;
     }
 
     /**
@@ -16997,10 +17276,53 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _symbols_drawn;
     private int _symbols_suppressed;
 
+    /**
+     * Depth bookkeeping that pins the claim ORDER, recorded only while a test asks for it.
+     * <p>
+     * Why any of this: a COUNT of suppressed marks is nearly blind to order, and the archaeopteryx.js session
+     * shipped a leaf-first claim pass that their own acceptance measure could not see. Ours is preorder, but until
+     * now nothing in the suite SAID so.
+     * <p>
+     * What is recorded is the depth of the FIRST node to offer a mark, and the shallowest depth any node offers
+     * one at. Running root-first, those are the same number. This is deliberately not the more obvious property
+     * ("the shallowest mark is never the one dropped"): that one was tried first and MEASURED not to discriminate
+     * on the nest fixture -- the root-most mark is granted under either order there, because nothing happens to be
+     * in its way whenever it claims, so the assertion would have passed a fully inverted pass while its comment
+     * claimed to forbid one. Which node claims FIRST is the thing the order actually determines.
+     * <p>
+     * Off by default: {@code node.calculateDepth()} walks to the root, and nothing else here needs it.
+     */
+    private boolean _record_mark_depths = false;
+    private int     _shallowest_offered = Integer.MAX_VALUE;
+    private int     _first_offered      = Integer.MAX_VALUE;
+
+    /** Notes how deep in the tree a mark was offered. {@code granted} is not recorded: which marks SURVIVE is a
+     *  fact about the geometry, while which claims FIRST is the fact about the order. */
+    private void noteMarkDepth(final PhylogenyNode node, final boolean granted) {
+        if (!_record_mark_depths || (node == null)) {
+            return;
+        }
+        final int depth = node.calculateDepth();
+        if (_first_offered == Integer.MAX_VALUE) {
+            _first_offered = depth;
+        }
+        if (depth < _shallowest_offered) {
+            _shallowest_offered = depth;
+        }
+    }
+
     /** Claims the space a branch-anchored NUMBER is about to occupy; false when a number is already there.
      *  NOTE what the map does NOT hold: a refused claim records nothing (so a rejected mark cannot block a later
      *  one), and with auto-hide off a refused mark is drawn anyway. The map is therefore what was GRANTED, never
      *  a record of everything drawn -- do not build a hit-test on it. */
+    /** As below, additionally recording how deep {@code node} sits when a test has asked for it. */
+    private boolean claimNumberSpace(final PhylogenyNode node, final float x, final float y, final float w,
+                                     final float h) {
+        final boolean granted = claimNumberSpace(x, y, w, h);
+        noteMarkDepth(node, granted);
+        return granted;
+    }
+
     private boolean claimNumberSpace(final float x, final float y, final float w, final float h) {
         final boolean free = _number_occupancy.claim(x, y, w, h);
         if (free || !autoHideCrowdedData()) {
@@ -17009,6 +17331,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         ++_numbers_suppressed;
         return false;
+    }
+
+    /** The symbol equivalent, recording depth; see {@link #claimNumberSpace(PhylogenyNode, float, float, float, float)}. */
+    private boolean claimSymbolSpace(final PhylogenyNode node, final float x, final float y, final float d) {
+        final boolean granted = claimSymbolSpace(x, y, d);
+        noteMarkDepth(node, granted);
+        return granted;
     }
 
     /** The symbol equivalent; see {@link #paintNodeSupportSymbol}. */
@@ -17027,6 +17356,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _numbers_suppressed = 0;
         _symbols_drawn = 0;
         _symbols_suppressed = 0;
+        _shallowest_offered = Integer.MAX_VALUE;
+        _first_offered = Integer.MAX_VALUE;
+    }
+
+    /**
+     * Test hook: the node order the last rectangular paint actually walked, which is the order marks claim their
+     * space in. Null before the first paint.
+     * <p>
+     * The array itself is what to assert on -- "every node's parent appears before it" holds for any tree
+     * whatever, so unlike a property read off a rendered figure it cannot fall quiet on a fixture where the
+     * crowding happens to sit somewhere harmless.
+     */
+    final PhylogenyNode[] paintOrderForTest() {
+        return (_nodes_in_preorder == null) ? null : _nodes_in_preorder.clone();
+    }
+
+    /** Test hook: start (or stop) recording how deep the offered and refused marks sit. */
+    final void setRecordMarkDepthsForTest(final boolean on) {
+        _record_mark_depths = on;
+    }
+
+    /** Test hook: {@code { depthOfTheFirstMarkOffered, shallowestDepthAnyMarkIsOfferedAt }} from the last paint,
+     *  {@link Integer#MAX_VALUE} for "none". A root-first pass makes the two EQUAL. */
+    final int[] markDepthsForTest() {
+        return new int[] { _first_offered, _shallowest_offered };
     }
 
     /** Test hook: branch numbers the last paint drew / dropped for want of space. */

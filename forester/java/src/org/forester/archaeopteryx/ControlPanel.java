@@ -1076,8 +1076,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         _tree_share_slider = new JSlider(treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_MIN),
                 treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_MAX),
                 treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_DEFAULT));
-        _tree_share_slider.setToolTipText("how much of the width the tree itself keeps; the tip labels, domains, "
-                + "alignment and annotation columns share the rest");
+        _tree_share_slider.setToolTipText("the LEAST of the width the tree itself keeps; the tip labels, domains, alignment and annotation "
+                + "columns share the rest. Greyed out when the tree already has more than the largest "
+                + "share would give it, so nothing is competing for the width");
         _tree_share_slider.setPreferredSize(new Dimension(10, _tree_share_slider.getPreferredSize().height));
         _tree_share_slider.setBackground(getBackground());
         _tree_share_slider.addChangeListener(e -> treeShareSliderChanged());
@@ -1217,7 +1218,19 @@ final class ControlPanel extends JPanel implements ActionListener {
         finally {
             _tree_share_slider_is_being_set = false;
         }
-        _tree_share_label.setText("Tree share: " + pct + "%");
+        // A share is a MINIMUM, so on a tree with only short labels beside it the tree already has more than even the
+        // largest share would guarantee, and every position of the slider draws the identical figure. Say so, rather
+        // than leaving the user to drag a live-looking control and conclude the feature is broken.
+        final TreePanel tp = (getMainPanel() == null) ? null : getMainPanel().getCurrentTreePanel();
+        final boolean useful = (tp == null) || tp.treeShareCanAffectLayout();
+        _tree_share_slider.setEnabled(useful);
+        _tree_share_label.setEnabled(useful);
+        _tree_share_label.setText("Tree share: " + pct + "%" + (useful ? "" : " (no effect)"));
+    }
+
+    /** Test hook: whether the tree-share slider is live for the tree on screen. */
+    boolean isTreeShareSliderEnabledForTest() {
+        return (_tree_share_slider != null) && _tree_share_slider.isEnabled();
     }
 
     /** Test hook: the tree-share slider's current percentage (-1 when there is no slider). */

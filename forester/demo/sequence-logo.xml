@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Sequence logo</name>
+  <description>The conservation track drawn as a SEQUENCE LOGO: one stack of letters per alignment column, each letter&apos;s height its share of that column&apos;s information content, the most frequent residue on top. Choose it under Settings &gt; Overlays &gt; Conservation measure (&quot;Sequence logo&quot;), beside the two bar measures. Reading left to right, this 12-row alignment shows what the heights mean: four fully conserved columns fill the band with a single letter; a 9:3 column draws a tall letter over a short one; a 6:3:3 column draws three, the tied pair alphabetical so that two viewers stack it alike; a 6:6 column draws two of equal height. Column 9 is the one worth pausing on -- every residue present is a P, yet half the rows are gaps, so it is drawn at FULL conservation and HALF height: gaps scale the stack rather than joining it. Column 10 is all gaps and draws nothing at all, because nothing is known about it. Column 13 has twelve different residues and so carries no information. Like the bars, the logo is computed over the tips CURRENTLY ON SCREEN: collapse a clade or enter a subtree and it re-scores for what is actually being looked at.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Homo_sapiens</name>
+            <branch_length>0.03</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYALDCP-QFARME</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>Pan_troglodytes</name>
+            <branch_length>0.04</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYALDCP-QFCSME</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Gorilla_gorilla</name>
+            <branch_length>0.05</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYALDCP-QFDTME</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>Pongo_abelii</name>
+            <branch_length>0.06</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYALDCP-QFEVME</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>Macaca_mulatta</name>
+          <branch_length>0.07</branch_length>
+          <sequence>
+            <mol_seq is_aligned="true">WKGYALDCP-QFFWME</mol_seq>
+          </sequence>
+        </clade>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Mus_musculus</name>
+            <branch_length>0.08</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYALDCP-QFGYME</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>Rattus_norvegicus</name>
+            <branch_length>0.09</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYAIEC--QFHAME</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>Oryctolagus_cuniculus</name>
+          <branch_length>0.1</branch_length>
+          <sequence>
+            <mol_seq is_aligned="true">WKGYAIEC--QFICME</mol_seq>
+          </sequence>
+        </clade>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Bos_taurus</name>
+            <branch_length>0.11</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYAIEC--QYKDME</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>Canis_lupus</name>
+            <branch_length>0.12</branch_length>
+            <sequence>
+              <mol_seq is_aligned="true">WKGYSVEC--QYLEME</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.06</branch_length>
+        <clade>
+          <name>Gallus_gallus</name>
+          <branch_length>0.13</branch_length>
+          <sequence>
+            <mol_seq is_aligned="true">WKGYSVEC--QYMFME</mol_seq>
+          </sequence>
+        </clade>
+        <clade>
+          <name>Danio_rerio</name>
+          <branch_length>0.14</branch_length>
+          <sequence>
+            <mol_seq is_aligned="true">WKGYSVEC--QYNGME</mol_seq>
+          </sequence>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

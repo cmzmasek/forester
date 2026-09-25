@@ -560,6 +560,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("MSA sequence logo: ");
+        if (org.forester.archaeopteryx.MsaLogoTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tree share squeeze: ");
+        if (org.forester.archaeopteryx.TreeShareSqueezeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tab close button: ");
         if (org.forester.archaeopteryx.TabCloseButtonTest.test()) {
             System.out.println("OK.");

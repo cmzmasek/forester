@@ -54,6 +54,7 @@ public final class CrowdedBranchDataTest {
         final boolean[] ok = { true };
         try {
             crowded( ok );
+            shallowestMarkSurvives( ok );
             sparse( ok );
             fpsCounter( ok );
         }
@@ -62,6 +63,99 @@ public final class CrowdedBranchDataTest {
             ok[ 0 ] = false;
         }
         return ok[ 0 ];
+    }
+
+    // ---- the claim ORDER, which no count can see ---------------------------------------------------------------
+    /**
+     * The shallowest mark on the canvas is never the one dropped.
+     * <p>
+     * This exists because the checks above are COUNTS, and a count is blind to order: reverse the sequence in which
+     * marks claim their space and very nearly the same number is suppressed, just a different set. The
+     * archaeopteryx.js session shipped exactly that inversion -- their layout handed them a leaf-first list -- and
+     * their own acceptance measure ("no overlapping marks remain") could not see it either, because whichever mark
+     * of a colliding pair you keep, the survivors still do not overlap. Reported to us 2026-09-25; ours turned out
+     * to be preorder, but nothing in the suite SAID so.
+     * <p>
+     * The property asserted is that the FIRST mark to claim is the shallowest one on the canvas, which is what a
+     * root-first walk means and what a leaf-first walk cannot produce.
+     * <p>
+     * It is deliberately not the more quotable "the shallowest mark is never the one dropped". That was written
+     * first and then MEASURED: on this fixture the root-most mark is granted under either order, because nothing
+     * is in its way whenever it happens to claim, so the assertion passed a fully inverted pass while its own
+     * comment claimed to forbid one. An assertion that cannot fail for the reason it names is worse than none --
+     * it reads as coverage. (Measured on the inverted pass: numbers 3 drawn / 37 dropped against 14 / 26 root
+     * first, so the drop COUNT does move here -- but the count assertions above are thresholds, and thresholds
+     * do not notice.)
+     */
+    private static void shallowestMarkSurvives( final boolean[] ok ) throws Exception {
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                .createInstance( new Phylogeny[] { nest() }, new Configuration(), "order" ) );
+        final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+        final ControlPanel cp = mf[ 0 ].getMainPanel().getControlPanel();
+        final int[] depths = new int[ 2 ];
+        SwingUtilities.invokeAndWait( () -> {
+            cp.setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, true );
+            cp.setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, true );
+            tp.getOptions().setSupportVisualization( Options.SUPPORT_VISUALIZATION.SIZE_SCALED );
+            tp.getOptions().setShowOverview( false );
+            tp.setOvOn( false );
+            tp.setRecordMarkDepthsForTest( true );
+            paint( tp, 900, 600 );
+            final int[] d = tp.markDepthsForTest();
+            depths[ 0 ] = d[ 0 ];
+            depths[ 1 ] = d[ 1 ];
+            tp.setRecordMarkDepthsForTest( false );
+        } );
+        if ( depths[ 0 ] == Integer.MAX_VALUE ) {
+            fail( ok, "precondition: no mark was offered at all" );
+            dispose( mf );
+            return;
+        }
+        // THE fixture-free half, and the one that can never go quiet: whatever tree is loaded, every node must be
+        // claimed AFTER its parent. Asserted on the array the paint actually walks, so it pins the paint's order
+        // rather than an iterator's. (archaeopteryx.js's suggestion, 2026-09-25 -- their equivalent is a direct
+        // assertion on the emitted order rather than one read back off a drawing, which is the better home for it:
+        // an order property should not have to be reached through a rendering.)
+        final PhylogenyNode[] order = tp.paintOrderForTest();
+        if ( ( order == null ) || ( order.length < 2 ) ) {
+            fail( ok, "precondition: the paint must have walked a node order, got "
+                    + ( ( order == null ) ? "null" : String.valueOf( order.length ) ) );
+        }
+        else {
+            final java.util.Map<PhylogenyNode, Integer> at = new java.util.HashMap<PhylogenyNode, Integer>();
+            for( int i = 0; i < order.length; i++ ) {
+                at.put( order[ i ], Integer.valueOf( i ) );
+            }
+            int offenders = 0;
+            String first = null;
+            for( int i = 0; i < order.length; i++ ) {
+                final PhylogenyNode parent = order[ i ].isRoot() ? null : order[ i ].getParent();
+                final Integer pi = ( parent == null ) ? null : at.get( parent );
+                if ( ( pi != null ) && ( pi.intValue() > i ) ) {
+                    offenders++;
+                    if ( first == null ) {
+                        first = "node at position " + i + " is claimed before its parent at position " + pi;
+                    }
+                }
+            }
+            if ( offenders > 0 ) {
+                fail( ok, "every node must claim its space AFTER its parent, and " + offenders + " of "
+                        + order.length + " do not -- " + first );
+            }
+        }
+        if ( depths[ 0 ] != depths[ 1 ] ) {
+            fail( ok, "the claim pass must run ROOT-FIRST: the first mark to claim sits at depth " + depths[ 0 ]
+                    + " while the shallowest mark on the canvas is at depth " + depths[ 1 ]
+                    + " -- so a deeper mark is claiming its space before a shallower one and wins every collision "
+                    + "between them" );
+        }
+        // recording must leave nothing behind once switched off, or every later paint pays for it
+        SwingUtilities.invokeAndWait( () -> paint( tp, 900, 600 ) );
+        if ( tp.markDepthsForTest()[ 0 ] != Integer.MAX_VALUE ) {
+            fail( ok, "with recording off the depths must stay unset, got " + tp.markDepthsForTest()[ 0 ] );
+        }
+        dispose( mf );
     }
 
     // ---- a nest of near-zero branches: the numbers that would collide are dropped ------------------------------

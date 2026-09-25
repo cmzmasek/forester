@@ -67,10 +67,24 @@ final class LayoutWidthBudget {
 
     private final Map<Part, Integer> _granted = new EnumMap<Part, Integer>(Part.class);
     private final int                _tree_width;
+    private final boolean            _squeezed;
 
-    private LayoutWidthBudget(final Map<Part, Integer> granted, final int tree_width) {
+    private LayoutWidthBudget(final Map<Part, Integer> granted, final int tree_width, final boolean squeezed) {
         _granted.putAll(granted);
         _tree_width = tree_width;
+        _squeezed = squeezed;
+    }
+
+    /**
+     * Whether any part was granted LESS than it asked for -- i.e. whether the tree's share is what is holding the
+     * side components back.
+     * <p>
+     * It is the difference between a tree that is wide because nothing wants the width and a tree that is wide
+     * because the share took it, which the granted widths alone cannot tell apart: at an 80% share both report a
+     * tree at 80%. Only the first is a case where moving the share changes nothing, so only the first should say so.
+     */
+    boolean wasSqueezed() {
+        return _squeezed;
     }
 
     /** The width granted to {@code part} (0 when it asked for nothing, or was never requested). */
@@ -138,7 +152,7 @@ final class LayoutWidthBudget {
                 for (final Map.Entry<Part, int[]> e : _requests.entrySet()) {
                     granted.put(e.getKey(), Integer.valueOf(e.getValue()[0]));
                 }
-                return new LayoutWidthBudget(granted, Math.max(0, usable - want_total));
+                return new LayoutWidthBudget(granted, Math.max(0, usable - want_total), false);
             }
             if (min_total >= side_budget) {
                 // Even the minimums do not fit. Honour them anyway (a track drawn below its minimum is unreadable,
@@ -148,7 +162,7 @@ final class LayoutWidthBudget {
                 for (final Map.Entry<Part, int[]> e : _requests.entrySet()) {
                     granted.put(e.getKey(), Integer.valueOf(e.getValue()[1]));
                 }
-                return new LayoutWidthBudget(granted, Math.max(0, usable - min_total));
+                return new LayoutWidthBudget(granted, Math.max(0, usable - min_total), true);
             }
             // The squeeze: everyone gets their minimum, and the room left over is split in proportion to how much
             // each asked for ABOVE it. Floor every share first so the total can only be under budget, then hand the
@@ -176,7 +190,7 @@ final class LayoutWidthBudget {
                 granted.put(part, Integer.valueOf(granted.get(part).intValue() + 1));
                 ++spent;
             }
-            return new LayoutWidthBudget(granted, Math.max(0, usable - spent));
+            return new LayoutWidthBudget(granted, Math.max(0, usable - spent), true);
         }
     }
 }

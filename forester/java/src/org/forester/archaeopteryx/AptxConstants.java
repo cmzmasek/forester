@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.162";
+    final static String VERSION = "0.11.163";
     final static String PRG_DATE = "2026-09-25";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
@@ -90,6 +90,14 @@ public final class AptxConstants {
     final static int   MSA_COLUMN_WIDTH_MAX             = 40;
     final static int   MSA_CONSERVATION_BAR_HEIGHT_MIN  = 22; // the conservation bar area, at least this tall (px)
     final static int   MSA_CONSERVATION_TOP_GAP          = 4;  // separates the conservation band from the last row
+    // A sequence logo's band, at least this tall (px). A stack of letters needs room a bar does not: at the
+    // bar's 22 px a three-residue column gives ~7 px a letter, which is a smudge. Joint with archaeopteryx.js.
+    final static int   MSA_LOGO_BAND_HEIGHT_MIN         = 46;
+    // A logo letter is MEASURED at this size and then scaled to its own height, so the scale factors stay
+    // well-conditioned; it is never the size anything is drawn at.
+    final static int   MSA_LOGO_GLYPH_MEASURE_SIZE      = 24;
+    // Below half a pixel of ink a letter is a smear that still costs a glyph to render, so it is skipped.
+    final static double MSA_LOGO_MIN_LETTER_PX          = 0.5;
     // "Export at a fixed size" (ExportSizeSpec): DPI + width/height bounds and the default journal-figure size.
     final static int    EXPORT_SIZE_DPI_DEFAULT         = 300; // publication default
     final static int    EXPORT_SIZE_DPI_MIN             = 72;

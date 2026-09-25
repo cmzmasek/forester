@@ -144,8 +144,15 @@ final class ControlPanelCheatSheet {
             final String t = ((AbstractButton) comp).getText();
             return ((t == null) || t.isBlank()) ? "" : t;
         }
-        // A dropdown or slider carries no text; the panel names it with the label just above it.
-        return (recent_label == null) ? "" : recent_label;
+        // A dropdown or slider carries no text; the panel names it with the label just above it. That label
+        // includes the control's CURRENT VALUE ("Font size: 6", "Tree share: 40%") because the panel doubles as
+        // a readout -- but a cheat sheet says what a control IS, not where it happens to be set, and a printed
+        // sheet showing "40%" would be wrong for every reader but the one who printed it. Keep the name only.
+        if ((recent_label == null) || recent_label.isBlank()) {
+            return "";
+        }
+        final int colon = recent_label.indexOf(':');
+        return (colon < 0) ? recent_label.trim() : recent_label.substring(0, colon).trim();
     }
 
     /** The sheet as a component -- also what the PNG export renders, so the file IS what the window shows. */
@@ -186,7 +193,8 @@ final class ControlPanelCheatSheet {
         glyph.setHorizontalAlignment(SwingConstants.CENTER);
         r.add(glyph);
         r.add(Box.createHorizontalStrut(8));
-        final String sep = (e.label().isEmpty() || e.description().isEmpty()) ? "" : " — ";
+        // A COLON between the name and what it does, never a dash (house style; see CLAUDE.md).
+        final String sep = (e.label().isEmpty() || e.description().isEmpty()) ? "" : ": ";
         final JLabel text = new JLabel("<html><body style='width:520px'><b>" + escape(e.label()) + escape(sep)
                 + "</b>" + escape(e.description()) + "</body></html>");
         text.setForeground(Color.BLACK);

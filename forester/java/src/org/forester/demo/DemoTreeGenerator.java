@@ -115,6 +115,7 @@ public final class DemoTreeGenerator {
         write( dir, "import-annotations.xml", importAnnotationsTree() );
         write( dir, "alignment.xml", alignmentTree() );
         write( dir, "crowded-tracks.xml", crowdedTracksTree() );
+        write( dir, "sequence-logo.xml", sequenceLogoTree() );
         write( dir, "zero-length-nest.xml", zeroLengthNestTree() );
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
@@ -2362,6 +2363,72 @@ public final class DemoTreeGenerator {
         n.setName( name );
         n.setDistanceToParent( 0.02 );
         return n;
+    }
+
+    // ---- sequence logo (the conservation track drawn as stacked letters) --------------------------------------
+
+    /**
+     * A 12-row alignment designed so that every case the logo has to get right is visible at a glance, and so that
+     * the letter heights can be checked against the definition by counting rows in this table rather than by
+     * trusting the picture.
+     * <p>
+     * Written COLUMN BY COLUMN: each entry is one alignment column spelled out over the 12 rows, which is the only
+     * way to state exact frequencies. The rows are transposed out of it below.
+     */
+    private final static String[] LOGO_COLUMNS = {
+            "WWWWWWWWWWWW", // fully conserved: one letter filling the band
+            "KKKKKKKKKKKK",
+            "GGGGGGGGGGGG",
+            "YYYYYYYYYYYY",
+            "AAAAAAAAASSS", // 9:3 -- a tall letter over a short one
+            "LLLLLLIIIVVV", // 6:3:3 -- three letters, two of them tied (and so alphabetical)
+            "DDDDDDEEEEEE", // 6:6 -- an even split, drawn as two equal letters
+            "CCCCCCCCCCCC",
+            "PPPPPP------", // conserved but HALF GAPPED: full letter, half height. The occupancy rule, visible.
+            "------------", // all gap: nothing is known, so nothing is drawn (not a zero-height bar)
+            "QQQQQQQQQQQQ",
+            "FFFFFFFFYYYY", // 8:4
+            "ACDEFGHIKLMN", // twelve different residues: 17% of the band split twelve ways, so nothing is legible
+            "RSTVWYACDEFG",
+            "MMMMMMMMMMMM",
+            "EEEEEEEEEEEE" };
+
+    private static Phylogeny sequenceLogoTree() {
+        final String[] names = { "Homo_sapiens", "Pan_troglodytes", "Gorilla_gorilla", "Pongo_abelii",
+                                 "Macaca_mulatta", "Mus_musculus", "Rattus_norvegicus", "Oryctolagus_cuniculus",
+                                 "Bos_taurus", "Canis_lupus", "Gallus_gallus", "Danio_rerio" };
+        final PhylogenyNode[] tips = new PhylogenyNode[ names.length ];
+        for( int row = 0; row < names.length; ++row ) {
+            final StringBuilder seq = new StringBuilder();
+            for( final String column : LOGO_COLUMNS ) {
+                seq.append( column.charAt( row ) );
+            }
+            tips[ row ] = alignedLeaf( names[ row ], 0.03 + ( row * 0.01 ), seq.toString() );
+        }
+        final PhylogenyNode root = clade( 0.0,
+                clade( 0.04,
+                        clade( 0.03, clade( 0.02, tips[ 0 ], tips[ 1 ] ), clade( 0.02, tips[ 2 ], tips[ 3 ] ) ),
+                        clade( 0.03, tips[ 4 ], clade( 0.02, tips[ 5 ], tips[ 6 ] ) ) ),
+                clade( 0.05,
+                        clade( 0.03, tips[ 7 ], clade( 0.02, tips[ 8 ], tips[ 9 ] ) ),
+                        clade( 0.06, tips[ 10 ], tips[ 11 ] ) ) );
+        return tree( root, "Sequence logo",
+                     "The conservation track drawn as a SEQUENCE LOGO: one stack of letters per alignment column, "
+                             + "each letter's height its share of that column's information content, the most "
+                             + "frequent residue on top. Choose it under Settings > Overlays > Conservation measure "
+                             + "(\"Sequence logo\"), beside the two bar measures. Reading left to right, this "
+                             + "12-row alignment shows what the heights mean: four fully conserved columns fill the "
+                             + "band with a single letter; a 9:3 column draws a tall letter over a short one; a "
+                             + "6:3:3 column draws three, the tied pair alphabetical so that two viewers stack it "
+                             + "alike; a 6:6 column draws two of equal height. Column 9 is the one worth pausing "
+                             + "on -- every residue present is a P, yet half the rows are gaps, so it is drawn at "
+                             + "FULL conservation and HALF height: gaps scale the stack rather than joining it. "
+                             + "Column 10 is all gaps and draws nothing at all, because nothing is known about it. "
+                             + "Columns 13 and 14 hold twelve different residues each: against a 20-letter alphabet "
+                             + "that still leaves 17% of the band, but spread over twelve letters none of them is "
+                             + "legible -- which is what \"no consensus here\" should look like. Like the "
+                             + "bars, the logo is computed over the tips CURRENTLY ON SCREEN: collapse a clade or "
+                             + "enter a subtree and it re-scores for what is actually being looked at." );
     }
 
     // ---- sequence alignment (embedded aligned mol_seqs; shown with Settings -> Overlays -> Sequence Alignment) ------
