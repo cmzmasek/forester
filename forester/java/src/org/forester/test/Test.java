@@ -552,6 +552,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Control panel cheat sheet: ");
+        if (org.forester.archaeopteryx.ControlPanelCheatSheetTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Tab close button: ");
+        if (org.forester.archaeopteryx.TabCloseButtonTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Legend interaction survives a paint: ");
         if (org.forester.archaeopteryx.LegendInteractionSurvivesPaintTest.test()) {
             System.out.println("OK.");

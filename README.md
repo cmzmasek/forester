@@ -24,6 +24,18 @@ for phylogenetic trees.
 > [`forester/java/src/org/forester/archaeopteryx/`](forester/java/src/org/forester/archaeopteryx));
 > the links above are its user-facing front door and full documentation.
 
+> ### 🧬 Need a tree to look at?
+>
+> **phylobuild** builds a well-annotated protein phylogeny from a FASTA file in a
+> single command — Pfam domain architectures, taxonomy and branch support — and
+> writes **phyloXML**, so the result opens in Archaeopteryx with its domains,
+> names and support already in place.
+>
+> - **<https://github.com/cmzmasek/phylobuild>**
+>
+> A separate project, not part of this repository; it uses forester to write its
+> output.
+
 
 What's in forester
 ------------------

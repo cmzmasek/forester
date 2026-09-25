@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
@@ -323,6 +324,20 @@ public class MainPanel extends JPanel implements ComponentListener {
         _treegraphic_scroll_panes = new ArrayList<JScrollPane>();
         _treegraphic_scroll_pane_panels = new ArrayList<JPanel>();
         _tabbed_pane = new JTabbedPane(SwingConstants.TOP);
+        // An "x" on every tab. The closing itself is the SAME path as File > Close Tab and the tab right-click
+        // menu -- MainFrameApplication.closeTabAt, which selects the tab first and then runs closeCurrentPane, so
+        // the unsaved-changes confirmation and the per-tab teardown happen exactly once, in one place. FlatLaf
+        // draws and hit-tests the button itself (a Swing JTabbedPane has no close button of its own), and the
+        // callback hands back the tab's COMPONENT rather than an index -- deliberately, since an index captured
+        // when the button was drawn would be stale the moment another tab closed.
+        _tabbed_pane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSABLE, Boolean.TRUE);
+        _tabbed_pane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_TOOLTIPTEXT, "Close this tree");
+        _tabbed_pane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_CALLBACK,
+                (java.util.function.BiConsumer<JTabbedPane, Integer>) (pane, index) -> {
+                    if ((_mainframe instanceof MainFrameApplication) && (index != null)) {
+                        ((MainFrameApplication) _mainframe).closeTabAt(index.intValue());
+                    }
+                });
         _tabbed_pane.addChangeListener(new ChangeListener() {
 
             // This method is called whenever the selected tab changes

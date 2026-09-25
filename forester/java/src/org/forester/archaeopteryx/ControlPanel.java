@@ -1301,6 +1301,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case SHOW_NODE_NAMES:
                 _show_node_names = new JCheckBox(title);
+                _show_node_names.setToolTipText(
+                        "Show each node's own name: the tip label on external nodes, and any label carried by an internal node");
                 addJCheckBox(_show_node_names, ch_panel);
                 add(ch_panel);
                 break;
@@ -1313,31 +1315,43 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case SHOW_TAXONOMY_SCIENTIFIC_NAMES:
                 _show_taxo_scientific_names = new JCheckBox(title);
+                _show_taxo_scientific_names.setToolTipText(
+                        "Show the scientific name (drawn in italics, as a species name is written)");
                 addJCheckBox(_show_taxo_scientific_names, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_TAXONOMY_COMMON_NAMES:
                 _show_taxo_common_names = new JCheckBox(title);
+                _show_taxo_common_names.setToolTipText(
+                        "Show the common name where a node carries one");
                 addJCheckBox(_show_taxo_common_names, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_TAX_CODE:
                 _show_taxo_code = new JCheckBox(title);
+                _show_taxo_code.setToolTipText(
+                        "Show the taxonomy CODE (the short mnemonic, e.g. HUMAN) where a node carries one");
                 addJCheckBox(_show_taxo_code, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_TAX_RANK:
                 _show_taxo_rank = new JCheckBox(title);
+                _show_taxo_rank.setToolTipText(
+                        "Show the taxonomic rank (species, genus, family, ...) where a node carries one");
                 addJCheckBox(_show_taxo_rank, ch_panel);
                 add(ch_panel);
                 break;
             case WRITE_CONFIDENCE_VALUES:
                 _write_confidence = new JCheckBox(title);
+                _write_confidence.setToolTipText(
+                        "Write the branch-support values along the branches. On a crowded tree \"Auto-hide Labels\" drops the ones whose branch is too short to carry them; zoom in and they come back");
                 addJCheckBox(getWriteConfidenceCb(), ch_panel);
                 add(ch_panel);
                 break;
             case WRITE_EVENTS:
                 _show_events = new JCheckBox(title);
+                _show_events.setToolTipText(
+                        "Mark the inferred duplication / speciation events on internal nodes");
                 addJCheckBox(getShowEventsCb(), ch_panel);
                 add(ch_panel);
                 break;
@@ -1356,11 +1370,15 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case WRITE_BRANCH_LENGTH_VALUES:
                 _write_branch_length_values = new JCheckBox(title);
+                _write_branch_length_values.setToolTipText(
+                        "Write the numeric branch length along each branch. On a crowded tree \"Auto-hide Labels\" drops the ones with no room; zoom in and they come back");
                 addJCheckBox(_write_branch_length_values, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_DOMAIN_ARCHITECTURES:
                 _show_domain_architectures = new JCheckBox(title);
+                _show_domain_architectures.setToolTipText(
+                        "Draw each tip's protein-domain architecture as a track beside the tree. Use d- / d+ to set the track's width, and hover a domain to read it");
                 addJCheckBox(_show_domain_architectures, ch_panel);
                 add(ch_panel);
                 break;
@@ -1375,21 +1393,29 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case SHOW_SEQ_NAMES:
                 _show_seq_names = new JCheckBox(title);
+                _show_seq_names.setToolTipText(
+                        "Show the name of the molecular sequence attached to a node");
                 addJCheckBox(_show_seq_names, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_GENE_NAMES:
                 _show_gene_names = new JCheckBox(title);
+                _show_gene_names.setToolTipText(
+                        "Show the gene name of the molecular sequence attached to a node");
                 addJCheckBox(_show_gene_names, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_SEQ_SYMBOLS:
                 _show_seq_symbols = new JCheckBox(title);
+                _show_seq_symbols.setToolTipText(
+                        "Show the symbol of the molecular sequence attached to a node");
                 addJCheckBox(_show_seq_symbols, ch_panel);
                 add(ch_panel);
                 break;
             case SHOW_SEQUENCE_ACC:
                 _show_sequence_acc = new JCheckBox(title);
+                _show_sequence_acc.setToolTipText(
+                        "Show the sequence accession (its source and value, e.g. UniProt P12345) where a node carries one");
                 addJCheckBox(_show_sequence_acc, ch_panel);
                 add(ch_panel);
                 break;
@@ -1411,6 +1437,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case SHOW_PROPERTIES:
                 _show_properties_cb = new JCheckBox(title);
+                _show_properties_cb.setToolTipText(
+                        "Show the phyloXML properties a node carries (the ref and its value)");
                 addJCheckBox(_show_properties_cb, ch_panel);
                 add(ch_panel);
                 break;
@@ -2530,6 +2558,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _ancestral_pie_label = new JLabel("Ancestral pie:");
         _ancestral_pie_label.setFont(ControlPanel.jcb_font);
         _ancestral_pie_property_cb = new JComboBox<String>();
+        _ancestral_pie_property_cb.setToolTipText(
+                "Draw an ancestral-state pie on each internal node for the chosen trait: the slices are that clade's states and their proportions");
         _ancestral_pie_property_cb.setFont(ControlPanel.js_font);
         _ancestral_pie_property_cb
                 .setToolTipText("show an ancestral-state pie chart at each node for a discrete/geographic trait");
@@ -3669,6 +3699,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _incr_domain_structure_evalue_thr.setPreferredSize(new Dimension(10, 10));
         _incr_domain_structure_evalue_thr.setToolTipText("Increase the E-value threshold by a factor of 10");
         _decr_domain_structure_evalue_thr.setToolTipText("Decrease the E-value threshold by a factor of 10");
+        _zoom_in_domain_structure.setToolTipText(
+                "Widen the protein-domain track, so the architectures are drawn larger. The width comes out of the "
+                + "same budget as everything else beside the tree, so widening it takes room from the alignment");
+        _zoom_out_domain_structure.setToolTipText(
+                "Narrow the protein-domain track, handing the width it gives up back to the alignment");
         _domain_structure_evalue_thr_tf = new JTextField(3);
         _domain_structure_evalue_thr_tf.setFont(ControlPanel.jcb_font);
         _domain_structure_evalue_thr_tf.setEditable(false);
@@ -4239,6 +4274,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _click_to_label = new JLabel("Click on Node to:");
         add(customizeLabel(_click_to_label, getConfiguration()));
         _click_to_combobox = new JComboBox<String>();
+        _click_to_combobox.setToolTipText(
+                "What a LEFT-CLICK on a node does -- show its data, collapse it, re-root there, and so on. The entry is greyed out when it does not apply to this tree");
         _click_to_combobox.setFocusable(false);
         _click_to_combobox.setMaximumRowCount(14);
         _click_to_combobox.setFont(ControlPanel.js_font);

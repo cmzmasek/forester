@@ -377,6 +377,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     // help menu:
     JMenuItem _about_item;
     JMenuItem _keyboard_shortcuts_item;
+    JMenuItem _cheat_sheet_item;
     JMenuItem _help_item;
     JMenuItem _website_item;
     JMenuItem _aptxjs_website_item;
@@ -649,6 +650,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             about();
         } else if (o == _keyboard_shortcuts_item) {
             KeyboardShortcuts.show(this);
+        } else if (o == _cheat_sheet_item) {
+            ControlPanelCheatSheet.show(this);
         } else if (o == _references_item) {
             showReferences();
         } else if (o == _help_item) {
@@ -1261,6 +1264,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _help_jmenu.add(_references_item = new JMenuItem("References"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_keyboard_shortcuts_item = new JMenuItem("Keyboard Shortcuts"));
+        _help_jmenu.add(_cheat_sheet_item = new JMenuItem("Control Panel Cheat Sheet"));
         _help_jmenu.addSeparator();
         _help_jmenu.add(_error_log_item = new JMenuItem("Show Error Log"));
         customizeJMenuItem(_error_log_item);
@@ -1274,6 +1278,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         customizeJMenuItem(_aptxjs_website_item);
         customizeJMenuItem(_references_item);
         customizeJMenuItem(_keyboard_shortcuts_item);
+        customizeJMenuItem(_cheat_sheet_item);
+        _cheat_sheet_item.setToolTipText("Every control panel button and checkbox, with the icon it draws and "
+                + "what it does -- read off the live panel, so it always matches what is on screen. Saveable as "
+                + "a PNG to print or pin up.");
         customizeJMenuItem(_about_item);
         _keyboard_shortcuts_item.setToolTipText("List the keyboard shortcuts for navigating and viewing trees");
         _references_item.setToolTipText("Main literature citations for the algorithms implemented in Archaeopteryx");
