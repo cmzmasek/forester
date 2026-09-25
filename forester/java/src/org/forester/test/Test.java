@@ -552,6 +552,46 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Legend interaction survives a paint: ");
+        if (org.forester.archaeopteryx.LegendInteractionSurvivesPaintTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Label occupancy grid: ");
+        if (org.forester.archaeopteryx.LabelOccupancyTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Auto-hide crowded branch data + FPS readout: ");
+        if (org.forester.archaeopteryx.CrowdedBranchDataTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Layout width budget (tree vs. the tracks beside it): ");
+        if (org.forester.archaeopteryx.LayoutWidthBudgetTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("MSA display toggle: ");
+        if (org.forester.archaeopteryx.MsaToggleTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Import annotations tool: ");
         if (org.forester.archaeopteryx.ImportAnnotationsToolTest.test()) {
             System.out.println("OK.");

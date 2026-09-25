@@ -268,7 +268,7 @@ public final class DemoTreesGalleryTest {
             }
         }
         else if ( label.startsWith( "Alignment" ) ) {
-            if ( !tp.getOptions().isShowMsa() || !AptxUtil.hasAlignedSequences( tp.getPhylogeny() ) ) {
+            if ( !tp.isShowMsa() || !AptxUtil.hasAlignedSequences( tp.getPhylogeny() ) ) {
                 fail( ok, "the alignment demo must auto-enable the alignment display over aligned tip sequences" );
             }
         }

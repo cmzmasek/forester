@@ -228,6 +228,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox _write_branch_length_values;
     private JCheckBox _show_events;
     private JCheckBox _show_gene_names;
+    private JCheckBox _show_msa_cb;
     private JCheckBox _show_node_names;
     private JCheckBox _shorten_labels_cb;
     private JCheckBox _show_properties_cb;
@@ -259,6 +260,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JSlider _font_size_slider;
     private JLabel  _node_size_label;
     private JSlider _node_size_slider;
+    // how much of the width the TREE keeps before the tracks beside it get any (LayoutWidthBudget)
+    private JLabel  _tree_share_label;
+    private JSlider _tree_share_slider;
+    private boolean _tree_share_slider_is_being_set;
     private boolean _node_slider_is_being_set;
     private boolean _font_slider_is_being_set; // guard so programmatic slider updates don't re-apply
     // "Display Data" checkboxes are shown only when the current tree actually carries the
@@ -275,7 +280,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             DisplayOption.SHOW_TAXONOMY_COMMON_NAMES, DisplayOption.SHOW_TAX_RANK, DisplayOption.SHOW_SEQ_NAMES,
             DisplayOption.SHOW_GENE_NAMES, DisplayOption.SHOW_SEQ_SYMBOLS, DisplayOption.SHOW_SEQUENCE_ACC,
             DisplayOption.WRITE_CONFIDENCE_VALUES, DisplayOption.WRITE_BRANCH_LENGTH_VALUES,
-            DisplayOption.WRITE_EVENTS, DisplayOption.SHOW_DOMAIN_ARCHITECTURES,
+            DisplayOption.WRITE_EVENTS, DisplayOption.SHOW_DOMAIN_ARCHITECTURES, DisplayOption.SHOW_MSA,
             DisplayOption.SHOW_PROPERTIES, DisplayOption.USE_STYLE,
             DisplayOption.WIDTH_BRANCHES, DisplayOption.SHORTEN_LABELS };
 
@@ -912,6 +917,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         addDisplayCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES);
         addDisplayCheckbox(DisplayOption.WRITE_BRANCH_LENGTH_VALUES);
         addDisplayCheckbox(DisplayOption.SHOW_DOMAIN_ARCHITECTURES);
+        addDisplayCheckbox(DisplayOption.SHOW_MSA);
         addDisplayCheckbox(DisplayOption.WRITE_EVENTS);
         addDisplayCheckbox(DisplayOption.SHOW_PROPERTIES);
         // Data-dependent checkboxes start hidden; the first scan of the loaded tree reveals only the
@@ -1061,6 +1067,21 @@ final class ControlPanel extends JPanel implements ActionListener {
         _node_size_slider.setBackground(getBackground());
         _node_size_slider.addChangeListener(e -> nodeSizeSliderChanged());
         add(_node_size_slider);
+        // "Tree share": how much of the width the TREE itself keeps. Everything drawn beside it -- labels, domains,
+        // the alignment, annotation columns, the legend column -- divides what is left. Without this the tree was
+        // simply the remainder of several independent reservations, and on a tree carrying domains AND an alignment
+        // that remainder went negative: the tree collapsed to a single line ("where is the tree?!").
+        add(_tree_share_label = new JLabel(treeShareLabelText(AptxConstants.TREE_WIDTH_SHARE_DEFAULT)));
+        customizeLabel(_tree_share_label, getConfiguration());
+        _tree_share_slider = new JSlider(treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_MIN),
+                treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_MAX),
+                treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_DEFAULT));
+        _tree_share_slider.setToolTipText("how much of the width the tree itself keeps; the tip labels, domains, "
+                + "alignment and annotation columns share the rest");
+        _tree_share_slider.setPreferredSize(new Dimension(10, _tree_share_slider.getPreferredSize().height));
+        _tree_share_slider.setBackground(getBackground());
+        _tree_share_slider.addChangeListener(e -> treeShareSliderChanged());
+        add(_tree_share_slider);
         nextRowGap(SECTION_GAP);
         add(o_panel);
         addJButton(_order, o_panel);
@@ -1155,6 +1176,60 @@ final class ControlPanel extends JPanel implements ActionListener {
             _node_slider_is_being_set = false;
         }
         _node_size_label.setText(nodeSizeLabelText(size));
+    }
+
+    private static int treeSharePercent(final double share) {
+        return (int) Math.round(share * 100);
+    }
+
+    private static String treeShareLabelText(final double share) {
+        return "Tree share: " + treeSharePercent(share) + "%";
+    }
+
+    /** Applies the slider value as the tree's guaranteed share of the width (on release / discrete change). */
+    private void treeShareSliderChanged() {
+        if (_tree_share_slider_is_being_set) {
+            return;
+        }
+        final int pct = _tree_share_slider.getValue();
+        _tree_share_label.setText("Tree share: " + pct + "%"); // live feedback while dragging
+        if (_tree_share_slider.getValueIsAdjusting()) {
+            return; // defer the (re)layout until the drag settles
+        }
+        getOptions().setTreeWidthShare(pct / 100.0);
+        // The whole horizontal division changes, so this is a full relayout, not a repaint: the label reach, the
+        // alignment window, the annotation columns and the scrollable width all follow from it.
+        displayedPhylogenyMightHaveChanged(true);
+    }
+
+    /** Syncs the tree-share slider + label to the current Options value (Settings, Reset to Defaults, a new tab). */
+    void updateTreeShareSlider() {
+        if ((_tree_share_slider == null) || (getOptions() == null)) {
+            return;
+        }
+        final int pct = treeSharePercent(getOptions().getTreeWidthShare());
+        _tree_share_slider_is_being_set = true;
+        try {
+            if (_tree_share_slider.getValue() != pct) {
+                _tree_share_slider.setValue(pct);
+            }
+        }
+        finally {
+            _tree_share_slider_is_being_set = false;
+        }
+        _tree_share_label.setText("Tree share: " + pct + "%");
+    }
+
+    /** Test hook: the tree-share slider's current percentage (-1 when there is no slider). */
+    int treeSharePercentForTest() {
+        return (_tree_share_slider == null) ? -1 : _tree_share_slider.getValue();
+    }
+
+    /** Test hook: drive the slider the way a user drag would, firing the real listener. */
+    void setTreeSharePercentForTest(final int pct) {
+        if (_tree_share_slider != null) {
+            _tree_share_slider.setValue(pct);
+        }
     }
 
     private static String nodeSizeLabelText(final int size) {
@@ -1289,6 +1364,15 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox(_show_domain_architectures, ch_panel);
                 add(ch_panel);
                 break;
+            case SHOW_MSA:
+                _show_msa_cb = new JCheckBox(title);
+                _show_msa_cb.setToolTipText(
+                        "Draw the aligned sequences the tips carry as a column of coloured residues beside the tree "
+                                + "(rectangular root-left only). Column width, the conservation track and its measure "
+                                + "are in Settings > Overlays");
+                addJCheckBox(_show_msa_cb, ch_panel);
+                add(ch_panel);
+                break;
             case SHOW_SEQ_NAMES:
                 _show_seq_names = new JCheckBox(title);
                 addJCheckBox(_show_seq_names, ch_panel);
@@ -1311,7 +1395,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case DYNAMICALLY_HIDE_DATA:
                 _dynamically_hide_data = new JCheckBox(title);
-                getDynamicallyHideData().setToolTipText("To hide labels depending on expected visibility");
+                getDynamicallyHideData().setToolTipText(
+                        "Hide crowded data automatically: tip labels when the rows are too close to read them, "
+                                + "support/branch-length numbers whose branch is drawn too short to carry them, and "
+                                + "support symbols once the rows are closer than the symbol itself. Zoom in and they "
+                                + "come back; switch this off to draw everything");
                 addJCheckBox(getDynamicallyHideData(), ch_panel);
                 add(ch_panel);
                 break;
@@ -1475,6 +1563,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         updateCombineControlVisibility();
         updateNodeSizeSlider(); // Reset to Defaults restored the node size: show it
+        updateTreeShareSlider(); // ...and the tree's share of the width
     }
 
     /** Resets the "Color by" property dropdown to None (for Reset to Defaults). The per-tab coloring state is
@@ -1525,6 +1614,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             // _mainpanel.getCurrentTreePanel().setUpUrtFactor();
             updateFontSizeSlider(); // keep the slider in sync with keyboard/wheel nudges and the font dialog
         updateNodeSizeSlider(); // ...and the node-size slider with Settings / Reset to Defaults
+        updateTreeShareSlider();
             // Safety net for the "k / N" navigator: a tree edit (prune/delete-subtree) can drop found nodes without
             // touching the found-set objects, so the setFoundNodes0/1 chokepoint would miss the shrunk count.
             updateSearchHitNavigation();
@@ -1618,6 +1708,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_domain_architectures != null) && _show_domain_architectures.isSelected());
     }
 
+    /** Whether the shared "Sequence Alignment" checkbox is on -- i.e. what the CURRENT tab shows. The paint reads
+     *  the tab's own copy ({@link TreePanel#isShowMsa()}), which is what lets two tabs differ. */
+    boolean isShowMsa() {
+        return ((_show_msa_cb != null) && _show_msa_cb.isSelected());
+    }
+
     /** After a d+ / d- press: a rectangular layout re-reserves the tracks' column; a radial layout has no column to
      *  reserve, but the fit must take the new track length into account, so it is refitted (JS parity). */
     private void afterDomainWidthStep() {
@@ -1642,6 +1738,14 @@ final class ControlPanel extends JPanel implements ActionListener {
      *  actionPerformed) instead of the programmatic setCheckbox -- the two take different paths. */
     JCheckBox checkboxForTest(final DisplayOption which) {
         return checkboxFor(which);
+    }
+
+    /** Test hook: whether the "Display Data" ROW for {@code which} is currently shown -- i.e. whether the loaded
+     *  tree carries the data that makes the checkbox worth offering at all (see updateDataCheckboxVisibility). A
+     *  hidden row is not the same as an unchecked box: the checkbox itself never becomes invisible, its wrapper does. */
+    boolean isCheckboxRowVisibleForTest(final DisplayOption which) {
+        final JPanel p = _checkbox_panels.get(which);
+        return (p != null) && p.isVisible();
     }
 
     /** Test hook: force the "Show Domain Architectures" checkbox on/off. */
@@ -2113,6 +2217,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case USE_STYLE:                     return getUseVisualStylesCb();
             case WIDTH_BRANCHES:                return _width_branches;
             case SHOW_DOMAIN_ARCHITECTURES:     return _show_domain_architectures;
+            case SHOW_MSA:                      return _show_msa_cb;
             case WRITE_BRANCH_LENGTH_VALUES:    return _write_branch_length_values;
             case SHOW_SEQ_NAMES:                return _show_seq_names;
             case SHOW_GENE_NAMES:               return _show_gene_names;
@@ -2149,6 +2254,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case USE_STYLE:                      return isUseVisualStyles();
             case WIDTH_BRANCHES:                 return isWidthBranches();
             case SHOW_DOMAIN_ARCHITECTURES:      return isShowDomainArchitectures();
+            case SHOW_MSA:                       return isShowMsa();
             case WRITE_BRANCH_LENGTH_VALUES:     return isWriteBranchLengthValues();
             case SHOW_SEQ_NAMES:                 return isShowSeqNames();
             case SHOW_GENE_NAMES:                return isShowGeneNames();

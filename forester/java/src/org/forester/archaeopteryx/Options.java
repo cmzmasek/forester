@@ -318,7 +318,16 @@ final public class Options {
     // auto-apply the best Color-by candidate to a newly opened tree (JS parity: "a tree opens already colored")
     private boolean _auto_color_new_trees;
     private int     _tip_image_size;
-    private boolean _show_msa;
+    // Diagnostic paint-time readout in the top-right corner. Off in a fresh install, screen only, never
+    // exported, and PERSISTED: the default is about what ships, not about forcing it off at every launch, so a
+    // user who switched it on keeps it. A test that asserts the default must therefore ask a fresh Options, not
+    // a loaded one -- reading the live value tests the user's settings file, not the shipped default.
+    private boolean _show_fps;
+    // The share of a rectangular view's width the TREE is guaranteed, before the tracks beside it get any
+    // (LayoutWidthBudget). Global, like the base font: it is a preference about how a figure is proportioned.
+    private double  _tree_width_share;
+    // NOTE: whether the alignment is SHOWN is per-tab (DisplayOption.SHOW_MSA on each TreePanel), not here --
+    // two tabs can differ. These are the alignment's global appearance settings, which they share.
     private int     _msa_column_width;
     private boolean _show_msa_conservation;
     private MsaConservation.Measure _msa_conservation_measure;
@@ -415,7 +424,8 @@ final public class Options {
         _show_tip_images = false;
         _auto_color_new_trees = true;
         _tip_image_size = AptxConstants.TIP_IMAGE_SIZE_DEFAULT;
-        _show_msa = false;
+        _show_fps = false;
+        _tree_width_share = AptxConstants.TREE_WIDTH_SHARE_DEFAULT;
         _msa_column_width = AptxConstants.MSA_COLUMN_WIDTH_DEFAULT;
         // On by default, so an alignment arrives with its conservation profile the way Jalview shows one; it costs
         // nothing when no alignment is displayed, and it is a persisted preference so switching it off sticks.
@@ -836,12 +846,26 @@ final public class Options {
         _tip_image_size = tip_image_size;
     }
 
-    final boolean isShowMsa() {
-        return _show_msa;
+    /** Whether the diagnostic paint-time / FPS readout is drawn (screen only; never in an export). */
+    final boolean isShowFps() {
+        return _show_fps;
     }
 
-    final void setShowMsa(final boolean show_msa) {
-        _show_msa = show_msa;
+    final void setShowFps(final boolean show_fps) {
+        _show_fps = show_fps;
+    }
+
+    /** The share of the width the tree keeps before the tracks beside it are given any; always within
+     *  [{@link AptxConstants#TREE_WIDTH_SHARE_MIN}, {@link AptxConstants#TREE_WIDTH_SHARE_MAX}]. */
+    final double getTreeWidthShare() {
+        return _tree_width_share;
+    }
+
+    /** Clamped, so neither a stale preferences file nor a caller can hand the tree a share that squeezes it to a
+     *  line -- which is the whole point of having a share at all. */
+    final void setTreeWidthShare(final double share) {
+        _tree_width_share = Math.min(AptxConstants.TREE_WIDTH_SHARE_MAX,
+                Math.max(AptxConstants.TREE_WIDTH_SHARE_MIN, share));
     }
 
     final int getMsaColumnWidth() {

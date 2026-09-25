@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Crowded tracks (Tree share)</name>
+  <description>Every width-hungry track at once: long tip labels, a domain architecture per tip, an aligned sequence and a Color-by legend. The tree is allocated its share of the width FIRST and the tracks divide what is left, so it stays a tree instead of being squeezed to the line it used to collapse to. Drag the CONTROL PANEL&apos;s &quot;Tree share&quot; slider (under Node size) to re-divide it: the alignment is the elastic track and gives way first, while the labels, the clade bands and the legend column are never shaved -- half a legend still covers what it was meant to stand clear of. Switch OFF &quot;Shorten Labels&quot; to see the labels compete at full length -- it is on by default, so they open abbreviated. The domain zoom (d- / d+) trades against the alignment through the same budget. Works in every display type: the rectangular layouts divide the depth WIDTH, the circular one the tip-ring RADIUS, the unrooted one its fan spread.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.06</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Homo_sapiens_SRC_kinase_isoform_X1_preproprotein</name>
+          <branch_length>0.05</branch_length>
+          <sequence>
+            <name>Homo_sapiens_SRC_kinase_isoform_X1_preproprotein</name>
+            <mol_seq is_aligned="true">AKQLEDPFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">SRC</property>
+        </clade>
+        <clade>
+          <name>Pan_troglodytes_SRC_kinase_isoform_X1_preproprotein</name>
+          <branch_length>0.07</branch_length>
+          <sequence>
+            <name>Pan_troglodytes_SRC_kinase_isoform_X1_preproprotein</name>
+            <mol_seq is_aligned="true">MCQLEDPFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">SRC</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <clade>
+          <name>Mus_musculus_Src_kinase_isoform_X2_preproprotein</name>
+          <branch_length>0.09</branch_length>
+          <sequence>
+            <name>Mus_musculus_Src_kinase_isoform_X2_preproprotein</name>
+            <mol_seq is_aligned="true">MKDLEDPFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">SRC</property>
+        </clade>
+        <clade>
+          <name>Gallus_gallus_SRC_kinase_predicted_preproprotein</name>
+          <branch_length>0.11</branch_length>
+          <sequence>
+            <name>Gallus_gallus_SRC_kinase_predicted_preproprotein</name>
+            <mol_seq is_aligned="true">MKQEEDPFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">SRC</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.07</branch_length>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <clade>
+          <name>Xenopus_tropicalis_src_kinase_transcript_variant_2</name>
+          <branch_length>0.13</branch_length>
+          <sequence>
+            <name>Xenopus_tropicalis_src_kinase_transcript_variant_2</name>
+            <mol_seq is_aligned="true">MKQLFDPFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">SRC</property>
+        </clade>
+        <clade>
+          <name>Danio_rerio_src_kinase_isoform_X1_partial_cds</name>
+          <branch_length>0.15</branch_length>
+          <sequence>
+            <name>Danio_rerio_src_kinase_isoform_X1_partial_cds</name>
+            <mol_seq is_aligned="true">MKQLEGPFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">SRC</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.06</branch_length>
+        <clade>
+          <name>Branchiostoma_floridae_ABL_kinase_predicted_protein</name>
+          <branch_length>0.17</branch_length>
+          <sequence>
+            <name>Branchiostoma_floridae_ABL_kinase_predicted_protein</name>
+            <mol_seq is_aligned="true">MKQLEDHFGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">ABL</property>
+        </clade>
+        <clade>
+          <name>Nematostella_vectensis_ABL_kinase_partial_preproprotein</name>
+          <branch_length>0.19</branch_length>
+          <sequence>
+            <name>Nematostella_vectensis_ABL_kinase_partial_preproprotein</name>
+            <mol_seq is_aligned="true">MKQLEDPIGH-WYVASTMKQIEDPFGYWYVAST</mol_seq>
+            <domain_architecture length="520">
+              <domain from="15" to="70" confidence="1.0E-6" id="PF00018">SH3</domain>
+              <domain from="85" to="175" confidence="1.0E-6" id="PF00017">SH2</domain>
+              <domain from="195" to="410" confidence="1.0E-6" id="PF00069">Pkinase</domain>
+              <domain from="425" to="505" confidence="1.0E-6">Ig</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="demo:family" datatype="xsd:string" applies_to="node">ABL</property>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

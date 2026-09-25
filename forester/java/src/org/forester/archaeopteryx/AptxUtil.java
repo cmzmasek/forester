@@ -459,7 +459,7 @@ public final class AptxUtil {
     // The number of distinct {@link DisplayOption}s scanForDataPresence can report (kept in sync by
     // hand with the present.add(...) calls below); used to short-circuit the scan once every flag has
     // been found.
-    private final static int NUM_DATA_PRESENCE_FLAGS = 17;
+    private final static int NUM_DATA_PRESENCE_FLAGS = 18;
 
     /**
      * Scans the whole tree once and returns the set of {@link DisplayOption}s for which at least one
@@ -547,6 +547,13 @@ public final class AptxUtil {
                 if (!present.contains(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)
                         && (s.getDomainArchitecture() != null)) {
                     present.add(DisplayOption.SHOW_DOMAIN_ARCHITECTURES);
+                }
+                // Match the renderer: the alignment is built from the EXTERNAL nodes' aligned sequences
+                // (TreePanel.alignmentLength), so an aligned sequence hanging off an internal node draws nothing
+                // and must not offer the checkbox. An empty string is no alignment either.
+                if (!present.contains(DisplayOption.SHOW_MSA) && n.isExternal() && s.isMolecularSequenceAligned()
+                        && !ForesterUtil.isEmpty(s.getMolecularSequence())) {
+                    present.add(DisplayOption.SHOW_MSA);
                 }
             }
             if (present.size() >= NUM_DATA_PRESENCE_FLAGS) {
@@ -1789,8 +1796,13 @@ public final class AptxUtil {
             }
             // A tree whose tips carry an aligned molecular sequence (loaded FASTA / phyloXML <mol_seq>) -- show the
             // alignment beside the tree right away (data-driven, ON-only).
-            if (hasAlignedSequences(t)) {
-                cp.getMainPanel().getOptions().setShowMsa(true);
+            // Per-tab, so it goes through the checkbox -- which pushes the whole widget set onto whatever tab is
+            // CURRENT. Guarded the same way the auto-colour block below is: this method tolerates being called
+            // for a tree that is not the front tab, and without the guard such a call would switch the alignment
+            // on for someone else's tab and leave the shared widget latched on for every tab opened after it.
+            if (hasAlignedSequences(t) && (cp.getMainPanel().getCurrentTreePanel() != null)
+                    && (cp.getMainPanel().getCurrentTreePanel().getPhylogeny() == t)) {
+                cp.setCheckbox(DisplayOption.SHOW_MSA, true);
             }
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);

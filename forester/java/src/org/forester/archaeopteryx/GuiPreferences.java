@@ -167,6 +167,13 @@ final class GuiPreferences {
             // Tip-image size (a display dimension, like the node-shape size; the show/hide toggle itself is NOT
             // persisted -- it is data-driven, auto-enabled on load when the tree carries image references).
             intPref( "tip_image_size", Options::getTipImageSize, Options::setTipImageSize, 12, 200 ),
+            // The diagnostic readout: off in a fresh install, but once the user has switched it on (or back off)
+            // that is their choice and it survives a restart, like every other display toggle.
+            boolPref( "show_fps", Options::isShowFps, Options::setShowFps ),
+            // How the width is split between the tree and the tracks beside it -- a figure-proportion preference,
+            // so it survives a restart the way the base font and the tip-image size do.
+            doublePref( "tree_width_share", Options::getTreeWidthShare, Options::setTreeWidthShare,
+                        AptxConstants.TREE_WIDTH_SHARE_MIN, AptxConstants.TREE_WIDTH_SHARE_MAX ),
             intPref( "msa_column_width", Options::getMsaColumnWidth, Options::setMsaColumnWidth,
                     AptxConstants.MSA_COLUMN_WIDTH_MIN, AptxConstants.MSA_COLUMN_WIDTH_MAX ),
             boolPref( "show_msa_conservation", Options::isShowMsaConservation, Options::setShowMsaConservation ),

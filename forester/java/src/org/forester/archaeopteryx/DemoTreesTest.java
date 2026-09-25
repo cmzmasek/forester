@@ -146,6 +146,20 @@ public final class DemoTreesTest {
         // sequence alignment: tips carry equal-length aligned molecular sequences (the alignment shown beside the tree)
         ok &= alignmentDemoOk( "alignment.xml" );
 
+        // "Tree share": the demo is only a demo if EVERY width-hungry track is really on the one tree -- long
+        // labels, a domain architecture, an aligned sequence and a colourable field. Miss one and the crowding
+        // the width budget exists to resolve never happens.
+        ok &= alignmentDemoOk( "crowded-tracks.xml" );
+        ok &= hasDomainArchitectures( "crowded-tracks.xml", 8 );
+        ok &= hasCategoricalRef( "crowded-tracks.xml", "demo:family" );
+        ok &= hasBranchLengths( "crowded-tracks.xml" );
+        ok &= hasLongTipLabels( "crowded-tracks.xml", 30 );
+
+        // "Auto-hide crowded data": the nest must actually BE a nest -- near-zero internal branches carrying
+        // support -- and must still contain the contrasting roomy branches, including the lone zero-length one
+        // whose number is kept ("zero is a value, not an absence").
+        ok &= zeroLengthNestOk( "zero-length-nest.xml" );
+
         // bat phylogeny: a large taxonomy tree (common + scientific names + synonyms at the tips, ranks on the clades)
         ok &= batTreeOk( "bat-phylogeny.xml" );
 
@@ -533,6 +547,63 @@ public final class DemoTreesTest {
 
     /** The alignment demo: enough tips, they carry aligned molecular sequences, and all aligned rows are the same
      *  length (a real alignment) with a reasonable number of columns. */
+    /** At least {@code min} tips whose name is at least {@code chars} long -- what makes the labels a real
+     *  competitor for the width rather than a token one. */
+    private static boolean hasLongTipLabels( final String file_name, final int chars ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int long_ones = 0;
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( ( ext.getName() != null ) && ( ext.getName().length() >= chars ) ) {
+                ++long_ones;
+            }
+        }
+        if ( long_ones < phy.getNumberOfExternalNodes() ) {
+            return note( file_name + " every tip label must be at least " + chars + " characters, only " + long_ones
+                    + " of " + phy.getNumberOfExternalNodes() + " are" );
+        }
+        return true;
+    }
+
+    /**
+     * The nest demo: a run of internal branches short enough that their centred support numbers must overlap,
+     * AND the contrasting roomy branches -- one of them of length exactly zero, whose number the auto-hide must
+     * keep because nothing is beside it.
+     */
+    private static boolean zeroLengthNestOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        int nested = 0;
+        boolean exact_zero_with_support = false;
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isRoot() ) {
+                continue;
+            }
+            final boolean has_support = n.getBranchData().isHasConfidences();
+            if ( !n.isExternal() && has_support && ( n.getDistanceToParent() > 0 )
+                    && ( n.getDistanceToParent() < 0.001 ) ) {
+                ++nested;
+            }
+            if ( has_support && ( n.getDistanceToParent() == 0.0 ) ) {
+                exact_zero_with_support = true;
+            }
+        }
+        if ( nested < 10 ) {
+            return note( file_name + " must carry at least 10 near-zero internal branches WITH support (the nest), "
+                    + "got " + nested );
+        }
+        if ( !exact_zero_with_support ) {
+            return note( file_name + " must also carry a branch of length EXACTLY zero with a support value -- the "
+                    + "case whose number must be KEPT (zero is a value, not an absence)" );
+        }
+        return true;
+    }
+
     private static boolean alignmentDemoOk( final String file_name ) {
         final Phylogeny phy = load( file_name );
         if ( phy == null ) {

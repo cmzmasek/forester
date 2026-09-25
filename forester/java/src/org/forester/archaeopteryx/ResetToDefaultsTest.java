@@ -129,7 +129,8 @@ public final class ResetToDefaultsTest {
         o.setConfidenceFromInternalLabels( Options.CONFIDENCE_FROM_INTERNAL_LABELS.NEVER );
         o.setDomainLabelMode( Options.DOMAIN_LABEL_MODE.LEGEND ); // default is ON_DOMAINS
         o.setShowDomainGlow( true ); // default is false
-        o.setShowMsa( true ); // default is false
+        o.setShowFps( true ); // default is false
+        o.setTreeWidthShare( 0.65 ); // default is TREE_WIDTH_SHARE_DEFAULT (0.40)
         o.setMsaColumnWidth( AptxConstants.MSA_COLUMN_WIDTH_MAX ); // default is MSA_COLUMN_WIDTH_DEFAULT
         o.setShowMsaConservation( false ); // default is true
         o.setMsaConservationMeasure( MsaConservation.Measure.INFORMATION ); // default is IDENTITY
@@ -355,7 +356,6 @@ public final class ResetToDefaultsTest {
                   def.getConfidenceFromInternalLabels() );
         ok &= eq( "domainLabelMode", o.getDomainLabelMode(), def.getDomainLabelMode() );
         ok &= eq( "showDomainGlow", o.isShowDomainGlow(), def.isShowDomainGlow() );
-        ok &= eq( "showMsa", o.isShowMsa(), def.isShowMsa() );
         ok &= eq( "msaColumnWidth", o.getMsaColumnWidth(), def.getMsaColumnWidth() );
         ok &= eq( "showMsaConservation", o.isShowMsaConservation(), def.isShowMsaConservation() );
         ok &= eq( "msaConservationMeasure", o.getMsaConservationMeasure(), def.getMsaConservationMeasure() );

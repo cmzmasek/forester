@@ -114,6 +114,8 @@ public final class DemoTreeGenerator {
         write( dir, "heatmap-matrix.xml", heatmapMatrixTree() );
         write( dir, "import-annotations.xml", importAnnotationsTree() );
         write( dir, "alignment.xml", alignmentTree() );
+        write( dir, "crowded-tracks.xml", crowdedTracksTree() );
+        write( dir, "zero-length-nest.xml", zeroLengthNestTree() );
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
@@ -2390,6 +2392,98 @@ public final class DemoTreeGenerator {
         phy.setRooted( true );
         phy.externalNodesHaveChanged();
         return phy;
+    }
+
+    /**
+     * "Tree share": every track at once on ONE tree -- long tip labels, a domain architecture and an aligned
+     * sequence on each tip, plus a Color-by legend. Each of those reserves width, and before the width budget
+     * they reserved it independently, each capped against the WHOLE panel: the caps summed past 100% and the
+     * tree -- which was simply whatever was left -- got a NEGATIVE width and drew as a single vertical line.
+     */
+    private static Phylogeny crowdedTracksTree() {
+        final String base = "MKQLEDPFGH-WYVASTMKQIEDPFGYWYVAST"; // 33 columns, one aligned gap
+        final String[] names = { "Homo_sapiens_SRC_kinase_isoform_X1_preproprotein",
+                                 "Pan_troglodytes_SRC_kinase_isoform_X1_preproprotein",
+                                 "Mus_musculus_Src_kinase_isoform_X2_preproprotein",
+                                 "Gallus_gallus_SRC_kinase_predicted_preproprotein",
+                                 "Xenopus_tropicalis_src_kinase_transcript_variant_2",
+                                 "Danio_rerio_src_kinase_isoform_X1_partial_cds",
+                                 "Branchiostoma_floridae_ABL_kinase_predicted_protein",
+                                 "Nematostella_vectensis_ABL_kinase_partial_preproprotein" };
+        final String[] families = { "SRC", "SRC", "SRC", "SRC", "SRC", "SRC", "ABL", "ABL" };
+        final PhylogenyNode[] tips = new PhylogenyNode[ names.length ];
+        for( int i = 0; i < names.length; ++i ) {
+            // Domains from the verified PFAM_ACCESSIONS table -- a demo must not carry an accession nobody looked
+            // up -- plus "Ig", which deliberately has none, so this tree shows both rollover routes as the
+            // domain demo does (and a fourth domain makes the track a real competitor for the width).
+            final PhylogenyNode n = domainLeaf( names[ i ], 0.05 + ( i * 0.02 ), 520,
+                                                dom( "SH3", 15, 70 ), dom( "SH2", 85, 175 ),
+                                                dom( "Pkinase", 195, 410 ), dom( "Ig", 425, 505 ) );
+            final Sequence s = n.getNodeData().getSequence();
+            s.setMolecularSequence( sub( base, i % base.length(), "ACDEFGHIK".charAt( i % 9 ) ) );
+            s.setMolecularSequenceAligned( true );
+            cat( n, "demo:family", families[ i ] );
+            tips[ i ] = n;
+        }
+        final PhylogenyNode root = clade( 0,
+                clade( 0.06, clade( 0.04, tips[ 0 ], tips[ 1 ] ), clade( 0.05, tips[ 2 ], tips[ 3 ] ) ),
+                clade( 0.07, clade( 0.05, tips[ 4 ], tips[ 5 ] ), clade( 0.06, tips[ 6 ], tips[ 7 ] ) ) );
+        return tree( root, "Crowded tracks (Tree share)",
+                     "Every width-hungry track at once: long tip labels, a domain architecture per tip, an aligned "
+                             + "sequence and a Color-by legend. The tree is allocated its share of the width FIRST "
+                             + "and the tracks divide what is left, so it stays a tree instead of being squeezed to "
+                             + "the line it used to collapse to. Drag the CONTROL PANEL's \"Tree share\" slider "
+                             + "(under Node size) to re-divide it: the alignment is the elastic track and gives way "
+                             + "first, while the labels, the clade bands and the legend column are never shaved -- "
+                             + "half a legend still covers what it was meant to stand clear of. Switch OFF "
+                             + "\"Shorten Labels\" to see the labels compete at full length -- it is on by "
+                             + "default, so they open abbreviated. The domain zoom (d- / d+) trades against the "
+                             + "alignment through the same budget. Works in every "
+                             + "display type: the rectangular layouts divide the depth WIDTH, the circular one the "
+                             + "tip-ring RADIUS, the unrooted one its fan spread." );
+    }
+
+    /**
+     * "Auto-hide crowded data": a NEST of near-zero-length internal branches, each carrying a bootstrap value --
+     * a polytomy resolved arbitrarily, which is what real consensus trees look like. Their support numbers are
+     * drawn centred on their branches, so on a branch a fraction of a pixel wide every one of them lands on top
+     * of its neighbours. Contrast the two well-separated clades at the bottom, whose numbers have room.
+     */
+    private static Phylogeny zeroLengthNestTree() {
+        PhylogenyNode cursor = clade( 0.02, conf( blLeaf( "outgroup", 0.45 ), 100 ) );
+        final PhylogenyNode root = cursor;
+        // 60 deep, NOT a dozen: the numbers only actually collide once the rows are closer than a line of text,
+        // and at a normal window a 17-tip tree leaves them ~35 px apart -- a demo of crowding that does not crowd.
+        // MEASURED on the generated file at 900x600: 0 of 16 numbers suppressed at the original 17 tips; here
+        // 30 of 41 numbers and 24 of 61 symbols, all of them back when "Auto-hide Labels" is switched off.
+        for( int i = 0; i < 60; ++i ) {
+            final PhylogenyNode inner = clade( 0.0004,
+                                               conf( blLeaf( "nested_tip_" + ( i + 1 ), 0.40 ), 41 + ( i % 55 ) ) );
+            conf( inner, 30 + ( i % 68 ) );
+            cursor.addAsChild( inner );
+            cursor = inner;
+        }
+        // ...and a pair of ordinary, well-separated branches: their numbers are never in anyone's way, so they
+        // stay drawn however crowded the nest above is -- and so does the ZERO-length branch below them, because
+        // nothing is beside it. Zero is a value, not an absence.
+        cursor.addAsChild( conf( blLeaf( "roomy_tip_a", 0.35 ), 97 ) );
+        cursor.addAsChild( conf( clade( 0.0, blLeaf( "zero_branch_tip_a", 0.30 ),
+                                        blLeaf( "zero_branch_tip_b", 0.30 ) ), 88 ) );
+        return tree( root, "Auto-hide crowded data (zero-length nest)",
+                     "Fourteen internal branches of essentially no length, each carrying a bootstrap value -- an "
+                             + "arbitrarily resolved polytomy, the shape real consensus trees have. A support "
+                             + "number is drawn CENTRED on its branch, so here each one reaches far past both ends "
+                             + "and lands on its neighbours. With \"Auto-hide Labels\" on (the default) a number "
+                             + "is drawn only where nothing already drawn is in its way, and the support SYMBOLS "
+                             + "are thinned the same way -- never shrunk, because in the size-scaled mode a "
+                             + "symbol's diameter IS its value. Switch the checkbox off to draw every number and "
+                             + "see what it is hiding (30 of 41 numbers and 24 of 61 symbols are dropped at a "
+                             + "900x600 window), or zoom in (Y+) and watch them come back as room appears -- "
+                             + "nothing is hidden except where something already drawn is in the way. The branch "
+                             + "of length EXACTLY zero near the bottom is the reason the rule asks about overlap "
+                             + "rather than about branch length: give it room (zoom in, or switch auto-hide off) "
+                             + "and its number is drawn like any other, because a missing number would claim "
+                             + "there is no value where one was measured." );
     }
 
     private static PhylogenyNode alignedLeaf( final String name, final double branch_length, final String aligned_seq ) {

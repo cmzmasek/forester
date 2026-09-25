@@ -79,10 +79,10 @@ public final class MsaTrackRenderTest {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                 tp.setSize( 760, 460 );
-                tp.getOptions().setShowMsa( false );
+                tp.setShowMsa( false );
                 tp.resetPreferredSize();
                 final int off = tp.getPreferredSize().width;
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 tp.resetPreferredSize();
                 final int on = tp.getPreferredSize().width;
                 if ( on <= off ) {
@@ -92,11 +92,11 @@ public final class MsaTrackRenderTest {
                 if ( tp.msaRulerReserveForTest() <= 0 ) {
                     fail( ok, "the MSA column ruler must reserve a bottom band when shown in root-left" );
                 }
-                tp.getOptions().setShowMsa( false );
+                tp.setShowMsa( false );
                 if ( tp.msaRulerReserveForTest() != 0 ) {
                     fail( ok, "the MSA column ruler must reserve nothing when the alignment is hidden" );
                 }
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
             } );
             // nice tick step: ~5-8 ticks across the visible span (1/2/5 x 10^k)
             if ( ( TreePanel.niceColumnStepForTest( 30 ) != 5 ) || ( TreePanel.niceColumnStepForTest( 300 ) != 50 )
@@ -110,7 +110,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 tp.getOptions().setMsaColumnWidth( 40 ); // wide cells -> the 34-col alignment exceeds its window
                 tp.setPreferredSize( new java.awt.Dimension( 560, 460 ) );
                 tp.setSize( 560, 460 );
@@ -138,7 +138,7 @@ public final class MsaTrackRenderTest {
                 try {
                     tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                     tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                    tp.getOptions().setShowMsa( true );
+                    tp.setShowMsa( true );
                     tp.setPreferredSize( new java.awt.Dimension( 900, 460 ) );
                     tp.setSize( 900, 460 );
                     mf[ 0 ].showWhole();
@@ -171,10 +171,10 @@ public final class MsaTrackRenderTest {
                 tp.setSize( 760, 460 );
                 mf[ 0 ].showWhole();
                 tp.calcParametersForPainting( 760, 460 );
-                tp.getOptions().setShowMsa( false );
+                tp.setShowMsa( false );
                 gap_off[ 0 ] = countFaintGray(
                         AptxUtil.renderPhylogenyToImage( 760, 460, tp, tp.getOptions(), false, 1, false ) );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 gap_on[ 0 ] = countFaintGray(
                         AptxUtil.renderPhylogenyToImage( 760, 460, tp, tp.getOptions(), false, 1, false ) );
             } );
@@ -187,7 +187,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 final int total = ALIGN[ 0 ].length();
                 // (a) the whole alignment FITS -> both boundaries bracket it
                 tp.getOptions().setMsaColumnWidth( 6 );
@@ -231,7 +231,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 tp.getOptions().setMsaColumnWidth( 12 ); // wide enough that the consensus letters are drawn
                 tp.setSize( 900, 460 );
                 mf[ 0 ].showWhole();
@@ -318,7 +318,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 tp.getOptions().setMsaColumnWidth( 12 );
                 // names long enough that the label column is a real share of the width
                 for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
@@ -411,7 +411,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 tp.getOptions().setMsaColumnWidth( 12 );
                 for( final PhylogenyNode t : tp.getPhylogeny().getExternalNodes() ) {
                     if ( !t.getName().startsWith( "influenza_" ) ) {
@@ -457,7 +457,7 @@ public final class MsaTrackRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 // sweep heights so at least one lands on the fractional ydistance that straddles a rounding boundary
                 for( int h = 331; h <= 520; h += 7 ) {
                     tp.setSize( 700, h );
@@ -497,9 +497,9 @@ public final class MsaTrackRenderTest {
             tp.setSize( w, h );
             mf.showWhole();
             tp.calcParametersForPainting( w, h );
-            tp.getOptions().setShowMsa( false );
+            tp.setShowMsa( false );
             off[ 0 ] = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false ) );
-            tp.getOptions().setShowMsa( true );
+            tp.setShowMsa( true );
             on[ 0 ] = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false ) );
         } );
         if ( expect_msa ) {
@@ -592,7 +592,7 @@ public final class MsaTrackRenderTest {
                 // Pin the layout: collapse() pops a MODAL dialog in UNROOTED, and a modal opened inside
                 // invokeAndWait never returns -- the persisted display type is inherited on a standalone run.
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
                 tp.getOptions().setShowMsaConservation( true );
                 tp.getOptions().setMsaConservationMeasure( MsaConservation.Measure.IDENTITY );
                 tp.setSize( 700, 460 );

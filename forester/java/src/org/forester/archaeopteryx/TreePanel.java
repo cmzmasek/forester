@@ -209,6 +209,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // radius. Cap that reservation at this fraction of the available radius, so a tree whose labels are long relative
     // to the canvas still draws a real circle/fan (the labels then extend past the canvas edge -- zoom out or use
     // "Shorten Labels" to see them) instead of collapsing the whole tree onto the centre point.
+    // (Superseded by the "Tree share" setting, which now governs the radius split in circularRadius the way it
+    // governs the width split in the rectangular layouts; kept for the unrooted fan, which reserves separately.)
     private final static double RADIAL_LABEL_MAX_RATIO = 0.5;
     // Floor the circular tip-ring at this fraction of the available radius so a wide domain track (reserved fully)
     // can't collapse the ring to nothing; only a pathologically huge domain track then clips.
@@ -812,6 +814,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     public final void setTree(final Phylogeny t) {
         setNodeInPreorderToNull(); // also clears any stale branch-hover preview
         _phylogeny = t;
+        invalidateAlignmentLength(); // new data: the memo must not outlive the tree it was measured from
     }
 
     public final void setWaitCursor() {
@@ -2611,20 +2614,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // fade a non-hit's branch-length number too (same dimNonMatch wash as the name/taxonomy labels)
         g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getBranchLengthColor()),
                 isInFoundNodes(node), bl_bw));
+        // Anchored at the branch start and running rightward, so on a short branch it runs over its neighbour.
+        final String bl_str = FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent());
+        // The SAME offset the draw below uses: EURO_STYLE and ROUNDED start the number further right (their
+        // branch joints do), and claiming at +3 there would reserve 5-7 px of empty space while leaving the
+        // number's real tail unprotected.
+        final float bl_x = node.isRoot() ? 3 : (node.getParent().getXcoord() + branchLengthTextOffset());
+        final float bl_baseline = node.getYcoord() - getTreeFontSet().getSmallMaxDescent();
+        // ...and the branch length from the branch line UP, for the same reason (see paintConfidenceValues).
+        final float bl_h = getTreeFontSet().getFontMetricsSmall().getHeight();
+        if (!claimNumberSpace(bl_x, node.getYcoord() - bl_h,
+                getTreeFontSet().getFontMetricsSmall().stringWidth(bl_str), bl_h)) {
+            return;
+        }
         if (!node.isRoot()) {
             if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE) {
                 TreePanel.drawString(FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()),
-                        node.getParent().getXcoord() + EURO_D,
+                        node.getParent().getXcoord() + branchLengthTextOffset(),
                         node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
                         g);
             } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED) {
                 TreePanel.drawString(FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()),
-                        node.getParent().getXcoord() + ROUNDED_D,
+                        node.getParent().getXcoord() + branchLengthTextOffset(),
                         node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
                         g);
             } else {
                 TreePanel.drawString(FORMATTER_BRANCH_LENGTH.format(node.getDistanceToParent()),
-                        node.getParent().getXcoord() + 3,
+                        node.getParent().getXcoord() + branchLengthTextOffset(),
                         node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
                         g);
             }
@@ -2634,6 +2650,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     node.getYcoord() - getTreeFontSet().getSmallMaxDescent(),
                     g);
         }
+    }
+
+    /** Where a branch-length number starts, measured from the parent's x -- the joint styles push it clear of
+     *  their own elbow. One source, so the claimed box and the drawn text can never disagree. */
+    private float branchLengthTextOffset() {
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE) {
+            return EURO_D;
+        }
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED) {
+            return ROUNDED_D;
+        }
+        return 3;
     }
 
     final private void paintBranchLite(final Graphics2D g,
@@ -3339,11 +3367,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getConfidenceColor()),
                     isInFoundNodes(node), conf_bw));
             final String conf_str = sb.toString();
-            TreePanel.drawString(conf_str,
-                    parent_x + ((x - parent_x
-                            - getTreeFontSet().getFontMetricsSmall().stringWidth(conf_str)) / 2),
-                    (node.getYcoord() + getTreeFontSet().getSmallMaxAscent()) - 1,
-                    g);
+            final float conf_w = getTreeFontSet().getFontMetricsSmall().stringWidth(conf_str);
+            final float conf_x = parent_x + ((x - parent_x - conf_w) / 2);
+            final float conf_baseline = (node.getYcoord() + getTreeFontSet().getSmallMaxAscent()) - 1;
+            // Centred on the branch, so on a short branch it reaches past BOTH ends -- harmless with nothing
+            // near it, mislabelling when it lands on a neighbour's number. Ask whether it actually would.
+            // From the branch line DOWN. The confidence sits below the line and the branch length above it, and
+            // their boxes would otherwise share the single pixel at the line (conf top = Ycoord - 1, length
+            // bottom = Ycoord) -- enough for a node's own two numbers to refuse each other on a short branch
+            // although no ink overlaps.
+            if (!claimNumberSpace(conf_x, node.getYcoord(), conf_w,
+                    getTreeFontSet().getFontMetricsSmall().getHeight())) {
+                return;
+            }
+            TreePanel.drawString(conf_str, conf_x, conf_baseline, g);
         }
     }
 
@@ -3383,6 +3420,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final boolean found = isInFoundNodes(node);
         final float baseline = (float) (mid.y + (getTreeFontSet().getSmallMaxAscent() / 2.0) - 1);
         float x = (float) (mid.x + VERTICAL_BRANCH_LABEL_PAD);
+        // Drawn in the BASE frame (the numbers stay horizontal beside a branch that runs down the screen), so the
+        // box claimed here is in device coordinates like every other -- the one occupancy map covers both.
+        final String whole = support.isEmpty() ? length : (length.isEmpty() ? support : (support + " " + length));
+        if (!claimNumberSpace(x, baseline - getTreeFontSet().getSmallMaxAscent(),
+                getTreeFontSet().getFontMetricsSmall().stringWidth(whole),
+                getTreeFontSet().getFontMetricsSmall().getHeight())) {
+            g.setTransform(saved);
+            return;
+        }
         if (!support.isEmpty()) {
             g.setColor(dimNonMatch(inkColor(to_pdf, to_graphics_file, getTreeColorSet().getConfidenceColor()), found, bw));
             TreePanel.drawString(support, x, baseline, g);
@@ -3431,6 +3477,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
         final int gap_w = (support.isEmpty() || length.isEmpty()) ? 0 : fm.stringWidth(" ");
         final int total_w = fm.stringWidth(support) + gap_w + fm.stringWidth(length);
+        // The text rides the branch, so its box is claimed as the AXIS-ALIGNED bounds of the rotated label,
+        // centred on the branch midpoint. Conservative (a diagonal label's bounds are larger than its ink), which
+        // errs toward dropping a crowded number rather than overprinting one.
+        final int line_h = fm.getHeight();
+        final double rot_w = Math.abs(total_w * Math.cos(branch_angle)) + Math.abs(line_h * Math.sin(branch_angle));
+        final double rot_h = Math.abs(total_w * Math.sin(branch_angle)) + Math.abs(line_h * Math.cos(branch_angle));
+        if (!claimNumberSpace((float) (mid_x - (rot_w / 2)), (float) (mid_y - (rot_h / 2)), (float) rot_w,
+                (float) rot_h)) {
+            return;
+        }
         final boolean bw = (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite();
         final boolean found = isInFoundNodes(node);
         double m = branch_angle % TWO_PI;
@@ -3604,6 +3660,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             cy = center[1];
         }
         final float half = diameter / 2.0f;
+        // Riding "Auto-hide crowded data", as the tip labels do. A point marker is NOT crowded by a short branch:
+        // it stays centred on its own row and a few px of overhang onto the junction still reads as this branch's
+        // mark. It IS crowded by the neighbouring ROW -- once the dots merge they become a blob, and in
+        // SIZE_SCALED mode a blob misreports every value it swallowed (measured: 30-57% of symbols overlapped
+        // another on the deep trees). Shrinking the symbol to fit is NOT the answer: its diameter IS the support
+        // value, so a smaller dot would report weaker support. Its own map, not the numbers' -- the symbol sits
+        // ON the branch line and the numbers just above and below it, so one shared map would have a branch's
+        // symbol block that same branch's numbers.
+        if (!claimSymbolSpace(cx - half, cy - half, diameter)) {
+            return;
+        }
         drawOvalFilled(cx - half, cy - half, diameter, diameter, g);
     }
 
@@ -6169,6 +6236,70 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (luminance > 0.55) ? Color.BLACK : Color.WHITE;
     }
 
+    // ---- diagnostic paint-time / FPS readout (Settings > Application > Diagnostics; off in a fresh install) ---
+    // Screen only and drawn after everything else, so it can never reach an exported figure. It reports the mean
+    // time the last frames took to PAINT and the rate that implies -- not the rate Swing happens to be repainting
+    // at, which is zero while nothing moves and would say nothing about the cost of a frame.
+    private final static int FPS_SAMPLE_FRAMES = 30;
+    private final long[]     _frame_nanos      = new long[FPS_SAMPLE_FRAMES];
+    private int              _frame_index;
+    private int              _frame_count;
+
+    private void recordFrameTime(final long nanos) {
+        _frame_nanos[_frame_index] = nanos;
+        _frame_index = (_frame_index + 1) % FPS_SAMPLE_FRAMES;
+        if (_frame_count < FPS_SAMPLE_FRAMES) {
+            ++_frame_count;
+        }
+    }
+
+    /** Mean paint time over the last frames in milliseconds, or 0 before anything has been timed. */
+    final double averagePaintMillis() {
+        if (_frame_count < 1) {
+            return 0;
+        }
+        long sum = 0;
+        for (int i = 0; i < _frame_count; ++i) {
+            sum += _frame_nanos[i];
+        }
+        return (sum / (double) _frame_count) / 1_000_000.0;
+    }
+
+    /** The readout as drawn, or null when there is nothing to report yet. */
+    final String fpsReadout() {
+        final double ms = averagePaintMillis();
+        if (ms <= 0) {
+            return null;
+        }
+        return String.format("%.1f ms  %.0f fps", ms, 1000.0 / ms);
+    }
+
+    final private void paintFpsCounter(final Graphics2D g, final int region_x, final int region_width,
+                                       final int region_y_top) {
+        final String label = fpsReadout();
+        if (label == null) {
+            return;
+        }
+        final Font saved = g.getFont();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        final int tw = fm.stringWidth(label);
+        final int x = Math.max(region_x + MOVE, (region_x + region_width) - legendColumnReserve() - tw - MOVE);
+        // one line down when the "Time tree" badge already holds this corner, so the two never overprint. The
+        // badge is drawn in the rectangular family ONLY, so a dated tree in a circular/unrooted layout must not
+        // be shifted for a badge that is not on screen.
+        final int lines = (!isRadialLayout() && (timeTreeBadgeLabel() != null)) ? 1 : 0;
+        final int y = region_y_top + fm.getAscent() + 4 + (lines * (fm.getHeight() + 2));
+        // a faint backdrop: this is chrome over an arbitrary drawing, and a diagnostic that cannot be read is
+        // useless. Never exported, so it costs the figure nothing.
+        final Color bg = getTreeColorSet().getBackgroundColor();
+        g.setColor(new Color(bg.getRed(), bg.getGreen(), bg.getBlue(), 190));
+        g.fillRect(x - 3, y - fm.getAscent() - 2, tw + 6, fm.getHeight() + 4);
+        g.setColor(getTreeColorSet().getBranchLengthColor());
+        g.drawString(label, x, y);
+        g.setFont(saved);
+    }
+
     /** Draws the small "Time tree" badge at the top-right of the drawing region (viewport-fixed on screen, the export
      *  extent for a file), when the current tree is a time tree. WYSIWYG. */
     final private void paintTimeTreeBadge(final Graphics2D g,
@@ -6808,7 +6939,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // drawn, reserve the FULL reach (labels + the bounded domain track) -- capped so the fan can't collapse --
             // so the domains fit rather than overflowing the canvas.
             final double half = radialDiameter() / 2.0;
-            final double cap = domainBoxesDrawnInCurrentLayout() ? (1 - RADIAL_MIN_TREE_RATIO) : RADIAL_LABEL_MAX_RATIO;
+            // The label margin may take at most what the tree's share leaves -- the same "Tree share" setting the
+            // other layouts divide by, so the slider moves the fan too instead of being inert in this one layout.
+            final double cap = 1.0 - treeWidthShare();
             final int per_side = (int) Math.min(MOVE + getLongestExtNodeInfo(), half * cap);
             d = Math.max(MIN_RADIAL_DIAMETER, radialDiameter() - (2 * per_side));
         } else {
@@ -6873,6 +7006,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  full-canvas export moves out from under the panel. */
     final int circularRadiusForTest() {
         return _circular_radius;
+    }
+
+    /** Test hook: the unrooted fan's spread factor -- the quantity "Tree share" governs in THAT layout (the
+     *  circular one uses the tip-ring radius, the rectangular family the depth width). */
+    final float urtFactorForTest() {
+        return getUrtFactor();
     }
 
     /** Test hook: the annotation-column cell the showing rollover is for, or null (a node card, or no card). */
@@ -7121,24 +7260,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int y = isVerticalOrientation() ? x_in : y_in;
         _layout_width = x_in; // what legendColumnReserve() judges "too wide a legend" against
         // updateStyle(); not needed?
+        invalidateAlignmentLength(); // a fresh pass: everything below may ask for it many times
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             initNodeData();
             calculateLongestExtNodeInfo();
-            if ((getLongestExtNodeInfo() > (x * 0.6))
-                    && (getTreeFontSet().getLargeFont().getSize() > (2 + TreeFontSet.FONT_SIZE_CHANGE_STEP))) {
-                while ((getLongestExtNodeInfo() > (x * 0.7))
-                        && (getTreeFontSet().getLargeFont().getSize() > 2)) {
-                    getMainPanel().getTreeFontSet().decreaseFontSize(getConfiguration().getMinBaseFontSize(), true);
+            // Fit the labels to the width the BUDGET leaves them, not to a fixed 60/70% of the panel. The old
+            // fractions were blind to the alignment and the annotation columns, so on a tree carrying both, the
+            // labels were "fitted" into room that was already spoken for and the tree got whatever survived --
+            // which measured NEGATIVE on the deep trees. labelWidthCap takes the tree's guaranteed share and the
+            // other tracks' minimums off the top first, so what the labels fit into is genuinely theirs.
+            final int label_cap = labelWidthCap(x);
+            final int label_grow_back = (int) Math.round(label_cap * LABEL_CAP_GROW_BACK);
+            final int min_font = autofitMinFontSize();
+            if ((getLongestExtNodeInfo() > label_grow_back)
+                    && (getTreeFontSet().getLargeFont().getSize() > (min_font + TreeFontSet.FONT_SIZE_CHANGE_STEP))) {
+                while ((getLongestExtNodeInfo() > label_cap)
+                        && (getTreeFontSet().getLargeFont().getSize() > min_font)) {
+                    getMainPanel().getTreeFontSet().decreaseFontSize(min_font, true);
                     calculateLongestExtNodeInfo();
                 }
             } else {
-                while ((getLongestExtNodeInfo() < (x * 0.6)) && (getTreeFontSet().getLargeFont()
+                while ((getLongestExtNodeInfo() < label_grow_back) && (getTreeFontSet().getLargeFont()
                         .getSize() <= (getTreeFontSet().getLargeFontMemory().getSize()
                         - TreeFontSet.FONT_SIZE_CHANGE_STEP))) {
                     getMainPanel().getTreeFontSet().increaseFontSize();
                     calculateLongestExtNodeInfo();
                 }
             }
+            // The labels have settled: now divide the width for real, once, for every reserve below to read.
+            computeWidthBudget(x);
             // the overlap auto-fit above may have changed the displayed font size -> reflect it in the slider
             if (getControlPanel() != null) {
                 getControlPanel().updateFontSizeSlider();
@@ -7808,6 +7958,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Test hooks for the in-legend controls (their last-drawn on-screen bounds, or null). */
+    /** Test hook: how many value rows the last-drawn legend laid out (drives the "+N more" check). */
+    int legendRowCountForTest() {
+        return _legend_row_labels.size();
+    }
+
+    /** Test hook: the y at the centre of the legend's FIRST value row -- where a colour-square click lands. */
+    int legendFirstRowCenterYForTest() {
+        return _legend_rows_top + (_legend_row_height / 2);
+    }
+
+    /** Test hook: the value a click would resolve to (null off any value row). */
+    String legendValueAtForTest(final MouseEvent e) {
+        return legendValueAt(e);
+    }
+
     Rectangle legendSortToggleBoundsForTest() {
         return _legend_sort_toggle_bounds;
     }
@@ -8011,6 +8176,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * in a vertical orientation the tips run along the bottom, not the right edge).
      */
     final int legendColumnReserve() {
+        // NOT the width budget's to withhold. This column is what keeps the legend off the tracks it would
+        // otherwise cover -- a readability failure -- whereas the tree's guaranteed share is a preference; when
+        // the two cannot both be had, the overlap is the worse outcome. It already caps itself at
+        // LEGEND_COLUMN_MAX_SHARE of the width, and a dragged legend asks for no column at all. (An earlier
+        // version let the budget drop it when the slack ran out, which put the legend straight back over the
+        // annotation-column headers -- LegendColumnTest caught it.)
+        return legendColumnReserveWanted();
+    }
+
+    /** The column a right-edge legend would like, before the budget decides whether there is room for it. */
+    private int legendColumnReserveWanted() {
         if (!reservesLegendColumn() || isRadialLayout() || isVerticalOrientation()) {
             return 0;
         }
@@ -8100,12 +8276,54 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final java.awt.image.BufferedImage scratch = new java.awt.image.BufferedImage(1, 1,
                 java.awt.image.BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g = scratch.createGraphics();
+        // MEASURING MUST LEAVE NO TRACE. The measurement is deliberately the drawing code itself -- that is what
+        // stops it drifting from what is drawn -- but that code also RECORDS each legend's on-screen hit region as
+        // it goes, and here it is drawing into the sentinel (0, 0, 100000, 100000) box this measures in. Left
+        // behind, those off-screen rectangles are exactly what every legend hit-test reads, so the legends stop
+        // responding to clicks and drags altogether -- no drag, no [by count], no [show all], no colour square.
+        // That is not hypothetical: a caller asking for the legend-column reserve AFTER the real draw overwrote
+        // the real bounds with x=99843 on a 1400 px panel. Snapshot and restore every bounds field rather than
+        // guarding each writer, so no recorder -- present or future -- can leak out of a measurement.
+        // The box each legend was drawn in...
+        final Rectangle saved_property = _property_legend_bounds;
+        final Rectangle saved_size = _size_legend_bounds;
+        final Rectangle saved_pie = _ancestral_pie_legend_bounds;
+        final Rectangle saved_taxa = _internal_taxa_key_bounds;
+        final Rectangle saved_domain = _domain_legend_bounds;
+        // ...its in-legend CONTROLS ([colors]/[gradient], [by count]/[A-Z], "+N more"/"show fewer")...
+        final Rectangle saved_mode_toggle = _legend_mode_toggle_bounds;
+        final Rectangle saved_sort_toggle = _legend_sort_toggle_bounds;
+        final Rectangle saved_more = _legend_more_bounds;
+        // ...and the value-row layout a click is mapped through to reach a colour square. All three groups are
+        // recorded while drawing, so all three have to be put back, or the legend keeps its box but loses its
+        // controls -- which looks like "the chips do nothing" rather than an obviously broken legend.
+        // The row group is belt-and-braces, and deliberately so: MEASURED, restoring it changes nothing today,
+        // because the sentinel box and the real box both start at y ~0, the row lookup keys off Y only, and the
+        // shared legend is never placed at the bottom -- so only X diverges and X is not consulted. Its mutation
+        // therefore survives the test, which is recorded here rather than left for someone to rediscover. It is
+        // kept because the invariant worth having is "measuring leaves NO trace", not "leaves no trace that
+        // happens not to matter": the moment this legend is placed anywhere but the top, the sentinel's y ~99900
+        // would map every click to the wrong row.
+        final java.util.List<String> saved_rows = _legend_row_labels;
+        final int saved_rows_top = _legend_rows_top;
+        final int saved_row_height = _legend_row_height;
         try {
             _last_legend_box_size = null;
             draw.accept(g);
             return _last_legend_box_size;
         } finally {
             g.dispose();
+            _property_legend_bounds = saved_property;
+            _size_legend_bounds = saved_size;
+            _ancestral_pie_legend_bounds = saved_pie;
+            _internal_taxa_key_bounds = saved_taxa;
+            _domain_legend_bounds = saved_domain;
+            _legend_mode_toggle_bounds = saved_mode_toggle;
+            _legend_sort_toggle_bounds = saved_sort_toggle;
+            _legend_more_bounds = saved_more;
+            _legend_row_labels = saved_rows;
+            _legend_rows_top = saved_rows_top;
+            _legend_row_height = saved_row_height;
         }
     }
 
@@ -11299,6 +11517,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Total horizontal space the annotation columns occupy (0 when none), including the gaps around them.
      * Zero for circular/unrooted layouts, where the columns are not drawn, so no width is reserved. */
+    /**
+     * Total horizontal space the annotation columns occupy (0 when none), including the gaps around them; zero in
+     * the circular/unrooted layouts, which do not draw them.
+     * <p>
+     * NON-ELASTIC, so the width budget is told this as a request it cannot shrink and there is no separate
+     * "wanted" or "minimum": the matrix dendrogram and the clustergram derive their geometry from each column's
+     * own {@code annotationColumnWidth(i)}, so a stack total smaller than the sum of those parts puts the marks
+     * over the wrong columns (measured: 5 of 17 columns lost their dendrogram leaf). Squeezing the stack properly
+     * means scaling each column -- a change to the clustergram geometry, not to this reservation.
+     */
     private int annotationColumnsWidth() {
         if (!hasAnnotationColumns() || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
@@ -12977,9 +13205,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // collapse (this SHRINKS the ring rather than clipping -- the user wants domains + labels to fit).
             final double reach = _length_of_longest_text_only + _longest_rendered_domain + DOMAIN_RADIAL_GAP
                 + RenderableDomainArchitecture.TRACK_LEFT_PAD;
-            return (int) Math.max(avail - reach, avail * RADIAL_MIN_TREE_RATIO);
+            // The tree's guaranteed share, here measured against the RADIUS -- the same "Tree share" setting the
+            // rectangular layouts divide their width by, so the slider means the same thing in every display type
+            // instead of being inert in two of them.
+            return (int) Math.max(avail - reach, avail * treeWidthShare());
         }
-        final int label = (int) Math.min(getLongestExtNodeInfo(), avail * RADIAL_LABEL_MAX_RATIO);
+        final int label = (int) Math.min(getLongestExtNodeInfo(), avail * (1.0 - treeWidthShare()));
         return (int) (avail - label);
     }
 
@@ -13208,12 +13439,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Whether the alignment track is drawn now: option on, a root-left rectangular layout, and the tree carries an
      *  aligned sequence (so vertical/circular reserve nothing and draw nothing -- the approved per-item exception). */
     private boolean msaShown() {
-        return getOptions().isShowMsa() && !isVerticalOrientation() && !isRadialLayout() && (alignmentLength() > 0);
+        return isShowMsa() && !isVerticalOrientation() && !isRadialLayout() && (alignmentLength() > 0);
     }
 
     /** The number of alignment columns = the longest aligned tip sequence (uncached; O(tips), called a few times per
      *  layout/paint). Tips with a shorter/absent sequence simply run out of cells. */
+    /**
+     * Cached for the duration of a layout/paint pass. It is an O(tips) walk, and the width budget asks for it
+     * repeatedly within one pass -- labelWidthCap, computeWidthBudget and every rightMarginExtraWidth() (itself
+     * called several times in calcParametersForPainting and again while painting) all reach it through
+     * msaShown() / msaTrackWidthWanted(). Invalidated at the top of each pass and whenever the tree is replaced,
+     * so it can never outlive the data it was measured from.
+     */
+    private int _alignment_length_cache = -1;
+
     private int alignmentLength() {
+        if (_alignment_length_cache >= 0) {
+            return _alignment_length_cache;
+        }
+        _alignment_length_cache = computeAlignmentLength();
+        return _alignment_length_cache;
+    }
+
+    /** Drops the per-pass alignment-length memo (a new pass, or new data). */
+    private void invalidateAlignmentLength() {
+        _alignment_length_cache = -1;
+    }
+
+    private int computeAlignmentLength() {
         int max = 0;
         if ((_phylogeny == null) || _phylogeny.isEmpty()) {
             return 0;
@@ -13357,11 +13610,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  window is bounded to a share of the viewport so a LONG alignment never drags the tree off-screen -- a short
      *  alignment shows in full, a longer one shows a scrollable window (its own {@link #_msa_scrollbar}). */
     private int msaTrackWidth() {
+        return granted(LayoutWidthBudget.Part.MSA, msaTrackWidthWanted());
+    }
+
+    /** What the alignment window would take if nothing else competed: the whole alignment, capped at the share of
+     *  the viewport it may ever claim. The budget then decides how much of that it actually gets. */
+    private int msaTrackWidthWanted() {
         if (!msaShown()) {
             return 0;
         }
         final int full_px = Math.round(alignmentLength() * getOptions().getMsaColumnWidth());
         return MSA_TRACK_GAP + Math.min(full_px, msaBandBudgetPx());
+    }
+
+    /** The least the alignment window may be squeezed to and still say anything -- never more than it wants. */
+    private int msaTrackWidthMin() {
+        return Math.min(msaTrackWidthWanted(), MSA_TRACK_GAP + MSA_MIN_BAND_PX);
     }
 
     /** The maximum pixel width the MSA window may occupy: a share of the scroll-pane viewport (the tree keeps the rest).
@@ -13889,7 +14153,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * label whose horizontal extent is the font height). 0 when neither columns nor bands are shown.
      */
     private int rightMarginExtraWidth() {
-        int extra = annotationColumnsWidth() + msaTrackWidth() + legendColumnReserve();
+        return annotationColumnsWidth() + msaTrackWidth() + legendColumnReserve() + cladeBandsReserve();
+    }
+
+    /** The depth-axis room the clade bars/brackets and their labels need. Non-elastic: squeezing it would break the
+     *  nested-column geometry, so the width allocator is given this as a request it cannot shrink. */
+    private int cladeBandsReserve() {
+        int extra = 0;
         if (hasCladeBands()) {
             if (_clade_bands_mode == CLADE_VIS.BOXES) {
                 extra += CLADE_BAND_RIGHT_PAD;
@@ -13902,6 +14172,140 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return extra;
+    }
+
+    // ---- the horizontal width budget ---------------------------------------------------------------------------
+    // The tree is allocated its share of the width FIRST (see LayoutWidthBudget); the tracks beside it then divide
+    // what is left. Recomputed once per layout pass in calcParametersForPainting and read by the reserve methods
+    // below, so every one of them sees the SAME division. Null before the first layout -- each reserve then falls
+    // back to what it wants, which is the pre-allocator behaviour.
+    private LayoutWidthBudget _width_budget;
+
+    /** The width this layout pass granted {@code part}, or {@code want} while no budget has been computed yet. */
+    private int granted(final LayoutWidthBudget.Part part, final int want) {
+        return (_width_budget == null) ? want : Math.min(want, _width_budget.granted(part));
+    }
+
+    /** Test hook: the width the current layout pass granted a part (-1 before the first pass). */
+    final int grantedWidthForTest(final LayoutWidthBudget.Part part) {
+        return (_width_budget == null) ? -1 : _width_budget.granted(part);
+    }
+
+    /** Test hook: the depth-axis width the current layout pass left for the tree itself (-1 before the first pass). */
+    final int grantedTreeWidthForTest() {
+        return (_width_budget == null) ? -1 : _width_budget.treeWidth();
+    }
+
+    /** Test hook: the width the reserves ACTUALLY take off the depth axis. It must not exceed what the budget
+     *  granted them -- otherwise the allocation is arithmetic the layout quietly ignores, and the tree is back to
+     *  being the remainder. */
+    final int actualSideWidthForTest() {
+        return depthLabelReserve() + rightMarginExtraWidth();
+    }
+
+    /** Test hook: the tip-label font size the auto-fit settled on. */
+    final int labelFontSizeForTest() {
+        return getTreeFontSet().getLargeFont().getSize();
+    }
+
+    /** Test hook: the floor the label auto-fit may not shrink past. */
+    final int autofitMinFontSizeForTest() {
+        return autofitMinFontSize();
+    }
+
+    /** Grow the font back only while the labels are under this fraction of their cap -- the hysteresis band that
+     *  keeps the auto-fit from oscillating between two sizes on consecutive passes. 6/7, the ratio the old fixed
+     *  0.6 / 0.7 thresholds had. */
+    private final static double LABEL_CAP_GROW_BACK = 6.0 / 7.0;
+
+    /** Never demand that the labels fit into less than this, however greedy the other tracks are. */
+    private final static int    LABEL_CAP_MIN_PX    = 40;
+
+    /**
+     * The fixed margin the depth axis never gets, which the budget must divide AROUND: the depth scale is
+     * computed as {@code x - 2 * MOVE - labels - rightMarginExtraWidth() - xdistance}, so budgeting against a
+     * single MOVE promised the tree 20 px it was never going to receive (measured: the budget reported 455 px
+     * where the scale got 434). The residual {@code xdistance} is one depth STEP, not a margin, and is left out.
+     */
+    private final static int    DEPTH_AXIS_FIXED_MARGIN = 2 * MOVE;
+
+    // The auto-fit shrinks the tip labels to fit the width the budget leaves them -- but not past readability
+    // (AptxConstants.LABEL_AUTOFIT_MIN_FONT_SIZE). Below that it stops and lets the labels OVERFLOW their cap; the
+    // budget then squeezes the elastic tracks to their minimums and, if it still does not fit, the tree dips under
+    // its share. Better than the alternative: a 3 px label is not a smaller label, it is an unreadable one. (The
+    // old flat "labels may take 70%" rule was loose enough to reach such sizes only on a hopelessly narrow window;
+    // a budget-derived cap reaches them much sooner.)
+    /** The smallest font the label auto-fit may shrink to -- never below what the configuration asks for. */
+    private int autofitMinFontSize() {
+        final int configured = (getConfiguration() == null) ? TreeFontSet.MIN_FONT_SIZE
+                : getConfiguration().getMinBaseFontSize();
+        return Math.max(AptxConstants.LABEL_AUTOFIT_MIN_FONT_SIZE, configured);
+    }
+
+    /** The tree's guaranteed share of the width, from the user's "Tree share" setting (clamped by Options). */
+    private double treeWidthShare() {
+        final Options o = getOptions();
+        return (o == null) ? AptxConstants.TREE_WIDTH_SHARE_DEFAULT : o.getTreeWidthShare();
+    }
+
+    /**
+     * The width the tip labels (with the domain track that rides on them) may occupy -- what is left of the depth
+     * axis once the tree has its guaranteed share and the other tracks have their minimums. The font auto-fit
+     * shrinks the labels into this, so the labels can no longer be "fitted" into width that is already spoken for.
+     * In a vertical or radial layout there is no such column to divide, so the historical 70% rule stands.
+     */
+    private int labelWidthCap(final int x) {
+        if (isRadialLayout()) {
+            // No depth COLUMN to divide: the radial layouts trade the RADIUS instead, in circularRadius().
+            return (int) Math.round(x * 0.7);
+        }
+        final int usable = Math.max(0, x - DEPTH_AXIS_FIXED_MARGIN);
+        final int tree_floor = (int) Math.round(usable * treeWidthShare());
+        // The legend column belongs in here. The auto-fit grows the labels until they FILL this cap, so anything
+        // left out of it is space the labels will take -- and the legend was: computeWidthBudget then found less
+        // than a legend's width of slack, dropped the column, and the legend went back to covering the tracks it
+        // exists to clear (LegendColumnTest catches exactly that).
+        final int others = cladeBandsReserve() + msaTrackWidthMin() + annotationColumnsWidth()
+                + legendColumnReserveWanted();
+        return Math.max(LABEL_CAP_MIN_PX, usable - tree_floor - others);
+    }
+
+    /**
+     * Divides this pass's width between the tree and everything drawn beside it, and remembers the result for the
+     * reserve methods to read -- so they all see ONE division instead of each capping itself against the full width.
+     * Run after the label font has settled (the labels are a request like any other, just one that cannot be
+     * shrunk any further by then). Only the rectangular layouts have a depth column to divide: a vertical
+     * orientation reserves along the other axis and a radial one has no column at all, so both keep the old
+     * behaviour by leaving the budget unset.
+     */
+    private void computeWidthBudget(final int x) {
+        if (isRadialLayout()) {
+            // A disc, not a column: the radial layouts honour the same share against the RADIUS (circularRadius).
+            _width_budget = null;
+            return;
+        }
+        final int usable = Math.max(0, x - DEPTH_AXIS_FIXED_MARGIN);
+        final int tree_floor = (int) Math.round(usable * treeWidthShare());
+        // What the layout actually subtracts from the depth axis: in a vertical orientation that is the label's
+        // PROJECTION onto the depth (plus the domain track), not its horizontal reach. Requesting the projection
+        // is what lets the same budget serve root-left and root-top/bottom without a special case.
+        final int labels = depthLabelReserve();
+        final int clade = cladeBandsReserve();
+        final int msa_min = msaTrackWidthMin();
+        final int ann_min = annotationColumnsWidth();
+        // Non-negotiable, like the labels and the clade bands: told to the budget so the tree's share and the
+        // label cap account for it, never shaved (half a legend's width still lets the legend cover the tracks).
+        final int legend_grant = legendColumnReserveWanted();
+        _width_budget = new LayoutWidthBudget.Builder()
+                // labels and clade bands cannot be scaled (text and structural marks), so they ask for exactly
+                // what they need; the alignment and the annotation columns are the elastic ones.
+                .request(LayoutWidthBudget.Part.LABELS, labels, labels)
+                .request(LayoutWidthBudget.Part.CLADE_BANDS, clade, clade)
+                .request(LayoutWidthBudget.Part.LEGEND, legend_grant, legend_grant)
+                .request(LayoutWidthBudget.Part.MSA, msaTrackWidthWanted(), msa_min)
+                // non-elastic, like the labels: told to the budget so it is accounted for, but never reduced
+                .request(LayoutWidthBudget.Part.ANNOTATIONS, ann_min, ann_min)
+                .allocate(x, DEPTH_AXIS_FIXED_MARGIN, treeWidthShare());
     }
 
     /** The depth-axis (horizontal, in the root-left layout) footprint of a clade bar/bracket taxon label, given its
@@ -15547,11 +15951,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                               final int graphics_file_x,
                               final int graphics_file_y) {
         final boolean to_screen = !to_pdf && !to_graphics_file;
+        // One pass, one occupancy map: reset here, at the single entry every paint goes through (screen, PDF,
+        // SVG/EPS and raster alike), so a mark is tested against what THIS pass has drawn and nothing else.
+        final float cell = Math.max(getTreeFontSet().getFontMetricsSmall().getHeight(),
+                AptxConstants.SUPPORT_SYMBOL_MAX_DIAMETER);
+        _number_occupancy.reset(cell);
+        _symbol_occupancy.reset(cell);
+        resetCrowdingCounters();
+        invalidateAlignmentLength();
+        final long paint_started = to_screen ? System.nanoTime() : 0L;
         try {
             paintPhylogenyImpl(g, to_pdf, to_graphics_file, graphics_file_width, graphics_file_height,
                     graphics_file_x, graphics_file_y);
         } finally {
             if (to_screen) {
+                recordFrameTime(System.nanoTime() - paint_started);
                 // the ONLY way back: this paint has just laid the tree out for the panel
                 _layout_is_screen_layout = true;
             }
@@ -16056,6 +16470,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!to_pdf && !to_graphics_file) {
             updatePulseTimer();
             paintHoverCard(g); // the node hover card: last, over everything, screen only, every layout
+            // The diagnostic readout belongs HERE, not in the rectangular block it started in: that block is
+            // gated on the graphics type, so circular and unrooted never reached it and the counter simply did
+            // not appear there. It is viewport chrome about the PAINT, which every layout does, so it is drawn
+            // from the layout-agnostic tail -- and after the hover card, so nothing covers it.
+            if (getOptions().isShowFps()) {
+                paintFpsCounter(g, getVisibleRect().x, getVisibleRect().width, getVisibleRect().y);
+            }
         }
     }
 
@@ -16556,6 +16977,76 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 tipImageAdvance(node));
     }
 
+    // "Auto-hide crowded data": what has already been drawn this pass, so a mark that would land on top of one
+    // is dropped instead. Two maps, because the two channels are drawn in deliberately different places -- the
+    // symbol sits ON the branch line, the numbers just above and below it -- and sharing one map would make a
+    // branch's own symbol block its own numbers. See LabelOccupancy for why this replaced a branch-length rule.
+    private final LabelOccupancy _number_occupancy = new LabelOccupancy();
+    private final LabelOccupancy _symbol_occupancy = new LabelOccupancy();
+
+    /** Whether the auto-hide rules bite at all. No crowding term is needed: the occupancy test is self-limiting,
+     *  since in a sparse view nothing overlaps and so nothing is hidden. Switch the option off and every mark is
+     *  drawn at any size -- which is what a final figure wants, and what keeps an export reproducible. */
+    private boolean autoHideCrowdedData() {
+        return shows(DisplayOption.DYNAMICALLY_HIDE_DATA);
+    }
+
+    // What the last paint did, so the effect is observable rather than inferred from pixels.
+    private int _numbers_drawn;
+    private int _numbers_suppressed;
+    private int _symbols_drawn;
+    private int _symbols_suppressed;
+
+    /** Claims the space a branch-anchored NUMBER is about to occupy; false when a number is already there.
+     *  NOTE what the map does NOT hold: a refused claim records nothing (so a rejected mark cannot block a later
+     *  one), and with auto-hide off a refused mark is drawn anyway. The map is therefore what was GRANTED, never
+     *  a record of everything drawn -- do not build a hit-test on it. */
+    private boolean claimNumberSpace(final float x, final float y, final float w, final float h) {
+        final boolean free = _number_occupancy.claim(x, y, w, h);
+        if (free || !autoHideCrowdedData()) {
+            ++_numbers_drawn;
+            return true;
+        }
+        ++_numbers_suppressed;
+        return false;
+    }
+
+    /** The symbol equivalent; see {@link #paintNodeSupportSymbol}. */
+    private boolean claimSymbolSpace(final float x, final float y, final float d) {
+        final boolean free = _symbol_occupancy.claim(x, y, d, d);
+        if (free || !autoHideCrowdedData()) {
+            ++_symbols_drawn;
+            return true;
+        }
+        ++_symbols_suppressed;
+        return false;
+    }
+
+    private void resetCrowdingCounters() {
+        _numbers_drawn = 0;
+        _numbers_suppressed = 0;
+        _symbols_drawn = 0;
+        _symbols_suppressed = 0;
+    }
+
+    /** Test hook: branch numbers the last paint drew / dropped for want of space. */
+    final int numbersDrawnForTest() {
+        return _numbers_drawn;
+    }
+
+    final int numbersSuppressedForTest() {
+        return _numbers_suppressed;
+    }
+
+    /** Test hook: support symbols the last paint drew / dropped for want of space. */
+    final int symbolsDrawnForTest() {
+        return _symbols_drawn;
+    }
+
+    final int symbolsSuppressedForTest() {
+        return _symbols_suppressed;
+    }
+
     /** Whether a branch-length value should be drawn for {@code node} -- the same gate {@link #paintNodeData} used
      *  inline, factored out so the vertical-orientation path (which draws it separately) shares one condition. */
     private boolean shouldWriteBranchLength(final PhylogenyNode node) {
@@ -16803,6 +17294,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setShows(final DisplayOption which, final boolean on) {
         _display_state.put(which, Boolean.valueOf(on));
+    }
+
+    /** Whether THIS tab draws the sequence alignment beside its tips. Per-tab, like every other Display-Data
+     *  toggle behind the shared "Sequence Alignment" checkbox, so two tabs showing two alignments can differ.
+     *  Not the same question as {@link #msaShown()}, which also asks whether this layout can draw one at all. */
+    final boolean isShowMsa() {
+        return shows(DisplayOption.SHOW_MSA);
+    }
+
+    final void setShowMsa(final boolean on) {
+        setShows(DisplayOption.SHOW_MSA, on);
     }
 
     /** For tests: whether this tab has its own opinion on {@code which} yet. */

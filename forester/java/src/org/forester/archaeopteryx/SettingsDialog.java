@@ -302,16 +302,19 @@ final class SettingsDialog extends JDialog {
             _mf.getOptions().setTipImageSize( v );
             _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
         } ) ) );
-        // Sequence alignment: colored residue cells beside the tips (rectangular root-left only). Options-direct;
-        // auto-enabled when the tree carries an aligned molecular sequence (loaded FASTA / phyloXML <mol_seq>).
-        final JCheckBox show_msa = new JCheckBox( "Sequence Alignment", _mf.getOptions().isShowMsa() );
-        show_msa.setToolTipText( "Show a multiple sequence alignment next to the tree (rectangular root-left). "
-                + "Load it with File → Load Alignment (FASTA)." );
-        show_msa.addActionListener( e -> {
-            _mf.getOptions().setShowMsa( show_msa.isSelected() );
-            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
-        } );
-        add( c, show_msa );
+        // Sequence alignment: colored residue cells beside the tips (rectangular root-left only). PER-TAB, and the
+        // very same state as the control panel's "Sequence Alignment" checkbox -- this writes THROUGH that checkbox
+        // (which also pushes it onto the current tab), so the two views can never disagree. Auto-enabled at load for
+        // a tree whose tips carry an aligned molecular sequence (loaded FASTA / phyloXML <mol_seq>).
+        add( c, panelCheckbox( "Sequence Alignment",
+                               "Show a multiple sequence alignment next to the tree (rectangular root-left). "
+                                       + "Load it with File → Load Alignment (FASTA). Also on the control panel.",
+                               TreePanel::isShowMsa,
+                               ( p, b ) -> {
+                                   final ControlPanel cp = _mf.getMainPanel().getControlPanel();
+                                   cp.setCheckbox( DisplayOption.SHOW_MSA, b.booleanValue() );
+                                   cp.displayedPhylogenyMightHaveChanged( true );
+                               } ) );
         add( c, labeled( "Alignment column width:",
                 intSpinner( _mf.getOptions().getMsaColumnWidth(), AptxConstants.MSA_COLUMN_WIDTH_MIN,
                         AptxConstants.MSA_COLUMN_WIDTH_MAX, 1, v -> {
@@ -596,6 +599,19 @@ final class SettingsDialog extends JDialog {
         where.setAlignmentX( Component.LEFT_ALIGNMENT );
         where.setForeground( FormWidgets.mutedColor() );
         c.add( where );
+        // Here rather than under Overlays: that tab is about what is drawn for the TREE (and all of it, bar the
+        // navigation overview, is figure content that reaches an export). This reports on the PROGRAM -- how long
+        // a frame costs -- and can never appear in an exported figure, so it belongs with the application itself.
+        c.add( Box.createVerticalStrut( 12 ) );
+        c.add( header( "Diagnostics" ) );
+        final JCheckBox fps = new JCheckBox( "Show paint-time / FPS counter", _mf.getOptions().isShowFps() );
+        fps.setToolTipText( "Draw the time the last frames took to paint, and the rate that implies, in the "
+                + "top-right corner. On screen only -- it is never included in an exported figure." );
+        fps.addActionListener( e -> {
+            _mf.getOptions().setShowFps( fps.isSelected() );
+            _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( false );
+        } );
+        add( c, fps );
         return c;
     }
 

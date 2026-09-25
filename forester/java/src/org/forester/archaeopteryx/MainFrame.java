@@ -3491,6 +3491,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.setTreeOrientation(getOptions().getTreeOrientation()); // per-tab: back to the default layout
                 tp.setShowInternalDataForThisTab(true); // per-tab: both Display-Data toggles back on
                 tp.setShowExternalDataForThisTab(true);
+                // per-tab: the alignment goes back off (its shipped default). The shared checkbox follows via
+                // resyncFromOptions -> reseedDisplayDataFromCurrentTab below, which re-seeds it from this tab.
+                tp.setShowMsa(false);
                 tp.resetTimeAxisToAutoDerive(); // per-tab: drop any Time-Axis override -> back to auto-derive
                 tp.resetBranchLengthModeToDefault(); // per-tab: back to the TIME branch-length view (Auspice trees)
                 tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Fields selection (fresh install has none)
@@ -4526,7 +4529,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
             tp.setTree(phy); // recompute the layout so the alignment track shows
             tp.getControlPanel().rebuildSearchFields(true); // the molecular sequence becomes searchable
-            tp.getOptions().setShowMsa(true); // show the alignment at once
+            // The tips carry an alignment only NOW, so the "Sequence Alignment" checkbox has to become available:
+            // force the rescan, because the presence scan is cached by tree IDENTITY and the import mutated this
+            // same tree in place (a cache keyed on the shape of its input is stale when the VALUES change).
+            tp.getControlPanel().updateDataCheckboxVisibility(true);
+            tp.getControlPanel().setCheckbox(DisplayOption.SHOW_MSA, true); // show the alignment at once
             showWhole();
             tp.setEdited(true);
         }

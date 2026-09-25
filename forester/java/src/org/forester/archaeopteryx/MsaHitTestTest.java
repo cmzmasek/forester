@@ -66,7 +66,12 @@ public final class MsaHitTestTest {
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 tp.getOptions().setShowOverview( false );
                 tp.setOvOn( false );
-                tp.getOptions().setShowMsa( true );
+                tp.setShowMsa( true );
+                // This test hit-tests residues UNDER the lower-right overview box, so the alignment band has to
+                // reach that far right. The band ends at tree + labels + band, so it needs the tracks to have as
+                // much width as the app allows: pin the tree to its minimum share (the width budget otherwise
+                // guarantees it 40%, which tightens the label cap and pulls the band's right edge clear of the box).
+                tp.getOptions().setTreeWidthShare( AptxConstants.TREE_WIDTH_SHARE_MIN );
                 // BELOW the letter threshold on purpose: no glyph is drawn over the cell, so every pixel of a
                 // residue cell is its class colour and can be compared with what the hit-test claims is there.
                 tp.getOptions().setMsaColumnWidth( 5 );
@@ -181,6 +186,10 @@ public final class MsaHitTestTest {
                 tp.setSize( w, h );
                 tp.validate();
                 tp.doLayout();
+                // Lay out for the size this image is sampled at. showWhole() lays out against the scroll-pane
+                // VIEWPORT, which is much narrower than w here -- and since the width budget divides whatever
+                // width it is given, the band would then be placed for a geometry this image does not show.
+                tp.calcParametersForPainting( w, h );
                 final java.awt.image.BufferedImage img2 =
                         new java.awt.image.BufferedImage( w, h, java.awt.image.BufferedImage.TYPE_INT_RGB );
                 final Graphics2D g2 = img2.createGraphics();
@@ -194,7 +203,10 @@ public final class MsaHitTestTest {
                         }
                     }
                 }
-                tp.getOptions().setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT );
+                // UPPER_RIGHT, not LOWER: the alignment band no longer runs the full height of the panel (the
+                // conservation track and the column ruler take a bottom band), so the lower-right corner sits just
+                // below it. Either RIGHT placement exercises the same rule -- the box must cover part of the band.
+                tp.getOptions().setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_RIGHT );
                 tp.getOptions().setShowOverview( true );
                 tp.setOvOn( true );
                 tp.updateOvSizes();

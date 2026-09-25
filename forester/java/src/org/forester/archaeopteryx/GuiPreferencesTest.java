@@ -149,6 +149,7 @@ public final class GuiPreferencesTest {
             // the alignment conservation track: a display preference, so it must survive a restart
             src.setShowMsaConservation( false ); // default is true, so this is a real change
             src.setAutoColorNewTrees( false ); // default is true (JS-parity auto-color), so a real change
+            src.setShowFps( true ); // default is false: switching the diagnostic on must survive a restart
             src.setMsaConservationMeasure( MsaConservation.Measure.INFORMATION ); // default is IDENTITY
             new GuiPreferences( file ).saveFrom( src );
             if ( !Files.exists( file ) ) {
@@ -161,6 +162,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.isAutoColorNewTrees() ) {
                 return fail( "auto_color_new_trees did not round-trip" );
+            }
+            if ( !dst.isShowFps() ) {
+                return fail( "show_fps did not round-trip -- the user's choice must survive a restart" );
             }
             if ( dst.getMsaConservationMeasure() != MsaConservation.Measure.INFORMATION ) {
                 return fail( "msa_conservation_measure did not round-trip, got " + dst.getMsaConservationMeasure() );

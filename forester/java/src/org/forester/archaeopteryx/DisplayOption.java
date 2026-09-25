@@ -38,6 +38,10 @@ public enum DisplayOption {
     USE_STYLE( "Visual Styles/Branch Colors", DefaultState.ON ),
     WIDTH_BRANCHES( "Branch Widths", DefaultState.OFF ),
     SHOW_DOMAIN_ARCHITECTURES( "Domain Architectures", DefaultState.OFF ),
+    // The alignment drawn beside the tips. GUESS because it really is derived from the tree at load time: a tree
+    // whose tips carry an aligned <mol_seq> opens with the alignment shown (AptxUtil's per-load scan), and a tree
+    // without one never offers the checkbox at all. Off for anything else -- there is nothing to draw.
+    SHOW_MSA( "Sequence Alignment", DefaultState.GUESS ),
     SHOW_SEQ_NAMES( "Seq Name", DefaultState.OFF ),
     SHOW_SEQUENCE_ACC( "Seq Accession", DefaultState.OFF ),
     DISPLAY_INTERNAL_DATA( "Show Internal Data", DefaultState.ON ),
