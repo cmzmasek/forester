@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Radial branch numbers: room for every one (10 spokes)</name>
+  <description>10 lineages radiating from one node -- a hard polytomy, the shape of an explosive radiation. Switch to the UNROOTED layout and turn on &quot;Branch Lengths&quot;: every number sits beside its own spoke and none of the 10 is dropped, because with this few spokes no number reaches a neighbour&apos;s. Compare radial-numbers-crowded.xml, the same radiation with three times the lineages.</description>
+  <clade>
+    <clade>
+      <name>radiation_tip_1</name>
+      <branch_length>0.4</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_2</name>
+      <branch_length>0.6</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_3</name>
+      <branch_length>0.45</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_4</name>
+      <branch_length>0.55</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_5</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_6</name>
+      <branch_length>0.42</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_7</name>
+      <branch_length>0.58</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_8</name>
+      <branch_length>0.4</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_9</name>
+      <branch_length>0.6</branch_length>
+    </clade>
+    <clade>
+      <name>radiation_tip_10</name>
+      <branch_length>0.45</branch_length>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

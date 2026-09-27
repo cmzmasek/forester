@@ -478,7 +478,10 @@ final public class Options {
         _pdf_line_width = AptxConstants.PDF_LINE_WIDTH_DEFAULT;
         _show_overview = true;
         _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
-        _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
+        // RADIAL (Christian, 2026-09-25): along the spoke, labels in the circular layout never overlap (measured 0
+        // pairs on every tree tried) and in unrooted overlap half as often as lying flat; the rectangular layouts
+        // ignore this option. The L button / Alt+W still flips it, and a saved preference wins over this default.
+        _node_label_direction = NODE_LABEL_DIRECTION.RADIAL;
         _found_color = FOUND_COLOR.ELECTRIC_VIOLET;
         _inverse_search_result = false;
         _number_of_digits_after_comma_for_confidence_values = AptxConstants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;

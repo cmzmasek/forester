@@ -165,6 +165,19 @@ public final class DemoTreesTest {
         // whose number is kept ("zero is a value, not an absence").
         ok &= zeroLengthNestOk( "zero-length-nest.xml" );
 
+        // "A branch number never lies across a branch that is not its own": the pair must be the SAME radiation at
+        // two sizes -- the one that fits and the one that cannot -- so what the rule refuses is the crowding alone.
+        // Whether they actually fit / crowd is measured where the paint is, in RadialBranchNumberRenderTest.
+        ok &= radialNumbersPairOk( "radial-numbers-fit.xml", "radial-numbers-crowded.xml" );
+
+        // "a tip label never lies across another": the SAME radiation, named, at two sizes -- the one that fits and
+        // the one that cannot -- so what the rule refuses is the crowding alone. Whether they actually fit / crowd
+        // is measured where the paint is, in RadialTipLabelRenderTest.
+        ok &= radialLabelsPairOk( "radial-labels-fit.xml", "radial-labels-crowded.xml" );
+
+        // every generated demo is what the generator writes TODAY: a file can fall behind its generator
+        ok &= demosAreFreshOk();
+
         // bat phylogeny: a large taxonomy tree (common + scientific names + synonyms at the tips, ranks on the clades)
         ok &= batTreeOk( "bat-phylogeny.xml" );
 
@@ -607,6 +620,158 @@ public final class DemoTreesTest {
                     + "case whose number must be KEPT (zero is a value, not an absence)" );
         }
         return true;
+    }
+
+    /** The radial-labels pair: both a single radiation of NAMED tips (every branch a tip of the root with a name and
+     *  a length), the crowded one at least five times the size of the one that fits. */
+    private static boolean radialLabelsPairOk( final String fit_name, final String crowded_name ) {
+        final Phylogeny fit = load( fit_name );
+        final Phylogeny crowded = load( crowded_name );
+        if ( ( fit == null ) || ( crowded == null ) ) {
+            return false;
+        }
+        for( final Phylogeny phy : new Phylogeny[] { fit, crowded } ) {
+            final String name = ( phy == fit ) ? fit_name : crowded_name;
+            for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if ( n.isRoot() ) {
+                    continue;
+                }
+                if ( !n.isExternal() || ( n.getParent() != phy.getRoot() ) ) {
+                    return note( name + " must be a single radiation (every branch a tip of the root)" );
+                }
+                if ( ( n.getName() == null ) || n.getName().isEmpty() || ( n.getDistanceToParent() <= 0 ) ) {
+                    return note( name + " must name every tip and give it a length (tip " + n.getId() + ")" );
+                }
+            }
+        }
+        final int f = fit.getNumberOfExternalNodes(), c = crowded.getNumberOfExternalNodes();
+        if ( ( f < 8 ) || ( c < ( 5 * f ) ) ) {
+            return note( "the crowded radiation must be at least five times the one that fits (" + f + " vs " + c
+                    + " tips)" );
+        }
+        return true;
+    }
+
+    /** The radial-numbers pair: both a single radiation (every branch a tip of the root, every branch with a length),
+     *  the crowded one at least three times the size of the one that fits. */
+    private static boolean radialNumbersPairOk( final String fit_name, final String crowded_name ) {
+        final Phylogeny fit = load( fit_name );
+        final Phylogeny crowded = load( crowded_name );
+        if ( ( fit == null ) || ( crowded == null ) ) {
+            return false;
+        }
+        for( final Phylogeny phy : new Phylogeny[] { fit, crowded } ) {
+            final String name = ( phy == fit ) ? fit_name : crowded_name;
+            for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if ( n.isRoot() ) {
+                    continue;
+                }
+                if ( !n.isExternal() || ( n.getParent() != phy.getRoot() ) ) {
+                    return note( name + " must be a single radiation (every branch a tip of the root)" );
+                }
+                if ( n.getDistanceToParent() <= 0 ) {
+                    return note( name + " must carry a length on every branch (" + n.getName() + " has none)" );
+                }
+            }
+        }
+        final int f = fit.getNumberOfExternalNodes(), c = crowded.getNumberOfExternalNodes();
+        if ( ( f < 8 ) || ( c < ( 3 * f ) ) ) {
+            return note( "the crowded radiation must be at least three times the one that fits (" + f + " vs " + c
+                    + " tips)" );
+        }
+        return true;
+    }
+
+    /**
+     * Every generated demo in forester/demo is byte-identical to what {@code DemoTreeGenerator} writes today.
+     * <p>
+     * A demo FILE can fall behind its GENERATOR: 0.11.163 shipped sequence-logo.xml with a description its
+     * generator no longer wrote ("carries no information", of a twelve-way column that still holds 17% of the
+     * band), because the generator was edited after the last regeneration and both went into one commit. The
+     * generator is deterministic (measured: two runs, identical bytes), so this is a plain comparison, and a stale
+     * file fails BY NAME with the one thing to do about it.
+     */
+    private static boolean demosAreFreshOk() {
+        File scratch = null;
+        try {
+            scratch = java.nio.file.Files.createTempDirectory( "aptx-demo-fresh" ).toFile();
+            final File out = new File( scratch, "forester/demo" );
+            if ( !out.mkdirs() ) {
+                return note( "could not create a scratch demo directory at " + out );
+            }
+            org.forester.demo.DemoTreeGenerator.writeAllQuietly( out ); // its per-file lines are for the command line
+            final File[] generated = out.listFiles();
+            if ( ( generated == null ) || ( generated.length < 20 ) ) {
+                return note( "expected the generator to write at least 20 demos, got "
+                        + ( ( generated == null ) ? 0 : generated.length ) );
+            }
+            boolean ok = true;
+            final java.util.Set<String> generated_names = new java.util.HashSet<String>();
+            for( final File f : generated ) {
+                generated_names.add( f.getName() );
+                final File shipped = new File( DEMO_DIR + f.getName() );
+                if ( !shipped.exists() ) {
+                    ok = note( f.getName() + " is generated but not shipped in forester/demo" ) && ok;
+                    continue;
+                }
+                // compared blind to the line ending: the writer uses the platform's, the shipped files are LF
+                if ( !unixLines( f ).equals( unixLines( shipped ) ) ) {
+                    ok = note( f.getName() + " in forester/demo is not what DemoTreeGenerator writes now: regenerate "
+                            + "(run org.forester.demo.DemoTreeGenerator from the repository root) and ship the result" )
+                            && ok;
+                }
+            }
+            // ...and the other direction: a demo the generator STOPPED writing (renamed, removed) would otherwise
+            // stay behind in forester/demo, with its README row, and never be noticed -- the class of stale
+            // artefact this test exists for (a review find, 2026-09-27). The few hand-authored files are named.
+            final File[] shipped_all = new File( DEMO_DIR ).listFiles();
+            if ( shipped_all != null ) {
+                for( final File s : shipped_all ) {
+                    if ( s.getName().startsWith( "." ) || generated_names.contains( s.getName() )
+                            || HAND_AUTHORED_DEMOS.contains( s.getName() ) ) {
+                        continue;
+                    }
+                    ok = note( s.getName() + " ships in forester/demo but DemoTreeGenerator does not write it: remove it "
+                            + "(and its README row), restore its generator, or name it in HAND_AUTHORED_DEMOS if it "
+                            + "really is hand-made" ) && ok;
+                }
+            }
+            return ok;
+        }
+        catch ( final Exception e ) {
+            return note( "could not regenerate the demos to compare: " + e );
+        }
+        finally {
+            // the whole scratch tree, whichever way the comparison ended: the generator writes dozens of files into
+            // two nested directories, and a run that only deleted the files left the directories behind (a review
+            // find, 2026-09-25)
+            if ( scratch != null ) {
+                deleteTree( scratch );
+            }
+        }
+    }
+
+    /** The shipped demo files that no generator writes -- real data and the catalogue -- so the freshness check
+     *  can name an orphan without naming these. */
+    private static final java.util.Set<String> HAND_AUTHORED_DEMOS = new java.util.HashSet<String>(
+            java.util.Arrays.asList( "README.md", "filoviridae-tree.xml", "nextstrain-ncov.json" ) );
+
+    /** The file's text with every line ending as LF, for a comparison that does not care which platform wrote it. */
+    private static String unixLines( final File f ) throws java.io.IOException {
+        return java.nio.file.Files.readString( f.toPath() ).replace( "\r\n", "\n" );
+    }
+
+    /** Removes {@code dir} and everything under it. A scratch tree, so a file that will not go is not a failure. */
+    private static void deleteTree( final File dir ) {
+        final File[] children = dir.listFiles();
+        if ( children != null ) {
+            for( final File c : children ) {
+                deleteTree( c );
+            }
+        }
+        dir.delete();
     }
 
     /**

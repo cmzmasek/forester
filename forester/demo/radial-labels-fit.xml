@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Radial tip labels: room for every one (12 lineages)</name>
+  <description>12 named lineages radiating from one node. Switch to the UNROOTED layout: every name rides its own spoke and none of the 12 is hidden. Compare radial-labels-crowded.xml, eight times the lineages at two lengths.</description>
+  <clade>
+    <clade>
+      <name>lineage_1</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_2</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_3</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_4</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_5</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_6</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_7</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_8</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_9</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_10</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_11</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+    <clade>
+      <name>lineage_12</name>
+      <branch_length>0.5</branch_length>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

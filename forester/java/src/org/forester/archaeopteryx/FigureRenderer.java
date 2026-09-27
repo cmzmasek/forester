@@ -64,6 +64,10 @@ public final class FigureRenderer {
         public boolean support         = false;
         public boolean branch_lengths  = false;
         public String  color_by_ref    = null;
+        /** How tip labels sit in the circular and unrooted layouts; null = the program's default (RADIAL, along the
+         *  spoke, since the default changed on 2026-09-27 -- a scripted figure that wants the flat labels of before
+         *  says so here, or it renders differently across versions, which is the one thing it exists to prevent). */
+        public Options.NODE_LABEL_DIRECTION label_direction = null;
         /**
          * e.g. "170x120mm", "8x6in", "1200x900px"; null = size from {@link #width}/{@link #height}.
          * <p>
@@ -322,6 +326,9 @@ public final class FigureRenderer {
             default:
                 tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 break;
+        }
+        if ( spec.label_direction != null ) {
+            tp.getOptions().setNodeLabelDirection( spec.label_direction ); // the render's own Options, nobody's preference
         }
         if ( spec.phylogram != null ) {
             cp.setTreeDisplayType( spec.phylogram.booleanValue() ? Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM

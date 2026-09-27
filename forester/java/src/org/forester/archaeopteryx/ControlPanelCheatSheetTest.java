@@ -68,6 +68,25 @@ public final class ControlPanelCheatSheetTest {
             if ( es.size() < 20 ) {
                 fail( ok, "the sheet must cover the panel; got only " + es.size() + " rows" );
             }
+            // (1b) Christian's value rule (2026-09-25): a name says what a control IS, never where it is set. The
+            // panel's own labels double as readouts ("Font size: 6", "Tree share: 40%") and the sheet cuts them at
+            // the first colon -- a cut a mutant removed without any check noticing (archaeopteryx.js's find,
+            // 2026-09-27). Precondition first: the panel must carry at least one value-bearing label, or the cut
+            // was never exercised and the rule proves nothing.
+            final int[] value_labels = { 0 };
+            SwingUtilities.invokeAndWait( () -> value_labels[ 0 ] = countValueBearingLabels( cp ) );
+            if ( value_labels[ 0 ] == 0 ) {
+                fail( ok, "precondition: the panel must show at least one label with a live value after its colon "
+                        + "(e.g. 'Font size: 6'), or the value rule is not exercised" );
+            }
+            for( final ControlPanelCheatSheet.Entry e : es ) {
+                final String n = e.label();
+                if ( ( n != null ) && ( n.contains( ":" ) || n.matches( ".*[0-9%]$" ) ) ) {
+                    fail( ok, "a sheet name must carry no live value (no colon, no trailing number or percent): '" + n
+                            + "'" );
+                    break;
+                }
+            }
             // (2) every row says something, and the icon-bearing rows really carry icons
             int with_icon = 0;
             for( final ControlPanelCheatSheet.Entry e : es ) {
@@ -295,6 +314,23 @@ public final class ControlPanelCheatSheetTest {
         phy.setRooted( true );
         phy.externalNodesHaveChanged();
         return phy;
+    }
+
+    /** Labels on the panel that carry a value after a colon -- the readouts the sheet must cut. */
+    private static int countValueBearingLabels( final java.awt.Container c ) {
+        int n = 0;
+        for( final java.awt.Component comp : c.getComponents() ) {
+            if ( comp instanceof javax.swing.JLabel ) { // a button is never a JLabel, so nothing else to exclude
+                final String t = ( (javax.swing.JLabel) comp ).getText();
+                if ( ( t != null ) && comp.isVisible() && t.matches( "^[^:]+: *.*[0-9%]$" ) ) {
+                    ++n;
+                }
+            }
+            if ( comp instanceof java.awt.Container ) {
+                n += countValueBearingLabels( (java.awt.Container) comp );
+            }
+        }
+        return n;
     }
 
     private static void fail( final boolean[] ok, final String message ) {

@@ -74,6 +74,7 @@ public final class aptx_render {
         allowed.add( "size" );
         allowed.add( "dpi" );
         allowed.add( "style" );
+        allowed.add( "labels" );
         allowed.add( "cladogram" );
         allowed.add( "phylogram" );
         allowed.add( "support" );
@@ -119,6 +120,19 @@ public final class aptx_render {
                 else {
                     ForesterUtil.fatalError( PRG_NAME, "unknown style \"" + s
                             + "\" (expected rectangular, circular or unrooted)" );
+                }
+            }
+            if ( cla.isOptionSet( "labels" ) ) {
+                final String l = cla.getOptionValueAsCleanString( "labels" ).toLowerCase();
+                if ( l.startsWith( "rad" ) ) {
+                    spec.label_direction = org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION.RADIAL;
+                }
+                else if ( l.startsWith( "hor" ) || l.startsWith( "flat" ) ) {
+                    spec.label_direction = org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION.HORIZONTAL;
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "unknown label direction \"" + l
+                            + "\" (expected radial or horizontal)" );
                 }
             }
             if ( cla.isOptionSet( "cladogram" ) && cla.isOptionSet( "phylogram" ) ) {
@@ -178,6 +192,7 @@ public final class aptx_render {
         System.out.println( "  -dpi=<n>           dots per inch (default 300). With a mm or inch size this sets" );
         System.out.println( "                     the pixel count; with a pixel size it sets the physical size" );
         System.out.println( "  -style=<s>         rectangular (default), circular or unrooted" );
+        System.out.println( "  -labels=<d>        in circular/unrooted: radial (default; along the spoke) or horizontal" );
         System.out.println( "  -phylogram         draw branch lengths to scale" );
         System.out.println( "  -cladogram         ignore branch lengths" );
         System.out.println( "                     (default: a phylogram when the tree has branch lengths)" );

@@ -82,9 +82,12 @@ public final class RadialZoomControlTest {
                 expectRotateIcon( ok, gt + " X+", x_in, ControlButtonIcon.Kind.ROTATE_CW );
                 expectRotateIcon( ok, gt + " X-", x_out, ControlButtonIcon.Kind.ROTATE_CCW );
                 // in radial the fit button becomes the label-direction flip and, like the theme toggle, shows
-                // the state it will switch TO: labels are horizontal by default, so it offers LABELS_RADIAL
-                if ( cp.getFitButtonIconKind() != ControlButtonIcon.Kind.LABELS_RADIAL ) {
-                    fail( ok, gt + ": the label-flip button should offer LABELS_RADIAL, got "
+                // the state it will switch TO -- the opposite of the current direction (radial by default since
+                // 2026-09-25, so it offers LABELS_HORIZONTAL; read off the option, not assumed)
+                final ControlButtonIcon.Kind other = ( o.getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL )
+                        ? ControlButtonIcon.Kind.LABELS_HORIZONTAL : ControlButtonIcon.Kind.LABELS_RADIAL;
+                if ( cp.getFitButtonIconKind() != other ) {
+                    fail( ok, gt + ": the label-flip button should offer " + other + " (the direction it switches TO), got "
                             + cp.getFitButtonIconKind() );
                 }
                 if ( ( cp.getFitWidthButtonForTest().getText() != null )

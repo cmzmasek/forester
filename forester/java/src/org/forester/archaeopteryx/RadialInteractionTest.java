@@ -59,7 +59,103 @@ public final class RadialInteractionTest {
             return true;
         }
         return findBranchOk() && haloOk() && radialZoomOk() && displayTypeControlOk()
-                && persistedLayoutAppliedOnLoadOk();
+                && persistedLayoutAppliedOnLoadOk() && autoHideControlOk();
+    }
+
+    /**
+     * "Auto-hide Labels" is LIVE in every layout, and its state reaches both the paint and the export report.
+     * Until 2026-09-27 {@code MainFrame.typeChanged} greyed the checkbox out for unrooted -- a leftover from the
+     * years when that layout thinned nothing -- while the radial rule already read it (Christian: "is there a reason
+     * why label hiding is not controllable via Auto-hide Labels in unrooted?"; there was none). And
+     * {@code labelsDynamicallyHidden()} returned false for both radial layouts outright, so a circular or unrooted
+     * export that dropped labels never carried the report's warning line. Fixture: the crowded radial-labels demo
+     * (96 names at two lengths; a quarter of them hidden at the demo's 1100 x 850 window). The checkbox is driven by the
+     * REAL click ({@code doClick}), not {@code setCheckbox}, because the click path is the one the user has.
+     */
+    private static boolean autoHideControlOk() {
+        final boolean[] ok = { true };
+        withFrame( "radial-labels-crowded.xml", ( frame, tp, o ) -> {
+            final ControlPanel cp = tp.getControlPanel();
+            final javax.swing.JCheckBox box = cp.getDynamicallyHideData();
+            if ( box == null ) {
+                fail( ok, "precondition: the Auto-hide Labels checkbox exists" );
+                return;
+            }
+            // (1) enabled in every layout, on the Type-menu path AND the tab-switch path
+            for ( final PHYLOGENY_GRAPHICS_TYPE gt : new PHYLOGENY_GRAPHICS_TYPE[] { PHYLOGENY_GRAPHICS_TYPE.UNROOTED,
+                    PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR } ) {
+                frame.typeChanged( gt == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ? frame._unrooted_type_cbmi
+                        : gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ? frame._circular_type_cbmi
+                                : frame._rectangular_type_cbmi );
+                if ( !box.isEnabled() ) {
+                    fail( ok, "Auto-hide Labels is greyed out after switching to " + gt + " via the Type menu" );
+                }
+                tp.setPhylogenyGraphicsType( gt );
+                cp.tabChanged();
+                if ( !box.isEnabled() ) {
+                    fail( ok, "Auto-hide Labels is greyed out after a tab switch to " + gt );
+                }
+            }
+            // (2) UNROOTED: the click drives the rule. On -> off -> on, reading the counters of each export paint
+            //     and the report the export returns (its warning line is what the user reads).
+            frame.typeChanged( frame._unrooted_type_cbmi );
+            if ( !box.isSelected() ) {
+                box.doClick();
+            }
+            //     (700 x 550, not the demo's 1100 x 850: an EXPORT shrinks the font to fit, and at the demo size that
+            //     left a single collision -- a fixture that crowds by one label pins nothing worth the name)
+            final String on = exportReport( tp, o, 700, 550 );
+            final int hidden_on = tp.labelsHiddenForTest();
+            box.doClick();
+            final String off = exportReport( tp, o, 700, 550 );
+            final int hidden_off = tp.labelsHiddenForTest();
+            box.doClick();
+            exportReport( tp, o, 700, 550 );
+            final int hidden_again = tp.labelsHiddenForTest();
+            if ( hidden_on < 5 ) {
+                fail( ok, "UNROOTED precondition: the 700 x 550 export must crowd (>= 5 hidden), got " + hidden_on );
+            }
+            if ( ( hidden_off != 0 ) || ( hidden_again != hidden_on ) ) {
+                fail( ok, "UNROOTED: clicking Auto-hide Labels must switch the rule off and on again (hidden with it on "
+                        + hidden_on + ", off " + hidden_off + ", on again " + hidden_again + ")" );
+            }
+            if ( !on.contains( "Warning:" ) || !on.contains( "Auto-hide Labels" ) ) {
+                fail( ok, "UNROOTED: an export that hid " + hidden_on + " labels must warn in its report; got: " + on );
+            }
+            if ( off.contains( "Warning:" ) ) {
+                fail( ok, "UNROOTED: with Auto-hide Labels off nothing is hidden, so the report must not warn; got: " + off );
+            }
+            // (3) ...and a ROOMY export with the option on hides nothing, so it must not warn either: the report has
+            //     to read what the paint DID, not what the checkbox says
+            final String roomy = exportReport( tp, o, 3000, 3000 );
+            final int hidden_roomy = tp.labelsHiddenForTest();
+            if ( ( hidden_roomy != 0 ) || roomy.contains( "Warning:" ) ) {
+                fail( ok, "UNROOTED: a 3000 x 3000 export hides nothing (" + hidden_roomy + " hidden) and must not warn; got: "
+                        + roomy );
+            }
+            // (4) CIRCULAR: same rule, same warning. Cramped means SMALLER here: on the ring the 96 names sit ~26 px
+            //     apart at 1100 x 850 and none collide (measured: 0 hidden); at 450 x 450 they do.
+            frame.typeChanged( frame._circular_type_cbmi );
+            final String circ = exportReport( tp, o, 450, 450 );
+            final int hidden_circ = tp.labelsHiddenForTest();
+            if ( ( hidden_circ <= 0 ) || !circ.contains( "Warning:" ) ) {
+                fail( ok, "CIRCULAR: an export that hid " + hidden_circ + " labels must warn in its report; got: " + circ );
+            }
+        }, ok );
+        return ok[ 0 ];
+    }
+
+    /** A PNG export at {@code w x h} px, discarded; returns the export REPORT. The panel's crowding counters read
+     *  right after it are those of the export paint (the restore re-lays out but paints only on the next EDT turn). */
+    private static String exportReport( final TreePanel tp, final Options o, final int w, final int h ) throws Exception {
+        final File png = File.createTempFile( "aptx_autohide_", ".png" );
+        try {
+            return AptxUtil.writePhylogenyToGraphicsFileAtSize( png.getAbsolutePath(), tp, AptxUtil.GraphicsExportType.PNG,
+                    o, new ExportSizeSpec( ExportSizeSpec.Unit.PIXELS, w, h, 72 ) );
+        }
+        finally {
+            png.delete();
+        }
     }
 
     /** The persisted graphics type AND P/A/C display type must be APPLIED when a tree is opened, so a restart
@@ -85,8 +181,15 @@ public final class RadialInteractionTest {
                         + tpa.getPhylogenyGraphicsType() + ")" );
             }
             if ( cp.getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) {
-                fail( ok, "a persisted ALIGNED_PHYLOGRAM (A) choice must be applied to a newly opened branch-length "
-                        + "tree (got " + cp.getTreeDisplayType() + ")" );
+                // the persisted A is applied to the tab's store AND shown: in circular every phylogram carries its
+                // labels to the ring, so A is exactly what circular draws and P is the greyed flavour there
+                // (Christian, 2026-09-27; for a few hours this had been the other way round)
+                fail( ok, "a persisted ALIGNED_PHYLOGRAM (A) choice on a newly opened branch-length tree must show as "
+                        + "A in circular (P is the greyed one there; got " + cp.getTreeDisplayType() + ")" );
+            }
+            if ( cp.getDisplayAsUnalignedPhylogramRb().isEnabled() || !cp.getDisplayAsAlignedPhylogramRb().isEnabled() ) {
+                fail( ok, "in circular 'P' is greyed and 'A' live (P.enabled=" + cp.getDisplayAsUnalignedPhylogramRb().isEnabled()
+                        + " A.enabled=" + cp.getDisplayAsAlignedPhylogramRb().isEnabled() + ")" );
             }
             // the circular tree must actually FAN OUT to a real radius (not radius-collapse to a line at the centre,
             // the 0.11.18 bug) when its type comes from Options at construction
@@ -101,14 +204,15 @@ public final class RadialInteractionTest {
             }
             // (2) the P/A/C write-back is confined to a real user CLICK: a doClick updates the persisted Options
             // default, but an INTERNAL setTreeDisplayType (as the load/tab/reset paths use) must NOT -- else an
-            // auto-detect on the next tree would silently overwrite the saved preference
-            cp.getDisplayAsUnalignedPhylogramRb().doClick();
-            if ( o.getPhylogenyDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+            // auto-detect on the next tree would silently overwrite the saved preference. The click goes to a LIVE
+            // radio: in circular that is C (or A); a doClick on the greyed P does nothing, by Swing's own rule
+            cp.getDisplayAsCladogramRb().doClick();
+            if ( o.getPhylogenyDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) {
                 fail( ok, "a P/A/C radio CLICK must update the persisted Options default (got "
                         + o.getPhylogenyDisplayType() + ")" );
             }
-            cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ); // internal call (no user gesture)
-            if ( o.getPhylogenyDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+            cp.setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ); // internal call (no user gesture)
+            if ( o.getPhylogenyDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM ) {
                 fail( ok, "an INTERNAL setTreeDisplayType must NOT change the persisted default (only a click does); "
                         + "got " + o.getPhylogenyDisplayType() );
             }
@@ -117,8 +221,8 @@ public final class RadialInteractionTest {
             o.setPhylogenyDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM );
             AptxUtil.lookAtRealBranchLengthsForAptxControlSettings( tpa.getPhylogeny(), cp );
             if ( cp.getTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM ) {
-                fail( ok, "the node-edit branch-length re-detect must honor the persisted P/A/C preference (got "
-                        + cp.getTreeDisplayType() + ")" );
+                fail( ok, "the node-edit branch-length re-detect must honor the persisted P/A/C preference, shown as "
+                        + "A in circular (got " + cp.getTreeDisplayType() + ")" );
             }
             // (4) a persisted UNROOTED graphics type + CLADOGRAM preference opens a branch-length tree unrooted AND
             // as a cladogram (was: forced UNALIGNED phylogram, and UNROOTED never persisted at all)
@@ -158,9 +262,10 @@ public final class RadialInteractionTest {
      *  force-disable greyed them out in circular even though the paint responds).
      *  <p>
      *  "A" (aligned phylogram) is the one exception, and it is deliberate: aligning tip LABELS needs somewhere to
-     *  pin them -- the outer ring in circular, which is implemented (isAlignedCircularPhylogram) -- and UNROOTED
-     *  has no such place, because its tips radiate in every direction. So A is live in circular and DEAD in
-     *  unrooted. Both enable-logic sites are exercised: the Type-menu path (MainFrame.typeChanged) AND the
+     *  pin them -- the common column of the rectangular layouts. UNROOTED has no such place, because its tips
+     *  radiate in every direction; CIRCULAR has the outer ring but EVERY circular phylogram already carries its
+     *  labels there (TreePanel.circularLabelsOnRing, Christian 2026-09-27), so A would change nothing. So A is
+     *  DEAD in both radial layouts. Both enable-logic sites are exercised: the Type-menu path (MainFrame.typeChanged) AND the
      *  tab-switch path (ControlPanel.tabChanged) -- reverting either gate is caught. Driving the buttons (a real
      *  doClick gesture) must then CHANGE the radial layout: cladogram lays tips ~uniformly, phylogram lays them by
      *  root-distance -> the min/max tip-radius spread (a scale-independent ratio) DIFFERS between the two
@@ -173,27 +278,30 @@ public final class RadialInteractionTest {
             for ( final PHYLOGENY_GRAPHICS_TYPE gt : new PHYLOGENY_GRAPHICS_TYPE[] { PHYLOGENY_GRAPHICS_TYPE.CIRCULAR,
                     PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
                 // (1) the Type-menu path (the primary user route): drive the real MainFrame.typeChanged via the layout's
-                // checkbox item -> it must ENABLE the radios in the target radial layout.
-                // A can align to the outer ring in circular, but has nothing to align to in unrooted
-                final boolean aligned_expected = ( gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
-                frame.typeChanged( gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ? frame._circular_type_cbmi
-                        : frame._unrooted_type_cbmi );
-                if ( !pacEnabledAsExpected( cp, aligned_expected ) ) {
+                // checkbox item -> it must ENABLE the radios in the target radial layout. Each radial layout has ONE
+                // dead phylogram flavour: unrooted cannot align (A dead), circular cannot NOT align -- every circular
+                // phylogram carries its labels to the ring -- so P is dead there and A is what it draws (Christian,
+                // 2026-09-27: greying A in circular had told the user the opposite of the ring in front of them)
+                final boolean circular = gt == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR;
+                frame.typeChanged( circular ? frame._circular_type_cbmi : frame._unrooted_type_cbmi );
+                if ( !pacEnabledAsExpected( cp, circular ) ) {
                     fail( ok, "P/A/C buttons wrong in " + gt + " via the Type menu (typeChanged): "
-                            + pacRadioState( cp ) + " (expected A=" + aligned_expected + ")" );
+                            + pacRadioState( cp ) + " (expected A=" + circular + " P=" + !circular + ")" );
                     continue;
                 }
                 // (2) the tab-switch path: ControlPanel.tabChanged must reach the SAME conclusion for this layout.
                 tp.setPhylogenyGraphicsType( gt );
                 cp.tabChanged();
-                if ( !pacEnabledAsExpected( cp, aligned_expected ) ) {
+                if ( !pacEnabledAsExpected( cp, circular ) ) {
                     fail( ok, "P/A/C buttons wrong in " + gt + " via a tab switch (tabChanged): "
-                            + pacRadioState( cp ) + " (expected A=" + aligned_expected + ")" );
+                            + pacRadioState( cp ) + " (expected A=" + circular + " P=" + !circular + ")" );
                     continue;
                 }
-                // (3) driving them must change the radial layout (else the radios are inert in this layout)
+                // (3) driving them must change the radial layout (else the radios are inert in this layout) -- the
+                // LIVE phylogram button of this layout against the cladogram
                 final double clado = tipRadiusSpread( tp, cp.getDisplayAsCladogramRb() );
-                final double phylo = tipRadiusSpread( tp, cp.getDisplayAsUnalignedPhylogramRb() );
+                final double phylo = tipRadiusSpread( tp, circular ? cp.getDisplayAsAlignedPhylogramRb()
+                        : cp.getDisplayAsUnalignedPhylogramRb() );
                 if ( Math.abs( clado - phylo ) <= 0.05 ) {
                     fail( ok, "driving the P/C radios must change the " + gt + " layout (cladogram tip-radius spread "
                             + clado + " vs phylogram spread " + phylo + ")" );
@@ -203,10 +311,12 @@ public final class RadialInteractionTest {
         return ok[ 0 ];
     }
 
-    /** P and C are always live for a branch-length tree; A only where its labels have somewhere to line up. */
-    private static boolean pacEnabledAsExpected( final ControlPanel cp, final boolean aligned_expected ) {
-        return cp.getDisplayAsUnalignedPhylogramRb().isEnabled() && cp.getDisplayAsCladogramRb().isEnabled()
-                && ( cp.getDisplayAsAlignedPhylogramRb().isEnabled() == aligned_expected );
+    /** C is always live for a branch-length tree; of P and A, circular greys P (it always aligns) and unrooted
+     *  greys A (it never can). */
+    private static boolean pacEnabledAsExpected( final ControlPanel cp, final boolean circular ) {
+        return cp.getDisplayAsCladogramRb().isEnabled()
+                && ( cp.getDisplayAsAlignedPhylogramRb().isEnabled() == circular )
+                && ( cp.getDisplayAsUnalignedPhylogramRb().isEnabled() == !circular );
     }
 
     private static String pacRadioState( final ControlPanel cp ) {

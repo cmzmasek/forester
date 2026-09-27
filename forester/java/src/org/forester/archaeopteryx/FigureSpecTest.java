@@ -215,6 +215,43 @@ public final class FigureSpecTest {
                 if ( !mp.getTreePanels().get( 1 ).shows( DisplayOption.SHOW_TAX_RANK ) ) {
                     ok[ 0 ] = fail( "the new tab must take the figure's labels" );
                 }
+                // the radial layouts' label direction is part of a figure (a review find, 2026-09-27: the default
+                // became RADIAL, and a spec that could not pin it would render differently across versions)
+                final TreePanel tp1 = mp.getTreePanels().get( 1 );
+                tp1.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                FigureSpec.parse( "v1;labeldirection=HORIZONTAL" ).applyTo( tp1 );
+                if ( tp1.getOptions().getNodeLabelDirection() != Options.NODE_LABEL_DIRECTION.HORIZONTAL ) {
+                    ok[ 0 ] = fail( "a figure must be able to pin flat labels, got "
+                            + tp1.getOptions().getNodeLabelDirection() );
+                }
+                // ...through the MENU, not the option alone: updateOptions rewrites the option from the checkbox on
+                // every menu action, so a direction set behind the checkbox's back lasted exactly until the next
+                // click anywhere in the menus (a second review find, 2026-09-27)
+                if ( mf[ 0 ]._label_direction_cbmi.isSelected() ) {
+                    ok[ 0 ] = fail( "a figure's flat labels must uncheck the Radial Labels menu item" );
+                }
+                mf[ 0 ].updateOptions( mf[ 0 ].getOptions() );
+                if ( tp1.getOptions().getNodeLabelDirection() != Options.NODE_LABEL_DIRECTION.HORIZONTAL ) {
+                    ok[ 0 ] = fail( "a figure's label direction must survive the next menu action (updateOptions), got "
+                            + tp1.getOptions().getNodeLabelDirection() );
+                }
+                // a RECTANGULAR figure carries no direction -- it draws none, and applying one would reset the
+                // user's frame-wide preference on opening; a radial figure carries it
+                if ( FigureSpec.capture( tp1 ).get( "labeldirection" ) != null ) {
+                    ok[ 0 ] = fail( "a rectangular figure must not carry a label direction, got "
+                            + FigureSpec.capture( tp1 ).get( "labeldirection" ) );
+                }
+                tp1.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                if ( !"HORIZONTAL".equals( FigureSpec.capture( tp1 ).get( "labeldirection" ) ) ) {
+                    ok[ 0 ] = fail( "a captured radial figure must carry the label direction, got "
+                            + FigureSpec.capture( tp1 ).get( "labeldirection" ) );
+                }
+                FigureSpec.parse( "v1;labeldirection=RADIAL" ).applyTo( tp1 );
+                if ( ( tp1.getOptions().getNodeLabelDirection() != Options.NODE_LABEL_DIRECTION.RADIAL )
+                        || !mf[ 0 ]._label_direction_cbmi.isSelected() ) {
+                    ok[ 0 ] = fail( "...and radial ones, menu item included" );
+                }
+                tp1.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
                 if ( !mp.getControlPanel().isCheckboxSelected( DisplayOption.SHOW_TAX_RANK ) ) {
                     ok[ 0 ] = fail( "the checkboxes must show the restored figure -- the new tab is the current one" );
                 }

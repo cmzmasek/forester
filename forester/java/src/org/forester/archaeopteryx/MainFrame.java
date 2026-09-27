@@ -3183,6 +3183,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
 
+    private static boolean isRadialType(final PHYLOGENY_GRAPHICS_TYPE t) {
+        return (t == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (t == PHYLOGENY_GRAPHICS_TYPE.UNROOTED);
+    }
+
     void typeChanged(final Object o) {
         updateTypeCheckboxes(getOptions(), o);
         updateOptions(getOptions());
@@ -3195,17 +3199,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             // back to P, e.g. for a near-clock tree). Gated on a real transition (previous_type != TRIANGULAR) so
             // re-selecting the already-current Triangular style does NOT re-clobber a deliberate P choice; only when the
             // tree has branch lengths and is currently a phylogram. The nudge does its own re-fit below, so the
-            // radial-exit re-fit is skipped when it fires (that fit would be on the stale pre-cladogram layout).
+            // general re-fit is skipped when it fires (that fit would be on the stale pre-cladogram layout).
             final boolean nudge_to_cladogram = (previous_type != PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR)
                     && (new_type == PHYLOGENY_GRAPHICS_TYPE.TRIANGULAR) && getCurrentTreePanel().isPhyHasBranchLengths()
                     && getCurrentTreePanel().getControlPanel().isDrawPhylogram();
-            if (!nudge_to_cladogram
-                    && (((previous_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (new_type != PHYLOGENY_GRAPHICS_TYPE.UNROOTED))
-                            || ((previous_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR))
-                            || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED))
-                            || ((previous_type != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) && (new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)))) {
-                getCurrentTreePanel().getControlPanel().showWhole();
-            }
+            // Any transition INTO or OUT OF a radial layout is re-fitted below, AFTER the panel has its new type. A
+            // fit taken before the type changed (as this did until 2026-09-27) is a fit of the OLD layout: leaving
+            // circular for rectangular, the label reach it computed was circular's -- where the domain track is
+            // sized from the radius -- so rectangular opened with the domain column 110 px inside the names
+            // (Christian: "labels and domains overlapping"; measured 137 px of reach against the 247 a fit gives).
+            final boolean radial_involved = isRadialType(previous_type) || isRadialType(new_type);
             // The phylogram/cladogram (P/A/C) radios apply in EVERY layout that can honor branch lengths -- since
             // 0.11.7 the CIRCULAR layout renders a real phylogram (isCircularPhylogram) and UNROOTED always has, so the
             // radios are enabled purely on branch-length presence (the old "&& new_type != CIRCULAR" force-disable was a
@@ -3226,23 +3229,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 getCurrentTreePanel().getControlPanel().setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
                 getCurrentTreePanel().getControlPanel().showWhole();
             }
-            if ((new_type == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED)) {
-                // the showWhole above ran while the panel was still the OLD (rectangular) type, so it laid out a
-                // non-square preferred size; now that the panel IS radial, re-fit its SQUARE canvas to the viewport
-                // (otherwise the first radial frame draws in the stale rectangular canvas -- off-centre until a re-fit).
+            if (radial_involved && !nudge_to_cladogram) {
+                // now that the panel IS its new type -- and its P/A state and label direction are settled -- fit it:
+                // a radial destination gets its SQUARE canvas fitted to the viewport (else the first radial frame draws
+                // in the stale rectangular canvas, off-centre until a re-fit), and a rectangular destination gets its
+                // label reach and x-distance recomputed for a column layout (else the domain track lands on the names)
                 getCurrentTreePanel().getControlPanel().showWhole();
             }
             // Relabel the zoom cluster for the new layout (rectangular <-> radial): the X-/X+ zoom buttons become
             // rotate controls, Y+/Y- become a plain +/- zoom, E greys out, and W becomes the label-direction flip.
             getCurrentTreePanel().getControlPanel().updateZoomButtonsForLayout();
             updateScreenTextAntialias(getMainPanel().getTreePanels());
-            if (getCurrentTreePanel().getControlPanel().getDynamicallyHideData() != null) {
-                if (new_type == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
-                    getCurrentTreePanel().getControlPanel().getDynamicallyHideData().setEnabled(false);
-                } else {
-                    getCurrentTreePanel().getControlPanel().getDynamicallyHideData().setEnabled(true);
-                }
-            }
+            // "Auto-hide Labels" stays live in EVERY layout. It used to be greyed out for unrooted, from the years
+            // when that layout thinned nothing; the radial rule (a label or number is drawn only where nothing
+            // already drawn is in its way) now reads the same checkbox in all five layouts, so a greyed box would
+            // show the user a control that does something and tell them it does not (Christian, 2026-09-27).
             // Keep the control panel's five-way layout row lit on the right button, and re-seed an open Settings
             // dialog (its Rectangular-style dropdown greys out for the radial layouts). Done HERE rather than in
             // the buttons' own listeners so every path that changes the style -- a layout button, the Settings
@@ -3270,11 +3271,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if (tp.isRadialLayout() && (tp.getControlPanel() != null) && tp.getControlPanel().isShowDomainArchitectures()
                 && (getOptions().getNodeLabelDirection() != NODE_LABEL_DIRECTION.RADIAL)) {
-            getOptions().setNodeLabelDirection(NODE_LABEL_DIRECTION.RADIAL);
-            if (_label_direction_cbmi != null) {
-                _label_direction_cbmi.setSelected(true);
-            }
+            setNodeLabelDirection(NODE_LABEL_DIRECTION.RADIAL);
             tp.repaint();
+        }
+    }
+
+    /** Sets the radial layouts' label direction the way the menu does: the option AND its checkbox together.
+     *  {@link #updateOptions} rewrites the option from the checkbox on every menu action, so an option set on its
+     *  own (as a figure's {@code labeldirection} once was) is undone by the next click anywhere in the menus, while
+     *  the checkbox goes on showing the direction the user did not get (a review find, 2026-09-27). */
+    void setNodeLabelDirection(final NODE_LABEL_DIRECTION direction) {
+        getOptions().setNodeLabelDirection(direction);
+        if (_label_direction_cbmi != null) {
+            _label_direction_cbmi.setSelected(direction == NODE_LABEL_DIRECTION.RADIAL);
         }
     }
 

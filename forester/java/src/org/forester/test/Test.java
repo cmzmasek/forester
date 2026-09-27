@@ -568,6 +568,38 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Radial tip labels: ");
+        if (org.forester.archaeopteryx.RadialTipLabelRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Oriented occupancy: ");
+        if (org.forester.archaeopteryx.OrientedOccupancyTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Branch obstacles: ");
+        if (org.forester.archaeopteryx.BranchObstaclesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Radial branch numbers: ");
+        if (org.forester.archaeopteryx.RadialBranchNumberRenderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree share squeeze: ");
         if (org.forester.archaeopteryx.TreeShareSqueezeTest.test()) {
             System.out.println("OK.");

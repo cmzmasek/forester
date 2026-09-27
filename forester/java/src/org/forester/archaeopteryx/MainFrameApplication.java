@@ -791,7 +791,9 @@ public final class MainFrameApplication extends MainFrame {
      * called while the source tab is still the selected one. Package-visible for testing.
      */
     void addDerivedPhylogenyInNewTab(final Phylogeny derived) {
-        final Options.PHYLOGENY_DISPLAY_TYPE source_type = _mainpanel.getControlPanel().getTreeDisplayType();
+        // the tab's STORED type, not the radio: in a radial layout a stored ALIGNED shows as P ("A" is greyed
+        // there), and the derived tab must inherit the choice the source tab will return to, not what it shows
+        final Options.PHYLOGENY_DISPLAY_TYPE source_type = _mainpanel.getControlPanel().getStoredTreeDisplayType();
         _mainpanel.addPhylogenyInNewTab(derived, getConfiguration(), derived.getName(), null);
         final boolean source_is_phylogram = (source_type == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM)
                 || (source_type == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM);

@@ -122,9 +122,12 @@ final class ControlPanel extends JPanel implements ActionListener {
     // Display checkboxes are packed tightly together (no extra gap between consecutive ones).
     private static final int    CHECKBOX_GAP              = 0;
     // The P/A/C row carries no letters any more, so the words live in the tooltip + accessible name.
-    static final String PHYLOGRAM_TIP = "phylogram: branch lengths drawn to scale, so the tips end ragged";
+    static final String PHYLOGRAM_TIP =
+            "phylogram: branch lengths drawn to scale, so the tips end ragged. Greyed in the circular layout, where every "
+                    + "phylogram carries its labels to the outer ring instead -- there the aligned phylogram is the one drawn";
     static final String ALIGNED_PHYLOGRAM_TIP =
-            "aligned phylogram: branch lengths to scale, with each tip carried on to a common tip column";
+            "aligned phylogram: branch lengths to scale, with each tip carried on to a common tip column -- or, in the "
+                    + "circular layout, to the outer ring. Greyed in unrooted, which has no column or ring to carry them to";
     static final String CLADOGRAM_TIP = "cladogram: topology only -- branch lengths ignored, all tips flush";
     private static final String SEARCH_TIP_TEXT = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long serialVersionUID = -8463483932821545633L;
@@ -1357,7 +1360,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case WRITE_CONFIDENCE_VALUES:
                 _write_confidence = new JCheckBox(title);
                 _write_confidence.setToolTipText(
-                        "Write the branch-support values along the branches. On a crowded tree \"Auto-hide Labels\" drops the ones whose branch is too short to carry them; zoom in and they come back");
+                        "Write the branch-support values along the branches. On a crowded tree \"Auto-hide Labels\" drops the ones that would lie across another number or, in the circular and unrooted layouts, across another branch; zoom in and they come back");
                 addJCheckBox(getWriteConfidenceCb(), ch_panel);
                 add(ch_panel);
                 break;
@@ -1384,7 +1387,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case WRITE_BRANCH_LENGTH_VALUES:
                 _write_branch_length_values = new JCheckBox(title);
                 _write_branch_length_values.setToolTipText(
-                        "Write the numeric branch length along each branch. On a crowded tree \"Auto-hide Labels\" drops the ones with no room; zoom in and they come back");
+                        "Write the numeric branch length along each branch. On a crowded tree \"Auto-hide Labels\" drops the ones that would lie across another number or, in the circular and unrooted layouts, across another branch; zoom in and they come back");
                 addJCheckBox(_write_branch_length_values, ch_panel);
                 add(ch_panel);
                 break;
@@ -1435,10 +1438,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             case DYNAMICALLY_HIDE_DATA:
                 _dynamically_hide_data = new JCheckBox(title);
                 getDynamicallyHideData().setToolTipText(
-                        "Hide crowded data automatically: tip labels when the rows are too close to read them, "
-                                + "support/branch-length numbers whose branch is drawn too short to carry them, and "
-                                + "support symbols once the rows are closer than the symbol itself. Zoom in and they "
-                                + "come back; switch this off to draw everything");
+                        "Hide crowded data automatically: tip labels when the rows are too close to read them (in "
+                                + "the circular and unrooted layouts: a tip or clade label that would lie across one "
+                                + "already drawn -- tip names first, then clade names, larger clades first; a search "
+                                + "hit's label is always drawn), support/branch-length numbers that would lie across "
+                                + "another number or a label (or, in the circular and unrooted layouts, across "
+                                + "another branch), and support symbols once the rows are closer than the symbol "
+                                + "itself. Nothing is hidden unless something already drawn is really in its way. "
+                                + "Zoom in and they come back; switch this off to draw everything");
                 addJCheckBox(getDynamicallyHideData(), ch_panel);
                 add(ch_panel);
                 break;
@@ -2424,27 +2431,33 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
         }
         setTreeDisplayType(getMainPanel().getCurrentTabIndex(), t);
+        // each radial layout greys one phylogram flavour (setDrawPhylogramEnabled), so a caller that stores the
+        // other one there -- a derived tab, a figure -- must not leave a disabled radio selected (a review find,
+        // 2026-09-27: the derived tab showed a greyed, selected button with the live one unselected)
+        showPhylogramAsDrawn();
     }
 
     /**
      * Enables/disables the P/A/C row -- {@code b} is "this tree has branch lengths", so all three are live only
      * when there is something for a phylogram to draw.
      * <p>
-     * "A" (aligned phylogram) carries one extra condition: it needs somewhere to PIN the tip labels -- the common
-     * right-hand column in the rectangular layouts, the outer ring in circular. UNROOTED has neither, because its
-     * tips radiate in every direction, so the setting has no meaning and no implementation there and the tree just
-     * draws as a plain phylogram. Rather than leave a button that silently does nothing, it is disabled in
-     * unrooted and shown as "P" -- which is what unrooted was already drawing anyway.
+     * Each radial layout has ONE phylogram flavour it cannot draw, and that button is greyed rather than left to do
+     * nothing. UNROOTED cannot align: its tips radiate in every direction, there is no column or ring to carry the
+     * labels to, so "A" is dead there and a stored ALIGNED shows as "P". CIRCULAR cannot NOT align: every circular
+     * phylogram carries its labels to the outer ring (Christian, 2026-09-27: "no more ugly jagged rings allowed"),
+     * so "P" is dead there and a stored UNALIGNED shows as "A" -- greying "A" instead, as this did until
+     * 2026-09-27, told the user the opposite of what the ring in front of them showed (Christian's catch;
+     * archaeopteryx.js greys the same button). The tab's STORED type is untouched either way, ready for the trip
+     * back to a rectangular layout.
      */
     void setDrawPhylogramEnabled(final boolean b) {
         if (getDisplayAsAlignedPhylogramRb() != null && getDisplayAsUnalignedPhylogramRb() != null
                 && getDisplayAsCladogramRb() != null) {
-            final boolean unrooted = isUnrootedLayout();
-            getDisplayAsAlignedPhylogramRb().setEnabled(b && !unrooted);
-            getDisplayAsUnalignedPhylogramRb().setEnabled(b);
+            getDisplayAsAlignedPhylogramRb().setEnabled(b && !isUnrootedLayout());
+            getDisplayAsUnalignedPhylogramRb().setEnabled(b && !isCircularLayout());
             getDisplayAsCladogramRb().setEnabled(b);
             if (b) {
-                showAlignedAsUnalignedInUnrooted(unrooted);
+                showPhylogramAsDrawn();
             }
         }
     }
@@ -4073,29 +4086,34 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Keeps the "A" BUTTON honest in unrooted without losing the tab's choice. While a tab is unrooted its "A"
-     * selection is shown as "P" (which is what unrooted actually draws), but the tab's STORED display type is
-     * deliberately left as ALIGNED_PHYLOGRAM -- the store is the memory, the button is only the override -- so
-     * "A" comes straight back the moment that tab leaves unrooted. Writing the fallback into the store instead
-     * would silently convert a deliberate "A" into "P" for good.
+     * Keeps the P/A BUTTONS honest in the radial layouts without losing the tab's choice: the button shows what the
+     * layout DRAWS. While a tab is unrooted a stored ALIGNED shows as "P" (unrooted cannot align); while it is
+     * circular a stored UNALIGNED shows as "A" (every circular phylogram is aligned, on the ring). The tab's STORED
+     * display type is deliberately left alone -- the store is the memory, the button is only the override -- so the
+     * user's choice comes straight back the moment the tab returns to a rectangular layout. Writing the fallback
+     * into the store instead would silently convert a deliberate choice for good.
      * <p>
-     * Safe against the paint path: {@code getTreeDisplayType()} (what TreePanel renders from) reads the BUTTONS,
-     * so an unrooted tree draws unaligned; {@code isDrawPhylogram()} reads the store, and both A and P are
-     * phylogram flavors there, so it answers the same either way.
+     * Safe against the paint path: {@code isDrawPhylogram()} reads the store, and both A and P are phylogram
+     * flavours there, so it answers the same either way; whether circular labels ride the ring is decided by the
+     * layout ({@code TreePanel.circularLabelsOnRing()}), not by the button.
      */
-    private void showAlignedAsUnalignedInUnrooted(final boolean unrooted) {
+    private void showPhylogramAsDrawn() {
         final int tab = getMainPanel().getCurrentTabIndex();
-        if ((tab < 0) || (tab >= getTreeDisplayTypes().size())
-                || (getTreeDisplayType(tab) != Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM)) {
+        if ((tab < 0) || (tab >= getTreeDisplayTypes().size())) {
             return;
         }
+        final Options.PHYLOGENY_DISPLAY_TYPE stored = getTreeDisplayType(tab);
         // setSelected fires no ActionListener, so neither branch touches the per-tab store or the global default
-        if (unrooted) {
-            getDisplayAsUnalignedPhylogramRb().setSelected(true);
+        if (stored == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM) {
+            (isUnrootedLayout() ? getDisplayAsUnalignedPhylogramRb() : getDisplayAsAlignedPhylogramRb()).setSelected(true);
+        } else if (stored == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM) {
+            (isCircularLayout() ? getDisplayAsAlignedPhylogramRb() : getDisplayAsUnalignedPhylogramRb()).setSelected(true);
         }
-        else {
-            getDisplayAsAlignedPhylogramRb().setSelected(true);
-        }
+    }
+
+    /** The CIRCULAR layout specifically: radial, and able to align its labels -- on the outer ring, always. */
+    private boolean isCircularLayout() {
+        return isRadialLayout() && !isUnrootedLayout();
     }
 
     /** The UNROOTED layout specifically (circular is radial too, but it CAN align its labels, on the outer ring). */
@@ -4600,6 +4618,16 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     final public JCheckBox getUseBranchWidthsCb() {
         return _width_branches;
+    }
+
+    /** The current tab's STORED display type -- what the paint reads (isDrawPhylogram) and what a derived tab
+     *  should inherit. Differs from {@link #getTreeDisplayType()} exactly where the radio cannot show the store: in
+     *  unrooted a stored ALIGNED shows as P ("A" is greyed there), in circular a stored UNALIGNED shows as A ("P" is
+     *  greyed there, since every circular phylogram aligns). Falls back to the radio when the tab has no store yet. */
+    Options.PHYLOGENY_DISPLAY_TYPE getStoredTreeDisplayType() {
+        final Options.PHYLOGENY_DISPLAY_TYPE stored = (getMainPanel() == null) ? null
+                : treeDisplayTypeAt(getMainPanel().getCurrentTabIndex());
+        return (stored != null) ? stored : getTreeDisplayType();
     }
 
     public Options.PHYLOGENY_DISPLAY_TYPE getTreeDisplayType() {

@@ -225,6 +225,26 @@ public final class AptxRenderTest {
             // ---- a radial layout must FILL the canvas, not sit at the hidden frame's size ---------------
             // Switching to circular invalidates the radial diameter; without an explicit fit it is lazily set
             // from the hidden frame's viewport, so the ring came out small and off-centre in the output.
+            // a scripted radial figure can PIN its label direction (-labels=): unpinned it takes the program's
+            // default, RADIAL, so an unpinned render equals a radial one byte for byte and differs from a horizontal
+            // one (a review find, 2026-09-27: the default changed and a scripted circular figure had no way to say
+            // "flat labels, as before")
+            final FigureRenderer.Spec ld = new FigureRenderer.Spec();
+            ld.style = FigureRenderer.Style.CIRCULAR;
+            final File lab_default = new File( dir, "lab_default.png" );
+            final File lab_radial = new File( dir, "lab_radial.png" );
+            final File lab_flat = new File( dir, "lab_flat.png" );
+            FigureRenderer.render( phy, lab_default, ld );
+            ld.label_direction = Options.NODE_LABEL_DIRECTION.RADIAL;
+            FigureRenderer.render( phy, lab_radial, ld );
+            ld.label_direction = Options.NODE_LABEL_DIRECTION.HORIZONTAL;
+            FigureRenderer.render( phy, lab_flat, ld );
+            if ( !java.util.Arrays.equals( Files.readAllBytes( lab_default.toPath() ), Files.readAllBytes( lab_radial.toPath() ) ) ) {
+                return fail( "an unpinned circular figure must render with the program's default label direction, RADIAL" );
+            }
+            if ( java.util.Arrays.equals( Files.readAllBytes( lab_radial.toPath() ), Files.readAllBytes( lab_flat.toPath() ) ) ) {
+                return fail( "-labels=horizontal must change a circular figure (the radial and the flat render are identical)" );
+            }
             final FigureRenderer.Spec circ = new FigureRenderer.Spec();
             circ.style = FigureRenderer.Style.CIRCULAR;
             final File c = new File( dir, "circ.png" );

@@ -121,6 +121,105 @@ public final class TipImageRenderTest {
             checkLayout( mf[ 0 ], tp, ok, "unrooted", Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED,
                     Options.TREE_ORIENTATION.ROOT_LEFT, 600, 600 );
 
+            // (2a) an image is one mark with its label: on a fan too dense for its names, a tip whose label the rule
+            // hides shows NO image either, and every image drawn sits inside the box the paint recorded for it --
+            // an orphan image under a neighbour's name would read as that neighbour's (a review find, 2026-09-27:
+            // the image used to be painted before the label's claim). Saturated pixels are the images' alone.
+            final int[] star_hidden = { 0 }, star_outside = { 0 }, star_saturated = { 0 };
+            SwingUtilities.invokeAndWait( () -> {
+                final PhylogenyNode star_root = new PhylogenyNode();
+                final String[] imgs = { "r.png", "g.png", "b.png", "c.png" };
+                for( int i = 0; i < 48; ++i ) {
+                    star_root.addAsChild( imgTip( "lineage_" + i, imgs[ i % 4 ], ( ( i % 2 ) == 0 ) ? 0.2 : 0.6 ) );
+                }
+                final Phylogeny star = new Phylogeny();
+                star.setRoot( star_root );
+                star.setRooted( true );
+                star.recalculateNumberOfExternalDescendants( false );
+                tp.setTree( star );
+                tp.setTreeFile( new File( dir, "tree.xml" ) );
+                tp.recalculateMaxDistanceToRoot();
+                // everything this block sets is put back in its finally: (2b) and (3) below run under the settings
+                // they find, so leaving these behind would make them depend on this block having run
+                final Options.PHYLOGENY_GRAPHICS_TYPE type0 = tp.getPhylogenyGraphicsType();
+                final Options.NODE_LABEL_DIRECTION dir0 = tp.getOptions().getNodeLabelDirection();
+                final boolean hide0 = tp.shows( DisplayOption.DYNAMICALLY_HIDE_DATA );
+                final boolean imgs0 = tp.getOptions().isShowTipImages();
+                final boolean names0 = tp.shows( DisplayOption.SHOW_NODE_NAMES );
+                tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+                tp.getOptions().setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL );
+                tp.getControlPanel().setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, true );
+                tp.getOptions().setShowTipImages( true );
+                tp.setShows( DisplayOption.SHOW_NODE_NAMES, true );
+                final int[] prior = tp.layoutForExportSize( 600, 600 );
+                try {
+                    tp.setRecordLabelBoxesForTest( true );
+                    final BufferedImage img = AptxUtil.renderPhylogenyToImage( 600, 600, tp, tp.getOptions(), false, 1,
+                            false );
+                    star_hidden[ 0 ] = tp.labelsHiddenForTest();
+                    final java.util.List<double[]> boxes = tp.labelBoxesForTest();
+                    // the recorded boxes -- names and images alike -- never overlap one another: an image that was
+                    // drawn but not RESERVED would let a later name be placed across it, and the seam alone would
+                    // not show it (the image's box is recorded whether or not it was reserved)
+                    for( int i = 0; i < boxes.size(); ++i ) {
+                        for( int j = i + 1; j < boxes.size(); ++j ) {
+                            final double[] a = boxes.get( i ), b = boxes.get( j );
+                            if ( OrientedOccupancy.overlap( a[ 0 ], a[ 1 ], a[ 2 ], a[ 3 ], Math.cos( a[ 4 ] ),
+                                    Math.sin( a[ 4 ] ), b[ 0 ], b[ 1 ], b[ 2 ], b[ 3 ], Math.cos( b[ 4 ] ),
+                                    Math.sin( b[ 4 ] ) ) ) {
+                                ++star_outside[ 0 ]; // counted with the stray pixels: either way something is drawn across something
+                            }
+                        }
+                    }
+                    for( int x = 0; x < img.getWidth(); ++x ) {
+                        for( int y = 0; y < img.getHeight(); ++y ) {
+                            final int rgb = img.getRGB( x, y );
+                            final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                            if ( ( Math.max( r, Math.max( gc, b ) ) - Math.min( r, Math.min( gc, b ) ) ) <= 40 ) {
+                                continue;
+                            }
+                            ++star_saturated[ 0 ];
+                            boolean in = false;
+                            for( final double[] bx : boxes ) {
+                                final double dx = ( x + 0.5 ) - bx[ 0 ], dy = ( y + 0.5 ) - bx[ 1 ];
+                                final double u = ( dx * Math.cos( bx[ 4 ] ) ) + ( dy * Math.sin( bx[ 4 ] ) );
+                                final double v = ( -dx * Math.sin( bx[ 4 ] ) ) + ( dy * Math.cos( bx[ 4 ] ) );
+                                if ( ( Math.abs( u ) <= ( bx[ 2 ] + 1.5 ) ) && ( Math.abs( v ) <= ( bx[ 3 ] + 1.5 ) ) ) {
+                                    in = true;
+                                    break;
+                                }
+                            }
+                            if ( !in ) {
+                                ++star_outside[ 0 ];
+                            }
+                        }
+                    }
+                }
+                finally {
+                    tp.setRecordLabelBoxesForTest( false );
+                    tp.restoreLayoutAfterExport( prior );
+                    tp.setTree( phy );
+                    tp.setTreeFile( new File( dir, "tree.xml" ) );
+                    tp.recalculateMaxDistanceToRoot();
+                    tp.setPhylogenyGraphicsType( type0 );
+                    tp.getOptions().setNodeLabelDirection( dir0 );
+                    tp.getControlPanel().setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, hide0 );
+                    tp.getOptions().setShowTipImages( imgs0 );
+                    tp.setShows( DisplayOption.SHOW_NODE_NAMES, names0 );
+                }
+            } );
+            if ( star_hidden[ 0 ] == 0 ) {
+                fail( ok, "precondition: the 48-tip imaged fan must make the label rule hide some names (0 hidden)" );
+            }
+            else if ( star_saturated[ 0 ] < 200 ) {
+                fail( ok, "precondition: some images must be drawn on the fan (" + star_saturated[ 0 ] + " saturated px)" );
+            }
+            else if ( star_outside[ 0 ] > 0 ) {
+                fail( ok, "an image is drawn outside every recorded label/image box -- a hidden tip's image, or an "
+                        + "image not reserved with its label (" + star_outside[ 0 ] + " of " + star_saturated[ 0 ]
+                        + " saturated px)" );
+            }
+
             // (2b) "Show External Data" off suppresses the tip images (parity with the radial layout)
             final int[] shown = { 0 }, hidden = { 0 };
             SwingUtilities.invokeAndWait( () -> {
@@ -203,11 +302,20 @@ public final class TipImageRenderTest {
             tp.setPreferredSize( new java.awt.Dimension( w, h ) );
             tp.setSize( w, h );
             mf.showWhole();
-            tp.calcParametersForPainting( w, h );
-            tp.getOptions().setShowTipImages( false );
-            off[ 0 ] = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false ) );
-            tp.getOptions().setShowTipImages( true );
-            on[ 0 ] = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false ) );
+            // lay the tree out FOR the export canvas, as a real fixed-size export does: the radial ring is a square
+            // of its own diameter, and one fitted to the window is larger than a 600 px canvas -- with every circular
+            // phylogram's labels (and images) now on that ring, an unfitted ring puts them all off the canvas (the
+            // ragged tree used to survive this because its images sat at the tips, some of which were inside)
+            final int[] prior = tp.layoutForExportSize( w, h );
+            try {
+                tp.getOptions().setShowTipImages( false );
+                off[ 0 ] = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false ) );
+                tp.getOptions().setShowTipImages( true );
+                on[ 0 ] = countSaturated( AptxUtil.renderPhylogenyToImage( w, h, tp, tp.getOptions(), false, 1, false ) );
+            }
+            finally {
+                tp.restoreLayoutAfterExport( prior );
+            }
         } );
         if ( on[ 0 ] <= ( off[ 0 ] + 200 ) ) {
             fail( ok, "tip images must add coloured ink in the " + name + " layout (" + off[ 0 ] + " -> " + on[ 0 ] + ")" );

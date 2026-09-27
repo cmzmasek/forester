@@ -76,6 +76,8 @@ public final class DemoTreeGenerator {
     // exemplary phyloXML types: real numbers are xsd:decimal, categories / free text are xsd:string
     private static final String NUM = "xsd:decimal";
     private static final String TEXT = "xsd:string";
+    /** Set while {@link #writeAllQuietly} runs: the per-file lines are for the command line, not for a test's log. */
+    private static boolean _quiet = false;
 
     public static void main( final String[] args ) throws IOException, PhyloXmlDataFormatException {
         final File dir = new File( System.getProperty( "user.dir" ), "forester/demo" );
@@ -83,6 +85,24 @@ public final class DemoTreeGenerator {
             System.err.println( "could not create demo directory: " + dir.getAbsolutePath() );
             System.exit( 1 );
         }
+        writeAll( dir );
+        System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
+    }
+
+    /** Every generated demo, written into {@code dir} -- what {@code main} does, callable by a test that regenerates
+     *  into a scratch directory and compares with the shipped files (DemoTreesTest), because a shipped demo can fall
+     *  behind its generator when the two are edited in one sitting. Deterministic: two runs write identical bytes. */
+    public static void writeAllQuietly( final File dir ) throws IOException, PhyloXmlDataFormatException {
+        _quiet = true;
+        try {
+            writeAll( dir );
+        }
+        finally {
+            _quiet = false;
+        }
+    }
+
+    public static void writeAll( final File dir ) throws IOException, PhyloXmlDataFormatException {
         write( dir, "size-by-property.xml", sizeByPropertyTree() );
         write( dir, "color-by-property.xml", colorByPropertyTree() );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
@@ -117,6 +137,10 @@ public final class DemoTreeGenerator {
         write( dir, "crowded-tracks.xml", crowdedTracksTree() );
         write( dir, "sequence-logo.xml", sequenceLogoTree() );
         write( dir, "zero-length-nest.xml", zeroLengthNestTree() );
+        write( dir, "radial-numbers-fit.xml", radialNumbersTree( 10, true ) );
+        write( dir, "radial-numbers-crowded.xml", radialNumbersTree( 32, false ) );
+        write( dir, "radial-labels-fit.xml", radialLabelsTree( 12, true ) );
+        write( dir, "radial-labels-crowded.xml", radialLabelsTree( 96, false ) );
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
@@ -147,12 +171,13 @@ public final class DemoTreeGenerator {
         write( dir, "tanglegram-host-tree.xml", tanglegramHostTree() );
         write( dir, "tanglegram-parasite-tree.xml", tanglegramParasiteTree() );
         writeText( dir, "tanglegram-association.tsv", tanglegramAssociationTsv() );
-        System.out.println( "Wrote demo trees to " + dir.getAbsolutePath() );
     }
 
     private static void write( final File dir, final String file_name, final Phylogeny phy ) throws IOException {
         new PhylogenyWriter().toPhyloXML( phy, 0, new File( dir, file_name ) );
-        System.out.println( "  " + file_name + " (" + phy.getNumberOfExternalNodes() + " tips)" );
+        if ( !_quiet ) {
+            System.out.println( "  " + file_name + " (" + phy.getNumberOfExternalNodes() + " tips)" );
+        }
     }
 
     // ----- "BEAST / BEAST X output": a small time-calibrated NEXUS tree with FigTree-style [&...] annotations
@@ -485,7 +510,9 @@ public final class DemoTreeGenerator {
     /** Write a companion plain-text data file (e.g. a CSV to import onto a demo tree). */
     private static void writeText( final File dir, final String file_name, final String content ) throws IOException {
         java.nio.file.Files.writeString( new File( dir, file_name ).toPath(), content );
-        System.out.println( "  " + file_name + " (" + content.lines().count() + " lines)" );
+        if ( !_quiet ) {
+            System.out.println( "  " + file_name + " (" + content.lines().count() + " lines)" );
+        }
     }
 
     // ----- "Import annotations": a plain-named tip tree with NO per-tip data, paired with a companion CSV to
@@ -2508,6 +2535,78 @@ public final class DemoTreeGenerator {
                              + "alignment through the same budget. Works in every "
                              + "display type: the rectangular layouts divide the depth WIDTH, the circular one the "
                              + "tip-ring RADIUS, the unrooted one its fan spread." );
+    }
+
+    // Unequal, but never shorter than two thirds of the longest: a number rides its spoke's MIDPOINT, so every tip
+    // -- and the label beside it -- then sits farther out than any neighbour's number, and the demo shows the
+    // branch rule alone rather than a number over a tip label (measured with 0.25..0.6: 58 px of number ink on a
+    // neighbouring short spoke's label).
+    private static final double[] LENGTHS = { 0.4, 0.6, 0.45, 0.55, 0.5, 0.42, 0.58 };
+
+    /**
+     * The pair for "a tip label never lies across another" (the radial layouts): a radiation of NAMED lineages. A
+     * dozen of equal length have room along their spokes in both radial layouts. Ninety-six of alternating short
+     * and long length crowd in UNROOTED, where a label sits at its own tip: the short tips are a third of the way
+     * out, where neighbouring spokes are closer than a label is tall, so those labels can only be drawn across a
+     * neighbour's and "Auto-hide Labels" drops them, keeping the long tips' at the rim. In CIRCULAR every label
+     * rides the outer ring at even spacing, so at that window the same tree crowds nowhere there -- which is
+     * itself the point of the ring; a ring tighter than a name is tall (measured: a 450 x 450 export) crowds too,
+     * and the same rule thins it. The two files differ in nothing but the count and the lengths.
+     */
+    private static Phylogeny radialLabelsTree( final int tips, final boolean fits ) {
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < tips; ++i ) {
+            root.addAsChild( blLeaf( "lineage_" + ( i + 1 ), fits ? 0.5 : ( ( ( i % 2 ) == 0 ) ? 0.2 : 0.6 ) ) );
+        }
+        final String shape = tips + " named lineages radiating from one node. Switch to the UNROOTED layout: ";
+        return tree( root, fits ? "Radial tip labels: room for every one (" + tips + " lineages)"
+                                : "Radial tip labels: crowded (" + tips + " lineages)",
+                     fits ? shape + "every name rides its own spoke and none of the " + tips + " is hidden. Compare "
+                             + "radial-labels-crowded.xml, eight times the lineages at two lengths."
+                          : shape + "the short lineages end a third of the way out, where neighbouring spokes are "
+                             + "closer together than a name is tall, so their names could only be drawn ACROSS a "
+                             + "neighbour's. \"Auto-hide Labels\" (on by default) draws a name only where no name "
+                             + "already drawn is in its way, first come, so the long lineages' names at the rim stay "
+                             + "and the crowded ones are dropped (at a 1100x850 window 72 of the 96 names are drawn and 24 hidden); switch it off to see them all, "
+                             + "printed through each other, or zoom in (Y+) and watch them return as the fan opens. "
+                             + "In the CIRCULAR layout every name rides the outer ring at even spacing, so at that "
+                             + "window this same tree crowds nowhere there; shrink the window until the ring is tighter "
+                             + "than a name is tall and the same rule thins the ring too. Compare radial-labels-fit.xml." );
+    }
+
+    /**
+     * The pair for "a branch number never lies across a branch that is not its own" (the radial layouts): an
+     * explosive radiation -- one node, {@code tips} branches of unequal length -- which in the UNROOTED layout is a
+     * fan of spokes a few degrees apart. With ten spokes every branch-length number has room; with three times
+     * as many, the spokes are closer at a short spoke's midpoint than the number is tall, so those numbers could
+     * only be placed across a neighbour's spoke and "Auto-hide Labels" drops them, while the long spokes carry
+     * their numbers farther out, where the fan has opened up, and keep them. The lengths are UNEQUAL for exactly
+     * that reason: a star of equal spokes tips from every number fitting to none fitting all at once (measured: 72
+     * equal spokes at a 900x600 window, 72 refused), and a demo of a rule that keeps some and drops some has to
+     * show both. The two files differ in nothing but the count.
+     */
+    private static Phylogeny radialNumbersTree( final int tips, final boolean fits ) {
+        final PhylogenyNode root = new PhylogenyNode();
+        for( int i = 0; i < tips; ++i ) {
+            // seven lengths, cycling: neighbouring spokes carry their numbers at different radii
+            root.addAsChild( blLeaf( "radiation_tip_" + ( i + 1 ), LENGTHS[ i % LENGTHS.length ] ) );
+        }
+        final String shape = tips + " lineages radiating from one node -- a hard polytomy, the shape of an "
+                + "explosive radiation. Switch to the UNROOTED layout and turn on \"Branch Lengths\": ";
+        return tree( root, fits ? "Radial branch numbers: room for every one (" + tips + " spokes)"
+                                : "Radial branch numbers: crowded (" + tips + " spokes)",
+                     fits ? shape + "every number sits beside its own spoke and none of the " + tips + " is dropped, "
+                             + "because with this few spokes no number reaches a neighbour's. Compare "
+                             + "radial-numbers-crowded.xml, the same radiation with three times the lineages."
+                          : shape + "at a SHORT spoke's midpoint the neighbouring spokes are closer together than "
+                             + "the number is tall, so that number could only be drawn ACROSS a neighbour's spoke -- "
+                             + "where it would read as that branch's length. \"Auto-hide Labels\" (on by default) "
+                             + "drops exactly those and keeps the rest, which ride the LONG spokes farther out where "
+                             + "the fan has opened up (at a 900x600 window 16 of the 32 are drawn, 12 dropped for a spoke and 4 more for another number); switch it off to see every number drawn and the "
+                             + "crossings it was hiding, or zoom in (Y+) and watch them return as the spokes "
+                             + "spread apart. A branch is an obstacle to a number just as another number is, and "
+                             + "nothing is hidden unless a line really runs through the ink. Compare "
+                             + "radial-numbers-fit.xml, the same radiation with ten lineages." );
     }
 
     /**

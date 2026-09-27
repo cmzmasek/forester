@@ -66,7 +66,97 @@ public final class LayoutButtonsTest {
         return run( new Phylogeny[] {}, LayoutButtonsTest::noTreeStillSwitches )
                 && run( new Phylogeny[] { tree() }, LayoutButtonsTest::exercise )
                 && run( new Phylogeny[] { tree(), tree() }, LayoutButtonsTest::perTabDisplayTypeSurvivesTabSwitch )
-                && run( new Phylogeny[] { tree() }, LayoutButtonsTest::newTreeResyncsLayoutRow );
+                && run( new Phylogeny[] { tree() }, LayoutButtonsTest::newTreeResyncsLayoutRow )
+                && run( new Phylogeny[] { tree() }, LayoutButtonsTest::derivedTabInheritsStoredType )
+                && run( new Phylogeny[] { demoTree( "domain-architectures.xml" ) }, LayoutButtonsTest::rectangularRefitOnReturn );
+    }
+
+    /**
+     * Switching INTO rectangular is a fit of the RECTANGULAR layout. Until 2026-09-27 the switch fitted the panel
+     * BEFORE its type changed, so leaving circular for root-left kept circular's label reach -- where the domain
+     * track is sized from the radius -- and the domain column opened 110 px inside the names (Christian: "labels
+     * and domains overlapping"; measured on this demo: a reach of 137 right after the switch against the 247 a fit
+     * gives). The check: the layout parameters right after the switch equal those after an explicit fit, with the
+     * precondition that circular's differ, or the equality would be vacuous.
+     */
+    private static void rectangularRefitOnReturn( final MainFrame frame, final boolean[] ok ) {
+        final ControlPanel cp = frame.getMainPanel().getControlPanel();
+        final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+        if ( tp == null ) {
+            fail( ok, "precondition: the domain demo must have opened" );
+            return;
+        }
+        cp.setShowDomainArchitecturesForTest( true );
+        click( cp, LayoutIcon.Kind.ROOT_LEFT );
+        cp.showWhole();
+        final int reach_rect = tp.getLongestExtNodeInfo();
+        final float xdist_rect = tp.getXdistance();
+        for( final LayoutIcon.Kind radial : new LayoutIcon.Kind[] { LayoutIcon.Kind.CIRCULAR, LayoutIcon.Kind.UNROOTED } ) {
+            click( cp, radial );
+            final int reach_radial = tp.getLongestExtNodeInfo();
+            if ( reach_radial == reach_rect ) {
+                fail( ok, "precondition: " + radial + " must lay the labels out differently from rectangular (both "
+                        + reach_rect + "), or a stale fit would be invisible" );
+            }
+            click( cp, LayoutIcon.Kind.ROOT_LEFT );
+            if ( ( tp.getLongestExtNodeInfo() != reach_rect ) || ( tp.getXdistance() != xdist_rect ) ) {
+                fail( ok, "returning to rectangular from " + radial + " must FIT the rectangular layout: label reach "
+                        + tp.getLongestExtNodeInfo() + " and x-distance " + tp.getXdistance() + " right after the switch, "
+                        + reach_rect + " / " + xdist_rect + " after a fit (" + radial + "'s reach was " + reach_radial
+                        + ") -- with the radial reach the domain track lands on the names" );
+            }
+        }
+    }
+
+    private static Phylogeny demoTree( final String name ) {
+        try {
+            final java.io.File file = new java.io.File( System.getProperty( "user.dir" ), "forester/demo/" + name );
+            return org.forester.phylogeny.factories.ParserBasedPhylogenyFactory.getInstance()
+                    .create( file, org.forester.io.parsers.phyloxml.PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( "demo tree " + name + " could not be read: " + e );
+        }
+    }
+
+    /**
+     * A tab derived from another (a subtree, representative tips) inherits the source tab's STORED display type,
+     * not what its radio shows: in circular a stored "P" shows as "A" (P is greyed there, since every circular
+     * phylogram aligns), and copying the radio would hand the derived tab an aligned phylogram it never chose to
+     * return to. (A review find, 2026-09-27; the greyed flavour was corrected the same day.)
+     */
+    private static void derivedTabInheritsStoredType( final MainFrame frame, final boolean[] ok ) {
+        final ControlPanel cp = frame.getMainPanel().getControlPanel();
+        // choose the plain phylogram while rectangular, then go circular: circular always aligns, so the radio
+        // shows "A" with "P" greyed while the STORE keeps UNALIGNED for the trip back
+        click( cp, LayoutIcon.Kind.ROOT_LEFT );
+        cp.getDisplayAsUnalignedPhylogramRb().doClick();
+        click( cp, LayoutIcon.Kind.CIRCULAR );
+        if ( cp.getDisplayAsUnalignedPhylogramRb().isSelected() || cp.getDisplayAsUnalignedPhylogramRb().isEnabled()
+                || !cp.getDisplayAsAlignedPhylogramRb().isSelected() ) {
+            fail( ok, "precondition: in circular the 'P' radio must be greyed and unselected and 'A' shown" );
+        }
+        if ( cp.getStoredTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+            fail( ok, "precondition: the circular tab's STORE must still hold UNALIGNED, got " + cp.getStoredTreeDisplayType() );
+        }
+        ( (MainFrameApplication) frame ).addDerivedPhylogenyInNewTab( tree() );
+        if ( cp.getStoredTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+            fail( ok, "a tab derived from a circular tab must inherit the stored UNALIGNED choice, got "
+                    + cp.getStoredTreeDisplayType() + " (the radio shows " + cp.getTreeDisplayType() + ")" );
+        }
+        // ...and SHOW it the way circular shows a stored UNALIGNED: as A, "P" greyed and unselected. setTreeDisplayType
+        // used to select the stored radio outright, leaving a disabled, selected button (a review find, 2026-09-27)
+        if ( !frame.getMainPanel().getCurrentTreePanel().isRadialLayout() ) {
+            fail( ok, "precondition: the derived tab must open in the source tab's circular layout, got "
+                    + frame.getMainPanel().getCurrentTreePanel().getPhylogenyGraphicsType() );
+        }
+        else if ( cp.getDisplayAsUnalignedPhylogramRb().isSelected() || cp.getDisplayAsUnalignedPhylogramRb().isEnabled()
+                || !cp.getDisplayAsAlignedPhylogramRb().isSelected() ) {
+            fail( ok, "the derived circular tab must show its stored UNALIGNED as A with 'P' greyed and unselected; got "
+                    + "P.selected=" + cp.getDisplayAsUnalignedPhylogramRb().isSelected() + " P.enabled="
+                    + cp.getDisplayAsUnalignedPhylogramRb().isEnabled() + " A.selected="
+                    + cp.getDisplayAsAlignedPhylogramRb().isSelected() );
+        }
     }
 
     /** Opens a frame on the given trees, runs {@code body} on the EDT, and always disposes the frame. */
@@ -290,14 +380,33 @@ public final class LayoutButtonsTest {
         if ( !cp.getDisplayAsUnalignedPhylogramRb().isSelected() ) {
             fail( ok, "the fallback from 'A' in unrooted must be 'P' (what unrooted actually draws)" );
         }
-        // circular CAN align (labels pinned to the outer ring), so it must stay live there
+        // circular is the MIRROR case: it ALWAYS carries its labels to the outer ring (Christian, 2026-09-27), so
+        // the plain phylogram 'P' is the flavour it cannot draw -- 'P' is greyed there, a stored 'A' stays 'A', and a
+        // stored 'P' shows as 'A' while the store keeps it for the way back (Christian, 2026-09-27: greying 'A' had
+        // told the user the opposite of the ring in front of them; archaeopteryx.js greys the same button)
         click( cp, LayoutIcon.Kind.CIRCULAR );
-        if ( !cp.getDisplayAsAlignedPhylogramRb().isEnabled() ) {
-            fail( ok, "'A' must stay enabled in circular -- labels align on the outer ring there" );
+        if ( cp.getDisplayAsUnalignedPhylogramRb().isEnabled() ) {
+            fail( ok, "'P' must be greyed in circular -- every circular phylogram aligns its labels on the ring" );
+        }
+        if ( !cp.getDisplayAsAlignedPhylogramRb().isEnabled() || !cp.getDisplayAsAlignedPhylogramRb().isSelected() ) {
+            fail( ok, "a stored 'A' must stay live and selected in circular (A.enabled="
+                    + cp.getDisplayAsAlignedPhylogramRb().isEnabled() + ")" );
         }
         click( cp, LayoutIcon.Kind.ROOT_LEFT );
-        if ( !cp.getDisplayAsAlignedPhylogramRb().isEnabled() ) {
-            fail( ok, "'A' must come back on leaving unrooted" );
+        if ( !cp.getDisplayAsAlignedPhylogramRb().isEnabled() || !cp.getDisplayAsUnalignedPhylogramRb().isEnabled() ) {
+            fail( ok, "both phylogram flavours must come back on leaving a radial layout" );
+        }
+        cp.getDisplayAsUnalignedPhylogramRb().doClick();
+        click( cp, LayoutIcon.Kind.CIRCULAR );
+        if ( cp.getDisplayAsUnalignedPhylogramRb().isSelected() || !cp.getDisplayAsAlignedPhylogramRb().isSelected() ) {
+            fail( ok, "a stored 'P' must show as 'A' in circular (what circular draws), P greyed and unselected" );
+        }
+        if ( cp.getStoredTreeDisplayType() != Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM ) {
+            fail( ok, "...while the STORE keeps UNALIGNED, got " + cp.getStoredTreeDisplayType() );
+        }
+        click( cp, LayoutIcon.Kind.ROOT_LEFT );
+        if ( !cp.getDisplayAsUnalignedPhylogramRb().isSelected() ) {
+            fail( ok, "the stored 'P' must come back on leaving circular -- the detour must not convert it to 'A' for good" );
         }
         // 5. the rectangular sub-style can be set from Settings at ANY time. While a radial layout is showing it
         //    must NOT switch the layout out from under the user -- it is remembered and applies on the way back.

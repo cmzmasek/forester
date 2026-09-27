@@ -65,6 +65,7 @@ final class FigureSpec {
     private static final String K_LABEL_PROPS  = "labelprops";    // ref|ref...
     private static final String K_COLUMNS      = "columns";       // ref:type:shape:normalized|...
     private static final String K_SHOW_PREFIX  = "show.";         // + DisplayOption.name()
+    private static final String K_LABEL_DIR    = "labeldirection"; // NODE_LABEL_DIRECTION (radial layouts)
 
     private final Map<String, String> _values = new LinkedHashMap<String, String>();
 
@@ -88,6 +89,14 @@ final class FigureSpec {
             if ( opt != DisplayOption.DISPLAY_AS_PHYLOGRAM ) { // carried by K_DISPLAY_TYPE, above
                 f.put( K_SHOW_PREFIX + opt.name(), Boolean.toString( tp.shows( opt ) ) );
             }
+        }
+        // the radial layouts' label direction: the default became RADIAL on 2026-09-27, and a figure made before
+        // that with flat labels must be able to say so -- a spec that cannot pin it renders differently across
+        // versions, which is the one thing a scripted figure exists to prevent
+        // ...and only for a RADIAL figure: the direction is a frame-wide option, so a rectangular figure carrying
+        // it would reset the user's preference on being opened, for a setting it never draws
+        if ( tp.isRadialLayout() ) {
+            f.put( K_LABEL_DIR, tp.getOptions().getNodeLabelDirection().name() );
         }
         f.put( K_COLOR_BY, tp.getColorByPropertyRef() );
         f.put( K_SIZE_BY, tp.getSizeByPropertyRef() );
@@ -121,6 +130,18 @@ final class FigureSpec {
                                                           get( K_DISPLAY_TYPE ) );
         if ( ( dt != null ) && ( tp.getControlPanel() != null ) ) {
             tp.getControlPanel().setTreeDisplayType( dt );
+        }
+        final Options.NODE_LABEL_DIRECTION ld = enumOf( Options.NODE_LABEL_DIRECTION.class, get( K_LABEL_DIR ) );
+        if ( ld != null ) {
+            final MainFrame frame = ( tp.getMainPanel() == null ) ? null : tp.getMainPanel().getMainFrame();
+            if ( frame != null ) {
+                // the option AND its menu checkbox: updateOptions rewrites the option from the checkbox on every
+                // menu action, so a direction set behind the checkbox's back lasted until the next click
+                frame.setNodeLabelDirection( ld );
+            }
+            else {
+                tp.getOptions().setNodeLabelDirection( ld ); // aptx_render: no frame, no menus
+            }
         }
         for( final DisplayOption opt : DisplayOption.values() ) {
             final String v = get( K_SHOW_PREFIX + opt.name() );

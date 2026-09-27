@@ -54,6 +54,7 @@ public final class CrowdedBranchDataTest {
         final boolean[] ok = { true };
         try {
             crowded( ok );
+            hitsNotExempt( ok );
             shallowestMarkSurvives( ok );
             sparse( ok );
             fpsCounter( ok );
@@ -351,6 +352,56 @@ public final class CrowdedBranchDataTest {
     }
 
     /** A caterpillar of 40 internal nodes on near-zero branches, each carrying support -- the "nest". */
+    /**
+     * Deliberate NON-behaviour (Christian, 2026-09-26, joint with archaeopteryx.js): a search hit's NUMBER is not
+     * exempt from auto-hide. A search finds nodes by their names, so a hit's tip label is always drawn; a hit's
+     * number drawn across a neighbour's would misreport a value in order to draw attention to itself. Pinned here,
+     * in the rectangular layout, because here a number is refused only by another number: in the radial layouts
+     * every refused number on a crowded fan is refused by a BRANCH first, so a fixture there could not tell an
+     * exempting funnel from a faithful one (a mutant that exempted hits survived it). Marking EVERY node a hit
+     * must change nothing about how many numbers are drawn and how many refused.
+     */
+    private static void hitsNotExempt( final boolean[] ok ) throws Exception {
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        final Phylogeny phy = nest();
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                .createInstance( new Phylogeny[] { phy }, new Configuration(), "hits" ) );
+        final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+        final ControlPanel cp = mf[ 0 ].getMainPanel().getControlPanel();
+        final int[] before = new int[ 2 ], after = new int[ 2 ];
+        SwingUtilities.invokeAndWait( () -> {
+            cp.setCheckbox( DisplayOption.WRITE_CONFIDENCE_VALUES, true );
+            cp.setCheckbox( DisplayOption.DYNAMICALLY_HIDE_DATA, true );
+            tp.getOptions().setShowOverview( false );
+            tp.setOvOn( false );
+            paint( tp, 900, 600 );
+            before[ 0 ] = tp.numbersDrawnForTest();
+            before[ 1 ] = tp.numbersSuppressedForTest();
+            final java.util.Set<Long> every = new java.util.HashSet<Long>();
+            for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy.iteratorPreorder(); it
+                    .hasNext(); ) {
+                every.add( Long.valueOf( it.next().getId() ) );
+            }
+            tp.setFoundNodes0( every );
+            try {
+                paint( tp, 900, 600 );
+                after[ 0 ] = tp.numbersDrawnForTest();
+                after[ 1 ] = tp.numbersSuppressedForTest();
+            }
+            finally {
+                tp.setFoundNodes0( null );
+            }
+        } );
+        if ( before[ 1 ] < 1 ) {
+            fail( ok, "precondition: the nest must refuse at least one number for the hit policy to be testable" );
+        }
+        else if ( ( after[ 0 ] != before[ 0 ] ) || ( after[ 1 ] != before[ 1 ] ) ) {
+            fail( ok, "a search hit's number must not be exempt from auto-hide: with every node a hit, drawn/refused "
+                    + "went from " + before[ 0 ] + "/" + before[ 1 ] + " to " + after[ 0 ] + "/" + after[ 1 ] );
+        }
+        dispose( mf );
+    }
+
     private static Phylogeny nest() {
         final PhylogenyNode root = new PhylogenyNode();
         PhylogenyNode cursor = root;

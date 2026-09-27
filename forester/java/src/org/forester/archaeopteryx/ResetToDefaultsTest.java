@@ -121,7 +121,7 @@ public final class ResetToDefaultsTest {
         o.setAbbreviateScientificTaxonNames( true );
         o.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP ); // default is ROOT_LEFT (the DEFAULT new tabs get)
         o.setTipLabelDirection( Options.TIP_LABEL_DIRECTION.HORIZONTAL ); // default is VERTICAL
-        o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.RADIAL ); // "Radial Labels"; default is HORIZONTAL
+        o.setNodeLabelDirection( Options.NODE_LABEL_DIRECTION.HORIZONTAL ); // "Radial Labels"; default is RADIAL since 2026-09-25
         o.setFoundColor( Options.FOUND_COLOR.NEON_MAGENTA ); // default is ELECTRIC_VIOLET
         o.setSupportVisualization( SUPPORT_VISUALIZATION.SIZE_SCALED );
         o.setNodeAgeShape( Options.NODE_AGE_SHAPE.SPINDLE ); // default is BAR
