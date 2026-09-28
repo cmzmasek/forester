@@ -478,6 +478,7 @@ public final class MsaTrackRenderTest {
             // (6b) scored over the tips ON SCREEN: collapsing a clade re-scores the profile for what is left
             SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
             checkFollowsVisibleTips( ok );
+            checkGapRunIsOneLine( ok );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {
@@ -536,15 +537,18 @@ public final class MsaTrackRenderTest {
         int n = 0;
         for( int x = 0; x < img.getWidth(); ++x ) {
             for( int y = 0; y < img.getHeight(); ++y ) {
-                final int rgb = img.getRGB( x, y );
-                final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
-                if ( ( ( Math.max( r, Math.max( gc, b ) ) - Math.min( r, Math.min( gc, b ) ) ) <= 12 ) && ( r >= 180 )
-                        && ( r <= 245 ) ) {
+                if ( isFaintGray( img.getRGB( x, y ) ) ) {
                     ++n;
                 }
             }
         }
         return n;
+    }
+
+    private static boolean isFaintGray( final int rgb ) {
+        final int r = ( rgb >> 16 ) & 0xFF, gc = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+        return ( ( Math.max( r, Math.max( gc, b ) ) - Math.min( r, Math.min( gc, b ) ) ) <= 12 ) && ( r >= 180 )
+                && ( r <= 245 );
     }
 
     /** Colored (non-grayscale) pixels -- the tree is grayscale, so this isolates the colored alignment cells. */
@@ -560,6 +564,151 @@ public final class MsaTrackRenderTest {
             }
         }
         return n;
+    }
+
+    /**
+     * A run of consecutive gaps is ONE faint line: exactly one logical pixel thick, one ink value along its whole
+     * length, and centred in its row. Rendered at 2x (a Retina screen) through the real paint. A line per cell overlapped the translucent ink
+     * at every cell border (a darker dot, read as a short vertical tick), and an antialiased stroke on an integer y
+     * smeared over three device rows (read as several lines when magnified) -- each half is asserted separately.
+     */
+    private static void checkGapRunIsOneLine( final boolean[] ok ) {
+        try {
+            final PhylogenyNode root = new PhylogenyNode();
+            root.addAsChild( alignedTip( "g1", "MKQLEDPFGH" ) );
+            root.addAsChild( alignedTip( "g2", "M--------H" ) ); // an 8-gap run between two residues
+            root.addAsChild( alignedTip( "g3", "MKQLEDPFGH" ) );
+            final Phylogeny phy = new Phylogeny();
+            phy.setRoot( root );
+            phy.setRooted( true );
+            phy.externalNodesHaveChanged();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { phy }, new Configuration(), "gaps" ) );
+            final int scale = 2;
+            final int cw = 20;
+            final BufferedImage[] img = new BufferedImage[ 1 ];
+            final int[][] band = new int[ 1 ][];
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                tp.getOptions().setGraphicsExportWhiteBackground( true );
+                tp.getOptions().setShowOverview( false );
+                tp.setOvOn( false );
+                tp.getOptions().setMsaColumnWidth( cw );
+                tp.setShowMsa( true );
+                tp.setSize( 760, 300 );
+                mf[ 0 ].showWhole();
+                tp.calcParametersForPainting( 760, 300 );
+                img[ 0 ] = AptxUtil.renderPhylogenyToImage( 760, 300, tp, tp.getOptions(), false, scale, false );
+                band[ 0 ] = tp.tipRowBandsForTest()[ 1 ]; // after the render: it lays the panel out for the image
+            } );
+            // device rows of g2's band carrying a long faint-gray run: the gap line and nothing else is that long
+            final int min_run = ( 8 * cw * scale * 3 ) / 4;
+            int line_rows = 0;
+            int first_line_row = -1;
+            java.util.Set<Integer> inks = new java.util.TreeSet<>();
+            for( int y = band[ 0 ][ 0 ] * scale; y < Math.min( img[ 0 ].getHeight(),
+                                                                ( band[ 0 ][ 0 ] + band[ 0 ][ 1 ] ) * scale ); ++y ) {
+                int best_start = -1, best_len = 0, start = -1;
+                for( int x = 0; x <= img[ 0 ].getWidth(); ++x ) {
+                    final boolean gray = ( x < img[ 0 ].getWidth() ) && isFaintGray( img[ 0 ].getRGB( x, y ) );
+                    if ( gray && ( start < 0 ) ) {
+                        start = x;
+                    }
+                    else if ( !gray && ( start >= 0 ) ) {
+                        if ( ( x - start ) > best_len ) {
+                            best_len = x - start;
+                            best_start = start;
+                        }
+                        start = -1;
+                    }
+                }
+                if ( best_len >= min_run ) {
+                    if ( first_line_row < 0 ) {
+                        first_line_row = y;
+                    }
+                    ++line_rows;
+                    for( int x = best_start; x < ( best_start + best_len ); ++x ) {
+                        inks.add( img[ 0 ].getRGB( x, y ) & 0xFFFFFF );
+                    }
+                }
+            }
+            if ( line_rows == 0 ) {
+                fail( ok, "the 8-gap run drew no faint line (fixture or band lookup broken)" );
+            }
+            else {
+                if ( line_rows != scale ) {
+                    fail( ok, "a gap line must be exactly 1 logical px thick (" + scale + " device rows at " + scale
+                            + "x), got " + line_rows + " rows" );
+                }
+                // CENTRED in its row. Only an EVEN-height row can tell a centred line from one snapped to the logical
+                // grid (which sits half a logical px low there), so the fixture must provide one.
+                if ( ( band[ 0 ][ 1 ] % 2 ) != 0 ) {
+                    fail( ok, "fixture: g2's row must be an even number of logical px tall to test centring, got "
+                            + band[ 0 ][ 1 ] );
+                }
+                final double band_centre = ( band[ 0 ][ 0 ] + ( band[ 0 ][ 1 ] / 2.0 ) ) * scale;
+                final double line_centre = first_line_row + ( line_rows / 2.0 );
+                if ( Math.abs( line_centre - band_centre ) > 0.5 ) {
+                    fail( ok, "a gap line must be vertically centred in its row: centre " + line_centre
+                            + " vs row centre " + band_centre + " (device px)" );
+                }
+                if ( inks.size() != 1 ) {
+                    fail( ok, "a run of gaps must be ONE even line, no darker dots at cell borders; inks "
+                            + inks.size() + ": " + inks );
+                }
+            }
+            // A VECTOR export has no device pixels to snap to: EPS draws pre-scaled px->mm (0.353), where snapping to
+            // "one device unit" drew the line 2.8x too thick and up to 1.4 px off centre. The run is the one rect as
+            // wide as 8 columns; it must be exactly 1 px tall and centred on its row.
+            final String[] eps = { null };
+            final int[][] eps_band = new int[ 1 ][];
+            SwingUtilities.invokeAndWait( () -> {
+                try {
+                    final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                    final File dir = java.nio.file.Files.createTempDirectory( "aptx-gap" ).toFile();
+                    dir.deleteOnExit();
+                    final File f = new File( dir, "gap.eps" );
+                    f.deleteOnExit();
+                    VectorGraphicsExporter.writePhylogenyToVectorGraphicsFile( f.getAbsolutePath(), tp, 760, 300,
+                            VectorGraphicsExporter.Format.EPS, true, true );
+                    eps[ 0 ] = new String( java.nio.file.Files.readAllBytes( f.toPath() ), "UTF-8" );
+                    eps_band[ 0 ] = tp.tipRowBandsForTest()[ 1 ];
+                }
+                catch ( final Exception e ) {
+                    e.printStackTrace();
+                }
+            } );
+            if ( eps[ 0 ] == null ) {
+                fail( ok, "EPS export of the gap fixture failed" );
+            }
+            else {
+                final java.util.regex.Matcher m = java.util.regex.Pattern
+                        .compile( "newpath (\\S+) (\\S+) (\\S+) (\\S+) rect Z fill" ).matcher( eps[ 0 ] );
+                int runs = 0;
+                while ( m.find() ) {
+                    if ( Math.abs( Double.parseDouble( m.group( 3 ) ) - ( 8 * cw ) ) > 1e-6 ) {
+                        continue;
+                    }
+                    ++runs;
+                    final double y = Double.parseDouble( m.group( 2 ) );
+                    final double h = Double.parseDouble( m.group( 4 ) );
+                    final double row_centre = eps_band[ 0 ][ 0 ] + ( eps_band[ 0 ][ 1 ] / 2.0 );
+                    if ( ( Math.abs( h - 1 ) > 1e-6 ) || ( Math.abs( ( y + ( h / 2 ) ) - row_centre ) > 1e-6 ) ) {
+                        fail( ok, "EPS: a gap line must be 1 px tall and centred on its row (centre " + row_centre
+                                + "), got y=" + y + " h=" + h );
+                    }
+                }
+                if ( runs != 1 ) {
+                    fail( ok, "EPS: expected exactly one gap rect " + ( 8 * cw ) + " wide, found " + runs );
+                }
+            }
+            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            ok[ 0 ] = false;
+        }
     }
 
     /**

@@ -14246,7 +14246,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Font saved_font = g.getFont();
         final Stroke saved_stroke = g.getStroke();
         // A gap is drawn as a faint horizontal line (not blank) so the alignment's extent -- where each row's aligned
-        // sequence begins/ends -- is visible; consecutive gaps join into a continuous dash.
+        // sequence begins/ends -- is visible; a run of consecutive gaps is ONE line (see paintMsaGapRun).
         final Color fg = getTreeColorSet().getSequenceColor();
         final Color gap_line_color = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 38);
         final Color boundary_color = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 165);
@@ -14272,6 +14272,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final int cell_h = band[1];
             y_top = Math.min(y_top, cy);
             y_bottom = Math.max(y_bottom, cy + cell_h);
+            int gap_x0 = -1; // start of the current run of gap cells (-1: none open)
+            int gap_x1 = -1; // its end (exclusive)
             for (int i = first_i; i <= last_i; ++i) {
                 final int c = offset + i; // the actual alignment column at window position i
                 if ((c >= total) || (c >= mol.length())) {
@@ -14282,11 +14284,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int cell_w = Math.max(1, Math.round(origin_x + ((i + 1) * cw)) - cx);
                 final Color col = MsaColors.colorFor(res, nucleotide);
                 if (col == null) {
-                    final int mid = cy + (cell_h / 2); // a gap -> faint horizontal line spanning the cell
-                    g.setColor(gap_line_color);
-                    g.drawLine(cx, mid, cx + cell_w, mid);
+                    if (gap_x0 < 0) {
+                        gap_x0 = cx;
+                    }
+                    gap_x1 = cx + cell_w;
                     continue;
                 }
+                paintMsaGapRun(g, gap_line_color, gap_x0, gap_x1, cy, cell_h, !to_pdf);
+                gap_x0 = -1;
                 g.setColor(col);
                 fillGridCell(g, cx, cy, cell_w, cell_h, to_pdf || to_graphics_file);
                 if (draw_letters && (cell_h >= (fm.getAscent() + fm.getDescent()))) {
@@ -14297,6 +14302,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     g.drawString(ch, cx + ((cell_w - lw) / 2), cy + (((cell_h + fm.getAscent()) - fm.getDescent()) / 2));
                 }
             }
+            paintMsaGapRun(g, gap_line_color, gap_x0, gap_x1, cy, cell_h, !to_pdf);
         }
         // Boundary lines at the REAL start/end of the alignment -- drawn only when that edge is actually in the window
         // (offset 0 shows the start; the window reaching the last column shows the end), so the user can tell a true
@@ -14319,6 +14325,38 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.setColor(saved_color);
         g.setFont(saved_font);
         g.setStroke(saved_stroke);
+    }
+
+    /** One run of consecutive gap cells [{@code x0}, {@code x1}) in the row band [{@code cy}, {@code cy + cell_h}) as
+     *  ONE faint line, one logical px thick, centred in the band and snapped to DEVICE pixels. Drawing a line per cell
+     *  overlapped the translucent ink at every cell border (a darker dot that read as a short vertical tick); an
+     *  antialiased stroke off the pixel grid smears over two or three rows (reads as several lines when magnified);
+     *  and a line snapped to LOGICAL pixels sits in the lower half of an even-height row -- on a 2x screen the device
+     *  grid is fine enough to centre it (a 2-px-tall row: device rows 1-2 of 0-3). On a 1x screen an even-height row
+     *  cannot centre a crisp 1 px line; it then sits half a pixel low. Snapping is for RASTER output only
+     *  ({@code snap}): a vector export (PDF / SVG / EPS, {@code to_pdf}) has no device pixels -- EPS draws pre-scaled
+     *  px->mm (0.353), where "one device px" would be a line 2.8x too thick -- so it gets the exact centre.
+     *  No-op when no run is open ({@code x0 < 0}). */
+    private static void paintMsaGapRun(final Graphics2D g, final Color color, final int x0, final int x1, final int cy,
+                                       final int cell_h, final boolean snap) {
+        if ((x0 < 0) || (x1 <= x0)) {
+            return;
+        }
+        g.setColor(color);
+        g.fill(msaGapLineRect(g.getTransform(), x0, x1, cy, cell_h, snap));
+    }
+
+    /** The rectangle {@link #paintMsaGapRun} fills, in user space, for the transform {@code t} it is drawn under. */
+    static Rectangle2D msaGapLineRect(final java.awt.geom.AffineTransform t, final int x0, final int x1, final int cy,
+                                      final int cell_h, final boolean snap) {
+        if (!snap) {
+            return new Rectangle2D.Double(x0, (cy + (cell_h / 2.0)) - 0.5, x1 - x0, 1);
+        }
+        final double sy = Math.abs(t.getScaleY()) > 1e-9 ? t.getScaleY() : 1.0; // rectangular root-left: scale+translate
+        final double thick = Math.max(1, Math.round(Math.abs(sy))); // device px
+        final double centre = t.getTranslateY() + (sy * (cy + (cell_h / 2.0))); // device y of the band's centre
+        final double top = Math.round(centre - (thick / 2.0)); // device row the line starts on
+        return new Rectangle2D.Double(x0, (top - t.getTranslateY()) / sy, x1 - x0, thick / Math.abs(sy));
     }
 
     /**
