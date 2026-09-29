@@ -144,6 +144,9 @@ public final class AuspiceJsonParserTest {
             if ( !divergenceOnlyBranchLengths() ) {
                 return false;
             }
+            if ( !opensInTheMetricItStatesCompletely() ) {
+                return false;
+            }
             if ( !reversibleTimeDivergenceToggle() ) {
                 return false;
             }
@@ -244,6 +247,83 @@ public final class AuspiceJsonParserTest {
         // no node has a date in a divergence-only build
         if ( dv( root ) != null ) {
             return fail( "a divergence-only build must carry no dates" );
+        }
+        return true;
+    }
+
+    private static Phylogeny parse( final String tree ) throws Exception {
+        final AuspiceJsonParser p = new AuspiceJsonParser();
+        p.setSource( new StringBuffer( "{\"version\":\"v2\",\"tree\":" + tree + "}" ) );
+        return p.parse()[ 0 ];
+    }
+
+    private static String jn( final String name, final String date, final String div, final String children ) {
+        final StringBuilder sb = new StringBuilder( "{\"name\":\"" + name + "\",\"node_attrs\":{" );
+        if ( date != null ) {
+            sb.append( "\"num_date\":{\"value\":" ).append( date ).append( "}" );
+        }
+        if ( div != null ) {
+            sb.append( ( date != null ) ? "," : "" ).append( "\"div\":" ).append( div );
+        }
+        sb.append( "}" );
+        if ( children != null ) {
+            sb.append( ",\"children\":[" ).append( children ).append( "]" );
+        }
+        return sb.append( "}" ).toString();
+    }
+
+    /** A build has no branch lengths of its own: they are made from ONE metric, the one it states COMPLETELY (the
+     *  joint rule). And made SIGNED in time: a node dated before its parent runs backwards, so that it lands on its
+     *  own date. */
+    private static boolean opensInTheMetricItStatesCompletely() throws Exception {
+        // every node dated, every node with a div: time
+        final Phylogeny both = parse( jn( "R", "2000", "0", jn( "X", "2004", "0.004",
+                                                                 jn( "A", "2006", "0.006", null ) + ","
+                                                                         + jn( "B", "2003.5", "0.009", null ) ) ) );
+        if ( !"year".equals( both.getDistanceUnit() ) || ( Math.abs( named( both, "A" ).getDistanceToParent() - 2.0 ) > 1e-12 ) ) {
+            return fail( "a build stating both completely opens in time; unit " + both.getDistanceUnit() + ", A="
+                    + named( both, "A" ).getDistanceToParent() );
+        }
+        // B is dated 2003.5, BEFORE its parent X (2004): -0.5, not 0
+        if ( Math.abs( named( both, "B" ).getDistanceToParent() - ( -0.5 ) ) > 1e-12 ) {
+            return fail( "a node dated before its parent opens with a NEGATIVE length, got "
+                    + named( both, "B" ).getDistanceToParent() );
+        }
+        AuspiceJsonParser.applyDivergenceBranchLengths( both );
+        AuspiceJsonParser.applyTimeBranchLengths( both );
+        if ( Math.abs( named( both, "B" ).getDistanceToParent() - ( -0.5 ) ) > 1e-12 ) {
+            return fail( "...and gets it back after a round trip, got " + named( both, "B" ).getDistanceToParent() );
+        }
+        if ( !AuspiceJsonParser.hasTimeAndDivergence( both ) ) {
+            return fail( "every node states both: hasTimeAndDivergence" );
+        }
+        // dates stated in part (A has none), div on every node: it opens in DIVERGENCE, the metric it states completely
+        final Phylogeny part_dated = parse( jn( "R", "2000", "0", jn( "X", "2004", "0.004",
+                                                                       jn( "A", null, "0.006", null ) + ","
+                                                                               + jn( "B", "2005", "0.009", null ) ) ) );
+        if ( !"subs/site".equals( part_dated.getDistanceUnit() )
+                || ( Math.abs( named( part_dated, "A" ).getDistanceToParent() - 0.002 ) > 1e-12 )
+                || ( Math.abs( named( part_dated, "B" ).getDistanceToParent() - 0.005 ) > 1e-12 ) ) {
+            return fail( "dates in part, div complete: the build must open in divergence; unit "
+                    + part_dated.getDistanceUnit() + ", A=" + named( part_dated, "A" ).getDistanceToParent() + " B="
+                    + named( part_dated, "B" ).getDistanceToParent() );
+        }
+        if ( AuspiceJsonParser.hasTimeAndDivergence( part_dated ) ) {
+            return fail( "one node undated: the time layout cannot state every branch" );
+        }
+        // dates on every node, div in part: time, and no second layout
+        final Phylogeny part_div = parse( jn( "R", "2000", "0", jn( "X", "2004", "0.004",
+                                                                     jn( "A", "2006", null, null ) + ","
+                                                                             + jn( "B", "2005", "0.009", null ) ) ) );
+        if ( !"year".equals( part_div.getDistanceUnit() ) || AuspiceJsonParser.hasTimeAndDivergence( part_div ) ) {
+            return fail( "div in part: the build opens in time and has no second layout" );
+        }
+        // NEITHER complete: as it always opened -- in time, if it has a date at all
+        final Phylogeny neither = parse( jn( "R", "2000", "0", jn( "X", "2004", null,
+                                                                    jn( "A", null, "0.006", null ) + ","
+                                                                            + jn( "B", "2005", "0.009", null ) ) ) );
+        if ( !"year".equals( neither.getDistanceUnit() ) ) {
+            return fail( "neither metric complete: the build opens in time as before, got " + neither.getDistanceUnit() );
         }
         return true;
     }

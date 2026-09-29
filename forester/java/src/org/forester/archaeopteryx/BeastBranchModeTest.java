@@ -47,6 +47,13 @@ public final class BeastBranchModeTest {
 
     private static final String RATED       = "beast-annotations.nex";
     private static final String ONE_UNRATED = "beast-rate-missing.nex";
+    /** {@link #RATED} with isolate_B's height taken out: the time layout cannot state its branch. */
+    private static final String ONE_UNDATED = "beast-date-missing.nex";
+    /** {@link #RATED} with the (D,E) node dated 0.05 BEFORE its parent: a span that runs backwards. */
+    private static final String BACKWARDS   = "beast-negative-span.nex";
+    /** A recorded divergence (Nextstrain), and its twin with one tip's div taken out. */
+    private static final String RECORDED    = "nextstrain-nexus.nex";
+    private static final String ONE_WITHOUT_DIV = "nextstrain-div-missing.nex";
     /** A BEAST tree on CALENDAR time (its heights convert on opening), for what the time axis does. */
     private static final String CALENDAR    = "beast-tip-dates.nex";
     private static final String RATE        = BranchLengthLayout.RATE_PROPERTY_REF;
@@ -88,7 +95,11 @@ public final class BeastBranchModeTest {
                     && inFrame( CALENDAR, BeastBranchModeTest::calendarCladeBackInTime )
                     && inFrame( ONE_UNRATED, BeastBranchModeTest::editorDecides )
                     && inFrame( RATED, BeastBranchModeTest::editorTakesTheDates )
-                    && inFrame( ONE_UNRATED, BeastBranchModeTest::notOffered );
+                    && inFrame( ONE_UNRATED, BeastBranchModeTest::notOffered )
+                    && inFrame( ONE_UNDATED, ( f, tp, cp, ok ) -> refused( ONE_UNDATED, tp, cp, ok ) )
+                    && inFrame( ONE_WITHOUT_DIV, ( f, tp, cp, ok ) -> refused( ONE_WITHOUT_DIV, tp, cp, ok ) )
+                    && inFrame( RECORDED, BeastBranchModeTest::recordedTwinIsOffered )
+                    && inFrame( BACKWARDS, BeastBranchModeTest::aSpanThatRunsBackwards );
         }
         catch ( final Throwable t ) {
             t.printStackTrace();
@@ -908,9 +919,9 @@ public final class BeastBranchModeTest {
         }
     }
 
-    /** A DATE edit decides too. With the date values of two inner nodes cleared in the editor, 6 of the 8 branches
-     *  have no time span: after the first Write the tree still has a time layout (5 of 8), after the second it has
-     *  not, and the control goes with that Write. */
+    /** A DATE edit decides too, in both directions and at once. The date value of ONE inner node cleared in the
+     *  editor, and the time layout cannot state three of the eight branches (its own, and its two tips'): the
+     *  control goes with that Write -- five of eight was a majority once, and was enough. Written back, it returns. */
     private static void editorTakesTheDates( final MainFrame frame,
                                              final TreePanel tp,
                                              final ControlPanel cp,
@@ -920,25 +931,26 @@ public final class BeastBranchModeTest {
             fail( ok, "editor dates: the control must be there first" );
             return;
         }
-        final NodeDataForm first = new NodeDataForm( phy.getNode( "isolate_A" ).getParent(), tp,
-                                                     NodeDataForm.Mode.EDIT );
-        first.setTextForTest( NodeDataDraft.DATE_VALUE, "" );
-        if ( !first.write() || !BranchLengthLayout.isTimeDerivable( phy ) ) {
-            fail( ok, "editor dates: one date cleared must leave a time layout; problems: " + first.problems() );
+        final PhylogenyNode ab = phy.getNode( "isolate_A" ).getParent();
+        final NodeDataForm form = new NodeDataForm( ab, tp, NodeDataForm.Mode.EDIT );
+        form.setTextForTest( NodeDataDraft.DATE_VALUE, "" );
+        if ( !form.write() || ( ab.getNodeData().getDate() != null && ab.getNodeData().getDate().getValue() != null ) ) {
+            fail( ok, "editor dates: the date value was not cleared; problems: " + form.problems() );
+            return;
+        }
+        if ( BranchLengthLayout.isTimeDerivable( phy ) ) {
+            fail( ok, "one node undated: the time layout cannot state every branch" );
+        }
+        if ( tp.isBranchLengthToggleApplicable() || cp.isBranchLengthsControlVisible() ) {
+            fail( ok, "one node undated: the control must go with the Write" );
+        }
+        form.setTextForTest( NodeDataDraft.DATE_VALUE, "1.2" );
+        if ( !form.write() || !BranchLengthLayout.isTimeDerivable( phy ) ) {
+            fail( ok, "editor dates: the date value was not written back; problems: " + form.problems() );
             return;
         }
         if ( !tp.isBranchLengthToggleApplicable() || !cp.isBranchLengthsControlVisible() ) {
-            fail( ok, "5 of 8 branches still have a time span: the control must stay" );
-        }
-        final NodeDataForm second = new NodeDataForm( phy.getNode( "isolate_C" ).getParent(), tp,
-                                                      NodeDataForm.Mode.EDIT );
-        second.setTextForTest( NodeDataDraft.DATE_VALUE, "" );
-        if ( !second.write() || BranchLengthLayout.isTimeDerivable( phy ) ) {
-            fail( ok, "editor dates: two dates cleared must leave no time layout; problems: " + second.problems() );
-            return;
-        }
-        if ( tp.isBranchLengthToggleApplicable() || cp.isBranchLengthsControlVisible() ) {
-            fail( ok, "2 of 8 branches have a time span: the control must go with the Write" );
+            fail( ok, "every node dated again: the control must return with the Write" );
         }
     }
 
@@ -1018,6 +1030,100 @@ public final class BeastBranchModeTest {
         if ( !same( unit_before, phy.getDistanceUnit() ) ) {
             fail( ok, "a refused tree keeps its unit; was " + unit_before + ", is " + phy.getDistanceUnit() );
         }
+    }
+
+    /** A tree one of the two layouts cannot state every branch of: no control, the panel refuses when asked
+     *  directly, and the tree stays in the layout it arrived in -- every length, and the unit. */
+    private static void refused( final String demo, final TreePanel tp, final ControlPanel cp, final boolean[] ok ) {
+        final Phylogeny phy = tp.getPhylogeny();
+        final java.util.List<Double> arrived = lengths( phy );
+        final String unit_before = phy.getDistanceUnit();
+        if ( tp.isBranchLengthToggleApplicable() ) {
+            fail( ok, demo + ": a layout cannot state every branch, the switch must not apply" );
+        }
+        if ( cp.isBranchLengthsControlVisible() ) {
+            fail( ok, demo + ": the Time | Div control must not be shown" );
+        }
+        tp.setBranchLengthMode( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
+            fail( ok, demo + ": asked directly, the panel must still refuse the divergence view" );
+        }
+        if ( !arrived.equals( lengths( phy ) ) ) {
+            fail( ok, demo + ": the tree must stay in the layout it arrived in; " + arrived + " -> " + lengths( phy ) );
+        }
+        if ( !same( unit_before, phy.getDistanceUnit() ) ) {
+            fail( ok, demo + ": a refused tree keeps its unit; was " + unit_before + ", is " + phy.getDistanceUnit() );
+        }
+    }
+
+    /** ...and the twin that records a divergence on EVERY node is offered the switch, or the refusal proves nothing. */
+    private static void recordedTwinIsOffered( final MainFrame frame,
+                                               final TreePanel tp,
+                                               final ControlPanel cp,
+                                               final boolean[] ok ) {
+        if ( !tp.isBranchLengthToggleApplicable() || !cp.isBranchLengthsControlVisible() ) {
+            fail( ok, RECORDED + " records a divergence and a date on every node: it must be offered the switch" );
+        }
+        final String tip = cp.branchLengthDivTooltipForTest();
+        if ( ( tip == null ) || !tip.contains( "recorded in the file" ) ) {
+            fail( ok, RECORDED + ": the Div tooltip must say the divergence is recorded, got: " + tip );
+        }
+    }
+
+    /** The (D,E) node is dated 0.05 BEFORE its parent. Time keeps the sign, so the lengths from the root add up to
+     *  each node's own date; Div states 0; and back in time it is -0.05 again. About the VALUES: the window draws a
+     *  negative length at 0, as it always has. */
+    private static void aSpanThatRunsBackwards( final MainFrame frame,
+                                                final TreePanel tp,
+                                                final ControlPanel cp,
+                                                final boolean[] ok ) {
+        final Phylogeny phy = tp.getPhylogeny();
+        if ( !cp.isBranchLengthsControlVisible() || !near( parentLength( phy, "isolate_D" ), -0.05 ) ) {
+            fail( ok, BACKWARDS + " must be offered the switch and open with (D,E) at -0.05, got "
+                    + parentLength( phy, "isolate_D" ) );
+            return;
+        }
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) {
+            fail( ok, "backwards: selecting Div must switch the mode" );
+            return;
+        }
+        if ( Double.doubleToRawLongBits( parentLength( phy, "isolate_D" ) ) != 0L ) {
+            fail( ok, "divergence draws a span that runs backwards at 0, got " + parentLength( phy, "isolate_D" ) );
+        }
+        // every other branch at rate x span: D is 0.85 x 0.0035, C is 0.8 x 0.0026
+        if ( !near( length( phy, "isolate_D" ), 0.85 * 0.0035 ) || !near( length( phy, "isolate_C" ), 0.00208 )
+                || ( zeroBranches( phy ) != 1 ) ) {
+            fail( ok, "...and only that one; D=" + length( phy, "isolate_D" ) + " C=" + length( phy, "isolate_C" ) + ", "
+                    + zeroBranches( phy ) + " branches at 0" );
+        }
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
+        if ( !near( parentLength( phy, "isolate_D" ), -0.05 ) || !near( length( phy, "isolate_D" ), 0.85 ) ) {
+            fail( ok, "back in time the span is -0.05 again; got (D,E)=" + parentLength( phy, "isolate_D" ) + " D="
+                    + length( phy, "isolate_D" ) );
+        }
+        // every tip is dated 0 under a root dated 2.1: the signed lengths from the root add up to 2.1
+        // (NOT calculateDistanceToRoot(): it leaves negative lengths out of the sum)
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            double signed = 0;
+            for( PhylogenyNode n = tip; !n.isRoot(); n = n.getParent() ) {
+                signed += n.getDistanceToParent();
+            }
+            if ( !near( signed, 2.1 ) ) {
+                fail( ok, "the lengths from the root to " + tip.getName() + " must add up to 2.1, got " + signed );
+            }
+        }
+    }
+
+    private static java.util.List<Double> lengths( final Phylogeny phy ) {
+        final java.util.List<Double> l = new java.util.ArrayList<>();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( !node.isRoot() ) {
+                l.add( node.getDistanceToParent() );
+            }
+        }
+        return l;
     }
 
     /** Takes the clock rate off the named node IN PLACE, as the node editor would; true when the tree then has no

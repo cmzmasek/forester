@@ -88,6 +88,31 @@ public class BranchLengthLayoutTest {
         return n;
     }
 
+    /** root(10) -> x(6) -> [ t1(2), t2(1) ]; root -> y(5) -> t3(0)... as ages: FIVE branches (x, t1, t2, y, t3),
+     *  every node dated, every branch rated 0.002, every length 99 until a layout is applied. */
+    private static Phylogeny fiveBranches() {
+        final PhylogenyNode root = new PhylogenyNode();
+        date( root, 10 );
+        final PhylogenyNode x = named( "x", 6 );
+        final PhylogenyNode y = named( "y", 5 );
+        final PhylogenyNode t1 = named( "t1", 2 );
+        final PhylogenyNode t2 = named( "t2", 1 );
+        final PhylogenyNode t3 = named( "t3", 0 );
+        root.addAsChild( x );
+        root.addAsChild( y );
+        x.addAsChild( t1 );
+        x.addAsChild( t2 );
+        y.addAsChild( t3 );
+        for( final PhylogenyNode n : new PhylogenyNode[] { x, y, t1, t2, t3 } ) {
+            n.setDistanceToParent( 99 );
+            prop( n, BranchLengthLayout.RATE_PROPERTY_REF, 0.002 );
+        }
+        final Phylogeny p = new Phylogeny();
+        p.setRoot( root );
+        p.externalNodesHaveChanged();
+        return p;
+    }
+
     private static double lengthOf( final Phylogeny p, final String name ) {
         for( final PhylogenyNodeIterator it = p.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -241,7 +266,10 @@ public class BranchLengthLayoutTest {
             for( final PhylogenyNode n : new PhylogenyNode[] { nx, na, nu, nb } ) {
                 n.setDistanceToParent( 99 );
             }
-            BranchLengthLayout.applyTimeBelow( nx );
+            if ( BranchLengthLayout.datesIncreaseTowardTips( nested ) ) {
+                return fail( "fixture: the nested tree's dates are ages, largest at the root" );
+            }
+            BranchLengthLayout.applyTimeBelow( nx, false );
             if ( !eq( na.getDistanceToParent(), 4 ) ) {
                 return fail( "below the clade a branch spans its date gap (6 - 2); got " + na.getDistanceToParent() );
             }
@@ -255,11 +283,17 @@ public class BranchLengthLayoutTest {
             final PhylogenyNode deep = named( "deep", 1 );
             na.addAsChild( deep );
             deep.setDistanceToParent( 99 );
-            BranchLengthLayout.applyTimeBelow( nx );
+            BranchLengthLayout.applyTimeBelow( nx, false );
             if ( !eq( deep.getDistanceToParent(), 1 ) ) {
                 return fail( "below the clade means all the way down (2 - 1); got " + deep.getDistanceToParent() );
             }
-            BranchLengthLayout.applyTimeBelow( null ); // nothing to do, and nothing thrown
+            // ...and in the direction it is told the dates run: the other way, every span changes its sign
+            BranchLengthLayout.applyTimeBelow( nx, true );
+            if ( !eq( na.getDistanceToParent(), -4 ) || !eq( deep.getDistanceToParent(), -1 ) ) {
+                return fail( "told the dates increase toward the tips, a span is child - parent; got a="
+                        + na.getDistanceToParent() + " deep=" + deep.getDistanceToParent() );
+            }
+            BranchLengthLayout.applyTimeBelow( null, false ); // nothing to do, and nothing thrown
             // --- a rate written -0.0 is not negative, so it is a rate; its length must still be a plain 0 ---
             final Phylogeny minus_zero = ratedPair( "-0.0" );
             if ( BranchLengthLayout.divergenceSource( minus_zero ) != BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE ) {
@@ -275,6 +309,149 @@ public class BranchLengthLayoutTest {
             if ( BranchLengthLayout.divergenceSource( bad_root ) != BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE ) {
                 return fail( "the root's rate must not be asked for: it has no branch" );
             }
+            // ===== THE JOINT RULE: both layouts can state EVERY branch =====
+            // --- time: every node states a date, the root included. One tip undated of a tree of 5 branches was a
+            //     majority and was offered; it is not any more.
+            final Phylogeny five = fiveBranches();
+            if ( !BranchLengthLayout.isTimeDerivable( five ) || !BranchLengthLayout.isApplicable( five ) ) {
+                return fail( "fixture: five branches, every node dated and every branch rated, must be offered" );
+            }
+            for( final String undated : new String[] { "t1", "x", "root" } ) {
+                final Phylogeny p = fiveBranches();
+                ( "root".equals( undated ) ? p.getRoot() : node( p, undated ) ).getNodeData().setDate( null );
+                if ( BranchLengthLayout.isTimeDerivable( p ) || BranchLengthLayout.isApplicable( p ) ) {
+                    return fail( "\"" + undated + "\" states no date: the time layout cannot state every branch" );
+                }
+                // ...and the tree stays in the layout it arrived in
+                final double before = lengthOf( p, "t3" );
+                BranchLengthLayout.applyDivergence( p );
+                if ( lengthOf( p, "t3" ) != before ) {
+                    return fail( "a tree that is not offered the switch must keep its lengths (\"" + undated
+                            + "\" undated); t3 " + before + " -> " + lengthOf( p, "t3" ) );
+                }
+            }
+            // --- a date that is STATED is stated, whether zero or negative
+            final Phylogeny zero_and_negative = fiveBranches();
+            date( node( zero_and_negative, "t1" ), 0 );
+            date( node( zero_and_negative, "t2" ), -3 );
+            if ( !BranchLengthLayout.isApplicable( zero_and_negative ) ) {
+                return fail( "a date of 0 and a date of -3 are stated: the tree is offered the switch" );
+            }
+            // --- recorded divergence: every node states it, the root included; stated in part, there is no
+            //     divergence layout, and no falling back on the rates
+            final Phylogeny recorded = fiveBranches();
+            for( final PhylogenyNodeIterator it = recorded.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                prop( n, BranchLengthLayout.DIV_PROPERTY_REF, n.isRoot() ? 0.0 : 0.004 );
+            }
+            if ( ( BranchLengthLayout.divergenceSource( recorded ) != BranchLengthLayout.DIVERGENCE_SOURCE.STORED )
+                    || !BranchLengthLayout.isApplicable( recorded ) ) {
+                return fail( "fixture: a divergence recorded on every node must be offered" );
+            }
+            for( final String without : new String[] { "t2", "x", "root" } ) {
+                final Phylogeny p = fiveBranches();
+                for( final PhylogenyNodeIterator it = p.iteratorPreorder(); it.hasNext(); ) {
+                    final PhylogenyNode n = it.next();
+                    if ( !( n.isRoot() ? "root" : n.getName() ).equals( without ) ) {
+                        prop( n, BranchLengthLayout.DIV_PROPERTY_REF, n.isRoot() ? 0.0 : 0.004 );
+                    }
+                }
+                if ( BranchLengthLayout.divergenceSource( p ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE ) {
+                    return fail( "\"" + without + "\" records no divergence: no divergence layout, and the rates on"
+                            + " every branch are not fallen back on; got " + BranchLengthLayout.divergenceSource( p ) );
+                }
+                if ( BranchLengthLayout.isApplicable( p ) ) {
+                    return fail( "\"" + without + "\" records no divergence: not offered" );
+                }
+            }
+            // ===== A SPAN MAY BE NEGATIVE =====
+            // --- ages (largest at the root): t1 is dated OLDER than its parent x, 7 against 6
+            final Phylogeny older = fiveBranches();
+            date( node( older, "t1" ), 7 );
+            if ( BranchLengthLayout.datesIncreaseTowardTips( older ) ) {
+                return fail( "four of five spans run down: the dates are ages" );
+            }
+            BranchLengthLayout.applyTime( older );
+            if ( !eq( lengthOf( older, "t1" ), -1 ) || !eq( lengthOf( older, "t2" ), 5 ) || !eq( lengthOf( older, "x" ), 4 ) ) {
+                return fail( "time keeps the sign: t1 is 1 BEFORE its parent; got t1=" + lengthOf( older, "t1" )
+                        + " t2=" + lengthOf( older, "t2" ) + " x=" + lengthOf( older, "x" ) );
+            }
+            // summed from the root, signed spans land every node on its own date: x at 10-6, t1 at 10-7
+            if ( !eq( lengthOf( older, "x" ) + lengthOf( older, "t1" ), 10 - 7 ) ) {
+                return fail( "root to t1 must span root date - t1 date" );
+            }
+            BranchLengthLayout.applyDivergence( older );
+            if ( Double.doubleToRawLongBits( lengthOf( older, "t1" ) ) != 0L ) {
+                return fail( "divergence draws a span that runs backwards at 0; got " + lengthOf( older, "t1" ) );
+            }
+            if ( !eq( lengthOf( older, "t2" ), 5 * 0.002 ) ) {
+                return fail( "...and every other branch at rate x span; got t2=" + lengthOf( older, "t2" ) );
+            }
+            BranchLengthLayout.applyTime( older );
+            if ( !eq( lengthOf( older, "t1" ), -1 ) ) {
+                return fail( "and back in time the span is negative again; got " + lengthOf( older, "t1" ) );
+            }
+            // --- calendar dates (increasing toward the tips): the same tree, mirrored about year 2000
+            final Phylogeny calendar = fiveBranches();
+            for( final PhylogenyNodeIterator it = calendar.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                date( n, 2010 - n.getNodeData().getDate().getValue().doubleValue() );
+            }
+            date( node( calendar, "t1" ), 2003 ); // its parent x is dated 2004
+            if ( !BranchLengthLayout.datesIncreaseTowardTips( calendar ) ) {
+                return fail( "four of five spans run up: the dates are calendar dates" );
+            }
+            BranchLengthLayout.applyTime( calendar );
+            if ( !eq( lengthOf( calendar, "t1" ), -1 ) || !eq( lengthOf( calendar, "t2" ), 5 )
+                    || !eq( lengthOf( calendar, "x" ), 4 ) ) {
+                return fail( "calendar time keeps the sign too; got t1=" + lengthOf( calendar, "t1" ) + " t2="
+                        + lengthOf( calendar, "t2" ) + " x=" + lengthOf( calendar, "x" ) );
+            }
+            // --- a recorded divergence that FALLS along a branch is drawn at 0 as well
+            final Phylogeny falling = fiveBranches();
+            for( final PhylogenyNodeIterator it = falling.iteratorPreorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                prop( n, BranchLengthLayout.DIV_PROPERTY_REF,
+                      n.isRoot() ? 0.0 : ( "t1".equals( n.getName() ) ? 0.003 : ( "x".equals( n.getName() ) ? 0.004 : 0.009 ) ) );
+            }
+            BranchLengthLayout.applyDivergence( falling );
+            if ( ( Double.doubleToRawLongBits( lengthOf( falling, "t1" ) ) != 0L ) || !eq( lengthOf( falling, "t2" ), 0.005 ) ) {
+                return fail( "a recorded divergence falling from 0.004 to 0.003 is drawn at 0; got t1="
+                        + lengthOf( falling, "t1" ) + " t2=" + lengthOf( falling, "t2" ) );
+            }
+            // --- which way the dates run: the majority of the pairs that differ; none, or a tie, reads as ages
+            final Phylogeny level = twoTips();
+            date( node( level, "a" ), 10 );
+            date( node( level, "b" ), 10 );
+            if ( BranchLengthLayout.datesIncreaseTowardTips( level ) ) {
+                return fail( "no pair differs: ages" );
+            }
+            final Phylogeny tie = twoTips();
+            date( node( tie, "a" ), 12 );
+            date( node( tie, "b" ), 8 );
+            if ( BranchLengthLayout.datesIncreaseTowardTips( tie ) ) {
+                return fail( "one pair up, one down: ages" );
+            }
+            BranchLengthLayout.applyTime( level );
+            if ( Double.doubleToRawLongBits( lengthOf( level, "a" ) ) != 0L ) {
+                return fail( "a span of nothing is a plain 0, never -0.0" );
+            }
+            // a pair with EQUAL dates does not vote. Real builds are full of them (1405 of the 9205 branches of one
+            // Nextstrain tree); counted as running down, four of them would outvote the one pair that runs up here,
+            // and a calendar tree would be read as ages, every span with the wrong sign
+            final Phylogeny mostly_level = fiveBranches();
+            for( final PhylogenyNodeIterator it = mostly_level.iteratorPreorder(); it.hasNext(); ) {
+                date( it.next(), 2000 );
+            }
+            date( node( mostly_level, "t2" ), 2001 );
+            if ( !BranchLengthLayout.datesIncreaseTowardTips( mostly_level ) ) {
+                return fail( "one pair runs up, four are level: the dates increase toward the tips" );
+            }
+            BranchLengthLayout.applyTime( mostly_level );
+            if ( !eq( lengthOf( mostly_level, "t2" ), 1 ) || !eq( lengthOf( mostly_level, "t1" ), 0 ) ) {
+                return fail( "...and the one span is +1; got t2=" + lengthOf( mostly_level, "t2" ) + " t1="
+                        + lengthOf( mostly_level, "t1" ) );
+            }
             // --- a tree of one node has no branch at all: "every branch" of none is not a clock model ---
             final Phylogeny lone = new Phylogeny();
             final PhylogenyNode lone_root = new PhylogenyNode();
@@ -284,6 +461,9 @@ public class BranchLengthLayoutTest {
             lone.externalNodesHaveChanged();
             if ( BranchLengthLayout.divergenceSource( lone ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE ) {
                 return fail( "a tree without a branch has no divergence source" );
+            }
+            if ( BranchLengthLayout.isTimeDerivable( lone ) ) {
+                return fail( "a tree without a branch has no time layout either" );
             }
             // --- a recorded divergence still wins, whatever the rates say (here: one branch has none) ---
             final Phylogeny stored_unrated = ratedPair( null );

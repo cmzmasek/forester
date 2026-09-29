@@ -256,6 +256,14 @@ public final class DemoTreesTest {
         // rate taken out (not offered it)
         ok &= beastRatePairOk( "beast-annotations.nex", "beast-rate-missing.nex" );
         ok &= beastAnnotationsOk( "beast-rate-missing.nex" ); // ...and everything else is read as in its twin
+        // the joint rule, "both layouts can state every branch": a twin with one DATE taken out, and one with one
+        // recorded DIVERGENCE taken out -- each the same tree as its original, neither offered the switch
+        ok &= twinWithOneDatumOutOk( "beast-annotations.nex", "beast-date-missing.nex", "isolate_B", true, 9 );
+        ok &= beastAnnotationsOk( "beast-date-missing.nex" );
+        ok &= twinWithOneDatumOutOk( "nextstrain-nexus.nex", "nextstrain-div-missing.nex", "A/Dakar/8/2016", false, 12 );
+        // a node dated before its parent: time keeps the sign, divergence draws it at 0
+        ok &= negativeSpanOk( "beast-negative-span.nex" );
+        ok &= beastAnnotationsOk( "beast-negative-span.nex" );
         // what Nextstrain / TreeTime / MrBayes really write, each read exactly as File > Open reads it
         ok &= nextstrainNexusOk( "nextstrain-nexus.nex" );
         ok &= treeTimePairOk( "treetime-nexus.nex", "treetime-divergence.nex" );
@@ -2001,6 +2009,144 @@ public final class DemoTreesTest {
         if ( BranchLengthLayout.isApplicable( part )
                 || ( BranchLengthLayout.divergenceSource( part ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE ) ) {
             return note( one_unrated + " must NOT be offered Time | Div: one branch states no rate" );
+        }
+        return true;
+    }
+
+    private static String numberOf( final PhylogenyNode n, final String ref ) {
+        if ( ( n.getNodeData().getProperties() == null ) || n.getNodeData().getProperties().getProperties( ref ).isEmpty() ) {
+            return null;
+        }
+        return n.getNodeData().getProperties().getProperties( ref ).get( 0 ).getValue();
+    }
+
+    private static String dateOf( final PhylogenyNode n ) {
+        return ( ( n.getNodeData().getDate() == null ) || ( n.getNodeData().getDate().getValue() == null ) ) ? null
+                : n.getNodeData().getDate().getValue().toPlainString();
+    }
+
+    /**
+     * A pair for the joint rule. {@code twin} is {@code original} with ONE datum taken out at {@code where} -- its
+     * date ({@code date_out}) or its recorded divergence -- and is otherwise the same tree: names, lengths, every
+     * other date, divergence and rate. The original is offered Time | Div, the twin is not, and for the reason
+     * named: the layout that lost the datum cannot state every branch, the other still can. {@code nodes} is the
+     * number the README row quotes: the original states the datum on all of them, the twin on all but one.
+     */
+    private static boolean twinWithOneDatumOutOk( final String original,
+                                                  final String twin,
+                                                  final String where,
+                                                  final boolean date_out,
+                                                  final int nodes ) {
+        final Phylogeny full = loadAsOpened( original );
+        final Phylogeny part = loadAsOpened( twin );
+        if ( ( full == null ) || ( part == null ) ) {
+            return false;
+        }
+        if ( ( full.getNodeCount() != nodes ) || ( part.getNodeCount() != nodes ) ) {
+            return note( original + " and " + twin + " must have " + nodes + " nodes each, got " + full.getNodeCount()
+                    + " and " + part.getNodeCount() );
+        }
+        final Iterator<PhylogenyNode> fi = full.iteratorPreorder();
+        final Iterator<PhylogenyNode> pi = part.iteratorPreorder();
+        int differences = 0;
+        int stated_in_full = 0;
+        int stated_in_part = 0;
+        while ( fi.hasNext() ) {
+            final PhylogenyNode f = fi.next();
+            final PhylogenyNode p = pi.next();
+            if ( ( date_out ? dateOf( f ) : numberOf( f, "nextstrain:div" ) ) != null ) {
+                ++stated_in_full;
+            }
+            if ( ( date_out ? dateOf( p ) : numberOf( p, "nextstrain:div" ) ) != null ) {
+                ++stated_in_part;
+            }
+            if ( !f.getName().equals( p.getName() ) || ( f.getDistanceToParent() != p.getDistanceToParent() ) ) {
+                return note( twin + " must be the same tree as " + original + " (differs at \"" + f.getName() + "\")" );
+            }
+            final String[] of_full = { dateOf( f ), numberOf( f, "nextstrain:div" ), numberOf( f, "beast:rate" ) };
+            final String[] of_part = { dateOf( p ), numberOf( p, "nextstrain:div" ), numberOf( p, "beast:rate" ) };
+            for( int i = 0; i < 3; ++i ) {
+                if ( ( of_full[ i ] == null ) ? ( of_part[ i ] != null ) : !of_full[ i ].equals( of_part[ i ] ) ) {
+                    ++differences;
+                    final boolean the_one = where.equals( f.getName() ) && ( i == ( date_out ? 0 : 1 ) )
+                            && ( of_full[ i ] != null ) && ( of_part[ i ] == null );
+                    if ( !the_one ) {
+                        return note( twin + " may differ from " + original + " only by the "
+                                + ( date_out ? "date" : "divergence" ) + " of \"" + where + "\"; it differs at \""
+                                + f.getName() + "\": " + of_full[ i ] + " / " + of_part[ i ] );
+                    }
+                }
+            }
+        }
+        if ( differences != 1 ) {
+            return note( twin + " must differ from " + original + " by exactly one datum, got " + differences );
+        }
+        if ( ( stated_in_full != nodes ) || ( stated_in_part != ( nodes - 1 ) ) ) {
+            return note( original + " must state the " + ( date_out ? "date" : "divergence" ) + " on all " + nodes
+                    + " nodes and " + twin + " on " + ( nodes - 1 ) + "; got " + stated_in_full + " and "
+                    + stated_in_part );
+        }
+        if ( !BranchLengthLayout.isApplicable( full ) ) {
+            return note( original + " must be offered Time | Div, or its twin's refusal proves nothing" );
+        }
+        if ( BranchLengthLayout.isApplicable( part ) ) {
+            return note( twin + " must NOT be offered Time | Div: a layout cannot state the branch of \"" + where + "\"" );
+        }
+        final boolean time_ok = BranchLengthLayout.isTimeDerivable( part );
+        final boolean div_ok = BranchLengthLayout.divergenceSource( part ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE;
+        if ( date_out ? ( time_ok || !div_ok ) : ( !time_ok || div_ok ) ) {
+            return note( twin + " must be refused for its " + ( date_out ? "date" : "divergence" )
+                    + " and nothing else; time layout " + time_ok + ", divergence layout " + div_ok );
+        }
+        return true;
+    }
+
+    /** {@code beast-negative-span.nex}: 9 nodes, every one dated and every branch rated, so it is offered the switch;
+     *  exactly ONE of its 8 branches runs backwards, the (D,E) node's, stated at -0.05. Time keeps it, divergence
+     *  states 0, and with the sign kept the lengths from the root to each of the 5 tips add up to 2.1, the gap
+     *  between the root's date and the tip's. */
+    private static boolean negativeSpanOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        if ( ( phy.getNodeCount() != 9 ) || !BranchLengthLayout.isApplicable( phy ) ) {
+            return note( file_name + " must have 9 nodes and be offered Time | Div" );
+        }
+        final PhylogenyNode de = phy.getNode( "isolate_D" ).getParent();
+        int negative = 0;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isRoot() && ( n.getDistanceToParent() < 0 ) ) {
+                ++negative;
+            }
+        }
+        if ( ( negative != 1 ) || ( de.getDistanceToParent() != -0.05 ) ) {
+            return note( file_name + " must state exactly one negative length, -0.05 on the (D,E) node; got " + negative
+                    + ", (D,E)=" + de.getDistanceToParent() );
+        }
+        BranchLengthLayout.applyDivergence( phy );
+        if ( Double.doubleToRawLongBits( de.getDistanceToParent() ) != 0L ) {
+            return note( file_name + ": divergence must draw the backward span at 0, got " + de.getDistanceToParent() );
+        }
+        BranchLengthLayout.applyTime( phy );
+        if ( Math.abs( de.getDistanceToParent() - ( -0.05 ) ) > 1e-12 ) {
+            return note( file_name + ": time must keep the sign, -0.05; got " + de.getDistanceToParent() );
+        }
+        int tips = 0;
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            ++tips;
+            double signed = 0; // NOT calculateDistanceToRoot(): it leaves negative lengths out of the sum
+            for( PhylogenyNode n = tip; !n.isRoot(); n = n.getParent() ) {
+                signed += n.getDistanceToParent();
+            }
+            if ( Math.abs( signed - 2.1 ) > 1e-12 ) {
+                return note( file_name + ": the lengths from the root to " + tip.getName() + " must add up to 2.1; got "
+                        + signed );
+            }
+        }
+        if ( tips != 5 ) {
+            return note( file_name + " must have 5 tips, got " + tips );
         }
         return true;
     }

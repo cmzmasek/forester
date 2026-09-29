@@ -97,7 +97,12 @@ public final class AuspiceJsonParser implements PhylogenyParser {
                 phy.setName( title );
             }
         }
-        final boolean time_resolved = hasAnyDate( root );
+        // A build has no branch lengths of its own: they are made here, from ONE of the two metrics it states. It
+        // opens in the metric it states COMPLETELY (joint rule, 2026-09-29) -- time when every node states a
+        // num_date, else divergence when every node states a div -- so that no branch opens at 0 for want of a
+        // number. Every real build seen states num_date on every node or on none, and div on every node; a build
+        // that states neither completely opens as it always did (time if it has any date).
+        final boolean time_resolved = everyNode( root, true ) || ( !everyNode( root, false ) && hasAnyDate( root ) );
         if ( time_resolved ) {
             setTimeBranchLengths( root, null ); // default view = time (num_date deltas); divergence kept as a property
         }
@@ -259,14 +264,16 @@ public final class AuspiceJsonParser implements PhylogenyParser {
         }
     }
 
-    /** Branch lengths = successive {@code num_date} differences (a time tree); root length is 0, and a node whose
-     *  metric (or whose parent's) is absent gets a 0-length branch -- so a time&harr;divergence toggle never leaves a
-     *  stale cross-scale length behind (on well-formed Auspice output every node carries num_date, so the 0 fallback is
-     *  defensive, not the normal path). */
+    /** Branch lengths = successive {@code num_date} differences (a time tree), SIGNED: a node dated BEFORE its parent
+     *  (real builds have them: 29 of the 5387 branches of a measles build) gets a negative length, so that the
+     *  lengths from the root add up to each node's own date, and the tree opens with the lengths the Time | Div
+     *  switch gives it back. (They were clamped at 0. The window DRAWS a negative length at 0 either way.) Root
+     *  length is 0, and a node whose date (or whose parent's) is absent gets a 0-length branch (on well-formed
+     *  Auspice output every node carries num_date, so that is defensive, not the normal path). */
     private static void setTimeBranchLengths( final PhylogenyNode node, final Double parent_date ) {
         final Double d = nodeDate( node );
         if ( !node.isRoot() && ( parent_date != null ) && ( d != null ) ) {
-            node.setDistanceToParent( Math.max( 0.0, d - parent_date ) ); // clamp a (spurious) negative branch to 0
+            node.setDistanceToParent( d - parent_date );
         }
         else {
             node.setDistanceToParent( 0.0 );
@@ -277,10 +284,23 @@ public final class AuspiceJsonParser implements PhylogenyParser {
     }
 
     private static Double nodeDate( final PhylogenyNode node ) {
-        if ( node.getNodeData().isHasDate() && ( node.getNodeData().getDate().getValue() != null ) ) {
+        if ( ( node.getNodeData().getDate() != null ) && ( node.getNodeData().getDate().getValue() != null ) ) {
             return node.getNodeData().getDate().getValue().doubleValue();
         }
         return null;
+    }
+
+    /** True if EVERY node of the subtree states the metric: a {@code num_date} ({@code date}) or a {@code div}. */
+    private static boolean everyNode( final PhylogenyNode node, final boolean date ) {
+        if ( ( date ? nodeDate( node ) : nodeDiv( node ) ) == null ) {
+            return false;
+        }
+        for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
+            if ( !everyNode( node.getChildNode( i ), date ) ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** True if any node in the subtree carries a {@code num_date} value (a time-resolved build); false for a
@@ -291,19 +311,6 @@ public final class AuspiceJsonParser implements PhylogenyParser {
         }
         for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
             if ( hasAnyDate( node.getChildNode( i ) ) ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** True if any node in the subtree carries a {@code nextstrain:div} property (a divergence signal). */
-    private static boolean hasAnyDiv( final PhylogenyNode node ) {
-        if ( nodeDiv( node ) != null ) {
-            return true;
-        }
-        for ( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
-            if ( hasAnyDiv( node.getChildNode( i ) ) ) {
                 return true;
             }
         }
@@ -331,10 +338,12 @@ public final class AuspiceJsonParser implements PhylogenyParser {
         }
     }
 
-    /** True if the tree carries BOTH a time signal (a {@code num_date}) AND a divergence signal (a
-     *  {@code nextstrain:div} property), so the time&harr;divergence display toggle is meaningful. */
+    /** True if EVERY node of the tree states BOTH a {@code num_date} and a {@code nextstrain:div}, so that both
+     *  layouts can state every branch (the joint rule; "any" of each, until 2026-09-29). The window itself asks
+     *  {@code BranchLengthLayout}, which knows the clock-rate trees too. */
     public static boolean hasTimeAndDivergence( final Phylogeny phy ) {
-        return ( phy != null ) && !phy.isEmpty() && hasAnyDate( phy.getRoot() ) && hasAnyDiv( phy.getRoot() );
+        return ( phy != null ) && !phy.isEmpty() && ( phy.getRoot().getNumberOfDescendants() > 0 )
+                && everyNode( phy.getRoot(), true ) && everyNode( phy.getRoot(), false );
     }
 
     /** Branch lengths from the cumulative {@code nextstrain:div} property (successive differences, a divergence tree);

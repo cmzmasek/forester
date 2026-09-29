@@ -156,6 +156,9 @@ public final class DemoTreeGenerator {
         write( dir, "tree-properties.xml", treePropertiesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         writeText( dir, "beast-rate-missing.nex", beastRateMissingNexus() );
+        writeText( dir, "beast-date-missing.nex", beastDateMissingNexus() );
+        writeText( dir, "beast-negative-span.nex", beastNegativeSpanNexus() );
+        writeText( dir, "nextstrain-div-missing.nex", nextstrainDivMissingNexus() );
         writeText( dir, "nextstrain-nexus.nex", nextstrainNexus() );
         writeText( dir, "treetime-nexus.nex", treeTimeNexus( true ) );
         writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
@@ -201,13 +204,48 @@ public final class DemoTreeGenerator {
     //       tree that states a rate on EVERY branch: beast-annotations.nex is offered it, this file is not. The
     //       pair that a rule which REFUSES something ships with.
     private static String beastRateMissingNexus() {
-        final String rated = "isolate_C[&height=0.0,rate=0.0026]";
-        final String full = beastAnnotationsNexus();
-        if ( ( full.indexOf( rated ) < 0 ) || ( full.indexOf( rated ) != full.lastIndexOf( rated ) ) ) {
-            throw new IllegalStateException( "beast-annotations.nex must state isolate_C's rate exactly once" );
+        return replaceTheOne( replaceTheOne( beastAnnotationsNexus(), "isolate_C[&height=0.0,rate=0.0026]",
+                                             "isolate_C[&height=0.0]" ),
+                              "TREE beast_demo =", "TREE beast_rate_missing =" );
+    }
+
+    /** {@code text} with its ONE occurrence of {@code what} replaced by {@code by}; the twin of a pair differs from
+     *  its original by exactly what is named, or the generator stops. */
+    private static String replaceTheOne( final String text, final String what, final String by ) {
+        if ( ( text.indexOf( what ) < 0 ) || ( text.indexOf( what ) != text.lastIndexOf( what ) ) ) {
+            throw new IllegalStateException( "must occur exactly once: " + what );
         }
-        return full.replace( rated, "isolate_C[&height=0.0]" ).replace( "TREE beast_demo =",
-                                                                         "TREE beast_rate_missing =" );
+        return text.replace( what, by );
+    }
+
+    // ----- "A BEAST tree with one node left undated": beast-annotations.nex with exactly ONE thing taken out --
+    //       isolate_B's height. Time | Div is offered only when both layouts can state EVERY branch; the time layout
+    //       cannot state isolate_B's, so the switch is not offered (it was, while a majority of dated branches was
+    //       enough, and drew that branch at length 0).
+    private static String beastDateMissingNexus() {
+        return replaceTheOne( replaceTheOne( beastAnnotationsNexus(), "isolate_B[&height=0.0,rate=0.0028]",
+                                             "isolate_B[&rate=0.0028]" ),
+                              "TREE beast_demo =", "TREE beast_date_missing =" );
+    }
+
+    // ----- "A node dated before its parent": beast-annotations.nex with the (D,E) node moved from height 0.5 to 0.85,
+    //       0.05 OLDER than its parent (0.8) -- what a summary tree's median heights do in real files (35 of the 1372
+    //       branches of one influenza tree). Its branch is stated at -0.05. Time keeps the sign, so the lengths
+    //       from the root add up to each node's own date; Div states 0. (The window draws a negative length at 0.)
+    private static String beastNegativeSpanNexus() {
+        String s = beastAnnotationsNexus();
+        s = replaceTheOne( s, "(isolate_D[&height=0.0,rate=0.0035]:0.5,isolate_E[&height=0.0,rate=0.0033]:0.5)",
+                           "(isolate_D[&height=0.0,rate=0.0035]:0.85,isolate_E[&height=0.0,rate=0.0033]:0.85)" );
+        s = replaceTheOne( s, "posterior=0.92,height=0.5,height_95%_HPD={0.35,0.7},rate=0.0034]:0.3)",
+                           "posterior=0.92,height=0.85,height_95%_HPD={0.7,1.0},rate=0.0034]:-0.05)" );
+        return replaceTheOne( s, "TREE beast_demo =", "TREE beast_negative_span =" );
+    }
+
+    // ----- "A recorded divergence left out on one node": nextstrain-nexus.nex with exactly ONE thing taken out --
+    //       the div of A/Dakar/8/2016. The divergence layout cannot state that tip's branch, so Time | Div is not
+    //       offered; the tree opens and stays in time, as its twin opens.
+    private static String nextstrainDivMissingNexus() {
+        return replaceTheOne( nextstrainNexus(), "country=Senegal,div=0.0189]", "country=Senegal]" );
     }
 
     // ----- "Ancestral-state pie charts": a BEAST-style phylogeography tree. Each TIP carries its single sampled

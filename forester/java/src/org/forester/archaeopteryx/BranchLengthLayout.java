@@ -34,6 +34,19 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * TIME is computed the same way for both: the difference between a node's date and its parent's. That is what makes
  * one implementation serve both formats -- the dates are already there, whether they came from an Auspice
  * {@code num_date} or a BEAST {@code height}.
+ * <p>
+ * <b>The joint rule</b> (with Archaeopteryx.js; Christian, 2026-09-29): <i>Time | Div is offered only when both
+ * layouts can state every branch: each non-root node and its parent state what the time layout reads, and each
+ * non-root node states what the divergence layout reads. A value that is stated is stated, whether zero or negative;
+ * only an absent one is missing. Otherwise the switch is not offered and the tree stays in the layout it arrived
+ * in.</i> A branch drawn at 0 for want of a number says "nothing happened here", which no file said.
+ * <p>
+ * <b>A span may be negative.</b> Real files date a child before its parent (a summary tree's medians: 35 of the
+ * 1372 branches of one influenza tree). TIME keeps the sign, in the direction the tree's dates run, so the lengths
+ * from the root to a node add up to that node's own date; DIVERGENCE states 0, a negative amount of change meaning
+ * nothing. This is about the VALUE -- what is shown as a branch length and written to a file. What is DRAWN for a
+ * negative length is the painter's business, and the painter draws every negative length of every tree at 0
+ * ({@code TreePanel.calculateBranchLengthToParent}).
  */
 final class BranchLengthLayout {
 
@@ -99,55 +112,105 @@ final class BranchLengthLayout {
         return Double.valueOf( node.getNodeData().getDate().getValue().doubleValue() );
     }
 
-    /** The time span of the branch leading to {@code node}, from the dates, or null when either end is undated. */
-    private static Double timeLength( final PhylogenyNode node ) {
-        if ( node.isRoot() || ( node.getParent() == null ) ) {
-            return null;
-        }
-        final Double d = dateValue( node );
-        final Double dp = dateValue( node.getParent() );
-        return ( ( d == null ) || ( dp == null ) ) ? null : Double.valueOf( Math.abs( dp.doubleValue() - d.doubleValue() ) );
-    }
-
     /**
-     * Whether a TIME layout can be computed: a strict majority of the non-root nodes must have a date AND a dated
-     * parent. A majority rather than all, because a real tree can carry a stray undated node; but not "any", or two
-     * stray dates on an undated tree would offer a toggle that lays almost every branch out at zero.
+     * Which way the tree's dates run: true when they INCREASE toward the tips (calendar dates), false when they
+     * decrease (ages, heights -- largest at the root). Measured on the tree, not read off a unit: the majority of the
+     * parent-child pairs whose two dates differ decides (as Archaeopteryx.js measures it). No such pair, or as many
+     * one way as the other: ages.
      */
-    static boolean isTimeDerivable( final Phylogeny phy ) {
+    static boolean datesIncreaseTowardTips( final Phylogeny phy ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return false;
         }
-        int derivable = 0;
-        int non_root = 0;
+        int up = 0;
+        int down = 0;
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isRoot() || ( n.getParent() == null ) ) {
                 continue;
             }
-            ++non_root;
-            if ( timeLength( n ) != null ) {
-                ++derivable;
+            final Double d = dateValue( n );
+            final Double dp = dateValue( n.getParent() );
+            if ( ( d == null ) || ( dp == null ) ) {
+                continue;
+            }
+            if ( d.doubleValue() > dp.doubleValue() ) {
+                ++up;
+            }
+            else if ( d.doubleValue() < dp.doubleValue() ) {
+                ++down;
             }
         }
-        return ( non_root > 0 ) && ( ( derivable * 2 ) > non_root );
+        return up > down;
     }
 
     /**
-     * Where divergence would come from for this tree. A RECORDED source wins over a derivable one. A clock rate is
-     * a source only when EVERY non-root node states one that is finite and not negative (the root has no branch, so
-     * its rate is never asked for): one branch without a rate, and the tree has no divergence layout.
+     * The time span of the branch leading to {@code node}, from the dates, or null when either end is undated.
+     * SIGNED, in the direction the tree's dates run: negative when the node is dated BEFORE its parent. Summed from
+     * the root, signed spans add up to each node's own date; their absolute values do not.
+     */
+    private static Double timeSpan( final PhylogenyNode node, final boolean increase_toward_tips ) {
+        if ( node.isRoot() || ( node.getParent() == null ) ) {
+            return null;
+        }
+        final Double d = dateValue( node );
+        final Double dp = dateValue( node.getParent() );
+        if ( ( d == null ) || ( dp == null ) ) {
+            return null;
+        }
+        return Double.valueOf( increase_toward_tips ? ( d.doubleValue() - dp.doubleValue() )
+                : ( dp.doubleValue() - d.doubleValue() ) );
+    }
+
+    /**
+     * Whether the TIME layout can state every branch: every non-root node states a date, and so does its parent --
+     * that is, every node of the tree. (It was a strict majority until the joint rule: a tree offered the switch on
+     * a majority has branches the layout cannot state, and drew them at 0.)
+     */
+    static boolean isTimeDerivable( final Phylogeny phy ) {
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return false;
+        }
+        int branches = 0;
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isRoot() || ( n.getParent() == null ) ) {
+                continue;
+            }
+            ++branches;
+            if ( ( dateValue( n ) == null ) || ( dateValue( n.getParent() ) == null ) ) {
+                return false;
+            }
+        }
+        return branches > 0;
+    }
+
+    /**
+     * Where divergence comes from for this tree, when the divergence layout can state EVERY branch with it.
+     * <ul>
+     * <li>RECORDED ({@code nextstrain:div}): every node states one, the root included -- a branch is the difference
+     * of two. Stated on some nodes only, the tree has no divergence layout: a recorded source wins over a derivable
+     * one, so there is no falling back on rates.</li>
+     * <li>CLOCK RATE: no node states a recorded divergence, and every non-root node states a rate that is finite and
+     * not negative (the root has no branch, so its rate is never asked for). Its other factor, the time span, is
+     * what {@link #isTimeDerivable} asks for.</li>
+     * </ul>
      */
     static DIVERGENCE_SOURCE divergenceSource( final Phylogeny phy ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return DIVERGENCE_SOURCE.NONE;
         }
+        boolean any_recorded = false;
+        boolean every_node_recorded = true;
         boolean every_branch_rated = true;
         int branches = 0;
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( numericProperty( n, DIV_PROPERTY_REF ) != null ) {
-                return DIVERGENCE_SOURCE.STORED;
+                any_recorded = true;
+            }
+            else {
+                every_node_recorded = false;
             }
             if ( n.isRoot() || ( n.getParent() == null ) ) {
                 continue;
@@ -158,78 +221,85 @@ final class BranchLengthLayout {
                 every_branch_rated = ( rate != null ) && ( rate.doubleValue() >= 0 );
             }
         }
-        return ( every_branch_rated && ( branches > 0 ) ) ? DIVERGENCE_SOURCE.CLOCK_RATE : DIVERGENCE_SOURCE.NONE;
+        if ( branches < 1 ) {
+            return DIVERGENCE_SOURCE.NONE;
+        }
+        if ( any_recorded ) {
+            return every_node_recorded ? DIVERGENCE_SOURCE.STORED : DIVERGENCE_SOURCE.NONE;
+        }
+        return every_branch_rated ? DIVERGENCE_SOURCE.CLOCK_RATE : DIVERGENCE_SOURCE.NONE;
     }
 
-    /** Whether the tree can be laid out BOTH ways, and so should be offered the toggle. */
+    /** Whether BOTH layouts can state every branch, and so the tree is offered the toggle. */
     static boolean isApplicable( final Phylogeny phy ) {
         return isTimeDerivable( phy ) && ( divergenceSource( phy ) != DIVERGENCE_SOURCE.NONE );
     }
 
-    /** Branch lengths = the time each branch spans, from the node dates. An underivable branch gets 0 rather than a
-     *  stale cross-scale length left over from the other mode. */
+    /**
+     * Branch lengths = the time each branch spans, from the node dates, SIGNED (see {@link #timeSpan}). Never
+     * refused: it is the way back from divergence. On a tree offered the switch every branch has a span; a branch
+     * that has LOST a date since (the node editor, while divergence was on screen) has nothing to be laid out by and
+     * goes to 0, because the alternative is the divergence length it still holds, in the wrong unit.
+     */
     static void applyTime( final Phylogeny phy ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return;
         }
+        final boolean up = datesIncreaseTowardTips( phy );
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isRoot() || ( n.getParent() == null ) ) {
                 continue;
             }
-            final Double t = timeLength( n );
+            final Double t = timeSpan( n, up );
             n.setDistanceToParent( ( t == null ) ? 0.0 : t.doubleValue() );
         }
     }
 
     /** {@link #applyTime(Phylogeny)} for the branches BELOW {@code clade_root} only: its own branch, and every
      *  branch outside the clade, is left as it is. For a clade a subtree view rewrote, inside a tree that has no
-     *  second layout of its own and so must not be rewritten as a whole. */
-    static void applyTimeBelow( final PhylogenyNode clade_root ) {
+     *  second layout of its own and so must not be rewritten as a whole. {@code increase_toward_tips} is the way
+     *  the dates of the tree AROUND the clade run ({@link #datesIncreaseTowardTips}). */
+    static void applyTimeBelow( final PhylogenyNode clade_root, final boolean increase_toward_tips ) {
         if ( clade_root == null ) {
             return;
         }
         for( final PhylogenyNode n : clade_root.getDescendants() ) {
-            final Double t = timeLength( n );
+            final Double t = timeSpan( n, increase_toward_tips );
             n.setDistanceToParent( ( t == null ) ? 0.0 : t.doubleValue() );
-            applyTimeBelow( n );
+            applyTimeBelow( n, increase_toward_tips );
         }
     }
 
-    /** Branch lengths = genetic change along each branch: the successive difference of a recorded cumulative
-     *  divergence, or rate x time when only a clock rate is recorded. Same zero-rather-than-stale rule. A tree with
-     *  NO divergence source is left exactly as it was: there is nothing to lay it out by. */
+    /**
+     * Branch lengths = genetic change along each branch: the successive difference of a recorded cumulative
+     * divergence, or rate x time span when a clock rate is what the file states. A tree that is NOT offered the
+     * switch is left exactly as it was -- no divergence source, or a branch a layout cannot state.
+     * <p>
+     * Nothing is absent here (that is what being offered the switch means), so there is no null to check for. What is
+     * left to decide is a NEGATIVE amount: a recorded divergence that falls along a branch, or a span that runs
+     * backwards. Change cannot be negative, so the length is 0 -- and max() also turns the negative zero of a rate
+     * written "-0.0" into a plain one, so no length is ever written "-0.0".
+     */
     static void applyDivergence( final Phylogeny phy ) {
-        if ( ( phy == null ) || phy.isEmpty() ) {
+        if ( !isApplicable( phy ) ) {
             return;
         }
         final DIVERGENCE_SOURCE source = divergenceSource( phy );
-        if ( source == DIVERGENCE_SOURCE.NONE ) {
-            return;
-        }
+        final boolean up = datesIncreaseTowardTips( phy );
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isRoot() || ( n.getParent() == null ) ) {
                 continue;
             }
-            double len = 0.0;
             if ( source == DIVERGENCE_SOURCE.STORED ) {
-                final Double d = numericProperty( n, DIV_PROPERTY_REF );
-                final Double dp = numericProperty( n.getParent(), DIV_PROPERTY_REF );
-                if ( ( d != null ) && ( dp != null ) ) {
-                    len = Math.max( 0.0, d.doubleValue() - dp.doubleValue() ); // clamp a spurious negative to 0
-                }
+                n.setDistanceToParent( Math.max( 0.0, numericProperty( n, DIV_PROPERTY_REF ).doubleValue()
+                        - numericProperty( n.getParent(), DIV_PROPERTY_REF ).doubleValue() ) );
             }
             else {
-                // CLOCK_RATE: every branch states a rate that is not negative (divergenceSource), so there is no
-                // null to check for. The one product below zero left is NEGATIVE ZERO, from a rate written
-                // "-0.0" (which is not < 0): max() turns it into a plain 0, so no length is ever written "-0.0"
-                final Double t = timeLength( n );
-                if ( t != null ) {
-                    len = Math.max( 0.0, numericProperty( n, RATE_PROPERTY_REF ).doubleValue() * t.doubleValue() );
-                }
+                n.setDistanceToParent( Math.max( 0.0, numericProperty( n, RATE_PROPERTY_REF ).doubleValue()
+                        * timeSpan( n, up ).doubleValue() ) );
             }
-            n.setDistanceToParent( len );
         }
     }
 

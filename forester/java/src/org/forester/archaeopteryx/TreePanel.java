@@ -6168,7 +6168,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 layOutByTime();
             }
             else {
-                BranchLengthLayout.applyTimeBelow( clade_root );
+                BranchLengthLayout.applyTimeBelow( clade_root, BranchLengthLayout.datesIncreaseTowardTips( _phylogeny ) );
                 _time_axis_type = null;
                 recalculateMaxDistanceToRoot();
             }
