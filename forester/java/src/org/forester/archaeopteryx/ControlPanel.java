@@ -2706,7 +2706,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             describe(_branch_length_div_tb,
                      (source == BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE) ? BRANCH_LENGTH_DIV_DERIVED_TIP
                              : BRANCH_LENGTH_DIV_STORED_TIP);
-            // reseed WITHOUT firing: setSelected on a grouped toggle does not fire an ActionEvent, so no guard needed
+        }
+        if (tp != null) {
+            // reseed WITHOUT firing: setSelected on a grouped toggle does not fire an ActionEvent, so no guard needed.
+            // Also when the row is about to be hidden: a switch the tree REFUSED (a rate taken away since the row
+            // was shown) must not leave Div pressed on a tree that is showing time.
             if (tp.getBranchLengthMode() == BranchLengthLayout.MODE.DIVERGENCE) {
                 _branch_length_div_tb.setSelected(true);
             }
@@ -2714,8 +2718,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _branch_length_time_tb.setSelected(true);
             }
         }
-        final boolean changed = _branch_lengths_panel.isVisible() != applicable;
-        _branch_lengths_panel.setVisible(applicable);
+        // ...and the row stays while DIVERGENCE is on screen, whatever the tree has lost since: it is the way back
+        final boolean shown = applicable
+                || ((tp != null) && (tp.getBranchLengthMode() == BranchLengthLayout.MODE.DIVERGENCE));
+        final boolean changed = _branch_lengths_panel.isVisible() != shown;
+        _branch_lengths_panel.setVisible(shown);
         if (changed) {
             revalidate();
             repaint();
@@ -2728,6 +2735,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (_branch_length_time_tb != null) {
             _branch_length_time_tb.setSelected(true);
         }
+    }
+
+    /** Test hook: the Div button's tooltip, which says whether the divergence is recorded or derived. */
+    String branchLengthDivTooltipForTest() {
+        return (_branch_length_div_tb == null) ? null : _branch_length_div_tb.getToolTipText();
     }
 
     /** Test hook: whether the Time | Div control is currently visible. */

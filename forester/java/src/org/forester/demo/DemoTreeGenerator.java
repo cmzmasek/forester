@@ -155,6 +155,7 @@ public final class DemoTreeGenerator {
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
         write( dir, "tree-properties.xml", treePropertiesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
+        writeText( dir, "beast-rate-missing.nex", beastRateMissingNexus() );
         writeText( dir, "nextstrain-nexus.nex", nextstrainNexus() );
         writeText( dir, "treetime-nexus.nex", treeTimeNexus( true ) );
         writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
@@ -193,6 +194,20 @@ public final class DemoTreeGenerator {
                 + "[&!color=#-8381639,posterior=0.92,height=0.5,height_95%_HPD={0.35,0.7},rate=0.0034]:0.3)"
                 + "[&posterior=0.81,height=0.8,height_95%_HPD={0.6,1.1},rate=0.0029]:1.3)"
                 + "[&posterior=1.0,height=2.1,height_95%_HPD={1.8,2.5},rate=0.0030];\n" + "END;\n";
+    }
+
+    // ----- "A BEAST tree with one branch left unrated": beast-annotations.nex with exactly ONE thing taken out --
+    //       isolate_C's rate. The Time | Div switch derives divergence as rate x time, so it is offered only to a
+    //       tree that states a rate on EVERY branch: beast-annotations.nex is offered it, this file is not. The
+    //       pair that a rule which REFUSES something ships with.
+    private static String beastRateMissingNexus() {
+        final String rated = "isolate_C[&height=0.0,rate=0.0026]";
+        final String full = beastAnnotationsNexus();
+        if ( ( full.indexOf( rated ) < 0 ) || ( full.indexOf( rated ) != full.lastIndexOf( rated ) ) ) {
+            throw new IllegalStateException( "beast-annotations.nex must state isolate_C's rate exactly once" );
+        }
+        return full.replace( rated, "isolate_C[&height=0.0]" ).replace( "TREE beast_demo =",
+                                                                         "TREE beast_rate_missing =" );
     }
 
     // ----- "Ancestral-state pie charts": a BEAST-style phylogeography tree. Each TIP carries its single sampled

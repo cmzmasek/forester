@@ -1622,6 +1622,13 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         if ( sections.contains( NodeDataDraft.SEC_DATE ) ) {
             tp.invalidateTimeAxisDerivation();
         }
+        if ( sections.contains( NodeDataDraft.SEC_DATE ) || properties ) {
+            // a date or a clock rate added or taken away decides whether the tree has a second layout
+            tp.invalidateBranchLengthToggle();
+            if ( cp != null ) {
+                cp.populateBranchLengthsControl();
+            }
+        }
         if ( cp != null ) {
             // which Display Data checkboxes / search fields exist follows what data the tree now carries (this
             // rebuilds the search fields itself when the set of present data changed)

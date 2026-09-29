@@ -93,7 +93,6 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
-import org.forester.io.parsers.json.AuspiceJsonParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
@@ -512,6 +511,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private String _scale_label = null;
     private final Phylogeny[] _sub_phylogenies = new Phylogeny[TreePanel.MAX_SUBTREES];
     private final PhylogenyNode[] _sub_phylogenies_temp_roots = new PhylogenyNode[TreePanel.MAX_SUBTREES];
+    // the branch-length layout each stacked tree was in when the view descended from it: a subtree view SHARES its
+    // nodes with the tree it came from, so the switch pressed down there rewrites that clade up here -- and nothing
+    // else of it (see relayAfterLeavingSubtree)
+    private final BranchLengthLayout.MODE[] _sub_phylogenies_branch_length_modes = new BranchLengthLayout.MODE[TreePanel.MAX_SUBTREES];
     private int _subtree_index = 0;
     private File _treefile = null;
     private TipImageCache _tip_image_cache = null; // lazily created; loads/caches the tip images (local + URL)
@@ -6048,10 +6051,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // ---- time<->divergence branch-length toggle -----------------------------------------------------------------
 
     /** True when the current tree can be laid out BOTH ways -- dates for time, and a divergence source (a recorded
-     *  cumulative divergence, or a per-branch clock rate to multiply by time). See {@link BranchLengthLayout}, which
-     *  is where the two shapes (Auspice and BEAST) are recognised. Cached by tree identity (recomputed on a tree
-     *  replacement; an in-place node-data edit that adds/removes the metric is the same accepted cache-staleness
-     *  class as the derived-time-axis / color-by caches). */
+     *  cumulative divergence, or a clock rate on EVERY branch to multiply by time). See {@link BranchLengthLayout},
+     *  which is where the two shapes (Auspice and BEAST) are recognised. Cached by tree identity (recomputed on a
+     *  tree replacement; an in-place node-data edit that adds/removes the metric is the same accepted
+     *  cache-staleness class as the derived-time-axis / color-by caches -- which is why the switch itself,
+     *  {@link #setBranchLengthMode}, asks the tree again instead of trusting this). */
     boolean isBranchLengthToggleApplicable() {
         if ( _branch_length_toggle_for != _phylogeny ) {
             _branch_length_toggle_applicable = BranchLengthLayout.isApplicable( _phylogeny );
@@ -6069,22 +6073,27 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  reversible display mode: both quantities stay retained on the tree, so it never {@code setEdited}s or
      *  checkpoints undo. Re-fits to the viewport (the depth axis changes meaning, so a fit -- not just a repaint). */
     void setBranchLengthMode( final BranchLengthLayout.MODE mode ) {
-        if ( ( mode == null ) || ( mode == _branch_length_mode ) || !isBranchLengthToggleApplicable() ) {
+        if ( ( mode == null ) || ( mode == _branch_length_mode ) || ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
+            return;
+        }
+        // Asked of the tree AS IT IS NOW, not of the identity-keyed cache: the node editor changes a tree in place,
+        // and ONE rate taken away leaves it without a divergence layout. The way BACK to time is never refused --
+        // whatever the tree has lost since, time is laid out from the dates it still states (a branch without them
+        // at 0, never at the divergence length left behind) -- so no tree is stranded showing divergence.
+        // Cost of asking, once per press: 0.2 ms on a tree of 7,199 nodes.
+        _branch_length_toggle_applicable = BranchLengthLayout.isApplicable( _phylogeny );
+        _branch_length_toggle_for = _phylogeny;
+        if ( ( mode == BranchLengthLayout.MODE.DIVERGENCE ) && !_branch_length_toggle_applicable ) {
+            reseedBranchLengthsControl(); // the button the user pressed must not stay down on a mode that is not shown
             return;
         }
         _branch_length_mode = mode;
-        final String date_unit = AptxUtil.timeTreeUnit( _phylogeny ); // captured before the lengths change
         if ( mode == BranchLengthLayout.MODE.DIVERGENCE ) {
-            BranchLengthLayout.applyDivergence( _phylogeny );
-            _phylogeny.setDistanceUnit( BranchLengthLayout.distanceUnit( mode, date_unit ) );
-            _time_axis_type = Options.TIME_AXIS_TYPE.NONE; // a time axis is meaningless for divergence lengths
+            layOutByDivergence();
         }
         else {
-            BranchLengthLayout.applyTime( _phylogeny );
-            _phylogeny.setDistanceUnit( BranchLengthLayout.distanceUnit( mode, date_unit ) );
-            _time_axis_type = null; // back to auto -> re-derives from the retained <date> unit (NONE if unit-less)
+            layOutByTime();
         }
-        recalculateMaxDistanceToRoot(); // the branch-length change invalidates the depth cache
         if ( getControlPanel() != null ) {
             // showWhole() recomputes the layout (displayedPhylogenyMightHaveChanged) then fits to the VIEWPORT --
             // drift-free (the depth scale changes drastically between year deltas and div deltas).
@@ -6098,21 +6107,109 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( getMainPanel() != null ) && ( getMainPanel().getMainFrame() != null ) ) {
             getMainPanel().getMainFrame().refreshOpenSettingsDialog();
         }
+        if ( !_branch_length_toggle_applicable ) {
+            reseedBranchLengthsControl(); // back in time on a tree that has lost its divergence: the switch goes
+        }
+    }
+
+    /** Show the Time | Div control as this panel's tree and mode now stand (hidden when the tree has no second
+     *  layout and is not showing divergence). */
+    private void reseedBranchLengthsControl() {
+        if ( getControlPanel() != null ) {
+            getControlPanel().populateBranchLengthsControl();
+        }
+    }
+
+    /** Branch lengths, distance unit and time axis of the TIME layout, from the dates. The ONE routine behind the
+     *  switch's "Time" and Reset to Defaults, so the two cannot come to disagree. */
+    private void layOutByTime() {
+        final String date_unit = AptxUtil.timeTreeUnit( _phylogeny ); // captured before the lengths change
+        BranchLengthLayout.applyTime( _phylogeny );
+        _phylogeny.setDistanceUnit( BranchLengthLayout.distanceUnit( BranchLengthLayout.MODE.TIME, date_unit ) );
+        _time_axis_type = null; // back to auto -> re-derives from the retained <date> unit (NONE if unit-less)
+        recalculateMaxDistanceToRoot(); // the branch-length change invalidates the depth cache
+    }
+
+    /** Branch lengths, distance unit and (no) time axis of the DIVERGENCE layout. */
+    private void layOutByDivergence() {
+        final String date_unit = AptxUtil.timeTreeUnit( _phylogeny );
+        BranchLengthLayout.applyDivergence( _phylogeny );
+        _phylogeny.setDistanceUnit( BranchLengthLayout.distanceUnit( BranchLengthLayout.MODE.DIVERGENCE, date_unit ) );
+        _time_axis_type = Options.TIME_AXIS_TYPE.NONE; // a time axis is meaningless for divergence lengths
+        recalculateMaxDistanceToRoot(); // the branch-length change invalidates the depth cache
+    }
+
+    /**
+     * Back on a tree that CONTAINS the subtree just left. The subtree view shares its nodes with it, so whatever the
+     * switch rewrote down there it rewrote up here too -- and only that clade: every branch outside it is still in
+     * the layout this tree was in when the view descended ({@code outside}). Left alone, the tree would be drawn in
+     * two units at once (the clade in substitutions/site beside branches in years). So the tree is brought into ONE
+     * layout, and no branch is rewritten that is in it already:
+     * <ul>
+     * <li>the clade in divergence, and the tree can be laid out that way: all of it in divergence;</li>
+     * <li>divergence somewhere, and the tree cannot (a rate missing outside the clade, or lost since): time. If the
+     * view descended from it in divergence its outside branches hold divergence and the whole tree is laid out by
+     * time; if not, only the clade is, and no length outside it is touched;</li>
+     * <li>time everywhere (the switch never pressed, or pressed and pressed back): nothing. A length the file stated
+     * stays the length the file stated.</li>
+     * </ul>
+     */
+    private void relayAfterLeavingSubtree( final PhylogenyNode clade_root, final BranchLengthLayout.MODE outside ) {
+        final boolean clade_in_divergence = _branch_length_mode == BranchLengthLayout.MODE.DIVERGENCE;
+        final boolean outside_in_divergence = outside == BranchLengthLayout.MODE.DIVERGENCE;
+        _branch_length_toggle_applicable = BranchLengthLayout.isApplicable( _phylogeny );
+        _branch_length_toggle_for = _phylogeny;
+        if ( clade_in_divergence && _branch_length_toggle_applicable ) {
+            layOutByDivergence();
+        }
+        else if ( clade_in_divergence || outside_in_divergence ) {
+            _branch_length_mode = BranchLengthLayout.MODE.TIME;
+            if ( outside_in_divergence ) {
+                layOutByTime();
+            }
+            else {
+                BranchLengthLayout.applyTimeBelow( clade_root );
+                _time_axis_type = null;
+                recalculateMaxDistanceToRoot();
+            }
+        }
+        reseedBranchLengthsControl();
+    }
+
+    /** After an IN-PLACE change to the dates or properties of the SAME tree object (the node editor): whether the
+     *  tree can be laid out both ways is asked again, since the identity-keyed cache cannot know. */
+    void invalidateBranchLengthToggle() {
+        _branch_length_toggle_for = null;
+    }
+
+    /** A restored snapshot brings its branch lengths in the layout they were captured in: the mode follows the
+     *  TREE, or the panel would show one layout and call it the other (Div pressed over time lengths, no axis, no
+     *  node-age bars, and a "Div" button that does nothing because the mode already says so). */
+    private void followBranchLengthModeOf( final TreeHistory.Snapshot s ) {
+        if ( s.getBranchLengthMode() != _branch_length_mode ) {
+            _branch_length_mode = s.getBranchLengthMode();
+            _time_axis_type = ( _branch_length_mode == BranchLengthLayout.MODE.DIVERGENCE )
+                    ? Options.TIME_AXIS_TYPE.NONE : null;
+            if ( ( getMainPanel() != null ) && ( getMainPanel().getMainFrame() != null ) ) {
+                getMainPanel().getMainFrame().refreshOpenSettingsDialog();
+            }
+        }
+        reseedBranchLengthsControl();
     }
 
     /** Reset the branch-length view to the TIME default (used by Reset to Defaults). Rewrites only THIS panel's model
      *  + invalidates its depth cache (NO cross-panel re-fit, so it is safe in a batch per-tab reset loop -- the layout
-     *  refreshes when the tab is next shown). No-op if already TIME or the tree is not applicable. */
+     *  refreshes when the tab is next shown). No-op if already TIME. Goes through the SAME routine as the switch
+     *  ({@link #layOutByTime}), so Reset and "Time" cannot disagree: the Auspice parser's own routine, used here
+     *  before, takes child - parent and clamps at 0, which lays a tree dated in HEIGHTS (ages, largest at the root)
+     *  out at length 0 on every branch. Never refused, like the switch's way back. */
     void resetBranchLengthModeToDefault() {
         if ( _branch_length_mode == BranchLengthLayout.MODE.TIME ) {
             return;
         }
         _branch_length_mode = BranchLengthLayout.MODE.TIME;
-        if ( isBranchLengthToggleApplicable() ) {
-            AuspiceJsonParser.applyTimeBranchLengths( _phylogeny );
-            _phylogeny.setDistanceUnit( "year" );
-            _time_axis_type = null;
-            recalculateMaxDistanceToRoot();
+        if ( ( _phylogeny != null ) && !_phylogeny.isEmpty() ) {
+            layOutByTime();
         }
         repaint();
     }
@@ -10561,7 +10658,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     public void pushUndoCheckpoint(final String label) {
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
-            _history.checkpoint(_phylogeny, label, isEdited());
+            _history.checkpoint(_phylogeny, label, isEdited(), _branch_length_mode);
             notifyEditMenu();
         }
     }
@@ -10573,7 +10670,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     void pushUndoSnapshot(final Phylogeny pre_state, final boolean was_edited, final String label) {
         if ((pre_state != null) && !pre_state.isEmpty()) {
-            _history.checkpoint(pre_state, label, was_edited);
+            _history.checkpoint(pre_state, label, was_edited, _branch_length_mode);
             notifyEditMenu();
         }
     }
@@ -10596,7 +10693,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Restores the previous tree state; returns true if something was undone. */
     boolean undo() {
-        final TreeHistory.Snapshot s = _history.undo(_phylogeny, isEdited());
+        final TreeHistory.Snapshot s = _history.undo(_phylogeny, isEdited(), _branch_length_mode);
         if (s == null) {
             return false;
         }
@@ -10606,7 +10703,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     /** Re-applies the last undone state; returns true if something was redone. */
     boolean redo() {
-        final TreeHistory.Snapshot s = _history.redo(_phylogeny, isEdited());
+        final TreeHistory.Snapshot s = _history.redo(_phylogeny, isEdited(), _branch_length_mode);
         if (s == null) {
             return false;
         }
@@ -10645,6 +10742,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // restored tree (unwritten edits survive), or mark it detached when the node is gone. Last, so the
             // windows read a fully recomputed tree (renderable domain architectures, counts).
             rebindNodeFrames(phy);
+            followBranchLengthModeOf(s);
             setEdited(s.isEdited());
         }
         finally {
@@ -18276,6 +18374,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!node.isExternal() && !node.isRoot() && (_subtree_index <= (TreePanel.MAX_SUBTREES - 1))) {
             _sub_phylogenies[_subtree_index] = _phylogeny;
             _sub_phylogenies_temp_roots[_subtree_index] = node;
+            _sub_phylogenies_branch_length_modes[_subtree_index] = _branch_length_mode;
             ++_subtree_index;
             _phylogeny = TreePanelUtil.subTree(node, _phylogeny);
             if (_phylogeny.getRoot().isCollapse()) {
@@ -18318,6 +18417,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants(true);
+        // one layout for the whole tree again (the switch pressed in the subtree view rewrote only that clade)
+        relayAfterLeavingSubtree( temp_root, _sub_phylogenies_branch_length_modes[_subtree_index] );
         rebuildPropertyDisplays(); // color+size schemes summarize the visible tree -- recompute for the restored tree
         rebuildCladeBands(); // band roots referenced the old (sub)tree -- recompute for the restored tree
         rebuildAnnotationColumns(); // recompute the columns' schemes for the restored tree

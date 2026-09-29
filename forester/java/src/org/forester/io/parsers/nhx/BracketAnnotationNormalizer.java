@@ -95,7 +95,7 @@ public final class BracketAnnotationNormalizer {
         boolean mutations = false;
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            // (not isHasDate(): that reads a value of exactly 0 -- every BEAST tip's height -- as "no date")
+            // (the NUMBERS are what is asked for: isHasDate() also says yes to a description or a unit alone)
             final Date d = n.getNodeData().getDate();
             if ( d != null ) {
                 if ( ( d.getValue() != null ) || ( d.getMin() != null ) || ( d.getMax() != null ) ) {

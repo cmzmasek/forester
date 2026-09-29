@@ -46,17 +46,32 @@ final class TreeHistory {
 
     static final int DEFAULT_MAX_DEPTH = 25;
 
-    /** One recorded tree state: the (copied) tree, the operation label, and the edited flag at capture time. */
+    /** One recorded tree state: the (copied) tree, the operation label, the edited flag at capture time, and the
+     *  layout the tree's branch lengths were in (time or divergence -- the lengths themselves are IN the copy, so
+     *  a restore that kept the panel's mode of the moment would show one layout and call it the other). */
     static final class Snapshot {
 
-        private final Phylogeny _phylogeny;
-        private final String    _label;
-        private final boolean   _edited;
+        private final Phylogeny               _phylogeny;
+        private final String                  _label;
+        private final boolean                 _edited;
+        private final BranchLengthLayout.MODE _branch_length_mode;
 
         Snapshot( final Phylogeny phylogeny, final String label, final boolean edited ) {
+            this( phylogeny, label, edited, BranchLengthLayout.MODE.TIME );
+        }
+
+        Snapshot( final Phylogeny phylogeny,
+                  final String label,
+                  final boolean edited,
+                  final BranchLengthLayout.MODE branch_length_mode ) {
             _phylogeny = phylogeny;
             _label = label;
             _edited = edited;
+            _branch_length_mode = ( branch_length_mode == null ) ? BranchLengthLayout.MODE.TIME : branch_length_mode;
+        }
+
+        BranchLengthLayout.MODE getBranchLengthMode() {
+            return _branch_length_mode;
         }
 
         Phylogeny getPhylogeny() {
@@ -90,10 +105,18 @@ final class TreeHistory {
      * depth cap are dropped.
      */
     void checkpoint( final Phylogeny current, final String label, final boolean edited ) {
+        checkpoint( current, label, edited, BranchLengthLayout.MODE.TIME );
+    }
+
+    /** {@link #checkpoint(Phylogeny, String, boolean)}, recording the layout {@code current}'s lengths are in. */
+    void checkpoint( final Phylogeny current,
+                     final String label,
+                     final boolean edited,
+                     final BranchLengthLayout.MODE mode ) {
         if ( ( current == null ) || current.isEmpty() ) {
             return;
         }
-        _undo.addFirst( new Snapshot( current.copy(), label, edited ) );
+        _undo.addFirst( new Snapshot( current.copy(), label, edited, mode ) );
         while ( _undo.size() > _max_depth ) {
             _undo.pollLast();
         }
@@ -123,11 +146,16 @@ final class TreeHistory {
      * install as the new live tree (or {@code null} when there is nothing to undo).
      */
     Snapshot undo( final Phylogeny current, final boolean current_edited ) {
+        return undo( current, current_edited, BranchLengthLayout.MODE.TIME );
+    }
+
+    /** {@link #undo(Phylogeny, boolean)}, recording the layout {@code current}'s lengths are in. */
+    Snapshot undo( final Phylogeny current, final boolean current_edited, final BranchLengthLayout.MODE mode ) {
         if ( _undo.isEmpty() ) {
             return null;
         }
         final Snapshot previous = _undo.pollFirst();
-        _redo.addFirst( new Snapshot( current.copy(), previous.getLabel(), current_edited ) );
+        _redo.addFirst( new Snapshot( current.copy(), previous.getLabel(), current_edited, mode ) );
         while ( _redo.size() > _max_depth ) {
             _redo.pollLast();
         }
@@ -139,11 +167,16 @@ final class TreeHistory {
      * install as the new live tree (or {@code null} when there is nothing to redo).
      */
     Snapshot redo( final Phylogeny current, final boolean current_edited ) {
+        return redo( current, current_edited, BranchLengthLayout.MODE.TIME );
+    }
+
+    /** {@link #redo(Phylogeny, boolean)}, recording the layout {@code current}'s lengths are in. */
+    Snapshot redo( final Phylogeny current, final boolean current_edited, final BranchLengthLayout.MODE mode ) {
         if ( _redo.isEmpty() ) {
             return null;
         }
         final Snapshot next = _redo.pollFirst();
-        _undo.addFirst( new Snapshot( current.copy(), next.getLabel(), current_edited ) );
+        _undo.addFirst( new Snapshot( current.copy(), next.getLabel(), current_edited, mode ) );
         while ( _undo.size() > _max_depth ) {
             _undo.pollLast();
         }

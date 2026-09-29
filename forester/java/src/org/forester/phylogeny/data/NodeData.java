@@ -266,10 +266,16 @@ public class NodeData implements PhylogenyData {
                         .isEmpty() ) );
     }
 
+    /**
+     * Whether this node states a date: a description, a unit, or any of value / minimum / maximum. A number of
+     * exactly 0 IS a date (the height of every contemporaneous BEAST tip, the present on an age scale): asking
+     * "is it zero" instead of "is it there" dropped such a date from every copy of the tree and from every saved
+     * file.
+     */
     public boolean isHasDate() {
         return ( getDate() != null )
-                && ( !ForesterUtil.isEmpty( getDate().getDesc() ) || !ForesterUtil.isNull( getDate().getMax() )
-                        || !ForesterUtil.isNull( getDate().getMin() ) || !ForesterUtil.isNull( getDate().getValue() ) || !ForesterUtil
+                && ( !ForesterUtil.isEmpty( getDate().getDesc() ) || ( getDate().getMax() != null )
+                        || ( getDate().getMin() != null ) || ( getDate().getValue() != null ) || !ForesterUtil
                         .isEmpty( getDate().getUnit() ) );
     }
 

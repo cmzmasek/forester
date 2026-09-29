@@ -264,6 +264,31 @@ public final class TipDateExtractorTest {
         if ( TipDateExtractor.shouldOffer( mostly ) ) {
             return fail( "shouldOffer must be false once a tip already has a <date> (don't pester)" );
         }
+        // a tip at height 0 -- a date of exactly 0, no unit -- is dated like a tip at height 0.5: the pair differs
+        // by that one number, and both are left alone
+        for( final String height : new String[] { "0.5", "0", "0.0" } ) {
+            final Phylogeny heights = parse( "((a_2019-01-15:1,b_2020-06-02:1):1,(c_2021-03-15:1,d_no_date:1):1);" );
+            if ( !TipDateExtractor.shouldOffer( heights ) ) {
+                return fail( "fixture: the undated tree must be offered, or the refusal below proves nothing" );
+            }
+            heights.getNode( "b_2020-06-02" ).getNodeData().setDate(
+                    new org.forester.phylogeny.data.Date( "", new java.math.BigDecimal( height ), null, null, "" ) );
+            if ( TipDateExtractor.shouldOffer( heights ) ) {
+                return fail( "shouldOffer must be false when a tip is dated " + height );
+            }
+            int already = 0;
+            for( final TipDateExtractor.TipDate row : TipDateExtractor.preview( heights, DF ) ) {
+                if ( row.alreadyDated() ) {
+                    ++already;
+                    if ( !"b_2020-06-02".equals( row.label() ) ) {
+                        return fail( "the wrong tip is called already dated: " + row.label() );
+                    }
+                }
+            }
+            if ( already != 1 ) {
+                return fail( "preview must call the tip dated " + height + " already dated, got " + already );
+            }
+        }
         return true;
     }
 

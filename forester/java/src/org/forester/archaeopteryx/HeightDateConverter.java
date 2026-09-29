@@ -98,7 +98,7 @@ final class HeightDateConverter {
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode tip = it.next();
             tips++;
-            // not isHasDate(): it reads a value of 0 -- the youngest tip's height -- as no date
+            // the VALUE is what is asked for (isHasDate() also says yes to a description or a unit alone)
             final Date d = tip.getNodeData().getDate();
             if ( ( d == null ) || ( d.getValue() == null ) ) {
                 continue;

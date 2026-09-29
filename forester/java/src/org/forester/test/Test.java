@@ -2179,6 +2179,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("BEAST branch mode (Time | Div on the demo pair): ");
+        if (org.forester.archaeopteryx.BeastBranchModeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Node data: a date of zero is a date: ");
+        if (org.forester.phylogeny.data.NodeDataDateTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Nexus export spec compliance: ");
         if (Test.testNexusExportSpecCompliance()) {
             System.out.println("OK.");

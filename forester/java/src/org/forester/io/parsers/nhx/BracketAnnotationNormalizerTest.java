@@ -81,7 +81,7 @@ public final class BracketAnnotationNormalizerTest {
             if ( countPrefix( hpd, "treetime:" ) != 0 ) {
                 return fail( "an age interval alone states an age: stays beast:" );
             }
-            // ...and so does an age of exactly 0, all a BEAST tip ever states (NodeData.isHasDate() reads it as no date)
+            // ...and so does an age of exactly 0, all a BEAST tip ever states
             final Phylogeny zero = parse( "((A:1[&mutations=\"A1G\",height=0.0],B:1[&height=0.0]):1,C:1[&height=0.0]);" );
             if ( countPrefix( zero, "treetime:" ) != 0 ) {
                 return fail( "height=0.0 states an age: stays beast:" );

@@ -37,7 +37,50 @@ public final class TreeHistoryTest {
 
     public static boolean test() {
         return roundTrip() && redoClearedOnCheckpoint() && capEviction() && snapshotIsIndependentCopy()
-                && clearRedoOnly() && emptyAndLabels();
+                && clearRedoOnly() && emptyAndLabels() && branchLengthModeTravels();
+    }
+
+    // ---- each snapshot says which layout ITS branch lengths are in: the one handed over when it was taken ----
+    private static boolean branchLengthModeTravels() {
+        final BranchLengthLayout.MODE time = BranchLengthLayout.MODE.TIME;
+        final BranchLengthLayout.MODE div = BranchLengthLayout.MODE.DIVERGENCE;
+        final TreeHistory h = new TreeHistory();
+        h.checkpoint( tree( 2 ), "edit in time", false, time );
+        h.checkpoint( tree( 3 ), "edit in divergence", false, div ); // undo = [div, time]
+        // undone while the panel shows TIME: the state given back was captured in divergence...
+        final Snapshot u1 = h.undo( tree( 4 ), true, time );
+        if ( ( u1 == null ) || ( u1.getBranchLengthMode() != div ) || ( u1.getPhylogeny().getNumberOfExternalNodes() != 3 ) ) {
+            return fail( "undo must give back the divergence snapshot AS divergence" );
+        }
+        final Snapshot u2 = h.undo( u1.getPhylogeny(), false, div );
+        if ( ( u2 == null ) || ( u2.getBranchLengthMode() != time ) || ( u2.getPhylogeny().getNumberOfExternalNodes() != 2 ) ) {
+            return fail( "the older snapshot was captured in time" );
+        }
+        // ...and what undo put on the redo stack carries the mode of the tree it copied, in order
+        final Snapshot r1 = h.redo( u2.getPhylogeny(), false, time );
+        if ( ( r1 == null ) || ( r1.getBranchLengthMode() != div ) || ( r1.getPhylogeny().getNumberOfExternalNodes() != 3 ) ) {
+            return fail( "redo must give back the state copied at the second undo, in ITS mode (divergence)" );
+        }
+        final Snapshot r2 = h.redo( r1.getPhylogeny(), false, div );
+        if ( ( r2 == null ) || ( r2.getBranchLengthMode() != time ) || ( r2.getPhylogeny().getNumberOfExternalNodes() != 4 ) ) {
+            return fail( "redo must give back the state copied at the first undo, in ITS mode (time)" );
+        }
+        // and redo files the tree it replaces under the mode it is handed
+        final Snapshot back = h.undo( r2.getPhylogeny(), false, time );
+        if ( ( back == null ) || ( back.getBranchLengthMode() != div ) ) {
+            return fail( "the state redo filed for undo must carry the mode handed to redo (divergence)" );
+        }
+        // the callers that know nothing of layouts keep working, in time
+        final TreeHistory plain = new TreeHistory();
+        plain.checkpoint( tree( 2 ), "op", false );
+        final Snapshot p = plain.undo( tree( 3 ), false );
+        if ( ( p == null ) || ( p.getBranchLengthMode() != time ) ) {
+            return fail( "a snapshot taken without a mode is a time snapshot" );
+        }
+        if ( new Snapshot( tree( 2 ), "x", false, null ).getBranchLengthMode() != time ) {
+            return fail( "no mode is time, never null" );
+        }
+        return true;
     }
 
     // ---- clearRedo() drops the redo history but leaves the undo stack intact (the safety-net primitive) ----

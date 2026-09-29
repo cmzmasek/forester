@@ -252,6 +252,10 @@ public final class DemoTreesTest {
         // BEAST / BEAST X output: a NEXUS tree whose [&...] annotations parse into HPD date intervals (Node Age
         // Bars), posterior confidences (support), and a numeric beast:rate property (Color-by)
         ok &= beastAnnotationsOk( "beast-annotations.nex" );
+        // the Time | Div pair: the same tree with a clock rate on every branch (offered the switch) and with one
+        // rate taken out (not offered it)
+        ok &= beastRatePairOk( "beast-annotations.nex", "beast-rate-missing.nex" );
+        ok &= beastAnnotationsOk( "beast-rate-missing.nex" ); // ...and everything else is read as in its twin
         // what Nextstrain / TreeTime / MrBayes really write, each read exactly as File > Open reads it
         ok &= nextstrainNexusOk( "nextstrain-nexus.nex" );
         ok &= treeTimePairOk( "treetime-nexus.nex", "treetime-divergence.nex" );
@@ -1919,6 +1923,95 @@ public final class DemoTreesTest {
             return note( file_name + " must carry two FigTree branch colours, got " + colours );
         }
         return true;
+    }
+
+    /** The Time | Div pair. {@code rated} states a clock rate on all 8 branches and is offered the switch;
+     *  {@code one_unrated} is the SAME tree -- names, lengths, dates, every other rate -- with isolate_C's rate taken
+     *  out, and is not. Both date their 5 tips at height 0 and both have a time layout, so the refusal is for the
+     *  rate and nothing else. The numbers the README row quotes (8, 7, 5) are asserted here. */
+    private static boolean beastRatePairOk( final String rated, final String one_unrated ) {
+        final Phylogeny full = loadAsOpened( rated );
+        final Phylogeny part = loadAsOpened( one_unrated );
+        if ( ( full == null ) || ( part == null ) ) {
+            return false;
+        }
+        if ( ( full.getNodeCount() != 9 ) || ( part.getNodeCount() != 9 ) ) {
+            return note( "the Time | Div pair must have 9 nodes (8 branches) each, got " + full.getNodeCount()
+                    + " and " + part.getNodeCount() );
+        }
+        final Iterator<PhylogenyNode> fi = full.iteratorPreorder();
+        final Iterator<PhylogenyNode> pi = part.iteratorPreorder();
+        int full_rated = 0;
+        int part_rated = 0;
+        int zero_tips = 0;
+        String unrated_name = null;
+        while ( fi.hasNext() ) {
+            final PhylogenyNode f = fi.next();
+            final PhylogenyNode p = pi.next();
+            if ( !f.getName().equals( p.getName() ) || ( f.getDistanceToParent() != p.getDistanceToParent() )
+                    || ( f.getNumberOfDescendants() != p.getNumberOfDescendants() ) ) {
+                return note( one_unrated + " must be the same tree as " + rated + " (differs at \"" + f.getName()
+                        + "\")" );
+            }
+            final org.forester.phylogeny.data.Date fd = f.getNodeData().getDate();
+            final org.forester.phylogeny.data.Date pd = p.getNodeData().getDate();
+            if ( ( fd == null ) || ( pd == null ) || ( fd.getValue() == null ) || ( pd.getValue() == null )
+                    || ( fd.getValue().compareTo( pd.getValue() ) != 0 ) ) {
+                return note( "every node of the Time | Div pair must carry the same date (at \"" + f.getName() + "\")" );
+            }
+            if ( f.isExternal() && ( fd.getValue().signum() == 0 ) ) {
+                ++zero_tips;
+            }
+            if ( f.isRoot() ) {
+                continue;
+            }
+            final String fr = rateOf( f );
+            final String pr = rateOf( p );
+            if ( fr != null ) {
+                ++full_rated;
+            }
+            if ( pr != null ) {
+                ++part_rated;
+                if ( !pr.equals( fr ) ) {
+                    return note( "a rate " + one_unrated + " states must be the one " + rated + " states (at \""
+                            + f.getName() + "\")" );
+                }
+            }
+            else {
+                unrated_name = p.getName();
+            }
+        }
+        if ( zero_tips != 5 ) {
+            return note( rated + " must date its 5 tips at height 0, got " + zero_tips );
+        }
+        if ( full_rated != 8 ) {
+            return note( rated + " must state a rate on all 8 branches, got " + full_rated );
+        }
+        if ( ( part_rated != 7 ) || !"isolate_C".equals( unrated_name ) ) {
+            return note( one_unrated + " must state a rate on 7 of 8 branches, all but isolate_C; got " + part_rated
+                    + ", unrated: " + unrated_name );
+        }
+        if ( !BranchLengthLayout.isTimeDerivable( full ) || !BranchLengthLayout.isTimeDerivable( part ) ) {
+            return note( "both halves of the Time | Div pair must have a time layout (tips dated 0 are dated)" );
+        }
+        if ( !BranchLengthLayout.isApplicable( full )
+                || ( BranchLengthLayout.divergenceSource( full ) != BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE ) ) {
+            return note( rated + " must be offered Time | Div, its divergence derived from the clock rate" );
+        }
+        if ( BranchLengthLayout.isApplicable( part )
+                || ( BranchLengthLayout.divergenceSource( part ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE ) ) {
+            return note( one_unrated + " must NOT be offered Time | Div: one branch states no rate" );
+        }
+        return true;
+    }
+
+    /** The node's {@code beast:rate} as written, or null when it states none. */
+    private static String rateOf( final PhylogenyNode n ) {
+        if ( ( n.getNodeData().getProperties() == null )
+                || n.getNodeData().getProperties().getProperties( "beast:rate" ).isEmpty() ) {
+            return null;
+        }
+        return n.getNodeData().getProperties().getProperties( "beast:rate" ).get( 0 ).getValue();
     }
 
     /** A demo file read exactly as File > Open (and aptx_render) reads it: parser by name / first line, the shared

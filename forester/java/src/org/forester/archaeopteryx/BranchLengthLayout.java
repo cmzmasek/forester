@@ -26,7 +26,10 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * Nextstrain {@code nextstrain:div}). Branch divergence is the successive difference.</li>
  * <li>{@link DIVERGENCE_SOURCE#CLOCK_RATE} -- the file records a per-branch clock RATE (BEAST {@code beast:rate}) and
  * divergence is DERIVED as rate x the branch's time span. This is an inference from the model that produced the tree,
- * not a measurement in the file, and the UI says so rather than presenting the two as the same kind of number.</li>
+ * not a measurement in the file, and the UI says so rather than presenting the two as the same kind of number.
+ * Only when EVERY branch states a rate (finite, not negative): a branch without one has no divergence to draw, and
+ * drawing it at 0 would state "no change along this branch", which the file never said. Joint with
+ * Archaeopteryx.js ({@code everyBranchClockRate}).</li>
  * </ul>
  * TIME is computed the same way for both: the difference between a node's date and its parent's. That is what makes
  * one implementation serve both formats -- the dates are already there, whether they came from an Auspice
@@ -86,8 +89,10 @@ final class BranchLengthLayout {
         return null;
     }
 
+    /** The node's date VALUE, or null when it states none. Asks whether the value is THERE, never whether it is
+     *  zero: 0 is the height of every contemporaneous BEAST tip. */
     private static Double dateValue( final PhylogenyNode node ) {
-        if ( ( node.getNodeData() == null ) || !node.getNodeData().isHasDate()
+        if ( ( node.getNodeData() == null ) || ( node.getNodeData().getDate() == null )
                 || ( node.getNodeData().getDate().getValue() == null ) ) {
             return null;
         }
@@ -128,22 +133,32 @@ final class BranchLengthLayout {
         return ( non_root > 0 ) && ( ( derivable * 2 ) > non_root );
     }
 
-    /** Where divergence would come from for this tree. A RECORDED source wins over a derivable one. */
+    /**
+     * Where divergence would come from for this tree. A RECORDED source wins over a derivable one. A clock rate is
+     * a source only when EVERY non-root node states one that is finite and not negative (the root has no branch, so
+     * its rate is never asked for): one branch without a rate, and the tree has no divergence layout.
+     */
     static DIVERGENCE_SOURCE divergenceSource( final Phylogeny phy ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return DIVERGENCE_SOURCE.NONE;
         }
-        boolean any_rate = false;
+        boolean every_branch_rated = true;
+        int branches = 0;
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( numericProperty( n, DIV_PROPERTY_REF ) != null ) {
                 return DIVERGENCE_SOURCE.STORED;
             }
-            if ( !any_rate && !n.isRoot() && ( numericProperty( n, RATE_PROPERTY_REF ) != null ) ) {
-                any_rate = true;
+            if ( n.isRoot() || ( n.getParent() == null ) ) {
+                continue;
+            }
+            ++branches;
+            if ( every_branch_rated ) {
+                final Double rate = numericProperty( n, RATE_PROPERTY_REF );
+                every_branch_rated = ( rate != null ) && ( rate.doubleValue() >= 0 );
             }
         }
-        return any_rate ? DIVERGENCE_SOURCE.CLOCK_RATE : DIVERGENCE_SOURCE.NONE;
+        return ( every_branch_rated && ( branches > 0 ) ) ? DIVERGENCE_SOURCE.CLOCK_RATE : DIVERGENCE_SOURCE.NONE;
     }
 
     /** Whether the tree can be laid out BOTH ways, and so should be offered the toggle. */
@@ -167,13 +182,31 @@ final class BranchLengthLayout {
         }
     }
 
+    /** {@link #applyTime(Phylogeny)} for the branches BELOW {@code clade_root} only: its own branch, and every
+     *  branch outside the clade, is left as it is. For a clade a subtree view rewrote, inside a tree that has no
+     *  second layout of its own and so must not be rewritten as a whole. */
+    static void applyTimeBelow( final PhylogenyNode clade_root ) {
+        if ( clade_root == null ) {
+            return;
+        }
+        for( final PhylogenyNode n : clade_root.getDescendants() ) {
+            final Double t = timeLength( n );
+            n.setDistanceToParent( ( t == null ) ? 0.0 : t.doubleValue() );
+            applyTimeBelow( n );
+        }
+    }
+
     /** Branch lengths = genetic change along each branch: the successive difference of a recorded cumulative
-     *  divergence, or rate x time when only a clock rate is recorded. Same zero-rather-than-stale rule. */
+     *  divergence, or rate x time when only a clock rate is recorded. Same zero-rather-than-stale rule. A tree with
+     *  NO divergence source is left exactly as it was: there is nothing to lay it out by. */
     static void applyDivergence( final Phylogeny phy ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return;
         }
         final DIVERGENCE_SOURCE source = divergenceSource( phy );
+        if ( source == DIVERGENCE_SOURCE.NONE ) {
+            return;
+        }
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isRoot() || ( n.getParent() == null ) ) {
@@ -187,11 +220,13 @@ final class BranchLengthLayout {
                     len = Math.max( 0.0, d.doubleValue() - dp.doubleValue() ); // clamp a spurious negative to 0
                 }
             }
-            else if ( source == DIVERGENCE_SOURCE.CLOCK_RATE ) {
-                final Double rate = numericProperty( n, RATE_PROPERTY_REF );
+            else {
+                // CLOCK_RATE: every branch states a rate that is not negative (divergenceSource), so there is no
+                // null to check for. The one product below zero left is NEGATIVE ZERO, from a rate written
+                // "-0.0" (which is not < 0): max() turns it into a plain 0, so no length is ever written "-0.0"
                 final Double t = timeLength( n );
-                if ( ( rate != null ) && ( t != null ) ) {
-                    len = Math.max( 0.0, rate.doubleValue() * t.doubleValue() );
+                if ( t != null ) {
+                    len = Math.max( 0.0, numericProperty( n, RATE_PROPERTY_REF ).doubleValue() * t.doubleValue() );
                 }
             }
             n.setDistanceToParent( len );
