@@ -12909,8 +12909,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final double radial_corr0 = radius / max_dist; // px per distance/time unit along the spoke (== the phylogram scale)
         // a CALENDAR tree's date increases toward the tips (larger radius); negate so the earlier bound sits at a
         // smaller radius (toward the centre) and the later bound at a larger radius (toward the tips)
-        final double radial_corr = (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR) ? -radial_corr0
-                : radial_corr0;
+        final double radial_corr = datesIncreaseTowardTips() ? -radial_corr0 : radial_corr0;
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
         g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? HPD_BAR_COLOR_BW
@@ -12934,10 +12933,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double max = date.getMax().doubleValue();
             final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
             final double r_node = circularRadiusFraction(node) * radius;
-            double r_low = r_node - ((max - value) * radial_corr);  // older bound -> smaller radius (toward the root)
-            double r_high = r_node + ((value - min) * radial_corr); // younger bound -> larger radius (toward the tips)
-            r_low = Math.max(0, Math.min(r_low, r_high)); // robust to swapped/degenerate bounds; never past the centre
-            r_high = Math.max(r_low + 1, r_high); // >= 1px floor so a dated node always shows a mark (rectangular parity)
+            // older bound -> smaller radius (toward the root), younger -> larger; ordered, never collapsed to a dot. A
+            // bound past the root's estimate is a NEGATIVE radius: the bar runs on through the centre (the root straddles it)
+            final double[] rr = TreePanelUtil.hpdRadialRange(r_node, value, min, max, radial_corr);
+            final double r_low = rr[0];
+            final double r_high = rr[1];
             if (getOptions().getNodeAgeShape() == Options.NODE_AGE_SHAPE.SPINDLE) {
                 fillRadialNodeAgeSpindle(g, cx, cy, ang, r_low, r_high, r_node); // a radial lens peaking at the node's radius
             }
@@ -12996,7 +12996,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         // a CALENDAR tree's date INCREASES toward the tips (opposite of geologic age, which decreases toward the tips);
         // negate corr so hpdBarXRange places the earlier bound to the left and the later bound to the right
-        final double signed_corr = (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR) ? -corr : corr;
+        final double signed_corr = datesIncreaseTowardTips() ? -corr : corr;
         final Color saved = g.getColor();
         g.setColor(((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) ? HPD_BAR_COLOR_BW
                 : HPD_BAR_COLOR);
@@ -13025,6 +13025,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         g.setColor(saved);
+    }
+
+    /** Whether this tree's {@code <date>} values INCREASE toward the tips (calendar years) rather than decrease
+     *  (ages before present) -- which way a node-age bar runs from its node. A unit the tree states decides, NOT the
+     *  Time Axis the user shows: switching a calendar tree's axis Off or to Geologic is a display choice and used to
+     *  mirror every bar. Only for unit-less dates, where the derived type is NONE, is the user's explicit Calendar
+     *  choice the one statement of what the numbers mean. */
+    final boolean datesIncreaseTowardTips() {
+        final Options.TIME_AXIS_TYPE derived = derivedTimeAxisType();
+        return (derived != Options.TIME_AXIS_TYPE.NONE) ? (derived == Options.TIME_AXIS_TYPE.CALENDAR)
+                : (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR);
     }
 
     /** A tree on CALENDAR time: its tips are dated SAMPLES, not fossils. Decided by the tree's own date units (the
@@ -13158,10 +13169,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double max = date.getMax().doubleValue();
             final double value = (date.getValue() != null) ? date.getValue().doubleValue() : ((min + max) / 2.0);
             final double r_node = circularRadiusFraction(node) * radius;
-            double r_low = r_node - ((max - value) * radial_corr);  // FAD (older) -> smaller radius (toward the root)
-            double r_high = r_node + ((value - min) * radial_corr); // LAD (younger) -> larger radius (toward the tips)
-            r_low = Math.max(0, Math.min(r_low, r_high)); // robust to swapped/degenerate bounds; never past the centre
-            r_high = Math.max(r_low + 1, r_high); // >= 1px floor so a dated tip always shows a mark
+            // FAD (older) -> smaller radius (toward the root), LAD (younger) -> larger radius (toward the tips)
+            final double[] rr = TreePanelUtil.hpdRadialRange(r_node, value, min, max, radial_corr);
+            final double r_low = rr[0];
+            final double r_high = rr[1];
             final double cos = Math.cos(ang), sin = Math.sin(ang);
             drawLine(cx + (r_low * cos), cy + (r_low * sin), cx + (r_high * cos), cy + (r_high * sin), g);
         }

@@ -478,6 +478,26 @@ public class TreePanelUtil {
     }
 
     /**
+     * The radial range {@code [inner, outer]} of a node-age (HPD) bar along a circular spoke: the polar form of
+     * {@link #hpdBarXRange}, anchored to the node's own radius {@code r_node}. The two ends come out in either order
+     * ({@code corr} is negated on a CALENDAR tree, where the older bound is {@code min}); they are ORDERED here, never
+     * collapsed onto each other -- the old clamp {@code min(a, b)} then {@code max(inner + 1, b)} turned every
+     * calendar-tree bar into a 1 px dot at its younger end. The inner end may be NEGATIVE: an interval reaching
+     * past the root's point estimate (always the root's own, which sits AT the centre) continues straight through the
+     * centre onto the opposite side of the spoke's line, as the rectangular bar straddles the root's x -- a point at
+     * radius -r along angle a is the point at +r along a + pi. The range is at least 1 px so a dated node always
+     * shows a mark. Pure/testable.
+     */
+    final static double[] hpdRadialRange( final double r_node, final double value, final double min, final double max,
+                                          final double corr ) {
+        final double a = r_node - ( ( max - value ) * corr );
+        final double b = r_node + ( ( value - min ) * corr );
+        final double inner = Math.min( a, b );
+        final double outer = Math.max( inner + 1, Math.max( a, b ) );
+        return new double[] { inner, outer };
+    }
+
+    /**
      * The half-thickness of a node-age SPINDLE at position {@code p} along its span {@code [lo, hi]} (either device x
      * for the rectangular shape or radius for the circular one): 0 at both ends {@code lo}/{@code hi}, rising smoothly
      * (a quarter-sine) to {@code h_max} at the point-estimate position {@code peak}. Asymmetric when the estimate is

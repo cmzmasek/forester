@@ -69,7 +69,7 @@ public final class TreePanelUtilTest {
                 && testInferenceFeedsRankAssignment() && testWriteCladeTaxonomies() && testInternalTaxaByRank()
                 && testCladeBands() && testRankColorizationViaSequenceIds() && testInternalLabelAboveBranchLayout()
                 && testAbbreviateScientificName() && testSupportColor() && testBreakLongBranches() && testScaleGridLines()
-                && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange() && testSpindleHalfHeight()
+                && testScaleAxisTickValues() && testCalendarTickYears() && testMaAxisTicks() && testFormatCompactNumber() && testHpdBarXRange() && testHpdRadialRange() && testSpindleHalfHeight()
                 && testOrientationTransform() && testInternalLabelAlignWidth() && testAutoTipLabelDirection()
                 && testUserVisiblePropertiesText() && testTipLineagesAndUnresolved() && testInferenceStrings()
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
@@ -908,6 +908,43 @@ public final class TreePanelUtilTest {
         if ( !( ( r[ 0 ] < 100f ) && ( 100f < r[ 1 ] ) && ( a[ 0 ] < 50f ) && ( 50f < a[ 1 ] ) ) ) {
             return fail( "the bar must straddle the node's x: " + java.util.Arrays.toString( r ) + " / "
                     + java.util.Arrays.toString( a ) );
+        }
+        return true;
+    }
+
+    /** The circular node-age bar's radial range: ordered inner..outer whichever sign corr carries, never collapsed to
+     *  a dot (a CALENDAR tree negates corr, and the old clamp drew every such bar as a 1 px dot at its younger end). */
+    private static boolean testHpdRadialRange() {
+        // geologic age (corr > 0): node at r=100, age 90 in [82,98], corr 2 -> older 98 at 84, younger 82 at 116
+        final double[] g = TreePanelUtil.hpdRadialRange( 100, 90.0, 82.0, 98.0, 2.0 );
+        if ( ( Math.abs( g[ 0 ] - 84 ) > 1e-9 ) || ( Math.abs( g[ 1 ] - 116 ) > 1e-9 ) ) {
+            return fail( "hpdRadialRange geologic: expected [84,116], got " + java.util.Arrays.toString( g ) );
+        }
+        // calendar (corr < 0), a node of HA_continuous_MCC: r=36.97624503865821, 1996.57035 in [1995.33773,1997.88273],
+        // corr -19.952933290391773 -> the earlier year 1995.33773 inward at 12.38186..., the later 1997.88273 outward
+        // at 63.16208, a bar 50.8 px long (the bug drew [12.38, 13.38])
+        final double[] c = TreePanelUtil.hpdRadialRange( 36.97624503865821, 1996.57035, 1995.33773, 1997.88273,
+                                                         -19.952933290391773 );
+        if ( ( Math.abs( c[ 0 ] - 12.381860406255562 ) > 1e-6 ) || ( Math.abs( c[ 1 ] - 63.162075630304074 ) > 1e-6 ) ) {
+            return fail( "hpdRadialRange calendar: expected [12.38186, 63.16208], got " + java.util.Arrays.toString( c ) );
+        }
+        // the ROOT sits at the centre (r 0): calendar 2019.0 in [2018.9, 2019.1], corr -100 -> straddles it, [-10, 10]
+        final double[] root = TreePanelUtil.hpdRadialRange( 0, 2019.0, 2018.9, 2019.1, -100.0 );
+        if ( ( Math.abs( root[ 0 ] + 10 ) > 1e-6 ) || ( Math.abs( root[ 1 ] - 10 ) > 1e-6 ) ) {
+            return fail( "hpdRadialRange root: expected [-10,10], got " + java.util.Arrays.toString( root ) );
+        }
+        // bounds stored SWAPPED (min > max: a fossil's FAD/LAD written the wrong way round) give the same ordered range
+        final double[] sw = TreePanelUtil.hpdRadialRange( 100, 90.0, 98.0, 82.0, 2.0 );
+        if ( ( Math.abs( sw[ 0 ] - 84 ) > 1e-9 ) || ( Math.abs( sw[ 1 ] - 116 ) > 1e-9 ) ) {
+            return fail( "hpdRadialRange swapped bounds: expected [84,116], got " + java.util.Arrays.toString( sw ) );
+        }
+        // a bound reaching past the centre continues through it (negative = the opposite side of the spoke's line);
+        // a zero-width interval still shows 1 px
+        final double[] z = TreePanelUtil.hpdRadialRange( 5, 10.0, 0.0, 20.0, 2.0 );
+        final double[] d = TreePanelUtil.hpdRadialRange( 50, 7.0, 7.0, 7.0, -3.0 );
+        if ( ( Math.abs( z[ 0 ] + 15 ) > 1e-9 ) || ( Math.abs( z[ 1 ] - 25 ) > 1e-9 ) || ( d[ 0 ] != 50 ) || ( d[ 1 ] != 51 ) ) {
+            return fail( "hpdRadialRange edges: expected [-15,25] and [50,51], got " + java.util.Arrays.toString( z )
+                    + " " + java.util.Arrays.toString( d ) );
         }
         return true;
     }

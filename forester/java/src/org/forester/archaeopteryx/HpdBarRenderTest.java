@@ -223,16 +223,6 @@ public final class HpdBarRenderTest {
                     final Options o = frame.getOptions();
                     o.setGraphicsExportWhiteBackground( true );
                     o.setShowHpdBars( true );
-                    o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR ); // measure the flat bar's extent, not a spindle
-                    tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
-                    tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-                    tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
-                    tp.setTimeAxisType( Options.TIME_AXIS_TYPE.CALENDAR );
-                    final int w = 900, h = 460;
-                    frame.showWhole();
-                    tp.setSize( w, h );
-                    tp.calcParametersForPainting( w, h );
-                    final BufferedImage img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
                     org.forester.phylogeny.PhylogenyNode mid = null;
                     for ( final java.util.Iterator<org.forester.phylogeny.PhylogenyNode> it = phy.iteratorPreorder();
                             it.hasNext(); ) {
@@ -246,20 +236,114 @@ public final class HpdBarRenderTest {
                         fail( ok, "expected the MID node" );
                         return;
                     }
-                    final int nx = Math.round( mid.getXcoord() ), ny = Math.round( mid.getYcoord() );
-                    int left_ext = 0, right_ext = 0;
-                    for ( int dx = 1; dx <= 200; ++dx ) {
-                        if ( bluishNear( img, nx - dx, nx - dx, ny ) ) {
-                            left_ext = dx;
+                    // the tree's dates carry the unit "year", so which way a bar runs is the DATA's: the Time Axis the
+                    // user shows (Auto, Off, Geologic, Calendar) is a display choice and once mirrored every bar
+                    final Options.TIME_AXIS_TYPE[] axes = { null, Options.TIME_AXIS_TYPE.NONE,
+                            Options.TIME_AXIS_TYPE.GEOLOGIC, Options.TIME_AXIS_TYPE.CALENDAR };
+                    for ( final Options.TIME_AXIS_TYPE axis : axes ) {
+                        tp.setTimeAxisType( axis );
+                        final String where = " (Time Axis " + ( axis == null ? "Auto" : axis.toString() ) + ")";
+                        o.setNodeAgeShape( Options.NODE_AGE_SHAPE.BAR ); // measure the flat bar's extent, not a spindle
+                        tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
+                        tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
+                        final int w = 900, h = 460;
+                        frame.showWhole();
+                        tp.setSize( w, h );
+                        tp.calcParametersForPainting( w, h );
+                        final BufferedImage img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                        final int nx = Math.round( mid.getXcoord() ), ny = Math.round( mid.getYcoord() );
+                        int left_ext = 0, right_ext = 0;
+                        for ( int dx = 1; dx <= 200; ++dx ) {
+                            if ( bluishNear( img, nx - dx, nx - dx, ny ) ) {
+                                left_ext = dx;
+                            }
+                            if ( bluishNear( img, nx + dx, nx + dx, ny ) ) {
+                                right_ext = dx;
+                            }
                         }
-                        if ( bluishNear( img, nx + dx, nx + dx, ny ) ) {
-                            right_ext = dx;
+                        // later (right) reach must clearly exceed earlier (left) reach -- the calendar direction
+                        if ( right_ext <= ( left_ext + 5 ) ) {
+                            fail( ok, "a calendar tree's node-age bar must reach farther toward the LATER date (right "
+                                    + right_ext + " vs left " + left_ext + ")" + where );
                         }
-                    }
-                    // later (right) reach must clearly exceed earlier (left) reach -- the calendar direction
-                    if ( right_ext <= ( left_ext + 5 ) ) {
-                        fail( ok, "a calendar tree's node-age bar must reach farther toward the LATER date (right "
-                                + right_ext + " vs left " + left_ext + ")" );
+                        // CIRCULAR, bar and spindle: a radial segment along MID's spoke, the later date OUTWARD. The
+                        // calendar sign flip once swapped its two ends and the clamp collapsed them into a 1 px dot at
+                        // the younger end (off the node): MID is 0.1 y in, 0.5 y out, so both reaches must be seen.
+                        tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+                        for ( final Options.NODE_AGE_SHAPE shape : Options.NODE_AGE_SHAPE.values() ) {
+                            o.setNodeAgeShape( shape );
+                            frame.showWhole();
+                            tp.setSize( 700, 700 );
+                            tp.calcParametersForPainting( 700, 700 );
+                            final BufferedImage circ = AptxUtil.renderPhylogenyToImage( 700, 700, tp, o, false, 1, false );
+                            final java.awt.Point c = tp.circularCenterForTest();
+                            final Double ang = tp.circularAngleForTest( mid );
+                            if ( ( c == null ) || ( ang == null ) ) {
+                                fail( ok, "circular: expected the ring centre and MID's angle after the paint" + where );
+                                return;
+                            }
+                            final double cos = Math.cos( ang ), sin = Math.sin( ang );
+                            final double r_mid = Math.hypot( mid.getXcoord() - c.x, mid.getYcoord() - c.y );
+                            final double ring = tp.circularRadiusForTest();
+                            final double px_per_year = ring / 2.0; // root 2019.0 .. the deepest tip 2021.0
+                            // precondition: MID sits one year out, so the scan windows below are what they claim
+                            if ( Math.abs( r_mid - px_per_year ) > 2 ) {
+                                fail( ok, "circular: MID must sit one year (" + px_per_year + " px) from the centre, at "
+                                        + r_mid + where );
+                                continue;
+                            }
+                            // windows from the geometry: inward half a year (the root's own bar, 0.1 y around the
+                            // centre, stays 0.4 y clear); outward 0.8 y, inside the ring
+                            int in_ext = 0, out_ext = 0;
+                            for ( int dr = 1; dr <= ( 0.5 * px_per_year ); ++dr ) {
+                                if ( bluishAt( circ, c.x + ( ( r_mid - dr ) * cos ), c.y + ( ( r_mid - dr ) * sin ) ) ) {
+                                    in_ext = dr;
+                                }
+                            }
+                            for ( int dr = 1; dr <= Math.min( 0.8 * px_per_year, ring - r_mid - 1 ); ++dr ) {
+                                if ( bluishAt( circ, c.x + ( ( r_mid + dr ) * cos ), c.y + ( ( r_mid + dr ) * sin ) ) ) {
+                                    out_ext = dr;
+                                }
+                            }
+                            // the ROOT (2019.0 in [2018.9, 2019.1]) sits AT the centre: its bar straddles it, 0.1 y
+                            // along its own spoke and 0.1 y on through the centre to the opposite side (it used to
+                            // stop at the centre, dropping the earlier half)
+                            final Double root_ang = tp.circularAngleForTest( phy.getRoot() );
+                            if ( root_ang == null ) {
+                                fail( ok, "circular: expected the root's angle after the paint" + where );
+                                continue;
+                            }
+                            int root_fwd = 0, root_back = 0;
+                            final double rcos = Math.cos( root_ang ), rsin = Math.sin( root_ang );
+                            for ( int dr = 1; dr <= ( 0.4 * px_per_year ); ++dr ) {
+                                if ( bluishAt( circ, c.x + ( dr * rcos ), c.y + ( dr * rsin ) ) ) {
+                                    root_fwd = dr;
+                                }
+                                if ( bluishAt( circ, c.x - ( dr * rcos ), c.y - ( dr * rsin ) ) ) {
+                                    root_back = dr;
+                                }
+                            }
+                            final double root_slack = ( shape == Options.NODE_AGE_SHAPE.SPINDLE ) ? 8 : 4;
+                            if ( ( root_fwd < ( ( 0.1 * px_per_year ) - root_slack ) ) || ( root_fwd > ( ( 0.1 * px_per_year ) + 6 ) )
+                                    || ( root_back < ( ( 0.1 * px_per_year ) - root_slack ) )
+                                    || ( root_back > ( ( 0.1 * px_per_year ) + 6 ) ) ) {
+                                fail( ok, "circular " + shape + ": the root's bar must straddle the centre, 0.1 y ("
+                                        + ( 0.1 * px_per_year ) + " px) each way, got " + root_fwd + " along its spoke / "
+                                        + root_back + " on the opposite side" + where );
+                            }
+                            // expected reaches: 0.1 y inward and 0.5 y outward (+ the bar's 3.5 px round cap; the
+                            // spindle's lens thins to nothing at its ends, so it may read a few px short)
+                            final double slack = ( shape == Options.NODE_AGE_SHAPE.SPINDLE ) ? 8 : 4;
+                            if ( ( out_ext < ( ( 0.5 * px_per_year ) - slack ) ) || ( out_ext > ( ( 0.5 * px_per_year ) + 6 ) )
+                                    || ( in_ext < ( ( 0.1 * px_per_year ) - slack ) )
+                                    || ( in_ext > ( ( 0.1 * px_per_year ) + 6 ) ) ) {
+                                fail( ok, "circular " + shape + ": a calendar tree's node-age bar must run from 0.1 y "
+                                        + "inside MID to 0.5 y outside it (" + ( 0.1 * px_per_year ) + " / "
+                                        + ( 0.5 * px_per_year ) + " px), got " + in_ext + " in / " + out_ext + " out"
+                                        + where );
+                            }
+                        }
                     }
                 }
                 catch ( final Throwable t ) {
@@ -448,6 +532,21 @@ public final class HpdBarRenderTest {
             }
         }
         return ( max_y >= min_y ) ? ( ( max_y - min_y ) + 1 ) : 0;
+    }
+
+    /** Is there a bluish pixel within 1 px of the (fractional) point {@code (x, y)}? */
+    private static boolean bluishAt( final BufferedImage img, final double x, final double y ) {
+        final int x0 = (int) Math.round( x ), y0 = (int) Math.round( y );
+        for( int yy = Math.max( 0, y0 - 1 ); yy <= Math.min( img.getHeight() - 1, y0 + 1 ); ++yy ) {
+            for( int xx = Math.max( 0, x0 - 1 ); xx <= Math.min( img.getWidth() - 1, x0 + 1 ); ++xx ) {
+                final int rgb = img.getRGB( xx, yy );
+                final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+                if ( ( b >= ( r + 20 ) ) && ( b >= ( g + 15 ) ) ) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** Is there any bluish pixel in the band [x0,x1] x [y-4,y+4]? (the bar is HPD_BAR_HEIGHT=7 tall, centred on y) */
