@@ -41,6 +41,10 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * only an absent one is missing. Otherwise the switch is not offered and the tree stays in the layout it arrived
  * in.</i> A branch drawn at 0 for want of a number says "nothing happened here", which no file said.
  * <p>
+ * <b>One tree, one layout.</b> The switch acts on the WHOLE tree a tab holds and is judged on the whole tree, also
+ * while a subtree of it is on view (as in Archaeopteryx.js): a subtree view shares its nodes with the tree it is a
+ * view of, so a switch that acted on the view alone left the whole tree in two units at once.
+ * <p>
  * <b>A span may be negative.</b> Real files date a child before its parent (a summary tree's medians: 35 of the
  * 1372 branches of one influenza tree). TIME keeps the sign, in the direction the tree's dates run, so the lengths
  * from the root to a node add up to that node's own date; DIVERGENCE states 0, a negative amount of change meaning
@@ -242,10 +246,16 @@ final class BranchLengthLayout {
      * goes to 0, because the alternative is the divergence length it still holds, in the wrong unit.
      */
     static void applyTime( final Phylogeny phy ) {
+        applyTime( phy, datesIncreaseTowardTips( phy ) );
+    }
+
+    /** {@link #applyTime(Phylogeny)}, told which way the dates run. For a VIEW of a tree -- a subtree -- which is
+     *  laid out the way the whole tree is: a view of two branches, one of them running backwards, cannot say by
+     *  itself which way time runs, the tree it is a view of can. */
+    static void applyTime( final Phylogeny phy, final boolean up ) {
         if ( ( phy == null ) || phy.isEmpty() ) {
             return;
         }
-        final boolean up = datesIncreaseTowardTips( phy );
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isRoot() || ( n.getParent() == null ) ) {
@@ -253,21 +263,6 @@ final class BranchLengthLayout {
             }
             final Double t = timeSpan( n, up );
             n.setDistanceToParent( ( t == null ) ? 0.0 : t.doubleValue() );
-        }
-    }
-
-    /** {@link #applyTime(Phylogeny)} for the branches BELOW {@code clade_root} only: its own branch, and every
-     *  branch outside the clade, is left as it is. For a clade a subtree view rewrote, inside a tree that has no
-     *  second layout of its own and so must not be rewritten as a whole. {@code increase_toward_tips} is the way
-     *  the dates of the tree AROUND the clade run ({@link #datesIncreaseTowardTips}). */
-    static void applyTimeBelow( final PhylogenyNode clade_root, final boolean increase_toward_tips ) {
-        if ( clade_root == null ) {
-            return;
-        }
-        for( final PhylogenyNode n : clade_root.getDescendants() ) {
-            final Double t = timeSpan( n, increase_toward_tips );
-            n.setDistanceToParent( ( t == null ) ? 0.0 : t.doubleValue() );
-            applyTimeBelow( n, increase_toward_tips );
         }
     }
 
@@ -282,11 +277,15 @@ final class BranchLengthLayout {
      * written "-0.0" into a plain one, so no length is ever written "-0.0".
      */
     static void applyDivergence( final Phylogeny phy ) {
+        applyDivergence( phy, datesIncreaseTowardTips( phy ) );
+    }
+
+    /** {@link #applyDivergence(Phylogeny)}, told which way the dates run (see {@link #applyTime(Phylogeny, boolean)}). */
+    static void applyDivergence( final Phylogeny phy, final boolean up ) {
         if ( !isApplicable( phy ) ) {
             return;
         }
         final DIVERGENCE_SOURCE source = divergenceSource( phy );
-        final boolean up = datesIncreaseTowardTips( phy );
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.isRoot() || ( n.getParent() == null ) ) {

@@ -89,10 +89,11 @@ public final class BeastBranchModeTest {
                     && inFrame( RATED, BeastBranchModeTest::timeInsideASubtree )
                     && inFrame( ONE_UNRATED, BeastBranchModeTest::subtreeOfATreeWithoutTheSwitch )
                     && inFrame( RATED, BeastBranchModeTest::navigationAloneRewritesNothing )
-                    && inFrame( RATED, BeastBranchModeTest::pressedAndPressedBackInASubtree )
-                    && inFrame( RATED, BeastBranchModeTest::descendedInDivergence )
+                    && inFrame( RATED, BeastBranchModeTest::twoLevelsDown )
                     && inFrame( RATED, BeastBranchModeTest::rateLostInsideASubtree )
-                    && inFrame( CALENDAR, BeastBranchModeTest::calendarCladeBackInTime )
+                    && inFrame( BACKWARDS, BeastBranchModeTest::aViewRunsTheWayItsTreeDoes )
+                    && inFrame( CALENDAR, BeastBranchModeTest::aCherryOfACalendarTree )
+                    && inFrame( RATED, BeastBranchModeTest::undoInsideASubtree )
                     && inFrame( ONE_UNRATED, BeastBranchModeTest::editorDecides )
                     && inFrame( RATED, BeastBranchModeTest::editorTakesTheDates )
                     && inFrame( ONE_UNRATED, BeastBranchModeTest::notOffered )
@@ -206,6 +207,12 @@ public final class BeastBranchModeTest {
         if ( !near( sum( phy ), DIV_SUM ) ) {
             fail( ok, "the divergence lengths must sum to " + DIV_SUM + ", got " + sum( phy ) );
         }
+        // the deepest tip in divergence is D: 1.3 x 0.0029 + 0.3 x 0.0034 + 0.5 x 0.0035 (A is at 0.00642, E at
+        // 0.00644, C at 0.00585) -- in time all five are 2.1 deep
+        if ( Math.abs( tp.getMaxDistanceToRootForTest() - 0.00654 ) > 1e-9 ) {
+            fail( ok, "the depth the tree is drawn to must be the divergence tree's, 0.00654; got "
+                    + tp.getMaxDistanceToRootForTest() );
+        }
         if ( zeroBranches( phy ) != 0 ) {
             fail( ok, "no branch of " + RATED + " has zero divergence, got " + zeroBranches( phy )
                     + " (a tip dated 0 read as undated is laid out at 0)" );
@@ -254,6 +261,10 @@ public final class BeastBranchModeTest {
         }
         if ( !"time".equals( phy.getDistanceUnit() ) ) {
             fail( ok, "Reset must not call unit-less heights years; got " + phy.getDistanceUnit() );
+        }
+        if ( Math.abs( tp.getMaxDistanceToRootForTest() - 2.1 ) > 1e-9 ) {
+            fail( ok, "after Reset the depth the tree is drawn to must be the time tree's, 2.1; got "
+                    + tp.getMaxDistanceToRootForTest() );
         }
     }
 
@@ -428,6 +439,7 @@ public final class BeastBranchModeTest {
                                              final TreePanel tp,
                                              final ControlPanel cp,
                                              final boolean[] ok ) {
+        tp.getPhylogeny().getNode( "isolate_B" ).setDistanceToParent( 1.17 ); // as a file may state it: not its date gap, 1.2
         tp.pushUndoCheckpoint( "Rename" );
         tp.getPhylogeny().getNode( "isolate_A" ).setName( "isolate_A_renamed" );
         cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
@@ -440,9 +452,13 @@ public final class BeastBranchModeTest {
             return;
         }
         Phylogeny phy = tp.getPhylogeny();
-        if ( !near( sum( phy ), TIME_SUM ) || !hasNode( phy, "isolate_A" ) ) {
+        if ( !hasNode( phy, "isolate_A" ) || !near( length( phy, "isolate_A" ), 1.2 ) ) {
             fail( ok, "undo: fixture -- the restored tree must be the one from before the edit, in time lengths" );
             return;
+        }
+        if ( !near( length( phy, "isolate_B" ), 1.17 ) || !near( sum( phy ), TIME_SUM - 0.03 ) ) {
+            fail( ok, "the restored tree is left AS IT WAS CAPTURED: B stated 1.17, not its date gap; got B="
+                    + length( phy, "isolate_B" ) + " sum=" + sum( phy ) );
         }
         if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
             fail( ok, "undo brought time lengths back: the mode must be TIME" );
@@ -475,46 +491,52 @@ public final class BeastBranchModeTest {
         }
     }
 
-    // ---- the subtree view. It SHARES its nodes with the tree it came from, so the switch pressed down there
-    //      rewrites that clade up here, and nothing else: back on the whole tree, ONE layout must hold.
+    // ---- the subtree view. ONE TREE, ONE LAYOUT: the switch acts on the WHOLE tree a tab holds and is judged on
+    //      the whole tree, also while a subtree of it is on view (as in Archaeopteryx.js). A view shares its nodes
+    //      with the tree it is a view of; a switch that acted on the view alone left the whole tree in two units.
 
     private static PhylogenyNode cladeOf( final Phylogeny phy, final String tip ) {
         return phy.getNode( tip ).getParent();
     }
 
-    /** Div pressed in the view of (C,(D,E)): back on the whole tree, ALL eight branches are in divergence -- not
-     *  four of them beside four in time, under a unit that is blank. */
+    /** Div pressed in the view of (C,(D,E)): ALL eight branches of the whole tree are in divergence AT ONCE -- the
+     *  four outside the view too -- and both trees say subs/site. Going back up rewrites nothing more. */
     private static void divergenceInsideASubtree( final MainFrame frame,
                                                   final TreePanel tp,
                                                   final ControlPanel cp,
                                                   final boolean[] ok ) {
         final Phylogeny whole = tp.getPhylogeny();
         tp.subTree( cladeOf( whole, "isolate_C" ) );
-        if ( !tp.isCurrentTreeIsSubtree() || ( tp.getPhylogeny().getNodeCount() != 5 ) ) {
-            fail( ok, "subtree: the view must be of (C,(D,E)), got " + tp.getPhylogeny().getNodeCount() + " nodes" );
+        final Phylogeny view = tp.getPhylogeny();
+        if ( !tp.isCurrentTreeIsSubtree() || ( view.getNodeCount() != 5 ) ) {
+            fail( ok, "subtree: the view must be of (C,(D,E)), got " + view.getNodeCount() + " nodes" );
             return;
+        }
+        if ( !tp.isBranchLengthToggleApplicable() || !cp.isBranchLengthsControlVisible() ) {
+            fail( ok, "the whole tree has both layouts: the view of its clade is offered the switch" );
         }
         cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
-        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE )
-                || !near( length( whole, "isolate_C" ), 0.00208 ) || !near( length( whole, "isolate_A" ), 1.2 ) ) {
-            fail( ok, "subtree: fixture -- Div in the view must rewrite the clade and only the clade; C="
-                    + length( whole, "isolate_C" ) + " A=" + length( whole, "isolate_A" ) );
+        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) {
+            fail( ok, "subtree: Div must take in the view" );
             return;
         }
+        if ( !near( length( whole, "isolate_C" ), 0.00208 ) || !near( length( whole, "isolate_A" ), 0.00372 )
+                || !near( sum( whole ), DIV_SUM ) ) {
+            fail( ok, "pressed in the view, the WHOLE tree is in divergence, the branches outside the view too; C="
+                    + length( whole, "isolate_C" ) + " A=" + length( whole, "isolate_A" ) + " sum=" + sum( whole ) );
+        }
+        if ( !"subs/site".equals( whole.getDistanceUnit() ) || !"subs/site".equals( view.getDistanceUnit() ) ) {
+            fail( ok, "the whole tree and the view must both say subs/site; got \"" + whole.getDistanceUnit()
+                    + "\" and \"" + view.getDistanceUnit() + "\"" );
+        }
+        final java.util.List<Double> pressed = lengths( whole );
         tp.superTree();
         if ( ( tp.getPhylogeny() != whole ) || tp.isCurrentTreeIsSubtree() ) {
             fail( ok, "subtree: the whole tree must be back on display" );
             return;
         }
-        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) {
-            fail( ok, "back on a tree that can show divergence, the mode stays DIVERGENCE" );
-        }
-        if ( !near( sum( whole ), DIV_SUM ) || !near( length( whole, "isolate_A" ), 0.00372 ) ) {
-            fail( ok, "back on the whole tree EVERY branch must be in divergence; A=" + length( whole, "isolate_A" )
-                    + " C=" + length( whole, "isolate_C" ) + " sum=" + sum( whole ) );
-        }
-        if ( !"subs/site".equals( whole.getDistanceUnit() ) ) {
-            fail( ok, "the whole tree must say its lengths are subs/site, got \"" + whole.getDistanceUnit() + "\"" );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) || !pressed.equals( lengths( whole ) ) ) {
+            fail( ok, "going back up changes nothing: the mode stays, and every length" );
         }
         if ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.NONE ) {
             fail( ok, "divergence has no time axis, got " + tp.effectiveTimeAxisType() );
@@ -536,162 +558,54 @@ public final class BeastBranchModeTest {
         final Phylogeny whole = tp.getPhylogeny();
         cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
         tp.subTree( cladeOf( whole, "isolate_C" ) );
+        final Phylogeny view = tp.getPhylogeny();
+        if ( !"Divergence".equals( cp.getBranchLengthsSelection() ) || !"subs/site".equals( view.getDistanceUnit() ) ) {
+            fail( ok, "the view of a tree in divergence is in divergence, and says so" );
+        }
         cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
         if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !near( length( whole, "isolate_C" ), 0.8 )
-                || !near( length( whole, "isolate_A" ), 0.00372 ) ) {
-            fail( ok, "subtree: fixture -- Time in the view must rewrite the clade and only the clade; C="
-                    + length( whole, "isolate_C" ) + " A=" + length( whole, "isolate_A" ) );
-            return;
+                || !near( length( whole, "isolate_A" ), 1.2 ) || !near( sum( whole ), TIME_SUM ) ) {
+            fail( ok, "pressed in the view, the WHOLE tree is in time; C=" + length( whole, "isolate_C" ) + " A="
+                    + length( whole, "isolate_A" ) + " sum=" + sum( whole ) );
+        }
+        if ( !"time".equals( whole.getDistanceUnit() ) || !"time".equals( view.getDistanceUnit() ) ) {
+            fail( ok, "the whole tree and the view must both say time; got \"" + whole.getDistanceUnit() + "\" and \""
+                    + view.getDistanceUnit() + "\"" );
         }
         tp.superTree();
-        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
-            fail( ok, "back on the whole tree the mode stays TIME" );
-        }
-        if ( !near( sum( whole ), TIME_SUM ) || !near( length( whole, "isolate_A" ), 1.2 ) ) {
-            fail( ok, "back on the whole tree EVERY branch must be in time; A=" + length( whole, "isolate_A" )
-                    + " sum=" + sum( whole ) );
-        }
-        if ( !"time".equals( whole.getDistanceUnit() ) ) {
-            fail( ok, "the whole tree must say its lengths are time, got \"" + whole.getDistanceUnit() + "\"" );
-        }
-        if ( !"Time".equals( cp.getBranchLengthsSelection() ) ) {
-            fail( ok, "the control must show Time pressed" );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !near( sum( whole ), TIME_SUM )
+                || !"Time".equals( cp.getBranchLengthsSelection() ) ) {
+            fail( ok, "back on the whole tree: time, as it was left" );
         }
     }
 
-    /** A clade that can be laid out both ways inside a tree that cannot: (A,B) of the tree whose isolate_C has no
-     *  rate. Div pressed in the view; back on the whole tree there is no divergence layout to show, so the clade
-     *  goes back to time -- and NOTHING outside it is rewritten (isolate_D is given a length that is not its date
-     *  gap, as a file may state one: it must survive). */
+    /** The switch is judged on the WHOLE tree. (A,B) states dates and a rate on both of its branches, but it is a
+     *  clade of the tree whose isolate_C has no rate: its view is not offered the switch, asked in any way, and not
+     *  a length of the tree is rewritten. */
     private static void subtreeOfATreeWithoutTheSwitch( final MainFrame frame,
                                                         final TreePanel tp,
                                                         final ControlPanel cp,
                                                         final boolean[] ok ) {
         final Phylogeny whole = tp.getPhylogeny();
-        whole.getNode( "isolate_D" ).setDistanceToParent( 0.47 );
-        final String unit_before = whole.getDistanceUnit();
+        final java.util.List<Double> arrived = lengths( whole );
         tp.subTree( cladeOf( whole, "isolate_A" ) );
+        final Phylogeny view = tp.getPhylogeny();
+        if ( !BranchLengthLayout.isApplicable( view ) ) {
+            fail( ok, "clade: fixture -- taken by itself the view of (A,B) has both layouts" );
+            return;
+        }
         cp.populateBranchLengthsControl(); // what a change of tab does
-        if ( !tp.isBranchLengthToggleApplicable() || !cp.isBranchLengthsControlVisible() ) {
-            fail( ok, "clade: (A,B) states dates and a rate on both branches, its view must be offered the switch" );
-            return;
+        if ( tp.isBranchLengthToggleApplicable() || cp.isBranchLengthsControlVisible() ) {
+            fail( ok, "a view of a tree that is not offered the switch is not offered it either" );
         }
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
-        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE )
-                || !near( length( whole, "isolate_A" ), 0.00372 ) ) {
-            fail( ok, "clade: fixture -- Div must take in the view of (A,B)" );
-            return;
+        tp.setBranchLengthMode( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !arrived.equals( lengths( whole ) ) ) {
+            fail( ok, "asked directly in the view, the panel must refuse, and rewrite nothing; A="
+                    + length( whole, "isolate_A" ) );
         }
         tp.superTree();
-        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
-            fail( ok, "back on a tree with no divergence layout the mode must be TIME" );
-        }
-        if ( !tp.isBranchLengthTimeCalibrated() ) {
-            fail( ok, "back in time: the node-age bars must be allowed again" );
-        }
-        if ( !near( length( whole, "isolate_A" ), 1.2 ) || !near( length( whole, "isolate_B" ), 1.2 ) ) {
-            fail( ok, "the clade must be back in time; A=" + length( whole, "isolate_A" ) + " B="
-                    + length( whole, "isolate_B" ) );
-        }
-        if ( !near( length( whole, "isolate_D" ), 0.47 ) || !near( length( whole, "isolate_C" ), 0.8 )
-                || !near( parentLength( whole, "isolate_A" ), 0.9 ) ) {
-            fail( ok, "no branch OUTSIDE the clade may be rewritten; D=" + length( whole, "isolate_D" ) + " C="
-                    + length( whole, "isolate_C" ) + " (A,B)=" + parentLength( whole, "isolate_A" ) );
-        }
-        if ( !same( unit_before, whole.getDistanceUnit() ) ) {
-            fail( ok, "the whole tree's unit was never changed and must not be now; was " + unit_before + ", is "
-                    + whole.getDistanceUnit() );
-        }
-        if ( cp.isBranchLengthsControlVisible() || !"Time".equals( cp.getBranchLengthsSelection() ) ) {
-            fail( ok, "back on a tree with no divergence layout, showing time: the control must go" );
-        }
-    }
-
-    /** Divergence on screen all the way, no button pressed in the view -- but a rate taken away down there. Back on
-     *  the whole tree there is no divergence layout left to show: time, on every branch. */
-    private static void rateLostInsideASubtree( final MainFrame frame,
-                                                final TreePanel tp,
-                                                final ControlPanel cp,
-                                                final boolean[] ok ) {
-        final Phylogeny whole = tp.getPhylogeny();
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
-        tp.subTree( cladeOf( whole, "isolate_C" ) );
-        if ( !tp.isCurrentTreeIsSubtree() || !takeRateAway( whole, "isolate_D" ) ) {
-            fail( ok, "rate lost below: the view must descend and the rate must go" );
-            return;
-        }
-        tp.superTree();
-        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
-            fail( ok, "back on a tree that has lost its divergence layout the mode must be TIME" );
-        }
-        if ( !near( sum( whole ), TIME_SUM ) ) {
-            fail( ok, "...and every branch in time, got sum=" + sum( whole ) );
-        }
-        if ( cp.isBranchLengthsControlVisible() ) {
-            fail( ok, "...and the control gone" );
-        }
-    }
-
-    /** The clade-only way back, on CALENDAR time, where the axis can be seen to return: a cherry that can be laid out
-     *  both ways inside a tree that cannot (a tip outside it has lost its rate). */
-    private static void calendarCladeBackInTime( final MainFrame frame,
-                                                 final TreePanel tp,
-                                                 final ControlPanel cp,
-                                                 final boolean[] ok ) {
-        final Phylogeny whole = tp.getPhylogeny();
-        PhylogenyNode cherry = null;
-        for( final PhylogenyNodeIterator it = whole.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isRoot() && !n.isExternal() && ( n.getNumberOfDescendants() == 2 ) && n.getChildNode( 0 ).isExternal()
-                    && n.getChildNode( 1 ).isExternal() ) {
-                cherry = n;
-                break;
-            }
-        }
-        if ( cherry == null ) {
-            fail( ok, "calendar: " + CALENDAR + " must have a cherry" );
-            return;
-        }
-        PhylogenyNode outside = null;
-        for( final PhylogenyNode tip : whole.getExternalNodes() ) {
-            if ( tip.getParent() != cherry ) {
-                outside = tip;
-            }
-        }
-        final PhylogenyNode in = cherry.getChildNode( 0 );
-        final double in_before = in.getDistanceToParent();
-        final double out_before = outside.getDistanceToParent();
-        final double depth_before = tp.getMaxDistanceToRootForTest();
-        if ( !takeRateAway( whole, outside.getName() ) || ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) ) {
-            fail( ok, "calendar: the tree must lose its second layout and be on the calendar axis" );
-            return;
-        }
-        tp.subTree( cherry );
-        cp.populateBranchLengthsControl(); // what a change of tab does
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
-        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE )
-                || ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.NONE ) || !( in.getDistanceToParent() < ( in_before / 10 ) ) ) {
-            fail( ok, "calendar: fixture -- Div must take in the view of the cherry; length " + in.getDistanceToParent()
-                    + " was " + in_before );
-            return;
-        }
-        tp.superTree();
-        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
-            fail( ok, "calendar: back on a tree with no divergence layout the mode must be TIME" );
-        }
-        if ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) {
-            fail( ok, "back in time the calendar axis must be back, got " + tp.effectiveTimeAxisType() );
-        }
-        if ( Math.abs( in.getDistanceToParent() - in_before ) > 1e-6 ) {
-            fail( ok, "the cherry must be back in years; " + in.getDistanceToParent() + " was " + in_before );
-        }
-        if ( outside.getDistanceToParent() != out_before ) {
-            fail( ok, "no branch outside the cherry may be rewritten; " + outside.getDistanceToParent() + " was "
-                    + out_before );
-        }
-        if ( Math.abs( tp.getMaxDistanceToRootForTest() - depth_before ) > 1e-6 ) {
-            fail( ok, "the depth the tree is drawn to must be the whole tree's again; "
-                    + tp.getMaxDistanceToRootForTest() + " was " + depth_before );
+        if ( !arrived.equals( lengths( whole ) ) || cp.isBranchLengthsControlVisible() ) {
+            fail( ok, "back on the whole tree nothing has changed" );
         }
     }
 
@@ -704,6 +618,7 @@ public final class BeastBranchModeTest {
         final Phylogeny whole = tp.getPhylogeny();
         whole.getNode( "isolate_A" ).setDistanceToParent( 1.17 ); // not its date gap (1.2)
         whole.getNode( "isolate_C" ).setDistanceToParent( 0.77 ); // not its date gap (0.8)
+        final String unit_before = whole.getDistanceUnit();
         tp.subTree( cladeOf( whole, "isolate_A" ) );
         if ( !tp.isCurrentTreeIsSubtree() ) {
             fail( ok, "navigation: the view must descend" );
@@ -715,92 +630,211 @@ public final class BeastBranchModeTest {
             fail( ok, "navigation alone must rewrite no branch length; A=" + length( whole, "isolate_A" ) + " C="
                     + length( whole, "isolate_C" ) );
         }
-        if ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) {
-            fail( ok, "navigation alone must not change the mode" );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !same( unit_before, whole.getDistanceUnit() ) ) {
+            fail( ok, "navigation alone must change neither the mode nor the unit" );
         }
     }
 
-    /** Div pressed in the view of (C,(D,E)) and pressed back: the clade is in time again, as the switch lays time
-     *  out. The branches OUTSIDE it were in time all along and are not rewritten -- isolate_A keeps the length the
-     *  file stated, which is not its date gap. */
-    private static void pressedAndPressedBackInASubtree( final MainFrame frame,
-                                                         final TreePanel tp,
-                                                         final ControlPanel cp,
-                                                         final boolean[] ok ) {
+    /** Two levels down, the switch pressed at the bottom: every tree on the way up -- the view of (D,E), the view of
+     *  (C,(D,E)) it was descended from, and the whole tree -- is in the one layout, and says so. */
+    private static void twoLevelsDown( final MainFrame frame,
+                                       final TreePanel tp,
+                                       final ControlPanel cp,
+                                       final boolean[] ok ) {
         final Phylogeny whole = tp.getPhylogeny();
-        whole.getNode( "isolate_A" ).setDistanceToParent( 1.17 ); // not its date gap (1.2)
         tp.subTree( cladeOf( whole, "isolate_C" ) );
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
-        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE )
-                || !near( length( whole, "isolate_C" ), 0.00208 ) ) {
-            fail( ok, "pressed back: fixture -- Div must take in the view first" );
-            return;
-        }
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
-        tp.superTree();
-        if ( ( tp.getPhylogeny() != whole ) || ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) ) {
-            fail( ok, "pressed back: the whole tree must be back, in TIME" );
-        }
-        if ( !near( length( whole, "isolate_C" ), 0.8 ) || !near( length( whole, "isolate_D" ), 0.5 ) ) {
-            fail( ok, "the clade must be in time; C=" + length( whole, "isolate_C" ) + " D="
-                    + length( whole, "isolate_D" ) );
-        }
-        if ( !near( length( whole, "isolate_A" ), 1.17 ) ) {
-            fail( ok, "a branch outside the clade was in time all along and must keep its length; A="
-                    + length( whole, "isolate_A" ) );
-        }
-        if ( !cp.isBranchLengthsControlVisible() || !"Time".equals( cp.getBranchLengthsSelection() ) ) {
-            fail( ok, "the tree still has both layouts: the control stays, Time pressed" );
-        }
-    }
-
-    /** Two levels down, and the layout each level was LEFT in is what counts on the way back. The whole tree is left
-     *  in divergence; in the view of (C,(D,E)) Time is pressed; one level further down a rate is taken away, so no
-     *  tree on the way up has a second layout any more. The middle view was left in time: nothing to do there. The
-     *  whole tree was left in DIVERGENCE: its branches outside the clade still are, and must go back to time. */
-    private static void descendedInDivergence( final MainFrame frame,
-                                               final TreePanel tp,
-                                               final ControlPanel cp,
-                                               final boolean[] ok ) {
-        final Phylogeny whole = tp.getPhylogeny();
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
-        tp.subTree( cladeOf( whole, "isolate_C" ) );
-        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
+        final Phylogeny middle = tp.getPhylogeny();
         tp.subTree( cladeOf( whole, "isolate_D" ) );
-        if ( ( tp.getPhylogeny().getNodeCount() != 3 ) || ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME )
-                || !near( length( whole, "isolate_A" ), 0.00372 ) || !near( length( whole, "isolate_D" ), 0.5 ) ) {
-            fail( ok, "two levels: fixture -- the view of (D,E), in time, under a whole tree left in divergence" );
+        final Phylogeny bottom = tp.getPhylogeny();
+        if ( ( middle.getNodeCount() != 5 ) || ( bottom.getNodeCount() != 3 ) ) {
+            fail( ok, "two levels: fixture -- views of 5 and of 3 nodes, got " + middle.getNodeCount() + " and "
+                    + bottom.getNodeCount() );
             return;
         }
-        if ( !takeRateAway( whole, "isolate_D" ) ) {
-            fail( ok, "two levels: the rate was not taken away" );
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( !near( sum( whole ), DIV_SUM ) || !near( length( whole, "isolate_A" ), 0.00372 ) ) {
+            fail( ok, "pressed two levels down, the WHOLE tree is in divergence; sum=" + sum( whole ) );
+        }
+        for( final Phylogeny tree : new Phylogeny[] { whole, middle, bottom } ) {
+            if ( !"subs/site".equals( tree.getDistanceUnit() ) ) {
+                fail( ok, "every tree of the tab must say subs/site; the one of " + tree.getNodeCount() + " nodes says \""
+                        + tree.getDistanceUnit() + "\"" );
+            }
+        }
+        // the root of each view states the length of the node IT stands for: (C,(D,E)) is 1.3 x 0.0029, (D,E) is
+        // 0.3 x 0.0034
+        if ( !near( middle.getRoot().getDistanceToParent(), 0.00377 ) || !near( bottom.getRoot().getDistanceToParent(), 0.00102 ) ) {
+            fail( ok, "the roots of the two views must state 0.00377 and 0.00102; got "
+                    + middle.getRoot().getDistanceToParent() + " and " + bottom.getRoot().getDistanceToParent() );
+        }
+        tp.superTree();
+        tp.superTree();
+        if ( ( tp.getPhylogeny() != whole ) || ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE )
+                || !near( sum( whole ), DIV_SUM ) ) {
+            fail( ok, "two levels up again: the whole tree, in divergence, as the press left it" );
+        }
+    }
+
+    /** Divergence on screen, and a rate taken away in a view, no button pressed. Going back up rewrites nothing:
+     *  divergence is still what every branch holds, so the mode still says so and the control stays -- it is the
+     *  way back. Pressed, Time lays the whole tree out by time, and the control goes. */
+    private static void rateLostInsideASubtree( final MainFrame frame,
+                                                final TreePanel tp,
+                                                final ControlPanel cp,
+                                                final boolean[] ok ) {
+        final Phylogeny whole = tp.getPhylogeny();
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        tp.subTree( cladeOf( whole, "isolate_C" ) );
+        if ( !tp.isCurrentTreeIsSubtree() || !takeRateAway( whole, "isolate_D" ) ) {
+            fail( ok, "rate lost below: the view must descend and the rate must go" );
             return;
         }
         tp.superTree();
-        if ( ( tp.getPhylogeny().getNodeCount() != 5 ) || ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME )
-                || !near( length( whole, "isolate_C" ), 0.8 ) || !near( length( whole, "isolate_D" ), 0.5 )
-                || !near( parentLength( whole, "isolate_D" ), 0.3 ) ) {
-            fail( ok, "the middle view was left in time and must still be; C=" + length( whole, "isolate_C" )
-                    + " D=" + length( whole, "isolate_D" ) + " (D,E)=" + parentLength( whole, "isolate_D" ) );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) || !near( sum( whole ), DIV_SUM ) ) {
+            fail( ok, "going back up rewrites nothing: divergence, every branch; mode " + tp.getBranchLengthMode()
+                    + ", sum=" + sum( whole ) );
         }
-        if ( !near( length( whole, "isolate_A" ), 0.00372 ) ) {
-            fail( ok, "two levels: fixture -- the whole tree's other clade must still be in divergence here; A="
-                    + length( whole, "isolate_A" ) );
-            return;
+        tp.invalidateBranchLengthToggle();
+        cp.populateBranchLengthsControl();
+        if ( tp.isBranchLengthToggleApplicable() || !cp.isBranchLengthsControlVisible() ) {
+            fail( ok, "the tree has lost its second layout, but divergence is on screen: the control stays" );
         }
-        tp.superTree();
-        if ( ( tp.getPhylogeny() != whole ) || ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) ) {
-            fail( ok, "two levels: the whole tree must be back, in TIME" );
-        }
-        if ( !near( sum( whole ), TIME_SUM ) || !near( length( whole, "isolate_A" ), 1.2 ) ) {
-            fail( ok, "the whole tree was left in divergence: its branches outside the clade must go back to time; A="
-                    + length( whole, "isolate_A" ) + " sum=" + sum( whole ) );
-        }
-        if ( !"time".equals( whole.getDistanceUnit() ) ) {
-            fail( ok, "the whole tree must no longer say subs/site, got \"" + whole.getDistanceUnit() + "\"" );
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !near( sum( whole ), TIME_SUM ) ) {
+            fail( ok, "the way back: time, every branch; sum=" + sum( whole ) );
         }
         if ( cp.isBranchLengthsControlVisible() ) {
-            fail( ok, "in time on a tree that has lost its second layout: the control must go" );
+            fail( ok, "...and the control gone" );
+        }
+    }
+
+    /** A view is laid out the way ITS TREE's dates run. The view of (C,(D,E)) of the tree whose (D,E) node is dated
+     *  before its parent: taken by itself, of its four spans one runs backwards -- but the sign of each is the one
+     *  the whole tree gives it, whichever tree is on view when the switch is pressed. */
+    private static void aViewRunsTheWayItsTreeDoes( final MainFrame frame,
+                                                    final TreePanel tp,
+                                                    final ControlPanel cp,
+                                                    final boolean[] ok ) {
+        final Phylogeny whole = tp.getPhylogeny();
+        // the node of the WHOLE tree, taken before the view descends: in the view, D's parent is the view's root, a
+        // copy of this node
+        final PhylogenyNode de = cladeOf( whole, "isolate_D" );
+        tp.subTree( de ); // the view of (D,E): its own root stands for the node dated backwards
+        final PhylogenyNode view_root = tp.getPhylogeny().getRoot();
+        if ( ( view_root == de ) || ( whole.getNode( "isolate_D" ).getParent() != view_root ) ) {
+            fail( ok, "backwards in a view: fixture -- the view's root must be a copy, and D's parent while on view" );
+            return;
+        }
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE )
+                || ( Double.doubleToRawLongBits( de.getDistanceToParent() ) != 0L )
+                || !near( length( whole, "isolate_D" ), 0.85 * 0.0035 ) ) {
+            fail( ok, "pressed in the view of (D,E): the span that runs backwards is 0 in divergence, D is 0.85 x"
+                    + " 0.0035; got (D,E)=" + de.getDistanceToParent() + " D=" + length( whole, "isolate_D" ) );
+        }
+        if ( Double.doubleToRawLongBits( view_root.getDistanceToParent() ) != 0L ) {
+            fail( ok, "the view's root states the length of the node it stands for, got "
+                    + view_root.getDistanceToParent() );
+        }
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
+        if ( !near( de.getDistanceToParent(), -0.05 ) || !near( length( whole, "isolate_D" ), 0.85 )
+                || !near( length( whole, "isolate_A" ), 1.2 ) ) {
+            fail( ok, "and back in time it is -0.05, D 0.85, A 1.2; got (D,E)=" + de.getDistanceToParent() + " D="
+                    + length( whole, "isolate_D" ) + " A=" + length( whole, "isolate_A" ) );
+        }
+        if ( !near( view_root.getDistanceToParent(), -0.05 ) ) {
+            fail( ok, "...and the view's root with it, got " + view_root.getDistanceToParent() );
+        }
+    }
+
+    /** A cherry of a tree on CALENDAR time, one of its two tips dated before their parent. By itself the cherry is a
+     *  tie and would read as ages; it is a view of a tree whose dates increase toward the tips, and is laid out so:
+     *  the tip dated before its parent gets the negative span, the other the positive one. */
+    private static void aCherryOfACalendarTree( final MainFrame frame,
+                                                final TreePanel tp,
+                                                final ControlPanel cp,
+                                                final boolean[] ok ) {
+        final Phylogeny whole = tp.getPhylogeny();
+        PhylogenyNode cherry = null;
+        for( final PhylogenyNodeIterator it = whole.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isRoot() && !n.isExternal() && ( n.getNumberOfDescendants() == 2 ) && n.getChildNode( 0 ).isExternal()
+                    && n.getChildNode( 1 ).isExternal() ) {
+                cherry = n;
+                break;
+            }
+        }
+        if ( ( cherry == null ) || !BranchLengthLayout.datesIncreaseTowardTips( whole ) ) {
+            fail( ok, "cherry: " + CALENDAR + " must have a cherry and be on calendar time" );
+            return;
+        }
+        final PhylogenyNode before = cherry.getChildNode( 0 );
+        final PhylogenyNode after = cherry.getChildNode( 1 );
+        final double parent_date = cherry.getNodeData().getDate().getValue().doubleValue();
+        final double after_gap = after.getNodeData().getDate().getValue().doubleValue() - parent_date;
+        before.getNodeData().getDate().setValue( new java.math.BigDecimal( String.valueOf( parent_date - 0.25 ) ) );
+        if ( !( after_gap > 0 ) || !tp.isBranchLengthToggleApplicable() ) {
+            fail( ok, "cherry: fixture -- the other tip must be dated after the parent, and the tree offered the switch" );
+            return;
+        }
+        tp.subTree( cherry );
+        if ( BranchLengthLayout.datesIncreaseTowardTips( tp.getPhylogeny() ) ) {
+            fail( ok, "cherry: fixture -- by itself the view must be a tie, read as ages" );
+            return;
+        }
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        // in divergence the span that runs backwards is 0 and the other is not -- read the tree's way, not the
+        // cherry's, or it is the other way round
+        if ( ( Double.doubleToRawLongBits( before.getDistanceToParent() ) != 0L ) || !( after.getDistanceToParent() > 0 ) ) {
+            fail( ok, "in divergence the tip dated before its parent is at 0 and the other is not; got "
+                    + before.getDistanceToParent() + " and " + after.getDistanceToParent() );
+        }
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
+        if ( Math.abs( before.getDistanceToParent() - ( -0.25 ) ) > 1e-9 ) {
+            fail( ok, "the tip dated before its parent must span -0.25, got " + before.getDistanceToParent() );
+        }
+        if ( Math.abs( after.getDistanceToParent() - after_gap ) > 1e-9 ) {
+            fail( ok, "the tip dated after its parent must span +" + after_gap + ", got " + after.getDistanceToParent() );
+        }
+    }
+
+    /** An undo INSIDE a view puts a copy on display, and brings back the layout it was captured in. The trees the
+     *  view was descended from follow it: back on the whole tree, one layout, the one the panel says. */
+    private static void undoInsideASubtree( final MainFrame frame,
+                                            final TreePanel tp,
+                                            final ControlPanel cp,
+                                            final boolean[] ok ) {
+        final Phylogeny whole = tp.getPhylogeny();
+        tp.subTree( cladeOf( whole, "isolate_C" ) );
+        tp.pushUndoCheckpoint( "Rename" ); // captured in time
+        tp.getPhylogeny().getNode( "isolate_E" ).setName( "isolate_E_renamed" );
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE ) || !near( sum( whole ), DIV_SUM ) ) {
+            fail( ok, "undo in a view: the whole tree must BE in divergence first" );
+            return;
+        }
+        if ( !tp.undo() ) {
+            fail( ok, "undo in a view: there must be something to undo" );
+            return;
+        }
+        final Phylogeny restored = tp.getPhylogeny();
+        if ( ( restored.getNodeCount() != 5 ) || !near( restored.getNode( "isolate_C" ).getDistanceToParent(), 0.8 ) ) {
+            fail( ok, "undo in a view: fixture -- the restored view must be the one captured, in time lengths" );
+            return;
+        }
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !"Time".equals( cp.getBranchLengthsSelection() ) ) {
+            fail( ok, "undo brought time lengths back: the mode must be TIME" );
+        }
+        if ( !near( sum( whole ), TIME_SUM ) || !near( length( whole, "isolate_A" ), 1.2 )
+                || !"time".equals( whole.getDistanceUnit() ) ) {
+            fail( ok, "...and the tree the view was descended from must follow: time, every branch; sum="
+                    + sum( whole ) + ", unit \"" + whole.getDistanceUnit() + "\"" );
+        }
+        // the switch pressed now reaches the copy on display AND the whole tree under it
+        cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        if ( !near( restored.getNode( "isolate_C" ).getDistanceToParent(), 0.00208 ) || !near( sum( whole ), DIV_SUM ) ) {
+            fail( ok, "pressed after the undo, the copy on display and the whole tree are both in divergence; C="
+                    + restored.getNode( "isolate_C" ).getDistanceToParent() + " sum=" + sum( whole ) );
         }
     }
 

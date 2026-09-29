@@ -247,53 +247,39 @@ public class BranchLengthLayoutTest {
                     return fail( "\"" + bad + "\" is no rate: the tree must have no divergence source" );
                 }
             }
-            // --- time BELOW a clade only: the clade's own branch and everything outside it are left alone ---
-            // root(10) -> x(6) -> [ a(2), u(undated) ] ; root -> b(3); every length starts at 99
-            final Phylogeny nested = new Phylogeny();
-            final PhylogenyNode nr = new PhylogenyNode();
-            date( nr, 10 );
-            final PhylogenyNode nx = named( "x", 6 );
-            final PhylogenyNode na = named( "a", 2 );
-            final PhylogenyNode nu = named( "u", 0 );
-            nu.getNodeData().setDate( null );
-            final PhylogenyNode nb = named( "b", 3 );
-            nr.addAsChild( nx );
-            nr.addAsChild( nb );
-            nx.addAsChild( na );
-            nx.addAsChild( nu );
-            nested.setRoot( nr );
-            nested.externalNodesHaveChanged();
-            for( final PhylogenyNode n : new PhylogenyNode[] { nx, na, nu, nb } ) {
-                n.setDistanceToParent( 99 );
+            // --- a VIEW is laid out the way the tree it is a view of runs. A cherry, calendar dates, one of its two
+            //     spans running backwards: by itself it is a tie and reads as ages; told the whole tree's way, its
+            //     spans carry the signs the whole tree gives them
+            final Phylogeny cherry = twoTips();
+            date( cherry.getRoot(), 2004 );
+            date( node( cherry, "a" ), 2003 );
+            date( node( cherry, "b" ), 2009 );
+            for( final String tip : new String[] { "a", "b" } ) {
+                prop( node( cherry, tip ), BranchLengthLayout.RATE_PROPERTY_REF, 0.002 );
             }
-            if ( BranchLengthLayout.datesIncreaseTowardTips( nested ) ) {
-                return fail( "fixture: the nested tree's dates are ages, largest at the root" );
+            if ( BranchLengthLayout.datesIncreaseTowardTips( cherry ) ) {
+                return fail( "fixture: one span up, one down -- the cherry cannot say which way its dates run" );
             }
-            BranchLengthLayout.applyTimeBelow( nx, false );
-            if ( !eq( na.getDistanceToParent(), 4 ) ) {
-                return fail( "below the clade a branch spans its date gap (6 - 2); got " + na.getDistanceToParent() );
+            BranchLengthLayout.applyTime( cherry, true );
+            if ( !eq( lengthOf( cherry, "a" ), -1 ) || !eq( lengthOf( cherry, "b" ), 5 ) ) {
+                return fail( "told the dates increase toward the tips: a = 2003 - 2004, b = 2009 - 2004; got a="
+                        + lengthOf( cherry, "a" ) + " b=" + lengthOf( cherry, "b" ) );
             }
-            if ( !eq( nu.getDistanceToParent(), 0 ) ) {
-                return fail( "below the clade an undated branch goes to 0; got " + nu.getDistanceToParent() );
+            BranchLengthLayout.applyDivergence( cherry, true );
+            if ( ( Double.doubleToRawLongBits( lengthOf( cherry, "a" ) ) != 0L ) || !eq( lengthOf( cherry, "b" ), 0.01 ) ) {
+                return fail( "...and in divergence a is 0 and b is 5 x 0.002; got a=" + lengthOf( cherry, "a" ) + " b="
+                        + lengthOf( cherry, "b" ) );
             }
-            if ( !eq( nx.getDistanceToParent(), 99 ) || !eq( nb.getDistanceToParent(), 99 ) ) {
-                return fail( "the clade's own branch and the branches outside it must not be touched; got x="
-                        + nx.getDistanceToParent() + " b=" + nb.getDistanceToParent() );
+            BranchLengthLayout.applyTime( cherry, false );
+            if ( !eq( lengthOf( cherry, "a" ), 1 ) || !eq( lengthOf( cherry, "b" ), -5 ) ) {
+                return fail( "told they are ages, every span has the other sign; got a=" + lengthOf( cherry, "a" )
+                        + " b=" + lengthOf( cherry, "b" ) );
             }
-            final PhylogenyNode deep = named( "deep", 1 );
-            na.addAsChild( deep );
-            deep.setDistanceToParent( 99 );
-            BranchLengthLayout.applyTimeBelow( nx, false );
-            if ( !eq( deep.getDistanceToParent(), 1 ) ) {
-                return fail( "below the clade means all the way down (2 - 1); got " + deep.getDistanceToParent() );
+            // left to itself, a tree is laid out the way ITS dates run
+            BranchLengthLayout.applyTime( cherry );
+            if ( !eq( lengthOf( cherry, "a" ), 1 ) || !eq( lengthOf( cherry, "b" ), -5 ) ) {
+                return fail( "a tie reads as ages; got a=" + lengthOf( cherry, "a" ) + " b=" + lengthOf( cherry, "b" ) );
             }
-            // ...and in the direction it is told the dates run: the other way, every span changes its sign
-            BranchLengthLayout.applyTimeBelow( nx, true );
-            if ( !eq( na.getDistanceToParent(), -4 ) || !eq( deep.getDistanceToParent(), -1 ) ) {
-                return fail( "told the dates increase toward the tips, a span is child - parent; got a="
-                        + na.getDistanceToParent() + " deep=" + deep.getDistanceToParent() );
-            }
-            BranchLengthLayout.applyTimeBelow( null, false ); // nothing to do, and nothing thrown
             // --- a rate written -0.0 is not negative, so it is a rate; its length must still be a plain 0 ---
             final Phylogeny minus_zero = ratedPair( "-0.0" );
             if ( BranchLengthLayout.divergenceSource( minus_zero ) != BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE ) {
