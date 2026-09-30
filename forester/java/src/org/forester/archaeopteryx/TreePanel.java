@@ -8669,6 +8669,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int                 _layout_width          = 0;
     private final static int    LEGEND_EDGE_INSET      = 10; // the default corner's inset (legendTopLeftFor)
     private final static int    LEGEND_COLUMN_GAP      = 12;
+    // THE DEFAULT SPOTS OF ONE PAINT. Every legend has a default corner of its own, but five legends share four
+    // corners (and some pick theirs by which others are present), so two could open on top of each other -- the
+    // pie legend and the Color-by legend both at the top right in circular/unrooted, the Size-by legend, the
+    // internal-taxonomy key and the domain legend all at the bottom right. So during a paint pass each legend
+    // placed at its DEFAULT records its box here, and a later one that would land on a recorded box moves past
+    // it: down from a top corner, up from a bottom corner (claimDefaultLegendSpot). A dragged legend is where the
+    // user put it and neither claims nor yields. Null outside the legend tail of paintPhylogeny, so a legend drawn
+    // anywhere else (measureLegend, the ...ForTest hooks) lands on its plain default corner.
+    private java.util.List<Rectangle> _default_legend_claims = null;
     /** Beyond this share of the width the tree would be squeezed unreadable: no column, the legend floats as before. */
     private final static double LEGEND_COLUMN_MAX_SHARE = 0.4;
 
@@ -8714,6 +8723,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setLegendOffsetForTest(final Point offset) {
         _legend_offset = offset;
+    }
+
+    final void setSizeLegendOffsetForTest(final Point offset) {
+        _size_legend_offset = offset;
     }
 
     /** The widest of the legends standing at the right edge at their DEFAULT positions (a dragged legend is where the
@@ -8819,6 +8832,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final java.util.List<String> saved_rows = _legend_row_labels;
         final int saved_rows_top = _legend_rows_top;
         final int saved_row_height = _legend_row_height;
+        // ...and this paint's default spots: a measurement is not a placement, and must neither claim nor yield.
+        // Belt-and-braces like the row group: MEASURED (2026-09-30), none of 203 measurements across the legend
+        // tests ran inside a legend pass, so its mutation survives; kept for the same invariant.
+        final java.util.List<Rectangle> saved_claims = _default_legend_claims;
+        _default_legend_claims = null;
         try {
             _last_legend_box_size = null;
             draw.accept(g);
@@ -8836,6 +8854,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _legend_row_labels = saved_rows;
             _legend_rows_top = saved_rows_top;
             _legend_row_height = saved_row_height;
+            _default_legend_claims = saved_claims;
         }
     }
 
@@ -8847,9 +8866,61 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // columns are -- an annotated figure would open with its legend sitting on top of the marks it
             // describes (and, with several nested columns, hiding whole ranks of them). Start on the left
             // instead, above the root, where a root-left tree has room. Dragging still overrides this.
-            return new Point(bounds.x + 10, bounds.y + 10);
+            return claimDefaultLegendSpot(bounds, new Point(bounds.x + 10, bounds.y + 10), box_w, box_h);
+        }
+        if (_legend_offset == null) {
+            return claimDefaultLegendSpot(bounds, legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h),
+                    box_w, box_h);
         }
         return legendTopLeftFor(bounds, getVisibleRect(), _legend_offset, box_w, box_h);
+    }
+
+    /**
+     * A legend's DEFAULT spot for this paint: {@code corner}, unless a legend placed at its default earlier in the
+     * same pass already stands there (a {@link #LEGEND_EDGE_INSET} gap kept) -- then past it, down from a top corner
+     * or up from a bottom one; if that stack would leave {@code bounds} (a short window), sideways instead, inward
+     * from its side; and if that leaves them too, the plain corner, as before the legends kept apart: a legend on
+     * another is still better than one pushed out of sight.
+     */
+    private Point claimDefaultLegendSpot(final Rectangle bounds, final Point corner, final int box_w,
+                                         final int box_h) {
+        if (_default_legend_claims == null) {
+            return corner;
+        }
+        final Rectangle at_corner = new Rectangle(corner.x, corner.y, box_w, box_h);
+        Rectangle box = stackedPastClaims(at_corner, true, corner.y < (bounds.y + (bounds.height / 2)));
+        if (!bounds.contains(box)) {
+            box = stackedPastClaims(at_corner, false, corner.x < (bounds.x + (bounds.width / 2)));
+            if (!bounds.contains(box)) {
+                box = at_corner;
+            }
+        }
+        _default_legend_claims.add(box);
+        return box.getLocation();
+    }
+
+    /** {@code start} moved, one way only, past every claimed box it meets (each grown by the gap): vertically or
+     *  horizontally, toward larger coordinates when {@code forward}. It lands just outside the grown box it met, so
+     *  it cannot meet that box again, and each move passes one box: it stops after at most one move per claim. */
+    private Rectangle stackedPastClaims(final Rectangle start, final boolean vertical, final boolean forward) {
+        final Rectangle box = new Rectangle(start);
+        boolean moved = true;
+        while (moved) {
+            moved = false;
+            for (final Rectangle claim : _default_legend_claims) {
+                final Rectangle kept_clear = new Rectangle(claim);
+                kept_clear.grow(LEGEND_EDGE_INSET, LEGEND_EDGE_INSET);
+                if (box.intersects(kept_clear)) {
+                    if (vertical) {
+                        box.y = forward ? (kept_clear.y + kept_clear.height) : (kept_clear.y - box.height);
+                    } else {
+                        box.x = forward ? (kept_clear.x + kept_clear.width) : (kept_clear.x - box.width);
+                    }
+                    moved = true;
+                }
+            }
+        }
+        return box;
     }
 
     /** Whether the default legend corner must move off the right edge: only when clade bar/bracket columns are
@@ -9906,14 +9977,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_size_legend_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _size_legend_offset, box_w, box_h);
         }
-        final boolean color_legend_present = hasColorByPropertyLegend() || hasRankLegend()
-                || hasAnnotationColumnLegend();
-        if (!color_legend_present) {
-            return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // the shared top-right default
+        if (!sharedLegendHoldsTopRight()) {
+            // the shared top-right default
+            return claimDefaultLegendSpot(bounds, legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h),
+                    box_w, box_h);
         }
         // a color legend already holds the top-right default -> drop to the bottom-right so the two never collide
-        return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
-                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
+        return claimDefaultLegendSpot(bounds, new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
+                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)), box_w, box_h);
     }
 
     /**
@@ -9986,10 +10057,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  overview thumbnail (top-left by default) and the tree name + scale (bottom-left). If a color/rank/annotation
      *  legend already holds the top-right slot, drop to the BOTTOM-LEFT so the two don't collide. Once dragged,
      *  _ancestral_pie_legend_offset maps fractionally like the other legends (so exports honor the moved position). */
-    /** Which legend actually holds the top-right slot: the color/annotation legends are SUPPRESSED radially (see the
-     *  legend tail), so only the rank legend (which draws in every layout) occupies it there. */
+    /** Whether the shared slot draws a legend in this layout -- exactly the legend tail's own test: the Color-by and
+     *  rank legends draw in every layout, the annotation-column legend everywhere but unrooted. (It once excepted
+     *  Color-by in the radial layouts, from when that legend was suppressed there; that sent the pie legend to the
+     *  top right on top of it in circular and unrooted.) */
     private boolean sharedLegendHoldsTopRight() {
-        return hasRankLegend() || (!isRadialLayout() && hasColorByPropertyLegend()) || annotationLegendVisible();
+        return annotationLegendVisible() || hasColorByPropertyLegend() || hasRankLegend();
     }
 
     private Point ancestralPieLegendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
@@ -9997,10 +10070,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return legendTopLeftFor(bounds, getVisibleRect(), _ancestral_pie_legend_offset, box_w, box_h);
         }
         if (sharedLegendHoldsTopRight()) {
-            return new Point(Math.max(bounds.x, bounds.x + 10),
-                    Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)); // bottom-left
+            return claimDefaultLegendSpot(bounds, new Point(Math.max(bounds.x, bounds.x + 10),
+                    Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)), box_w, box_h); // bottom-left
         }
-        return legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h); // top-right
+        return claimDefaultLegendSpot(bounds, legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h), box_w,
+                box_h); // top-right
     }
 
     /**
@@ -10066,8 +10140,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_internal_taxa_key_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _internal_taxa_key_offset, box_w, box_h);
         }
-        return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
-                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
+        return claimDefaultLegendSpot(bounds, new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
+                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)), box_w, box_h);
     }
 
     /**
@@ -10162,8 +10236,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_domain_legend_offset != null) {
             return legendTopLeftFor(bounds, getVisibleRect(), _domain_legend_offset, box_w, box_h);
         }
-        return new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
-                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10));
+        return claimDefaultLegendSpot(bounds, new Point(Math.max(bounds.x, (bounds.x + bounds.width) - box_w - 10),
+                Math.max(bounds.y, (bounds.y + bounds.height) - box_h - 10)), box_w, box_h);
     }
 
     private static String clipToWidth(final String s, final FontMetrics fm, final int max_px) {
@@ -17184,58 +17258,65 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // (circular), so their legend is shown there too and suppressed ONLY in the UNROOTED layout, where the columns
         // aren't drawn (its bounds nulled so a stale hit region from a prior paint isn't clickable). The RANK legend
         // keys BRANCH colors, which render in every layout.
-        final boolean draw_annotation_legend = annotationLegendVisible();
-        final boolean draw_color_legend = hasColorByPropertyLegend();
-        if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
-            final boolean to_screen = !(to_pdf || to_graphics_file);
-            final Rectangle legend_bounds = to_screen
-                    ? getVisibleRect()
-                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-            // one legend slot; a header-focused annotation-column legend wins (the user just clicked it),
-            // else the property-color legend, else the rank legend
-            if (draw_annotation_legend) {
-                drawAnnotationColumnLegend(g, legend_bounds, to_screen);
-            } else if (draw_color_legend) {
-                drawPropertyColorLegend(g, legend_bounds, to_screen);
+        _default_legend_claims = new java.util.ArrayList<>(); // this pass's default spots (claimDefaultLegendSpot)
+        try {
+            final boolean draw_annotation_legend = annotationLegendVisible();
+            final boolean draw_color_legend = hasColorByPropertyLegend();
+            if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
+                final boolean to_screen = !(to_pdf || to_graphics_file);
+                final Rectangle legend_bounds = to_screen
+                        ? getVisibleRect()
+                        : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+                // one legend slot; a header-focused annotation-column legend wins (the user just clicked it),
+                // else the property-color legend, else the rank legend
+                if (draw_annotation_legend) {
+                    drawAnnotationColumnLegend(g, legend_bounds, to_screen);
+                } else if (draw_color_legend) {
+                    drawPropertyColorLegend(g, legend_bounds, to_screen);
+                } else {
+                    drawRankLegend(g, legend_bounds, to_screen);
+                }
             } else {
-                drawRankLegend(g, legend_bounds, to_screen);
+                _property_legend_bounds = null; // nothing in the shared slot -> no stale hit region
             }
-        } else {
-            _property_legend_bounds = null; // nothing in the shared slot -> no stale hit region
-        }
-        // "Size by" has its OWN legend (a separate, independently placed key), drawn last so it can appear
-        // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure. Its size dots now
-        // render in every layout, so the legend shows in every layout too.
-        if (isSizeByProperty()) {
-            final boolean to_screen = !(to_pdf || to_graphics_file);
-            final Rectangle legend_bounds = to_screen ? getVisibleRect()
-                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-            drawSizeLegend(g, legend_bounds, to_screen);
-        }
-        // ancestral-state pies have their OWN key (state -> color), drawn last so it can appear alongside the others.
-        // Pies draw in EVERY layout (rectangular family + circular/unrooted), so the legend is never orphaned.
-        if (isShowAncestralPies()) {
-            final boolean to_screen = !(to_pdf || to_graphics_file);
-            final Rectangle legend_bounds = to_screen ? getVisibleRect()
-                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-            drawAncestralPieLegend(g, legend_bounds, to_screen,
-                    (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite());
-        }
-        // the internal-taxonomy key has its OWN text key (taxa by rank), drawn last (on top) so it can appear
-        // alongside the others; a no-op unless the option is on AND the tree carries internal taxa.
-        if (getOptions().isShowInternalTaxonomyKey()) {
-            final boolean to_screen = !(to_pdf || to_graphics_file);
-            final Rectangle legend_bounds = to_screen ? getVisibleRect()
-                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-            drawInternalTaxonomyKey(g, legend_bounds, to_screen);
-        }
-        // the protein-domain legend (LEGEND label mode): its own draggable slot, drawn last so an overlap grab wins;
-        // E-value-cutoff aware. Layout-agnostic (rides every layout + export), like the other legends.
-        {
-            final boolean to_screen = !(to_pdf || to_graphics_file);
-            final Rectangle legend_bounds = to_screen ? getVisibleRect()
-                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-            drawDomainLegend(g, legend_bounds, to_screen);
+            // "Size by" has its OWN legend (a separate, independently placed key), drawn last so it can appear
+            // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure. Its size dots now
+            // render in every layout, so the legend shows in every layout too.
+            if (isSizeByProperty()) {
+                final boolean to_screen = !(to_pdf || to_graphics_file);
+                final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                        : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+                drawSizeLegend(g, legend_bounds, to_screen);
+            }
+            // ancestral-state pies have their OWN key (state -> color), drawn last so it can appear alongside the
+            // others.
+            // Pies draw in EVERY layout (rectangular family + circular/unrooted), so the legend is never orphaned.
+            if (isShowAncestralPies()) {
+                final boolean to_screen = !(to_pdf || to_graphics_file);
+                final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                        : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+                drawAncestralPieLegend(g, legend_bounds, to_screen,
+                        (to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite());
+            }
+            // the internal-taxonomy key has its OWN text key (taxa by rank), drawn last (on top) so it can appear
+            // alongside the others; a no-op unless the option is on AND the tree carries internal taxa.
+            if (getOptions().isShowInternalTaxonomyKey()) {
+                final boolean to_screen = !(to_pdf || to_graphics_file);
+                final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                        : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+                drawInternalTaxonomyKey(g, legend_bounds, to_screen);
+            }
+            // the protein-domain legend (LEGEND label mode): its own draggable slot, drawn last so an overlap grab
+            // wins;
+            // E-value-cutoff aware. Layout-agnostic (rides every layout + export), like the other legends.
+            {
+                final boolean to_screen = !(to_pdf || to_graphics_file);
+                final Rectangle legend_bounds = to_screen ? getVisibleRect()
+                        : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+                drawDomainLegend(g, legend_bounds, to_screen);
+            }
+        } finally {
+            _default_legend_claims = null; // no pass, no claims -- also when a draw throws
         }
         // reconcile the "Pulse Found Nodes" animation timer after EVERY screen paint (all layouts): starts it when a
         // hit halo was drawn (rectangular OR radial), stops it when none was (option off / no hit).

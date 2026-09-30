@@ -833,6 +833,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Legend stacking: ");
+        if (org.forester.archaeopteryx.LegendStackingTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Connector color: ");
         if (org.forester.archaeopteryx.ConnectorColorTest.test()) {
             System.out.println("OK.");
