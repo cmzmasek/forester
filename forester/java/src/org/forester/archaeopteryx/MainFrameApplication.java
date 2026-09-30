@@ -794,7 +794,12 @@ public final class MainFrameApplication extends MainFrame {
         // the tab's STORED type, not the radio: in a radial layout a stored ALIGNED shows as P ("A" is greyed
         // there), and the derived tab must inherit the choice the source tab will return to, not what it shows
         final Options.PHYLOGENY_DISPLAY_TYPE source_type = _mainpanel.getControlPanel().getStoredTreeDisplayType();
+        final TreePanel source_panel = _mainpanel.getCurrentTreePanel();
         _mainpanel.addPhylogenyInNewTab(derived, getConfiguration(), derived.getName(), null);
+        if (_mainpanel.getCurrentTreePanel() != null) {
+            // the derived tree is in the source tab's layout (Time | Div), and has its lengths in time
+            _mainpanel.getCurrentTreePanel().takeBranchLengthLayoutOf(source_panel);
+        }
         final boolean source_is_phylogram = (source_type == Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM)
                 || (source_type == Options.PHYLOGENY_DISPLAY_TYPE.ALIGNED_PHYLOGRAM);
         if (!source_is_phylogram || ((_mainpanel.getCurrentTreePanel() != null)

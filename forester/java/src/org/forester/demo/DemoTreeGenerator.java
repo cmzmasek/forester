@@ -159,6 +159,11 @@ public final class DemoTreeGenerator {
         writeText( dir, "beast-date-missing.nex", beastDateMissingNexus() );
         writeText( dir, "beast-negative-span.nex", beastNegativeSpanNexus() );
         writeText( dir, "nextstrain-div-missing.nex", nextstrainDivMissingNexus() );
+        writeText( dir, "beast-length-missing.nex", beastLengthMissingNexus() );
+        writeText( dir, "beast-rates-zero.nex", beastRatesZeroNexus() );
+        writeText( dir, "beast-rate-spelling.nex", beastRateSpellingNexus() );
+        writeText( dir, "nextstrain-div-spelling.nex", nextstrainDivSpellingNexus() );
+        writeText( dir, "beast-lengths-not-heights.nex", beastLengthsNotHeightsNexus() );
         writeText( dir, "nextstrain-nexus.nex", nextstrainNexus() );
         writeText( dir, "treetime-nexus.nex", treeTimeNexus( true ) );
         writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
@@ -241,11 +246,62 @@ public final class DemoTreeGenerator {
         return replaceTheOne( s, "TREE beast_demo =", "TREE beast_negative_span =" );
     }
 
+    // ----- "A branch that states no length": beast-annotations.nex with exactly ONE thing taken out -- the length of
+    //       isolate_C's branch. Time shows the lengths a tree states, and divergence is a rate times them: a branch
+    //       without one cannot be stated by either layout, so the switch is not offered.
+    private static String beastLengthMissingNexus() {
+        return replaceTheOne( replaceTheOne( beastAnnotationsNexus(), "isolate_C[&height=0.0,rate=0.0026]:0.8,",
+                                             "isolate_C[&height=0.0,rate=0.0026]," ),
+                              "TREE beast_demo =", "TREE beast_length_missing =" );
+    }
+
+    // ----- "Every rate 0": beast-annotations.nex with each of its nine rates written 0. Every branch states a rate,
+    //       but divergence is 0 along every one of them: a picture of nothing, which is not offered.
+    private static String beastRatesZeroNexus() {
+        final String full = beastAnnotationsNexus();
+        final String zero = full.replaceAll( "rate=0\\.00[0-9]+", "rate=0" );
+        int rates = 0;
+        for( int i = zero.indexOf( "rate=0" ); i >= 0; i = zero.indexOf( "rate=0", i + 1 ) ) {
+            ++rates;
+        }
+        if ( ( rates != 9 ) || zero.contains( "rate=0." ) ) {
+            throw new IllegalStateException( "beast-annotations.nex must state nine rates, all to be written 0; got " + rates );
+        }
+        return replaceTheOne( zero, "TREE beast_demo =", "TREE beast_rates_zero =" );
+    }
+
+    // ----- "A rate that is not written as a number": beast-annotations.nex with isolate_C's rate written 0.0026d, the
+    //       way a Java program may print a double. A rate is a plain decimal number, with or without an exponent
+    //       (joint with Archaeopteryx.js); anything else is no rate, and one branch without a rate is enough.
+    private static String beastRateSpellingNexus() {
+        return replaceTheOne( replaceTheOne( beastAnnotationsNexus(), "isolate_C[&height=0.0,rate=0.0026]",
+                                             "isolate_C[&height=0.0,rate=0.0026d]" ),
+                              "TREE beast_demo =", "TREE beast_rate_spelling =" );
+    }
+
+    // ----- "Lengths that are not the gaps between the heights": beast-annotations.nex with isolate_A's branch stated
+    //       at 1.407 while its two nodes are dated 1.2 apart -- what a summary tree does when its lengths and its
+    //       median heights are two summaries of one posterior. Time is the tree that was opened: 1.407, before the
+    //       switch is pressed and after; divergence is 0.0031 x 1.407.
+    private static String beastLengthsNotHeightsNexus() {
+        return replaceTheOne( replaceTheOne( beastAnnotationsNexus(), "(isolate_A[&!color=#-8381639,height=0.0,rate=0.0031]:1.2,",
+                                             "(isolate_A[&!color=#-8381639,height=0.0,rate=0.0031]:1.407," ),
+                              "TREE beast_demo =", "TREE beast_lengths_not_heights =" );
+    }
+
     // ----- "A recorded divergence left out on one node": nextstrain-nexus.nex with exactly ONE thing taken out --
     //       the div of A/Dakar/8/2016. The divergence layout cannot state that tip's branch, so Time | Div is not
     //       offered; the tree opens and stays in time, as its twin opens.
     private static String nextstrainDivMissingNexus() {
         return replaceTheOne( nextstrainNexus(), "country=Senegal,div=0.0189]", "country=Senegal]" );
+    }
+
+    // ----- "A recorded divergence that is not written as a number": nextstrain-nexus.nex with the div of
+    //       A/Dakar/8/2016 written 0.0189d. A recorded divergence is a plain decimal number, as a rate is (joint with
+    //       Archaeopteryx.js): the reader keeps this one as text (beast:div), and one node without a recorded
+    //       divergence is enough for no divergence layout.
+    private static String nextstrainDivSpellingNexus() {
+        return replaceTheOne( nextstrainNexus(), "country=Senegal,div=0.0189]", "country=Senegal,div=0.0189d]" );
     }
 
     // ----- "Ancestral-state pie charts": a BEAST-style phylogeography tree. Each TIP carries its single sampled

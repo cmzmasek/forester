@@ -44,31 +44,43 @@ public final class TreeHistoryTest {
     private static boolean branchLengthModeTravels() {
         final BranchLengthLayout.MODE time = BranchLengthLayout.MODE.TIME;
         final BranchLengthLayout.MODE div = BranchLengthLayout.MODE.DIVERGENCE;
+        // ...and the lengths in time of its moment: six distinct sets, each to come back with its own snapshot
+        final BranchLengthLayout.TimeLengths l2 = new BranchLengthLayout.TimeLengths();
+        final BranchLengthLayout.TimeLengths l3 = new BranchLengthLayout.TimeLengths();
+        final BranchLengthLayout.TimeLengths l4 = new BranchLengthLayout.TimeLengths();
+        final BranchLengthLayout.TimeLengths l3b = new BranchLengthLayout.TimeLengths();
+        final BranchLengthLayout.TimeLengths l2b = new BranchLengthLayout.TimeLengths();
+        final BranchLengthLayout.TimeLengths l3c = new BranchLengthLayout.TimeLengths();
         final TreeHistory h = new TreeHistory();
-        h.checkpoint( tree( 2 ), "edit in time", false, time );
-        h.checkpoint( tree( 3 ), "edit in divergence", false, div ); // undo = [div, time]
+        h.checkpoint( tree( 2 ), "edit in time", false, time, l2 );
+        h.checkpoint( tree( 3 ), "edit in divergence", false, div, l3 ); // undo = [div, time]
         // undone while the panel shows TIME: the state given back was captured in divergence...
-        final Snapshot u1 = h.undo( tree( 4 ), true, time );
-        if ( ( u1 == null ) || ( u1.getBranchLengthMode() != div ) || ( u1.getPhylogeny().getNumberOfExternalNodes() != 3 ) ) {
-            return fail( "undo must give back the divergence snapshot AS divergence" );
+        final Snapshot u1 = h.undo( tree( 4 ), true, time, l4 );
+        if ( ( u1 == null ) || ( u1.getBranchLengthMode() != div ) || ( u1.getPhylogeny().getNumberOfExternalNodes() != 3 )
+                || ( u1.getTimeLengths() != l3 ) ) {
+            return fail( "undo must give back the divergence snapshot AS divergence, with its lengths in time" );
         }
-        final Snapshot u2 = h.undo( u1.getPhylogeny(), false, div );
-        if ( ( u2 == null ) || ( u2.getBranchLengthMode() != time ) || ( u2.getPhylogeny().getNumberOfExternalNodes() != 2 ) ) {
-            return fail( "the older snapshot was captured in time" );
+        final Snapshot u2 = h.undo( u1.getPhylogeny(), false, div, l3b );
+        if ( ( u2 == null ) || ( u2.getBranchLengthMode() != time ) || ( u2.getPhylogeny().getNumberOfExternalNodes() != 2 )
+                || ( u2.getTimeLengths() != l2 ) ) {
+            return fail( "the older snapshot was captured in time, with its own lengths in time" );
         }
         // ...and what undo put on the redo stack carries the mode of the tree it copied, in order
-        final Snapshot r1 = h.redo( u2.getPhylogeny(), false, time );
-        if ( ( r1 == null ) || ( r1.getBranchLengthMode() != div ) || ( r1.getPhylogeny().getNumberOfExternalNodes() != 3 ) ) {
-            return fail( "redo must give back the state copied at the second undo, in ITS mode (divergence)" );
+        final Snapshot r1 = h.redo( u2.getPhylogeny(), false, time, l2b );
+        if ( ( r1 == null ) || ( r1.getBranchLengthMode() != div ) || ( r1.getPhylogeny().getNumberOfExternalNodes() != 3 )
+                || ( r1.getTimeLengths() != l3b ) ) {
+            return fail( "redo must give back the state copied at the second undo, in ITS mode (divergence) and with"
+                    + " the lengths in time handed to that undo" );
         }
-        final Snapshot r2 = h.redo( r1.getPhylogeny(), false, div );
-        if ( ( r2 == null ) || ( r2.getBranchLengthMode() != time ) || ( r2.getPhylogeny().getNumberOfExternalNodes() != 4 ) ) {
+        final Snapshot r2 = h.redo( r1.getPhylogeny(), false, div, l3c );
+        if ( ( r2 == null ) || ( r2.getBranchLengthMode() != time ) || ( r2.getPhylogeny().getNumberOfExternalNodes() != 4 )
+                || ( r2.getTimeLengths() != l4 ) ) {
             return fail( "redo must give back the state copied at the first undo, in ITS mode (time)" );
         }
         // and redo files the tree it replaces under the mode it is handed
-        final Snapshot back = h.undo( r2.getPhylogeny(), false, time );
-        if ( ( back == null ) || ( back.getBranchLengthMode() != div ) ) {
-            return fail( "the state redo filed for undo must carry the mode handed to redo (divergence)" );
+        final Snapshot back = h.undo( r2.getPhylogeny(), false, time, null );
+        if ( ( back == null ) || ( back.getBranchLengthMode() != div ) || ( back.getTimeLengths() != l3c ) ) {
+            return fail( "the state redo filed for undo must carry the mode and lengths handed to redo (divergence)" );
         }
         // the callers that know nothing of layouts keep working, in time
         final TreeHistory plain = new TreeHistory();
@@ -77,7 +89,7 @@ public final class TreeHistoryTest {
         if ( ( p == null ) || ( p.getBranchLengthMode() != time ) ) {
             return fail( "a snapshot taken without a mode is a time snapshot" );
         }
-        if ( new Snapshot( tree( 2 ), "x", false, null ).getBranchLengthMode() != time ) {
+        if ( new Snapshot( tree( 2 ), "x", false, null, null ).getBranchLengthMode() != time ) {
             return fail( "no mode is time, never null" );
         }
         return true;

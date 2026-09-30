@@ -261,6 +261,15 @@ public final class DemoTreesTest {
         ok &= twinWithOneDatumOutOk( "beast-annotations.nex", "beast-date-missing.nex", "isolate_B", true, 9 );
         ok &= beastAnnotationsOk( "beast-date-missing.nex" );
         ok &= twinWithOneDatumOutOk( "nextstrain-nexus.nex", "nextstrain-div-missing.nex", "A/Dakar/8/2016", false, 12 );
+        ok &= divSpellingOk( "nextstrain-nexus.nex", "nextstrain-div-spelling.nex" );
+        // three more trees that are not offered the switch, each beast-annotations.nex with one thing changed
+        ok &= notOfferedTwinOk( "beast-length-missing.nex", 8, 7, 8, false, BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE );
+        ok &= notOfferedTwinOk( "beast-rates-zero.nex", 8, 8, 8, true, BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE );
+        ok &= notOfferedTwinOk( "beast-rate-spelling.nex", 8, 8, 8, true, BranchLengthLayout.DIVERGENCE_SOURCE.NONE );
+        ok &= rateSpellingOk( "beast-rate-spelling.nex" ) && ratesZeroOk( "beast-rates-zero.nex" );
+        // the file's lengths are not the gaps between its heights: time is the tree that was opened
+        ok &= lengthsNotHeightsOk( "beast-lengths-not-heights.nex" );
+        ok &= beastAnnotationsOk( "beast-lengths-not-heights.nex" );
         // a node dated before its parent: time keeps the sign, divergence draws it at 0
         ok &= negativeSpanOk( "beast-negative-span.nex" );
         ok &= beastAnnotationsOk( "beast-negative-span.nex" );
@@ -2101,6 +2110,136 @@ public final class DemoTreesTest {
         return true;
     }
 
+    /** A twin of {@code beast-annotations.nex} that is NOT offered Time | Div, for the reason its numbers name: of its
+     *  {@code branches} branches {@code with_length} state a length and {@code with_rate} state a {@code beast:rate}
+     *  property (as written, whatever it is worth); it has a time layout or not; its divergence source is
+     *  {@code source}. The original is offered the switch, or the refusal proves nothing. */
+    private static boolean notOfferedTwinOk( final String twin,
+                                             final int branches,
+                                             final int with_length,
+                                             final int with_rate,
+                                             final boolean time_layout,
+                                             final BranchLengthLayout.DIVERGENCE_SOURCE source ) {
+        final Phylogeny full = loadAsOpened( "beast-annotations.nex" );
+        final Phylogeny part = loadAsOpened( twin );
+        if ( ( full == null ) || ( part == null ) ) {
+            return false;
+        }
+        if ( !BranchLengthLayout.isApplicable( full ) ) {
+            return note( "beast-annotations.nex must be offered Time | Div, or the refusal of " + twin + " proves nothing" );
+        }
+        int n_branches = 0;
+        int n_length = 0;
+        int n_rate = 0;
+        for( final Iterator<PhylogenyNode> it = part.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isRoot() ) {
+                continue;
+            }
+            ++n_branches;
+            if ( n.getDistanceToParent() != org.forester.phylogeny.data.PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+                ++n_length;
+            }
+            if ( rateOf( n ) != null ) {
+                ++n_rate;
+            }
+        }
+        if ( ( n_branches != branches ) || ( n_length != with_length ) || ( n_rate != with_rate ) ) {
+            return note( twin + " must have " + branches + " branches, " + with_length + " with a length and " + with_rate
+                    + " with a rate; got " + n_branches + ", " + n_length + ", " + n_rate );
+        }
+        if ( BranchLengthLayout.isApplicable( part ) ) {
+            return note( twin + " must NOT be offered Time | Div" );
+        }
+        if ( ( BranchLengthLayout.isTimeDerivable( part ) != time_layout )
+                || ( BranchLengthLayout.divergenceSource( part ) != source ) ) {
+            return note( twin + " must be refused for the reason it names: time layout " + time_layout + ", source "
+                    + source + "; got " + BranchLengthLayout.isTimeDerivable( part ) + ", "
+                    + BranchLengthLayout.divergenceSource( part ) );
+        }
+        return true;
+    }
+
+    /** The div of A/Dakar/8/2016 is WRITTEN {@code 0.0189d}: the Nexus reader keeps it as the text it is
+     *  ({@code beast:div}), never as a recorded divergence, and the tree is refused for that alone -- its twin,
+     *  differing by that one letter, is offered Time | Div. (A phyloXML {@code nextstrain:div} spelled so reaches
+     *  {@link BranchLengthLayout} as text, which refuses it itself: BranchLengthLayoutTest.) */
+    private static boolean divSpellingOk( final String original, final String twin ) {
+        final Phylogeny full = loadAsOpened( original );
+        final Phylogeny part = loadAsOpened( twin );
+        if ( ( full == null ) || ( part == null ) ) {
+            return false;
+        }
+        final PropertiesList props = part.getNode( "A/Dakar/8/2016" ).getNodeData().getProperties();
+        final String as_text = ( props == null ) || props.getProperties( "beast:div" ).isEmpty() ? null
+                : props.getProperties( "beast:div" ).get( 0 ).getValue();
+        if ( !"0.0189d".equals( as_text )
+                || ( ( props != null ) && !props.getProperties( BranchLengthLayout.DIV_PROPERTY_REF ).isEmpty() ) ) {
+            return note( twin + ": A/Dakar/8/2016's div must be kept as the text 0.0189d, not as a recorded divergence;"
+                    + " got " + as_text );
+        }
+        if ( !BranchLengthLayout.isApplicable( full ) || ( BranchLengthLayout.divergenceSource( full )
+                != BranchLengthLayout.DIVERGENCE_SOURCE.STORED ) ) {
+            return note( original + " must be offered Time | Div from its recorded divergence" );
+        }
+        if ( BranchLengthLayout.isApplicable( part ) || !BranchLengthLayout.isTimeDerivable( part )
+                || ( BranchLengthLayout.divergenceSource( part ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE ) ) {
+            return note( twin + " must be refused for its spelling alone: time layout yes, no divergence source" );
+        }
+        return true;
+    }
+
+    /** The rate of isolate_C is WRITTEN {@code 0.0026d} in the file, and read as written. */
+    private static boolean rateSpellingOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        return ( phy != null ) && ( "0.0026d".equals( rateOf( phy.getNode( "isolate_C" ) ) )
+                || note( file_name + ": isolate_C's rate must read 0.0026d, got " + rateOf( phy.getNode( "isolate_C" ) ) ) );
+    }
+
+    /** Every one of the 8 branches states a rate, and every rate is 0. */
+    private static boolean ratesZeroOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isRoot() && ( ( rateOf( n ) == null ) || ( Double.parseDouble( rateOf( n ) ) != 0 ) ) ) {
+                return note( file_name + ": every branch must state a rate of 0; " + n.getName() + " states " + rateOf( n ) );
+            }
+        }
+        return true;
+    }
+
+    /** {@code beast-lengths-not-heights.nex}: isolate_A is stated 1.407 long between two nodes dated 1.2 apart.
+     *  Offered the switch; divergence is 0.0031 x 1.407; and Time gives 1.407 back, the tree that was opened. */
+    private static boolean lengthsNotHeightsOk( final String file_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final PhylogenyNode a = phy.getNode( "isolate_A" );
+        final double gap = a.getParent().getNodeData().getDate().getValue().doubleValue()
+                - a.getNodeData().getDate().getValue().doubleValue();
+        if ( ( a.getDistanceToParent() != 1.407 ) || ( Math.abs( gap - 1.2 ) > 1e-12 ) ) {
+            return note( file_name + ": isolate_A must state 1.407 between nodes dated 1.2 apart; got "
+                    + a.getDistanceToParent() + " and " + gap );
+        }
+        if ( !BranchLengthLayout.isApplicable( phy ) || BranchLengthLayout.arrivesShowingDivergence( phy ) ) {
+            return note( file_name + " must be offered Time | Div and arrive showing time" );
+        }
+        final BranchLengthLayout.TimeLengths kept = BranchLengthLayout.TimeLengths.onScreen( phy );
+        BranchLengthLayout.applyDivergence( phy, kept );
+        if ( Math.abs( a.getDistanceToParent() - ( 0.0031 * 1.407 ) ) > 1e-15 ) {
+            return note( file_name + ": divergence must be 0.0031 x 1.407, got " + a.getDistanceToParent() );
+        }
+        BranchLengthLayout.applyTime( phy, kept );
+        if ( a.getDistanceToParent() != 1.407 ) {
+            return note( file_name + ": Time must give back 1.407, got " + a.getDistanceToParent() );
+        }
+        return true;
+    }
+
     /** {@code beast-negative-span.nex}: 9 nodes, every one dated and every branch rated, so it is offered the switch;
      *  exactly ONE of its 8 branches runs backwards, the (D,E) node's, stated at -0.05. Time keeps it, divergence
      *  states 0, and with the sign kept the lengths from the root to each of the 5 tips add up to 2.1, the gap
@@ -2125,13 +2264,14 @@ public final class DemoTreesTest {
             return note( file_name + " must state exactly one negative length, -0.05 on the (D,E) node; got " + negative
                     + ", (D,E)=" + de.getDistanceToParent() );
         }
-        BranchLengthLayout.applyDivergence( phy );
+        final BranchLengthLayout.TimeLengths kept = BranchLengthLayout.TimeLengths.onScreen( phy );
+        BranchLengthLayout.applyDivergence( phy, kept );
         if ( Double.doubleToRawLongBits( de.getDistanceToParent() ) != 0L ) {
-            return note( file_name + ": divergence must draw the backward span at 0, got " + de.getDistanceToParent() );
+            return note( file_name + ": divergence must state 0 for the negative length, got " + de.getDistanceToParent() );
         }
-        BranchLengthLayout.applyTime( phy );
-        if ( Math.abs( de.getDistanceToParent() - ( -0.05 ) ) > 1e-12 ) {
-            return note( file_name + ": time must keep the sign, -0.05; got " + de.getDistanceToParent() );
+        BranchLengthLayout.applyTime( phy, kept );
+        if ( de.getDistanceToParent() != -0.05 ) {
+            return note( file_name + ": time must give back -0.05 as the file states it; got " + de.getDistanceToParent() );
         }
         int tips = 0;
         for( final PhylogenyNode tip : phy.getExternalNodes() ) {

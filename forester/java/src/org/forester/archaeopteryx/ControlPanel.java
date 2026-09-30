@@ -153,13 +153,17 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JPanel        _branch_lengths_panel;
     /** Short enough for a two-button row in a ~160px column; the tooltip carries the full meaning. */
     private static final String BRANCH_LENGTH_DIV_SHORT      = "Div";
-    private static final String BRANCH_LENGTH_TIME_TIP       = "Lay the tree out by TIME: each branch spans the "
-            + "difference between its two nodes' dates";
+    // TIME is the lengths the tree states in time, and the gap between its dates only where it states none (a
+    // phyloXML file saved from the Div view states its divergence; a Newick or Nexus one keeps no dates and is not
+    // offered the switch at all): in a summary tree the two need not agree. The tooltip says what the layout does.
+    private static final String BRANCH_LENGTH_TIME_TIP       = "Lay the tree out by TIME: each branch at its "
+            + "stated length in time, not recomputed from the dates. A tree saved as phyloXML while divergence was "
+            + "shown states its divergence instead, and gets its lengths in time from the dates of its nodes.";
     private static final String BRANCH_LENGTH_DIV_STORED_TIP = "Lay the tree out by DIVERGENCE: genetic change "
             + "along each branch, as recorded in the file (substitutions/site)";
     private static final String BRANCH_LENGTH_DIV_DERIVED_TIP = "Lay the tree out by DIVERGENCE, DERIVED as the "
-            + "branch's clock rate x the time it spans. An inference from the model that produced this tree, not a "
-            + "value the file recorded.";
+            + "branch's clock rate x its length in time (a branch that took in a deleted node keeps that node's rate "
+            + "for its part). An inference from the model that produced this tree, not a value the file recorded.";
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
@@ -2735,6 +2739,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (_branch_length_time_tb != null) {
             _branch_length_time_tb.setSelected(true);
         }
+    }
+
+    /** Test hook: the Time button's tooltip, which says where the lengths in time come from. */
+    String branchLengthTimeTooltipForTest() {
+        return (_branch_length_time_tb == null) ? null : _branch_length_time_tb.getToolTipText();
     }
 
     /** Test hook: the Div button's tooltip, which says whether the divergence is recorded or derived. */
