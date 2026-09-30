@@ -180,15 +180,16 @@ public final class ScaleAxisRenderTest {
                     tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
                     tp.calcParametersForPainting( w, h );
 
-                    // CIRCULAR / UNROOTED: the horizontal axis is never drawn in the radial layouts, so the reserve must
-                    // NOT engage -- toggling the axis there leaves the layout (ydist) untouched (no phantom compression,
-                    // no needless radial-zoom reset). Guards the scaleAxisAppliesToLayout() graphics-type gate.
+                    // CIRCULAR / UNROOTED: no axis band in the radial layouts (circular draws its ruler in the seam,
+                    // inside its own disc -- CircularScaleAxisTest; unrooted has none), so the reserve must NOT engage --
+                    // toggling the axis there leaves the layout (ydist) untouched (no phantom compression, no needless
+                    // radial-zoom reset). Guards the scaleAxisAppliesToLayout() graphics-type gate.
                     for ( final Options.PHYLOGENY_GRAPHICS_TYPE gt : new Options.PHYLOGENY_GRAPHICS_TYPE[] {
                             Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR, Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED } ) {
                         o.setPhylogenyGraphicsType( gt );
                         tp.setPhylogenyGraphicsType( gt );
                         if ( tp.scaleAxisAppliesToLayout() ) {
-                            fail( ok, "the scale axis must not apply to a " + gt + " layout (never drawn there)" );
+                            fail( ok, "the scale axis must not reserve a band in a " + gt + " layout" );
                         }
                         o.setShowScaleAxis( false );
                         tp.calcParametersForPainting( w, h );

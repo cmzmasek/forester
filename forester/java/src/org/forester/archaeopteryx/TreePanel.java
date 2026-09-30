@@ -538,6 +538,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _circular_center_x = 0;
     private int _circular_center_y = 0;
     private int _circular_radius = 0;
+    // The device angle of the circular SEAM in the last paint: the centre line of the gap between the last displayed
+    // tip and the first, where the Scale Axis ruler runs (paintCircularScaleAxis).
+    private double _circular_seam_angle = 0;
     final private HashMap<Long, Double> _urt_nodeid_angle_map = new HashMap<>();
     /** The UNROOTED layout's per-tip spoke angle, recorded as the tips are painted. Unlike the circular
      *  layout's map above, this angle is only ever a recursion parameter, so without recording it the domain
@@ -5059,16 +5062,27 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintScale(final Graphics2D g,
-                                  int x1,
-                                  int y1,
+                                  final int x1,
+                                  final int y1,
                                   final boolean to_pdf,
                                   final boolean to_graphics_file) {
         if (isVerticalOrientation()) {
             paintScaleVertical(g, x1, y1, to_pdf, to_graphics_file);
             return;
         }
+        paintScale(g, x1, y1, getXcorrectionFactor(), to_pdf, to_graphics_file);
+    }
+
+    /** The horizontal scale bar, {@code px_per_unit} pixels to one unit of distance: the X-correction factor in the
+     *  layouts laid out along X, radius / tree height in the circular one (which places a node by its radius). */
+    final private void paintScale(final Graphics2D g,
+                                  int x1,
+                                  int y1,
+                                  final double px_per_unit,
+                                  final boolean to_pdf,
+                                  final boolean to_graphics_file) {
         x1 += MOVE;
-        final double x2 = x1 + (displayScaleDistance() * getXcorrectionFactor());
+        final double x2 = x1 + (displayScaleDistance() * px_per_unit);
         y1 -= 12;
         final int y2 = y1 - 8;
         final int y3 = y1 - 4;
@@ -5475,10 +5489,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getFontMetrics(getTreeFontSet().getSmallFont()).getHeight() + SCALE_AXIS_TICK_LEN + 4;
     }
 
-    /** True when a labeled scale axis is applicable to the CURRENT layout: a rectangular-family PHYLOGRAM (not a
-     *  cladogram, not the radial CIRCULAR/UNROOTED layouts) with a positive scale distance that yields at least one
-     *  tick -- i.e. the axis is (or, if the toggle were on, would be) actually drawn and reserves tip-spread space.
-     *  Independent of the on/off state, so it also governs whether toggling "Scale Axis" needs a re-fit. */
+    /** True when a labeled scale axis that RESERVES tip-spread space applies to the CURRENT layout: a rectangular-
+     *  family PHYLOGRAM (not a cladogram) with a positive scale distance that yields at least one tick -- the axis is
+     *  (or, if the toggle were on, would be) drawn in a band of its own. Independent of the on/off state, so it also
+     *  governs whether toggling "Scale Axis" needs a re-fit. Not the radial layouts: unrooted has no axis, and the
+     *  circular one draws its ruler in the seam, inside its own disc, reserving nothing
+     *  ({@link #paintCircularScaleAxis}). */
     boolean scaleAxisAppliesToLayout() {
         if (!getControlPanel().isDrawPhylogram() || (getScaleDistance() <= 0.0)
                 || (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR)
@@ -5575,51 +5591,155 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Concentric distance RINGS for a circular PHYLOGRAM: faint circles at scale-distance intervals from the ring
-     *  centre, each labelled with its distance value at 12 o'clock, so distance-from-root reads off at any angle (the
-     *  radial analogue of the rectangular scale grid). Drawn BEHIND the tree; a no-op unless the circular layout is a
-     *  phylogram. Labels are decimated so they never stack when the rings are dense. */
+     *  centre out to the deepest tip -- the circular "Scale Grid", the radial analogue of the rectangular grid lines,
+     *  and like them unlabelled (the numbers are the Scale Axis's, on its ruler in the seam). Drawn BEHIND the tree;
+     *  a no-op unless {@link #circularDistanceScaleApplies()}. (Until 2026-09-30 these rings, labelled at 12 o'clock,
+     *  were what the "Scale" option drew in circular, and circular had no scale bar; Christian moved them to Scale
+     *  Grid and gave circular the bar, as in every other layout, when circular gained its Scale Axis.) */
     private void paintCircularScaleRings(final Graphics2D g, final int cx, final int cy, final int radius,
                                          final boolean to_pdf, final boolean to_graphics_file) {
-        // the rings ARE the circular scale, so they follow the same "Scale" option that draws the bottom bar in the
-        // rectangular/unrooted layouts (the circular phylogram POSITIONS by branch length regardless; only the scale
-        // overlay is gated). Off unless it is a circular phylogram with the scale shown.
-        if (!isCircularPhylogram() || !getOptions().isShowScale() || (radius <= 0)) {
+        if (!getOptions().isShowScaleGrid() || !circularDistanceScaleApplies() || (radius <= 0)) {
             return;
         }
         final double spacing = getScaleDistance();
-        final double max = getMaxDistanceToRoot();
+        final double max = getMaxDistanceToRoot(); // what a node's radius is normalised by (circularRadiusFraction)
+        final double deepest = numericScaleAxisMaxDist();
         if ((spacing <= 0) || (max <= 0)) {
             return;
         }
         final Color saved = g.getColor();
         final Stroke saved_stroke = g.getStroke();
-        final Font saved_font = g.getFont();
         g.setStroke(STROKE_05);
-        g.setFont(getTreeFontSet().getSmallFont());
-        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
-        final int line_h = fm.getHeight();
-        final Color ring_c = scaleGridColor(to_pdf, to_graphics_file);
-        final Color label_c = scaleInkColor(to_pdf, to_graphics_file);
-        int last_label_y = Integer.MAX_VALUE; // rings go inner->outer, so labels move UP the top spoke
+        g.setColor(scaleGridColor(to_pdf, to_graphics_file));
         int k = 1;
-        for (double d = spacing; (d <= (max + 1e-9)) && (k <= 1000); d += spacing, ++k) {
+        for (double d = spacing; (d <= (deepest + 1e-9)) && (k <= 1000); d += spacing, ++k) {
             final int rr = (int) Math.round((d / max) * radius);
-            if (rr <= 0) {
-                continue;
-            }
-            g.setColor(ring_c);
-            g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
-            final int ly = (cy - rr) + fm.getAscent() + 1; // just inside the ring at the top
-            if ((last_label_y - ly) >= line_h) { // enough vertical gap since the last drawn label
-                final String label = TreePanelUtil.formatCompactNumber(d);
-                g.setColor(label_c);
-                g.drawString(label, cx - (fm.stringWidth(label) / 2f), ly);
-                last_label_y = ly;
+            if (rr > 0) {
+                g.drawOval(cx - rr, cy - rr, 2 * rr, 2 * rr);
             }
         }
         g.setColor(saved);
         g.setStroke(saved_stroke);
+    }
+
+    /** Whether the circular layout draws a Scale BAR: a circular phylogram with a scale distance and no time rings --
+     *  capped long branches included (the bar reads the unbroken scale; see circularRadialNormaliser). */
+    private boolean circularScaleBarApplies() {
+        return isCircularPhylogram() && (getScaleDistance() > 0.0) && !geologicRingsApplyCircular()
+                && !calendarRingsApplyCircular();
+    }
+
+    /** What a circular phylogram's radius is normalised by (circularRadiusFraction): the tree height, or the CAPPED
+     *  height while long branches are capped. One unit of distance on an unbroken branch is radius / this. */
+    private double circularRadialNormaliser() {
+        return breakLongBranchesActiveCircular() ? breakCappedRadialMax() : getMaxDistanceToRoot();
+    }
+
+    /** Whether the circular layout can state a DISTANCE scale along its whole radius (the Scale Axis and Grid): a
+     *  circular PHYLOGRAM with a scale distance, no geologic / calendar time rings (those ARE its time scale, as the
+     *  time axes replace the numeric scale in the rectangular layouts) and no capped long branches (the radius is then
+     *  the CAPPED distance, which no linear ruler spans). */
+    private boolean circularDistanceScaleApplies() {
+        return isCircularPhylogram() && (getScaleDistance() > 0.0) && !geologicRingsApplyCircular()
+                && !calendarRingsApplyCircular() && !breakLongBranchesActiveCircular();
+    }
+
+    /**
+     * The circular "Scale Axis": a ruler from the root (0, the ring centre) out to the deepest tip along the SEAM --
+     * the centre line of the gap between the last tip and the first, where no branch runs -- with a tick at each
+     * scale-axis value, the numbers on one side of it (upright, reading along it, decimated so none overlap) and the
+     * distance unit past its end. The rectangular axis's values, number format and unit; the geometry follows
+     * Archaeopteryx.js's circular ruler (Christian, 2026-09-30, for both programs). Reserves nothing: the seam is
+     * inside the tree's own disc. Drawn over the tree; a no-op unless {@link #circularDistanceScaleApplies()}.
+     */
+    private void paintCircularScaleAxis(final Graphics2D g, final int cx, final int cy, final int radius,
+                                        final boolean to_pdf, final boolean to_graphics_file) {
+        if (!getOptions().isShowScaleAxis() || !circularDistanceScaleApplies() || (radius <= 0)) {
+            return;
+        }
+        final double max = getMaxDistanceToRoot();
+        final double deepest = numericScaleAxisMaxDist();
+        final double[] ticks = TreePanelUtil.scaleAxisTickValues(deepest, getScaleDistance());
+        if ((max <= 0) || (ticks.length == 0)) {
+            return;
+        }
+        final double r_end = (deepest / max) * radius;
+        final double seam = _circular_seam_angle;
+        final double ux = Math.cos(seam); // along the ruler, outward
+        final double uy = Math.sin(seam);
+        final double vx = -uy; // across it
+        final double vy = ux;
+        // numbers read along the ruler and stay upright: on a ruler pointing left, turn them half a turn
+        final boolean flip = ux < -1e-9;
+        final double text_angle = flip ? (seam + Math.PI) : seam;
+        final Font saved_font = g.getFont();
+        final Color saved_color = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        g.setFont(getTreeFontSet().getSmallFont());
+        final FontMetrics fm = g.getFontMetrics();
+        g.setColor(scaleInkColor(to_pdf, to_graphics_file));
+        g.setStroke(STROKE_1);
+        drawLine(cx, cy, cx + (ux * r_end), cy + (uy * r_end), g);
+        // the numbers on the side that is "below" the upright text, clear of the ticks
+        final double side = (flip ? -1 : 1) * (SCALE_AXIS_TICK_LEN + 2 + (fm.getAscent() / 2.0));
+        double last_label_end = -Double.MAX_VALUE; // along the ruler, inner -> outer
+        for (final double v : ticks) {
+            final double r = (v / max) * radius;
+            final double px = cx + (ux * r);
+            final double py = cy + (uy * r);
+            drawLine(px - (vx * SCALE_AXIS_TICK_LEN), py - (vy * SCALE_AXIS_TICK_LEN), px + (vx * SCALE_AXIS_TICK_LEN),
+                    py + (vy * SCALE_AXIS_TICK_LEN), g); // the tick (always drawn), across the ruler
+            final String label = TreePanelUtil.formatCompactNumber(v);
+            final double half = fm.stringWidth(label) / 2.0;
+            if ((r - half) >= (last_label_end + SCALE_AXIS_LABEL_GAP)) {
+                // on a backdrop: the numbers sit beside the ruler, over the branches of the tips either side of the
+                // seam (one row wide), and must stay legible there (Archaeopteryx.js: the same backdrop)
+                drawTextAlong(g, label, px + (vx * side), py + (vy * side), text_angle, fm, scaleAxisBackdrop());
+                last_label_end = r + half;
+            }
+        }
+        // the distance unit once, on the ruler's line past its end, and past the last number: a number that stands
+        // at the end reaches beyond it by half its width (the rectangular axis drops a unit that does not clear its
+        // last number, which shares its row; here the unit has the ruler's line to itself, and moves out instead)
+        if (!ForesterUtil.isEmpty(_phylogeny.getDistanceUnit())) {
+            final String unit = "[" + _phylogeny.getDistanceUnit() + "]";
+            final double half = fm.stringWidth(unit) / 2.0;
+            final double r = Math.max(r_end + SCALE_AXIS_UNIT_GAP, last_label_end + SCALE_AXIS_LABEL_GAP) + half;
+            drawTextAlong(g, unit, cx + (ux * r), cy + (uy * r), text_angle, fm, null);
+        }
         g.setFont(saved_font);
+        g.setColor(saved_color);
+        g.setStroke(saved_stroke);
+    }
+
+    /** The fill behind a circular scale-axis number: the canvas colour, slightly see-through; none on a transparent
+     *  export, where a box of the theme's background would show. (A white-background export repaints in the light
+     *  theme -- ExportTheme -- so the tree colour set's background IS the canvas.) */
+    private Color scaleAxisBackdrop() {
+        if (_export_transparent_background) {
+            return null;
+        }
+        final Color bg = getTreeColorSet().getBackgroundColor();
+        return new Color(bg.getRed(), bg.getGreen(), bg.getBlue(), 217); // 0.85, as Archaeopteryx.js
+    }
+
+    /** Draws {@code text} centred on ({@code x}, {@code y}), its baseline turned to device angle {@code angle}, over
+     *  a rounded {@code backdrop} box when one is given. */
+    private static void drawTextAlong(final Graphics2D g, final String text, final double x, final double y,
+                                      final double angle, final FontMetrics fm, final Color backdrop) {
+        final AffineTransform saved = g.getTransform();
+        g.translate(x, y);
+        g.rotate(angle);
+        if (backdrop != null) {
+            final Color ink = g.getColor();
+            final int w = fm.stringWidth(text);
+            final int h = fm.getAscent() + fm.getDescent();
+            g.setColor(backdrop);
+            g.fill(new java.awt.geom.RoundRectangle2D.Double((-w / 2.0) - 2, (-h / 2.0) - 1, w + 4, h + 2, 4, 4));
+            g.setColor(ink);
+        }
+        g.drawString(text, (float) (-fm.stringWidth(text) / 2.0), (float) ((fm.getAscent() - fm.getDescent()) / 2.0));
+        g.setTransform(saved);
     }
 
     /** Concentric CALENDAR-year rings for a circular PHYLOGRAM: the radial axis is time, so a faint ring at each nice
@@ -7492,6 +7612,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  full-canvas export moves out from under the panel. */
     final int circularRadiusForTest() {
         return _circular_radius;
+    }
+
+    /** Test hook: the device angle of the circular seam (the Scale Axis ruler's direction) in the last paint. */
+    final double circularSeamAngleForTest() {
+        return _circular_seam_angle;
+    }
+
+    /** Test hook: the numbers the circular distance scale is drawn from: {tree height a radius is normalised by, the
+     *  deepest tip's distance (where the ruler ends), the scale distance (tick / ring / bar spacing), what the radius
+     *  is normalised by right now (the tree height, or the capped height while long branches are capped)}. */
+    final double[] circularScaleNumbersForTest() {
+        return new double[] { getMaxDistanceToRoot(), numericScaleAxisMaxDist(), getScaleDistance(),
+                circularRadialNormaliser() };
+    }
+
+    /** Test hook: the fill behind a circular scale-axis number right now (null: none). */
+    final Color scaleAxisBackdropForTest() {
+        return scaleAxisBackdrop();
     }
 
     /** Test hook: the unrooted fan's spread factor -- the quantity "Tree share" governs in THAT layout (the
@@ -16633,8 +16771,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // neighbours sit the mean of their weights apart -- the angular form of the rectangular breadth layout
         final double rows = rowWeight(_root);
         final double row_angle = (rows > 0) ? (TWO_PI / rows) : TWO_PI;
-        assignCircularDisplayedTipAngles(_root, center_x, center_y, radius, row_angle,
-                new double[] { starting_angle, -1 }, new int[] { 0 });
+        final double[] angle = { starting_angle, -1 };
+        assignCircularDisplayedTipAngles(_root, center_x, center_y, radius, row_angle, angle, new int[] { 0 });
+        // past the LAST tip by half its row: the seam, half a row before the first tip (mod a turn)
+        _circular_seam_angle = angle[0] + (Math.max(0, angle[1]) * row_angle / 2.0);
         paintCirculars(phy.getRoot(), phy, center_x, center_y, radius, radial_labels, g, to_pdf, to_graphics_file);
         paintNodeBox(_root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file);
     }
@@ -17188,11 +17328,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintGeologicRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // concentric CALENDAR-year rings behind the tree (a no-op unless CALENDAR + a circular phylogram)
             paintCalendarRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
-            if (!geologicRingsApplyCircular() && !calendarRingsApplyCircular() && !breakLongBranchesActiveCircular()) {
-                // concentric distance rings behind the tree (a no-op unless this is a circular PHYLOGRAM); suppressed
-                // while capping -- the radius is the CAPPED distance, so linear distance rings would misalign
-                paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
-            }
+            // the Scale Grid as concentric distance rings behind the tree (self-gated: circularDistanceScaleApplies)
+            paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
             paintQueuedInternalLabels(g, to_pdf, to_graphics_file); // after every tip label
@@ -17224,6 +17361,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintDomainsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             paintRadialOverlays(g, to_pdf, to_graphics_file); // dots + pies + hover preview + halos (coords set above)
             paintTimeAxisHint(g, to_pdf, to_graphics_file); // a dated circular CLADOGRAM: say why the ring axis isn't showing
+            // the Scale Axis: a ruler in the seam (after paintCircular, which records the seam), over the tree
+            paintCircularScaleAxis(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            // the Scale bar, bottom left as in the other layouts; one unit of distance is radius / tree height here. It
+            // stays while long branches are capped, sized to the unbroken scale (the radius is then normalised by the
+            // CAPPED height), as the rectangular bar does -- only the axis and grid, which span the capped part, go
+            if (getOptions().isShowScale() && circularScaleBarApplies() && (radius > 0)) {
+                final double px_per_unit = radius / circularRadialNormaliser();
+                if (!(to_graphics_file || to_pdf)) {
+                    paintScale(g, getVisibleRect().x, getVisibleRect().y + getVisibleRect().height, px_per_unit,
+                            to_pdf, to_graphics_file);
+                } else {
+                    paintScale(g, graphics_file_x, graphics_file_y + graphics_file_height, px_per_unit, to_pdf,
+                            to_graphics_file);
+                }
+            }
             if (getOptions().isShowOverview() && isOvOn() && !to_graphics_file && !to_pdf) {
                 final int radius_ov = (int) (getOvMaxHeight() < getOvMaxWidth() ? getOvMaxHeight() / 2
                         : getOvMaxWidth() / 2);

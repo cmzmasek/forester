@@ -841,6 +841,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Circular scale axis: ");
+        if (org.forester.archaeopteryx.CircularScaleAxisTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Connector color: ");
         if (org.forester.archaeopteryx.ConnectorColorTest.test()) {
             System.out.println("OK.");

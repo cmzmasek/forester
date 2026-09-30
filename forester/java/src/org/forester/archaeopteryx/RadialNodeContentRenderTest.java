@@ -102,7 +102,9 @@ public final class RadialNodeContentRenderTest {
             o.setGraphicsExportWhiteBackground( true );
             o.setShowOverview( false );
             tp.setOvOn( false );
-            o.setShowScale( false ); // no distance rings -> the only light-grey ink is the aligned leaders
+            o.setShowScale( false );
+            o.setShowScaleGrid( false ); // no distance rings -> the only light-grey ink is the aligned leaders
+            o.setShowScaleAxis( false );
             tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
             tp.setPreferredSize( new java.awt.Dimension( w, h ) );
             tp.setSize( w, h );
@@ -489,7 +491,7 @@ public final class RadialNodeContentRenderTest {
     }
 
     /** A circular PHYLOGRAM (Draw Phylogram + branch lengths) positions each tip by its DISTANCE-to-root (not all on
-     *  one outer ring like a cladogram), and draws concentric distance RINGS. Checked transform-independently: a tip's
+     *  one outer ring like a cladogram), and draws concentric distance RINGS for the Scale Grid. Checked transform-independently: a tip's
      *  distance from the ring centre (root) must scale with its distance-to-root; and the faint light-grey ring circles
      *  must be present on the white theme. */
     private static boolean circularPhylogramOk() {
@@ -504,8 +506,11 @@ public final class RadialNodeContentRenderTest {
             tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
             tp.setPreferredSize( new java.awt.Dimension( w, h ) );
             tp.setSize( w, h );
-            // render the phylogram with the SCALE OFF (no rings) -- positions the tips + the rings-off reference
+            // render the phylogram with the SCALE GRID OFF (no rings) -- positions the tips + the rings-off reference;
+            // the scale bar and axis off too, so the delta below is the rings alone
+            o.setShowScaleGrid( false );
             o.setShowScale( false );
+            o.setShowScaleAxis( false );
             tp.calcParametersForPainting( w, h );
             final BufferedImage no_rings = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
             final org.forester.phylogeny.PhylogenyNode root = tp.getPhylogeny().getRoot();
@@ -536,16 +541,17 @@ public final class RadialNodeContentRenderTest {
                 fail( ok, "circular phylogram tip radius must scale with distance-to-root (radius ratio " + actual
                         + " vs distance ratio " + expected + ")" );
             }
-            // (2) turning the SCALE on adds the concentric distance rings on the SAME phylogram layout, so the grey
-            // anti-aliasing ink from branches/labels cancels and the delta is PURELY the rings -- platform-robust
-            // (no absolute threshold). The rings are gated on the "Scale" option, like the rectangular scale bar.
-            o.setShowScale( true );
+            // (2) turning the SCALE GRID on adds the concentric distance rings on the SAME phylogram layout, so the
+            // grey anti-aliasing ink from branches/labels cancels and the delta is PURELY the rings -- platform-robust
+            // (no absolute threshold). The rings are the circular Scale Grid, as the grid lines are elsewhere (until
+            // 2026-09-30 they followed "Scale"; CircularScaleAxisTest pins that Scale alone no longer draws them).
+            o.setShowScaleGrid( true );
             tp.calcParametersForPainting( w, h );
             final BufferedImage with_rings = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
             final int g_off = countGrayRings( no_rings );
             final int g_on = countGrayRings( with_rings );
             if ( g_on <= ( g_off + 1500 ) ) {
-                fail( ok, "a circular phylogram must draw concentric distance rings when the scale is shown (grey px "
+                fail( ok, "a circular phylogram must draw concentric distance rings for the Scale Grid (grey px "
                         + g_on + " with vs " + g_off + " without)" );
             }
         }, ok );

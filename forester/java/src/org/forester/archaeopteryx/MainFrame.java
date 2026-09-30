@@ -171,13 +171,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_SCALE_LABEL = "Scale";
     static final String SHOW_TREE_NAME_LABEL = "Tree Name";
     static final String DISPLAY_SCALE_GRID_LABEL = "Scale Grid Lines";
-    static final String DISPLAY_SCALE_GRID_TIP = "Draw faint vertical reference lines at scale intervals across the tree (phylograms only), so branch depths are easy to compare.";
+    static final String DISPLAY_SCALE_GRID_TIP = "Draw faint reference lines at scale intervals across the tree (rings in the circular layout; phylograms only), so branch depths are easy to compare.";
     static final String GEOLOGIC_GRID_LABEL = "Time-Axis Grid Lines";
     static final String GEOLOGIC_GRID_TIP = "When a Time Axis is on, draw faint reference lines across the tree at its tick positions (the geologic band boundaries, or the calendar year ticks).";
     static final String GEOLOGIC_AGES_LABEL = "Geologic Boundary Ages";
     static final String GEOLOGIC_AGES_TIP = "When the Geologic time axis is on, label the coarser band's interval boundaries with their age (e.g. \"201.4 Ma\" at the base of the Jurassic).";
     static final String DISPLAY_SCALE_AXIS_LABEL = "Scale Axis";
-    static final String DISPLAY_SCALE_AXIS_TIP = "Draw a labeled distance axis with tick marks along the bottom (phylograms only), so branch lengths can be read off directly.";
+    static final String DISPLAY_SCALE_AXIS_TIP = "Draw a labeled distance axis with tick marks (along the bottom, down the side when the root is at the top or bottom, and in the circular layout out from the root in the gap between the last tip and the first; phylograms only), so branch lengths can be read off directly.";
     static final String DISPLAY_HPD_BARS_LABEL = "Node Age Bars (HPD)";
     static final String DISPLAY_HPD_BARS_TIP = "On a dated (time-scaled) phylogram, draw a bar at each internal node spanning its age uncertainty (the node's phyloXML date min/max).";
     static final String DISPLAY_FOSSIL_RANGE_BARS_LABEL = "Fossil Range Bars (FAD/LAD)";
@@ -573,9 +573,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
             // the scale axis reserves a tip-spread band (a side ruler in a vertical orientation, a bottom band in a
             // horizontal one); toggling it must re-fit so the reserve is applied/reclaimed and the axis clears the
-            // tips -- but ONLY where the axis is actually drawn (a rectangular-family phylogram with a scale). For a
-            // cladogram or the radial circular/unrooted layouts the toggle is inert, so leave the view (and any radial
-            // zoom) untouched. showWhole re-fits to the viewport in BOTH orientations -- no preferred-size feedback,
+            // tips -- but ONLY where the axis takes a band (a rectangular-family phylogram with a scale). A cladogram
+            // and unrooted draw none, and circular draws its ruler in the seam, reserving nothing, so leave the view
+            // (and any radial zoom) untouched there. showWhole re-fits to the viewport in BOTH orientations -- no preferred-size feedback,
             // so no depth-zoom drift (a plain fitWidth/fitHeight feeds the extent back and creeps the zoom by MOVE).
             final TreePanel tp = getCurrentTreePanel();
             if ((tp != null) && tp.scaleAxisAppliesToLayout()) {
