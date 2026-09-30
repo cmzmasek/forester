@@ -518,6 +518,7 @@ public final class MainFrameApplication extends MainFrame {
 
     /** Recomputes derived tree state and repaints after branches were removed by a collapse tool. */
     private void refreshAfterBranchCollapse(final Phylogeny phy) {
+        getCurrentTreePanel().settleMergedBranchesInTime(); // a merged branch in time: the signed sum of its pieces
         phy.externalNodesHaveChanged();
         phy.clearHashIdToNodeMap();
         phy.recalculateNumberOfExternalDescendants(true);

@@ -205,6 +205,33 @@ public class BranchLengthLayoutTest {
                 || !eq( kept_pr.refreshedBy( pr ).of( node( pr, "t1" ) ), 9 ) ) {
             return fail( "a merged branch edited to another length is one piece of that length" );
         }
+        // a NEGATIVE piece: clamped by itself, max(0, span) x rate -- not the total
+        final Phylogeny neg = fiveBranches();
+        node( neg, "x" ).setDistanceToParent( -0.25 );
+        node( neg, "t1" ).setDistanceToParent( 4.5 );
+        final TimeLengths kept_neg = TimeLengths.onScreen( neg );
+        PhylogenyMethods.removeNode( node( neg, "x" ), neg );
+        if ( !eq( kept_neg.divergence( node( neg, "t1" ), 0.002 ), 0.002 * 4.5 ) ) {
+            return fail( "a negative piece adds nothing, the others count in full: " + ( 0.002 * 4.5 ) + "; got "
+                    + kept_neg.divergence( node( neg, "t1" ), 0.002 ) + " (clamping the total gives " + ( 0.002 * 4.25 ) + ")" );
+        }
+        // the tree code's merge dropped the negative piece: t1 is 4.5 on screen; settled, it is the signed 4.25
+        if ( !eq( lengthOf( neg, "t1" ), 4.5 ) ) {
+            return fail( "settle: fixture -- the tree code's merge drops a negative length, t1 4.5; got " + lengthOf( neg, "t1" ) );
+        }
+        if ( ( BranchLengthLayout.settleMergedBranches( neg, kept_neg ) != 2 ) || !eq( lengthOf( neg, "t1" ), 4.25 )
+                || !eq( lengthOf( neg, "t2" ), 4.75 ) ) {
+            return fail( "both branches that took in x are given the signed sum of their pieces: t1 4.25, t2 4.75; got t1="
+                    + lengthOf( neg, "t1" ) + " t2=" + lengthOf( neg, "t2" ) );
+        }
+        if ( BranchLengthLayout.settleMergedBranches( neg, kept_neg ) != 0 ) {
+            return fail( "settling twice changes nothing" );
+        }
+        // a merged branch edited to another length is not touched
+        node( neg, "t1" ).setDistanceToParent( 7 );
+        if ( ( BranchLengthLayout.settleMergedBranches( neg, kept_neg ) != 0 ) || !eq( lengthOf( neg, "t1" ), 7 ) ) {
+            return fail( "a branch that is no longer the tree code's merge of its pieces is left as it is" );
+        }
         // a branch that states no length on screen has none, whatever was remembered for it
         node( pr, "t2" ).setDistanceToParent( PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT );
         if ( kept_pr.refreshedBy( pr ).of( node( pr, "t2" ) ) != null ) {

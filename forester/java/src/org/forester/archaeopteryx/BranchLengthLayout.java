@@ -215,17 +215,19 @@ final class BranchLengthLayout {
          * Rate x time along the branch leading to {@code node}, PIECE BY PIECE: its own piece at the rate it states
          * now ({@code rate}), a piece a removed node left at the rate that node stated (at {@code rate} when it
          * stated none) -- the change along a branch does not become another change because a node on it was
-         * deleted (as Archaeopteryx.js keeps it, per segment). Null when no length is kept for the branch.
+         * deleted (as Archaeopteryx.js keeps it, per segment). Each piece is CLAMPED BY ITSELF, max(0, span) x rate
+         * (joint, Christian 2026-09-29): what each piece showed in divergence before the delete, so a delete moves
+         * nothing in divergence. Null when no length is kept for the branch.
          */
         Double divergence( final PhylogenyNode node, final double rate ) {
             final java.util.List<Kept> pieces = pieces( node );
             if ( pieces == null ) {
                 return null;
             }
-            double sum = rate * pieces.get( 0 )._length;
+            double sum = Math.max( 0.0, pieces.get( 0 )._length ) * rate;
             for( int i = 1; i < pieces.size(); ++i ) {
                 final Kept k = pieces.get( i );
-                sum += ( ( k._rate != null ) ? k._rate.doubleValue() : rate ) * k._length;
+                sum += Math.max( 0.0, k._length ) * ( ( k._rate != null ) ? k._rate.doubleValue() : rate );
             }
             return Double.valueOf( sum );
         }
@@ -294,6 +296,62 @@ final class BranchLengthLayout {
             }
             return t;
         }
+    }
+
+    /**
+     * After a node was removed while TIME is on screen: every branch that took in removed nodes is given the SIGNED
+     * sum of its pieces (joint with Archaeopteryx.js, Christian 2026-09-29). The tree code's own merge reads a
+     * negative length as no length and drops it ({@code PhylogenyMethods.addPhylogenyDistances}, which stays as it
+     * is: it is shared API), so a node stated before its parent would otherwise take the time it runs backwards
+     * with it -- and the same delete made in divergence comes back in time as the signed sum. Only a branch that is
+     * still what that merge made of its pieces is touched.
+     *
+     * @return the number of branches given their signed sum
+     */
+    static int settleMergedBranches( final Phylogeny phy, final TimeLengths remembered ) {
+        if ( ( phy == null ) || phy.isEmpty() || ( remembered == null ) ) {
+            return 0;
+        }
+        int settled = 0;
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isRoot() || ( n.getParent() == null ) ) {
+                continue;
+            }
+            final java.util.List<TimeLengths.Kept> pieces = remembered.pieces( n );
+            if ( ( pieces == null ) || ( pieces.size() < 2 ) ) {
+                continue;
+            }
+            double signed = 0;
+            double merged = pieces.get( 0 )._length;
+            for( int i = 0; i < pieces.size(); ++i ) {
+                signed += pieces.get( i )._length;
+                if ( i > 0 ) {
+                    merged = mergedAsTheTreeCodeDoes( pieces.get( i )._length, merged );
+                }
+            }
+            final double d = n.getDistanceToParent();
+            if ( ( d != signed ) && ( Math.abs( d - merged ) <= ( 1e-9 * Math.max( 1.0, Math.abs( merged ) ) ) ) ) {
+                n.setDistanceToParent( signed );
+                ++settled;
+            }
+        }
+        return settled;
+    }
+
+    /** {@code PhylogenyMethods.addPhylogenyDistances}, as the tree code merges a removed node's length into its
+     *  child's: a negative length counts as none. */
+    private static double mergedAsTheTreeCodeDoes( final double removed, final double child ) {
+        if ( ( removed >= 0.0 ) && ( child >= 0.0 ) ) {
+            return removed + child;
+        }
+        else if ( removed >= 0.0 ) {
+            return removed;
+        }
+        else if ( child >= 0.0 ) {
+            return child;
+        }
+        return PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
     }
 
     /** Auspice / Nextstrain: cumulative divergence from the root, per node. */

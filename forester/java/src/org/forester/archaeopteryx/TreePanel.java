@@ -1415,6 +1415,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setCopiedAndPastedNodes(null);
         setCutOrCopiedTree(_phylogeny.copy(node));
         _phylogeny.deleteSubtree(node, true);
+        settleMergedBranchesInTime();
         _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants(true);
         resetNodeIdToDistToLeafMap();
@@ -1443,6 +1444,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * descendants threw, over and over, inside the EDT paint loop.
      */
     void afterTreeStructureChanged() {
+        settleMergedBranchesInTime();
         setNodeInPreorderToNull();
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             _phylogeny.externalNodesHaveChanged();
@@ -6078,13 +6080,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return trees;
     }
 
-    /** Before a change to the tree (every one takes an undo checkpoint first): a clock tree in time remembers its
-     *  lengths and rates as they are, so a node the change removes leaves its piece of the merged branch, at its
-     *  rate. (A RECORDED divergence needs no such memory: it is cumulative per node, and the nodes left keep it.) */
+    /** Before a change to the tree (every one takes an undo checkpoint first): a tree with a second layout, in
+     *  time, remembers its lengths (and rates) as they are, so a node the change removes leaves its piece of the
+     *  merged branch -- its SIGNED length in time, and on a clock tree its rate. */
     private void rememberTimeLengthsBeforeAChange() {
         if ( ( _phylogeny != null ) && !_phylogeny.isEmpty() && ( branchLengthMode() == BranchLengthLayout.MODE.TIME )
-                && ( BranchLengthLayout.divergenceSource( wholeTree() ) == BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE ) ) {
+                && ( BranchLengthLayout.divergenceSource( wholeTree() ) != BranchLengthLayout.DIVERGENCE_SOURCE.NONE ) ) {
             _time_lengths = timeLengths();
+        }
+    }
+
+    /** After nodes were removed while TIME is on screen: each merged branch states the signed sum of its pieces,
+     *  not the tree code's merge, which drops a negative one ({@link BranchLengthLayout#settleMergedBranches}).
+     *  Called by every removal path, after it has removed. */
+    void settleMergedBranchesInTime() {
+        if ( ( _time_lengths == null ) || ( _phylogeny == null ) || _phylogeny.isEmpty()
+                || ( branchLengthMode() != BranchLengthLayout.MODE.TIME ) ) {
+            return;
+        }
+        int settled = 0;
+        for( final Phylogeny tree : treesOfThisTab() ) {
+            settled += BranchLengthLayout.settleMergedBranches( tree, _time_lengths );
+        }
+        if ( settled > 0 ) {
+            recalculateMaxDistanceToRoot();
         }
     }
 

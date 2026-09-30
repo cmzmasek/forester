@@ -94,6 +94,9 @@ public final class BeastBranchModeTest {
                     && inFrame( RATED, BeastBranchModeTest::deleteNodeInDivergence )
                     && inFrame( RATED, BeastBranchModeTest::deleteSubtreeInDivergence )
                     && inFrame( RATED, BeastBranchModeTest::deleteNodeInTime )
+                    && inFrame( BACKWARDS, ( f, tp, cp, ok ) -> aNegativePieceDeleted( tp, cp, ok, false ) )
+                    && inFrame( BACKWARDS, ( f, tp, cp, ok ) -> aNegativePieceDeleted( tp, cp, ok, true ) )
+                    && inFrame( RECORDED, BeastBranchModeTest::aNegativePieceOfARecordingTree )
                     && inFrame( NOT_HEIGHTS, BeastBranchModeTest::aTabMadeFromATimeTab )
                     && inFrame( NOT_HEIGHTS, BeastBranchModeTest::aTabMadeFromADivergenceTab )
                     && aBackgroundTabArrivesBeforeItsAxisIsRead()
@@ -1280,6 +1283,78 @@ public final class BeastBranchModeTest {
                 fail( ok, "a node deleted in time: Time (round " + round + ") gives D 0.8; got " + length( phy, "isolate_D" ) );
                 return;
             }
+        }
+    }
+
+    /**
+     * The (D,E) node is stated 0.05 BEFORE its parent (-0.05). E is deleted, so D takes (D,E)'s branch: in time the
+     * SIGNED sum, 0.85 - 0.05 = 0.8 (the tree code's own merge would drop the negative piece and say 0.85); in
+     * divergence each piece clamped by itself, 0.0035 x 0.85 + 0 = 0.002975 (clamping the total would say 0.002805).
+     * Deleted in Time or in Div, then twice round.
+     */
+    private static void aNegativePieceDeleted( final TreePanel tp,
+                                               final ControlPanel cp,
+                                               final boolean[] ok,
+                                               final boolean in_div ) {
+        final Phylogeny phy = tp.getPhylogeny();
+        final String where = in_div ? "in Div" : "in Time";
+        if ( !near( phy.getNode( "isolate_D" ).getParent().getDistanceToParent(), -0.05 )
+                || !near( length( phy, "isolate_D" ), 0.85 ) ) {
+            fail( ok, "negative piece: fixture -- (D,E) stated at -0.05, D at 0.85" );
+            return;
+        }
+        if ( in_div ) {
+            cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+        }
+        tp.deleteNodeOrSubtreeConfirmed( phy.getNode( "isolate_E" ), false );
+        if ( ( phy.getNode( "isolate_D" ).getParent() != phy.getNode( "isolate_C" ).getParent() ) ) {
+            fail( ok, "negative piece: fixture -- with E gone, D hangs from C's parent" );
+            return;
+        }
+        final double div = 0.0035 * 0.85;
+        if ( !near( length( phy, "isolate_D" ), in_div ? div : 0.8 ) ) {
+            fail( ok, "a negative piece deleted " + where + ": on screen D is " + ( in_div ? div : 0.8 ) + "; got "
+                    + length( phy, "isolate_D" ) );
+            return;
+        }
+        for( int round = 1; round <= 2; ++round ) {
+            cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.TIME );
+            if ( !near( length( phy, "isolate_D" ), 0.8 ) ) {
+                fail( ok, "a negative piece deleted " + where + ": Time (round " + round + ") gives D the signed sum, 0.8;"
+                        + " got " + length( phy, "isolate_D" ) );
+                return;
+            }
+            cp.userSelectBranchLengthsForTest( BranchLengthLayout.MODE.DIVERGENCE );
+            if ( !near( length( phy, "isolate_D" ), div ) ) {
+                fail( ok, "a negative piece deleted " + where + ": Div (round " + round + ") clamps each piece by itself, "
+                        + div + "; got " + length( phy, "isolate_D" ) );
+                return;
+            }
+        }
+    }
+
+    /**
+     * The same on a tree that RECORDS its divergence (no rates): NODE_0000002 is given a branch of -0.3 in time, then
+     * A/Dakar/8/2016 is deleted, so A/Abidjan/3/2015 takes that branch: in time the signed 2.5 - 0.3 = 2.2, not the
+     * tree code's 2.5.
+     */
+    private static void aNegativePieceOfARecordingTree( final MainFrame frame,
+                                                        final TreePanel tp,
+                                                        final ControlPanel cp,
+                                                        final boolean[] ok ) {
+        final Phylogeny phy = tp.getPhylogeny();
+        final PhylogenyNode abidjan = phy.getNode( "A/Abidjan/3/2015" );
+        if ( ( tp.getBranchLengthMode() != BranchLengthLayout.MODE.TIME ) || !near( abidjan.getDistanceToParent(), 2.5 )
+                || ( abidjan.getParent() != phy.getNode( "A/Dakar/8/2016" ).getParent() ) ) {
+            fail( ok, "recording tree: fixture -- in time, Abidjan 2.5, a cherry with Dakar" );
+            return;
+        }
+        abidjan.getParent().setDistanceToParent( -0.3 );
+        tp.invalidateBranchLengthToggle();
+        tp.deleteNodeOrSubtreeConfirmed( phy.getNode( "A/Dakar/8/2016" ), false );
+        if ( !near( abidjan.getDistanceToParent(), 2.2 ) ) {
+            fail( ok, "a negative piece of a recording tree, deleted in time: Abidjan is the signed 2.5 - 0.3 = 2.2; got "
+                    + abidjan.getDistanceToParent() );
         }
     }
 
