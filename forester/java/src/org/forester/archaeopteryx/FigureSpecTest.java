@@ -47,7 +47,7 @@ public final class FigureSpecTest {
     }
 
     public static boolean test() {
-        return codec() && parsing() && roundTrip() && perTabRestore();
+        return codec() && parsing() && storage() && roundTrip() && perTabRestore();
     }
 
     private static boolean fail( final String msg ) {
@@ -91,6 +91,154 @@ public final class FigureSpecTest {
             return fail( "a newer build's extra key must be ignored, not fatal" );
         }
         return true;
+    }
+
+    /** A file as 0.11.117 to 0.11.172 wrote it: the figure on the ROOT CLADE, not under {@code <phylogeny>}. */
+    private static final String LEGACY_ROOT_CLADE_FIGURE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<phyloxml xmlns=\"http://www.phyloxml.org\">\n"
+            + "<phylogeny rooted=\"true\">\n"
+            + "<clade>\n"
+            + "<property ref=\"aptx:figure\" datatype=\"xsd:string\" applies_to=\"phylogeny\">"
+            + "v1;layout=CIRCULAR;columns=data:host\\sCOLOR_STRIP\\sCIRCLE\\sfalse</property>\n"
+            + "<clade><name>a</name>"
+            + "<property ref=\"data:host\" datatype=\"xsd:string\" applies_to=\"node\">cat</property></clade>\n"
+            + "<clade><name>b</name>"
+            + "<property ref=\"data:host\" datatype=\"xsd:string\" applies_to=\"node\">dog</property></clade>\n"
+            + "</clade>\n"
+            + "</phylogeny>\n"
+            + "</phyloxml>\n";
+
+    /**
+     * WHERE the figure lives: a direct child of {@code <phylogeny>}, like every other piece of per-tree app state
+     * (Christian, 2026-09-30) -- never on the root clade, where 0.11.117 to 0.11.172 put it. A HARD BREAK: a figure
+     * on a clade is ignored, and saving deletes it, so a re-saved old file carries no figure that is never read.
+     */
+    private static boolean storage() {
+        try {
+            // written: at the phylogeny level, and nowhere on the nodes
+            final Phylogeny phy = tree();
+            FigureSpec.writeToTree( phy, FigureSpec.parse( "v1;layout=CIRCULAR" ) );
+            if ( ( figuresAtPhylogenyLevel( phy ) != 1 ) || ( figuresOnNodes( phy ) != 0 ) ) {
+                return fail( "a written figure must be ONE phylogeny-level property and none on a node, got "
+                        + figuresAtPhylogenyLevel( phy ) + " / " + figuresOnNodes( phy ) );
+            }
+            // ...and in the saved TEXT, a direct child of <phylogeny> (asked of the XML itself, not of our reader)
+            final StringBuffer xml = new org.forester.io.writers.PhylogenyWriter().toPhyloXML( phy, 0 );
+            final String parents = figureParentsInXml( xml.toString() );
+            if ( !"phylogeny".equals( parents ) ) {
+                return fail( "in the file the figure must sit directly under <phylogeny>, found under: " + parents );
+            }
+            final Phylogeny reread = parseXsdValidating( xml );
+            if ( ( FigureSpec.readFrom( reread ) == null )
+                    || !"CIRCULAR".equals( FigureSpec.readFrom( reread ).get( "layout" ) ) ) {
+                return fail( "a figure saved under <phylogeny> must read back" );
+            }
+            // an old file: its figure on the root clade is IGNORED -- a well-formed v1 value, so only WHERE it sits
+            // can be the reason (parse() of the same value must give a figure)
+            final Phylogeny legacy = parseXsdValidating( new StringBuffer( LEGACY_ROOT_CLADE_FIGURE ) );
+            if ( ( figuresAtPhylogenyLevel( legacy ) != 0 ) || ( figuresOnNodes( legacy ) != 1 ) ) {
+                return fail( "fixture: the legacy file must carry its figure on the root clade only" );
+            }
+            if ( FigureSpec.parse( "v1;layout=CIRCULAR;columns=data:host\\sCOLOR_STRIP\\sCIRCLE\\sfalse" ) == null ) {
+                return fail( "fixture: the legacy figure's value must itself be a readable figure" );
+            }
+            if ( FigureSpec.readFrom( legacy ) != null ) {
+                return fail( "a figure on the root clade (0.11.117 to 0.11.172) must be ignored, not read" );
+            }
+            // ...and saving a figure onto it leaves exactly one, under <phylogeny>: the dead clade copy is deleted
+            FigureSpec.writeToTree( legacy, FigureSpec.parse( "v1;layout=RECTANGULAR" ) );
+            if ( ( figuresAtPhylogenyLevel( legacy ) != 1 ) || ( figuresOnNodes( legacy ) != 0 ) ) {
+                return fail( "saving must delete an old clade copy, got " + figuresAtPhylogenyLevel( legacy )
+                        + " at the phylogeny level / " + figuresOnNodes( legacy ) + " on nodes" );
+            }
+            final String saved = figureParentsInXml( new org.forester.io.writers.PhylogenyWriter()
+                    .toPhyloXML( legacy, 0 ).toString() );
+            if ( !"phylogeny".equals( saved ) ) {
+                return fail( "a re-saved old file must hold the figure under <phylogeny> only, found: " + saved );
+            }
+            // both present (a hand-edited file): the phylogeny level wins
+            final Phylogeny both = parseXsdValidating( new StringBuffer( LEGACY_ROOT_CLADE_FIGURE ) );
+            both.setProperties( new PropertiesList() );
+            both.getProperties().addProperty( new Property( FigureSpec.FIGURE_REF, "v1;layout=RECTANGULAR", "",
+                                                            "xsd:string", AppliesTo.PHYLOGENY ) );
+            if ( !"RECTANGULAR".equals( FigureSpec.readFrom( both ).get( "layout" ) ) ) {
+                return fail( "with a figure in both places the one under <phylogeny> must win" );
+            }
+            // no figure, or an empty one: removed from both places
+            FigureSpec.writeToTree( both, null );
+            if ( ( FigureSpec.readFrom( both ) != null ) || ( figuresAtPhylogenyLevel( both ) != 0 )
+                    || ( figuresOnNodes( both ) != 0 ) ) {
+                return fail( "writing no figure must remove it from BOTH places" );
+            }
+            // an EMPTY figure (not null: capture() of no panel) must not be written as a bare "v1"
+            final FigureSpec empty = FigureSpec.capture( null );
+            if ( ( empty == null ) || !empty.isEmpty() ) {
+                return fail( "fixture: capture(null) must give an empty, non-null figure" );
+            }
+            FigureSpec.writeToTree( phy, empty );
+            if ( ( figuresAtPhylogenyLevel( phy ) != 0 ) || ( figuresOnNodes( phy ) != 0 ) ) {
+                return fail( "an empty figure must not be written" );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            return fail( "storage: " + e );
+        }
+    }
+
+    private static Phylogeny parseXsdValidating( final StringBuffer xml ) throws java.io.IOException {
+        final org.forester.io.parsers.phyloxml.PhyloXmlParser p = org.forester.io.parsers.phyloxml.PhyloXmlParser
+                .createPhyloXmlParserXsdValidating();
+        p.setSource( xml );
+        return p.parse()[ 0 ];
+    }
+
+    private static int figuresAtPhylogenyLevel( final Phylogeny phy ) {
+        int n = 0;
+        if ( phy.getProperties() != null ) {
+            for( final Property p : phy.getProperties().getProperties() ) {
+                if ( FigureSpec.FIGURE_REF.equals( p.getRef() ) ) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    private static int figuresOnNodes( final Phylogeny phy ) {
+        int n = 0;
+        for( final java.util.Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PropertiesList pl = it.next().getNodeData().getProperties();
+            if ( pl != null ) {
+                for( final Property p : pl.getProperties() ) {
+                    if ( FigureSpec.FIGURE_REF.equals( p.getRef() ) ) {
+                        ++n;
+                    }
+                }
+            }
+        }
+        return n;
+    }
+
+    /** The parent element of every {@code aptx:figure} property in the XML text, comma-separated in document order. */
+    private static String figureParentsInXml( final String xml ) throws Exception {
+        final javax.xml.parsers.DocumentBuilderFactory f = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+        f.setNamespaceAware( true );
+        final org.w3c.dom.NodeList props = f.newDocumentBuilder()
+                .parse( new org.xml.sax.InputSource( new java.io.StringReader( xml ) ) )
+                .getElementsByTagNameNS( "*", "property" );
+        final StringBuilder sb = new StringBuilder();
+        for( int i = 0; i < props.getLength(); ++i ) {
+            final org.w3c.dom.Element e = (org.w3c.dom.Element) props.item( i );
+            if ( FigureSpec.FIGURE_REF.equals( e.getAttribute( "ref" ) ) ) {
+                if ( sb.length() > 0 ) {
+                    sb.append( ',' );
+                }
+                sb.append( e.getParentNode().getLocalName() );
+            }
+        }
+        return sb.toString();
     }
 
     /** The real thing: compose a figure, write it to the tree, read it back into a fresh panel. */

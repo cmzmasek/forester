@@ -92,12 +92,12 @@ public class MainPanel extends JPanel implements ComponentListener {
                                      final String full_path) {
         final TreePanel treepanel = new TreePanel(phy, config, this);
         // if this tree was saved after an annotation import, restore the remembered profile so File -> Re-import works
-        // across a save/reload (the profile rides along as a property on the root node)
+        // across a save/reload (the profile rides along as a property on the <phylogeny>)
         treepanel.setLastImportProfile(org.forester.archaeopteryx.tools.NodeDataImporter.readProfileFromTree(phy));
-        // restore a saved per-tree Time-Axis config (aptx:time_axis on the root); a saved config wins over the
+        // restore a saved per-tree Time-Axis config (aptx:time_axis on the <phylogeny>); a saved config wins over the
         // auto-derived default, and null (no/unparsable property) leaves this tab on auto-derive
         treepanel.applyTimeAxisConfig(TimeAxisConfig.readFromTree(phy));
-        // ...and the saved FIGURE (aptx:figure on the root): the overlays, layout and which labels are drawn, so a
+        // ...and the saved FIGURE (aptx:figure on the <phylogeny>): the overlays, layout and which labels are drawn, so a
         // reopened tree looks like the figure that was saved rather than the defaults. Read here, but APPLIED at
         // the very end -- the phylogram/cladogram choice is stored per TAB INDEX, so it can only be set once this
         // tab exists and is the selected one. Applying it earlier wrote it onto whichever tab was in front.

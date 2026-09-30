@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forester.archaeopteryx.tools.TreeAppProperty;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
@@ -335,14 +336,17 @@ final class FigureSpec {
 
     // --- storage on the tree ----------------------------------------------------------------------------------
 
-    /** Reads the figure stored on {@code phy}'s root, or null. */
+    /**
+     * Reads the figure stored on {@code phy}, or null: ONLY a {@code <property applies_to="phylogeny">} that is a
+     * direct child of {@code <phylogeny>}. A figure on a clade -- where 0.11.117 to 0.11.172 put it, on the root --
+     * is IGNORED (Christian, 2026-09-30: a hard break), so this deliberately does not use
+     * {@link TreeAppProperty#read}, which falls back to the nodes.
+     */
     static FigureSpec readFrom( final Phylogeny phy ) {
-        if ( ( phy == null ) || phy.isEmpty() || ( phy.getRoot() == null )
-                || !phy.getRoot().getNodeData().isHasProperties() ) {
+        if ( ( phy == null ) || ( phy.getProperties() == null ) ) {
             return null;
         }
-        for( final org.forester.phylogeny.data.Property p : phy.getRoot().getNodeData().getProperties()
-                .getProperties() ) {
+        for( final org.forester.phylogeny.data.Property p : phy.getProperties().getProperties() ) {
             if ( FIGURE_REF.equals( p.getRef() ) ) {
                 return parse( p.getValue() );
             }
@@ -351,40 +355,13 @@ final class FigureSpec {
     }
 
     /**
-     * Stores {@code spec} on {@code phy}'s root, replacing any figure already there (or removing it when
-     * {@code spec} is null). Called just before the tree is written, so a saved file carries the figure that was
-     * on screen.
+     * Stores {@code spec} on {@code phy} at the phylogeny level, replacing any figure already there (or removing it
+     * when {@code spec} is null or empty). {@link TreeAppProperty#write} also deletes any figure on a clade, the
+     * dead copy a file from 0.11.117 to 0.11.172 carries on its root, so a re-saved file holds no figure that is never
+     * read. Called just before the tree is written, so a saved file carries the figure that was on screen.
      */
     static void writeToTree( final Phylogeny phy, final FigureSpec spec ) {
-        if ( ( phy == null ) || phy.isEmpty() || ( phy.getRoot() == null ) ) {
-            return;
-        }
-        final org.forester.phylogeny.PhylogenyNode root = phy.getRoot();
-        if ( root.getNodeData().getProperties() != null ) {
-            final List<org.forester.phylogeny.data.Property> keep =
-                    new ArrayList<org.forester.phylogeny.data.Property>();
-            for( final org.forester.phylogeny.data.Property p : root.getNodeData().getProperties()
-                    .getProperties() ) {
-                if ( !FIGURE_REF.equals( p.getRef() ) ) {
-                    keep.add( p );
-                }
-            }
-            final org.forester.phylogeny.data.PropertiesList fresh =
-                    new org.forester.phylogeny.data.PropertiesList();
-            for( final org.forester.phylogeny.data.Property p : keep ) {
-                fresh.addProperty( p );
-            }
-            root.getNodeData().setProperties( fresh );
-        }
-        if ( ( spec == null ) || spec.isEmpty() ) {
-            return;
-        }
-        if ( root.getNodeData().getProperties() == null ) {
-            root.getNodeData().setProperties( new org.forester.phylogeny.data.PropertiesList() );
-        }
-        root.getNodeData().getProperties()
-                .addProperty( new org.forester.phylogeny.data.Property( FIGURE_REF, spec.toPropertyValue(), "",
-                        "xsd:string", org.forester.phylogeny.data.Property.AppliesTo.PHYLOGENY ) );
+        TreeAppProperty.write( phy, FIGURE_REF, ( ( spec == null ) || spec.isEmpty() ) ? null : spec.toPropertyValue() );
     }
 
     private FigureSpec() {
