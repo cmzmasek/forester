@@ -141,7 +141,7 @@ final class NodeDataDraft {
     static final String SEC_DATE         = "Date";
     static final String SEC_DISTRIBUTION = "Distribution";
     static final String SEC_REFERENCE    = "Reference";
-    static final String SEC_PROPERTIES   = "Properties";
+    static final String SEC_PROPERTIES   = "Metadata";
 
     /** Confidence types offered in the editor's type combo (phyloXML leaves the vocabulary open; these are the usual). */
     static final List<String> CONFIDENCE_TYPES = Collections
@@ -647,7 +647,7 @@ final class NodeDataDraft {
             if ( p.isBlank() ) {
                 continue;
             }
-            final String label = "Property " + ( i + 1 );
+            final String label = "Field " + ( i + 1 );
             if ( !isPrefixed( p.ref ) ) {
                 ps.add( new Problem( propertyKey( i, PROP_REF ), label
                         + ": the reference needs a namespace prefix, like \"data:depth\"" ) );

@@ -324,7 +324,7 @@ public final class LabelPropertiesTest {
                             + tp.getLongestExtNodeInfo() );
                 }
                 // PARITY: the radial layouts build their labels in their own painter, which used to stop at the
-                // sequence data -- so the "Properties" option and everything the chooser does to the label were
+                // sequence data -- so the "Metadata" option and everything the chooser does to the label were
                 // silently dead in Circular and Unrooted. These tips are named "A"/"B"/"C", far short of the radial
                 // label-width cap, so the extra ink can only be the property values.
                 for ( final Options.PHYLOGENY_GRAPHICS_TYPE type : new Options.PHYLOGENY_GRAPHICS_TYPE[] {

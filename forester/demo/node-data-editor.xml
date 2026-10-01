@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Node Data Editor (demo)</name>
-  <description>Every kind of node data the editor handles, on a small BRCA1 ortholog tree: taxonomy, two sequences on the human tip, confidences, a dated node with a speciation event, a distribution, a reference, and typed properties. Set &quot;Click on Node to: Edit Node Data&quot; and click a node. Schematic sequences (truncated), not real data.</description>
+  <description>Every kind of node data the editor handles, on a small BRCA1 ortholog tree: taxonomy, two sequences on the human tip, confidences, a dated node with a speciation event, a distribution, a reference, and typed metadata fields. Set &quot;Click on Node to: Edit Node Data&quot; and click a node. Schematic sequences (truncated), not real data.</description>
   <clade>
     <name>BRCA1 orthologs</name>
     <branch_length>0.0</branch_length>

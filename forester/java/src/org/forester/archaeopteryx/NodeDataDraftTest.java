@@ -472,7 +472,7 @@ public final class NodeDataDraftTest {
         d.properties.get( 0 ).value = "130";
         d.properties.add( new PropertyDraft( "data:year", "2019", "", "xsd:integer", AppliesTo.NODE ) );
         d.properties.add( new PropertyDraft() ); // blank row ignored
-        boolean ok = eq( "section", "[Properties]", d.writeTo( n, base ).toString() )
+        boolean ok = eq( "section", "[Metadata]", d.writeTo( n, base ).toString() )
                 && eq( "three properties", 3, n.getNodeData().getProperties().size() )
                 && eq( "value", "130", n.getNodeData().getProperties().getProperties( "data:depth" ).get( 0 ).getValue() )
                 && eq( "id_ref survives the rebuild", "ref1",

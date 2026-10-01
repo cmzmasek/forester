@@ -720,7 +720,7 @@ final class SearchField {
             case BinaryCharacter:
                 return "Binary Character";
             case Properties:
-                return "Any Property";
+                return "Any Metadata Field";
             default:
                 return ndf.toString();
         }

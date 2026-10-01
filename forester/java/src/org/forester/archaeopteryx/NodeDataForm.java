@@ -777,7 +777,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
             if ( isEditable() ) {
                 final JPanel buttons = new JPanel( new FlowLayout( FlowLayout.LEFT, 4, 0 ) );
                 buttons.setOpaque( false );
-                buttons.add( linkButton( "+ Add property", () -> {
+                buttons.add( linkButton( "+ Add metadata field", () -> {
                     _property_model.add( new PropertyDraft() );
                     final int row = _property_model.getRowCount() - 1;
                     _property_table.setRowSelectionInterval( row, row );
@@ -787,7 +787,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
                         ed.requestFocusInWindow();
                     }
                 } ) );
-                _remove_property_button = linkButton( "− Remove property", () -> {
+                _remove_property_button = linkButton( "− Remove metadata field", () -> {
                     final int row = _property_table.getSelectedRow();
                     if ( row >= 0 ) {
                         commitTableEdits();

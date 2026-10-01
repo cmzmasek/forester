@@ -254,7 +254,7 @@ final class SettingsDialog extends JDialog {
         final JCheckBox auto_color = new JCheckBox( "Auto-color a newly opened tree",
                                                     _mf.getOptions().isAutoColorNewTrees() );
         auto_color.setToolTipText( "When a tree is opened, color it right away by its most informative field "
-                + "(taxonomy, sequence, or property) -- like Archaeopteryx.js. A sparse field is offered in "
+                + "(taxonomy, sequence, or metadata) -- like Archaeopteryx.js. A sparse field is offered in "
                 + "\"Color by\" but never chosen automatically. Turn off to open trees uncolored." );
         auto_color.addActionListener( e -> _mf.getOptions().setAutoColorNewTrees( auto_color.isSelected() ) );
         add( c, auto_color );
@@ -291,8 +291,8 @@ final class SettingsDialog extends JDialog {
         // (the Import Annotations / CSV path) or a taxonomy <uri>. Options-direct (no menu item); re-layouts so the
         // tip labels shift to make room. Renders in all five display types (rectangular x3 + circular + unrooted).
         final JCheckBox tip_images = new JCheckBox( "Tip Images", _mf.getOptions().isShowTipImages() );
-        tip_images.setToolTipText( "Draw an image at each tip (from a local path or URL in a node property / <uri>). "
-                + "Add the paths with Tools → Import Annotations." );
+        tip_images.setToolTipText( "Draw an image at each tip (from a local path or URL in a metadata field / <uri>). "
+                + "Add the paths with File → Import Metadata." );
         tip_images.addActionListener( e -> {
             _mf.getOptions().setShowTipImages( tip_images.isSelected() );
             _mf.getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
@@ -1056,7 +1056,7 @@ final class SettingsDialog extends JDialog {
         final int choice = JOptionPane.showConfirmDialog( this,
                 "<html>Reset all display settings to their defaults?<br><br>"
                         + "This also switches the theme to <b>Light</b>, resets the search options, and turns off "
-                        + "property-based <b>&quot;Color by&quot;</b> (back to the default palette) on "
+                        + "<b>&quot;Color by&quot;</b> (back to the default palette) on "
                         + "<b>all open trees</b>.<br>"
                         + "Manually applied branch/clade colors and your loaded trees are not changed.</html>",
                 "Reset to Defaults", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE );

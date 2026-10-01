@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
-  <name>Annotation columns (demo)</name>
-  <description>Synthetic tree with four annotation kinds per tip: &apos;host&apos; and &apos;segment&apos; (categorical), &apos;viral_load&apos; (numeric) and &apos;clade&apos; (text). Try Tools &gt; Annotation Fields to render them as tip-aligned color-strip, heat-map/bar and text columns.</description>
+  <name>Metadata columns (demo)</name>
+  <description>Synthetic tree with four kinds of metadata per tip: &apos;host&apos; and &apos;segment&apos; (categorical), &apos;viral_load&apos; (numeric) and &apos;clade&apos; (text). Try Tools &gt; Metadata Fields to render them as tip-aligned color-strip, heat-map/bar and text columns.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>

@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Sparse accessory genome (demo)</name>
-  <description>50 synthetic strains in six lineages, carrying NO per-tip data. Pair it with the companion sparse-accessory-genome.tsv: 18 genes, each cell an ordinal certainty 0..4 that the gene is present, a blank cell NOT ASSESSED. File &gt; Import Annotations, match the &quot;strain&quot; column against the tip name, then View &gt; Clustergram -- and compare the two clustered orders in View &gt; Order Matrix Columns: the eight rare genes clump together under &quot;Clustered (co-occurrence)&quot;, which counts the strains they are jointly ABSENT from as agreement, and move beside the lineage they actually live in under &quot;Clustered (ignoring shared absence)&quot;.</description>
+  <description>50 synthetic strains in six lineages, carrying NO per-tip data. Pair it with the companion sparse-accessory-genome.tsv: 18 genes, each cell an ordinal certainty 0..4 that the gene is present, a blank cell NOT ASSESSED. File &gt; Import Metadata, match the &quot;strain&quot; column against the tip name, then View &gt; Clustergram -- and compare the two clustered orders in View &gt; Order Matrix Columns: the eight rare genes clump together under &quot;Clustered (co-occurrence)&quot;, which counts the strains they are jointly ABSENT from as agreement, and move beside the lineage they actually live in under &quot;Clustered (ignoring shared absence)&quot;.</description>
   <clade>
     <clade>
       <branch_length>0.115518</branch_length>

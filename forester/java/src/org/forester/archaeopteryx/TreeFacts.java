@@ -498,11 +498,11 @@ final class TreeFacts {
             f.add( new Fact( "Events", String.join( ", ", parts ) ) );
         }
         if ( s.property_refs.isEmpty() ) {
-            f.add( new Fact( "Properties", "none" ) );
+            f.add( new Fact( "Metadata", "none" ) );
         }
         else {
             for( final Map.Entry<String, Integer> e : s.property_refs.entrySet() ) {
-                f.add( new Fact( "Property " + e.getKey(), INT.format( e.getValue() )
+                f.add( new Fact( "Metadata " + e.getKey(), INT.format( e.getValue() )
                         + ( e.getValue() == 1 ? " node" : " nodes" ) ) );
             }
         }

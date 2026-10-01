@@ -100,7 +100,7 @@ public final class NodeHoverCardTest {
                                                "[Events]",
                                                "Duplications: 1",
                                                "Losses: 2",
-                                               "[Properties]",
+                                               "[Metadata]",
                                                "depth: 120 METRIC:m",
                                                "habitat: coastal" );
         return eq( "rows of the rich node", expected, got );
@@ -120,7 +120,7 @@ public final class NodeHoverCardTest {
         pl.addProperty( new Property( "data:empty", "", "", "xsd:string", AppliesTo.NODE ) );
         p.getNodeData().setProperties( pl );
         ok = ok && eq( "properties: headed, user-visible only, namespace stripped",
-                       List.of( "Name: p", "Depth: 0", "[Properties]", "year: 2019" ),
+                       List.of( "Name: p", "Depth: 0", "[Metadata]", "year: 2019" ),
                        strings( NodeHoverText.rows( p ) ) );
         // ... and a node whose only properties are hidden ones gets no heading either
         final PhylogenyNode hp = new PhylogenyNode();

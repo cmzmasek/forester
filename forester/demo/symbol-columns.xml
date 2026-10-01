@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Symbol columns (demo)</name>
-  <description>Synthetic tree whose tips carry a binary &apos;resistant&apos; flag (yes / no / untested) and a categorical &apos;host&apos;. Try Tools &gt; Annotation Fields and pick the &apos;Symbol&apos; render type: a present value draws a filled mark, an explicit &apos;no&apos; a hollow mark, and an untested tip nothing -- a presence/absence (binary) mark column. A many-valued categorical field (&apos;host&apos;) becomes distinct colored marks.</description>
+  <description>Synthetic tree whose tips carry a binary &apos;resistant&apos; flag (yes / no / untested) and a categorical &apos;host&apos;. Try Tools &gt; Metadata Fields and pick the &apos;Symbol&apos; render type: a present value draws a filled mark, an explicit &apos;no&apos; a hollow mark, and an untested tip nothing -- a presence/absence (binary) mark column. A many-valued categorical field (&apos;host&apos;) becomes distinct colored marks.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>

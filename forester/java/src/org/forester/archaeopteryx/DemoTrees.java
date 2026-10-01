@@ -83,12 +83,12 @@ final class DemoTrees {
     static List<Demo> catalog() {
         final List<Demo> demos = new ArrayList<>();
         demos.add( new Demo( "Color Tips by Metadata",
-                             "Colour a tree's tips by a categorical property (host species) -- your data, on the tree.",
+                             "Colour a tree's tips by a categorical metadata field (host species) -- your data, on the tree.",
                              mf -> {
                                  openTree( mf, "color-by-property.xml" );
                                  colorBy( mf, "data:host" );
                              } ) );
-        demos.add( new Demo( "Annotation Columns",
+        demos.add( new Demo( "Metadata Columns",
                              "Tip-aligned data columns beside the tree: categorical colour strips + a numeric heat-map.",
                              mf -> {
                                  final TreePanel tp = openTree( mf, "annotation-columns.xml" );
@@ -98,8 +98,8 @@ final class DemoTrees {
                                          new AnnotationColumns.ColumnSpec( "data:viral_load", AnnotationColumns.Type.HEATMAP ) ) );
                                  refit( mf );
                              } ) );
-        demos.add( new Demo( "Properties in Labels",
-                             "Six properties per tip: two stay in the tip label, four become tip-aligned columns -- each field gets ONE role.",
+        demos.add( new Demo( "Metadata in Labels",
+                             "Six metadata fields per tip: two stay in the tip label, four become tip-aligned columns -- each field gets ONE role.",
                              mf -> {
                                  final TreePanel tp = openTree( mf, "label-properties.xml" );
                                  // the label keeps the two fields that belong beside the name; the rest become

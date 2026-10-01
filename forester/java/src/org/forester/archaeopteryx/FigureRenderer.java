@@ -346,7 +346,7 @@ public final class FigureRenderer {
             final java.util.List<String> refs = PropertyColorScheme.colorableRefs( tp.getPhylogeny() );
             if ( !refs.contains( spec.color_by_ref ) ) {
                 throw new IOException( "cannot colour by \"" + spec.color_by_ref + "\"; this tree offers "
-                        + ( refs.isEmpty() ? "no colourable properties" : refs.toString() ) );
+                        + ( refs.isEmpty() ? "no colourable metadata" : refs.toString() ) );
             }
             cp.demoSelectColorByProperty( spec.color_by_ref );
         }

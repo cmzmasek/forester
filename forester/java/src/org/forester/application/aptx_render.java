@@ -198,7 +198,7 @@ public final class aptx_render {
         System.out.println( "                     (default: a phylogram when the tree has branch lengths)" );
         System.out.println( "  -support           show confidence/support values" );
         System.out.println( "  -bl                show branch-length values" );
-        System.out.println( "  -color=<ref>       colour tips by a property, e.g. data:host" );
+        System.out.println( "  -color=<ref>       colour tips by a metadata field, e.g. data:host" );
         System.out.println( "  -help              this message" );
         System.out.println();
         System.out.println( "Examples:" );

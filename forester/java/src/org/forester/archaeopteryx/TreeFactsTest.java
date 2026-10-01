@@ -358,10 +358,10 @@ public final class TreeFactsTest {
         ok &= is( c, "Distributions", "1 of 5 (20%) tips" );
         ok &= is( c, "Named internal nodes", "2 of 3 (67%)" ); // root + X named, Y not
         ok &= is( c, "Events", "2 duplications, 1 speciation, 1 gene loss" );
-        ok &= is( c, "Property t:p", "2 nodes" );
-        ok &= is( c, "Property t:q", "2 nodes" ); // A (twice, once) + E
-        if ( c.value( "Properties" ) != null ) {
-            return TestFail.here( "'Properties: none' only without properties" );
+        ok &= is( c, "Metadata t:p", "2 nodes" );
+        ok &= is( c, "Metadata t:q", "2 nodes" ); // A (twice, once) + E
+        if ( c.value( "Metadata" ) != null ) {
+            return TestFail.here( "'Metadata: none' only without metadata" );
         }
         if ( !"6 kinds".equals( c.detail ) ) {
             return TestFail.here( c.detail );
@@ -370,7 +370,7 @@ public final class TreeFactsTest {
         final Group bare = group( TreeFacts.compute( ultrametric(), null, false, null ), TreeFacts.COVERAGE );
         ok &= is( bare, "Taxonomy", "0 of 3 (0%) tips" );
         ok &= is( bare, "Sequences", "0 of 3 (0%) tips" );
-        ok &= is( bare, "Properties", "none" );
+        ok &= is( bare, "Metadata", "none" );
         if ( ( bare.value( "Taxonomy identifiers" ) != null ) || ( bare.value( "Events" ) != null )
                 || !"no annotations".equals( bare.detail ) ) {
             return TestFail.here( bare.detail );

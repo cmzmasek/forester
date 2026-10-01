@@ -3,7 +3,7 @@
 <phylogeny rooted="true" branch_length_unit="substitutions/site" type="gene tree" rerootable="true">
   <name>Myosin heavy chain MYH6/MYH7 (demo)</name>
   <id provider="archaeopteryx">demo:myh6-myh7</id>
-  <description>A small myosin heavy-chain gene family: MYH7 orthologs in seven vertebrates and the MYH6 paralog pair under a duplication. Made for View &gt; Tree Properties (Cmd-I): every section has something to say -- tree-level identifier, type and branch-length unit (editable), two kinds of support values, a polytomy and a zero-length branch, and a coverage map of which tips carry taxonomy, sequences, dates, a distribution and properties. Schematic sequences, not real data.</description>
+  <description>A small myosin heavy-chain gene family: MYH7 orthologs in seven vertebrates and the MYH6 paralog pair under a duplication. Made for View &gt; Tree Properties (Cmd-I): every section has something to say -- tree-level identifier, type and branch-length unit (editable), two kinds of support values, a polytomy and a zero-length branch, and a coverage map of which tips carry taxonomy, sequences, dates, a distribution and metadata. Schematic sequences, not real data.</description>
   <clade>
     <name>MYH6/MYH7</name>
     <branch_length>0.0</branch_length>

@@ -35,7 +35,7 @@ import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
- * Integration test for the "Import Annotations (CSV/TSV)" tool: dogfoods the import-annotations demo (a plain-named
+ * Integration test for the "Import Metadata (CSV/TSV)" tool: dogfoods the import-annotations demo (a plain-named
  * tip tree + its companion CSV) on a real {@link MainFrame}/{@link TreePanel}, drives the UI-free apply+refresh, and
  * asserts the keyed join wrote the columns onto the tips, surfaced them in "Color by", and appended a provenance
  * sentence -- plus a negative control (matching by taxonomy, which these plain tips lack, annotates nothing).
@@ -127,7 +127,7 @@ public final class ImportAnnotationsToolTest {
                     }
                     // a provenance sentence was appended to the tree description
                     final String desc = live.getDescription();
-                    if ( ( desc == null ) || !desc.contains( "Imported annotations from table" ) ) {
+                    if ( ( desc == null ) || !desc.contains( "Imported metadata from table" ) ) {
                         fail( ok, "an import should append a provenance sentence: " + desc );
                     }
                     // RE-IMPORT: a stored profile (source path + key/match + column mapping) re-applies with one click.

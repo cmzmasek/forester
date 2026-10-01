@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Pangenome presence/absence (demo)</name>
-  <description>100 synthetic strains in six species-level clades, carrying NO per-tip data. Pair it with the companion pangenome-presence-absence.tsv: 40 genes, each cell an ordinal certainty 0..4 that the gene is present (0 definitely absent .. 4 definitely present), a blank cell NOT ASSESSED. File &gt; Import Annotations, match the &quot;strain&quot; column against the tip name, then View &gt; Clustergram.</description>
+  <description>100 synthetic strains in six species-level clades, carrying NO per-tip data. Pair it with the companion pangenome-presence-absence.tsv: 40 genes, each cell an ordinal certainty 0..4 that the gene is present (0 definitely absent .. 4 definitely present), a blank cell NOT ASSESSED. File &gt; Import Metadata, match the &quot;strain&quot; column against the tip name, then View &gt; Clustergram.</description>
   <clade>
     <clade>
       <branch_length>0.159063</branch_length>

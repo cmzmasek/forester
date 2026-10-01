@@ -77,7 +77,7 @@ final class MatrixColumnOrder {
                    "Highest mean value first, over the tips that have a value -- on 0/1 data, the fraction of tips "
                            + "carrying it." ),
         MANUAL( "Manual",
-                "Your own order: moving a field with the arrows in Tools > Annotation Fields selects this, and nothing "
+                "Your own order: moving a field with the arrows in Tools > Metadata Fields selects this, and nothing "
                         + "re-sorts it." );
 
         private final String _label;

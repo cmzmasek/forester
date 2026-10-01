@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
-  <name>Size by property (demo)</name>
-  <description>Synthetic avian-influenza tree. Each tip carries a numeric &apos;read_count&apos; property. Try Size by: read_count -- the tip symbol AREA is proportional to the value.</description>
+  <name>Size by metadata (demo)</name>
+  <description>Synthetic avian-influenza tree. Each tip carries a numeric &apos;read_count&apos; metadata field. Try Size by: read_count -- the tip symbol AREA is proportional to the value.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>

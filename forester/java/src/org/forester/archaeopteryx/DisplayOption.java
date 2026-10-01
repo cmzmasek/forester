@@ -52,7 +52,7 @@ public enum DisplayOption {
     SHOW_TAXONOMY_COMMON_NAMES( "Taxonomy Common", DefaultState.OFF ),
     SHOW_SEQ_SYMBOLS( "Seq Symbol", DefaultState.OFF ),
     NODE_DATA_POPUP( "Rollover", DefaultState.ON ),
-    SHOW_PROPERTIES( "Properties", DefaultState.OFF ),
+    SHOW_PROPERTIES( "Metadata", DefaultState.OFF ),
     SHOW_GENE_NAMES( "Gene Name", DefaultState.OFF ),
     WRITE_BRANCH_LENGTH_VALUES( "Branch Length Values", DefaultState.OFF ),
     SHOW_TAX_RANK( "Taxonomy Rank", DefaultState.OFF ),

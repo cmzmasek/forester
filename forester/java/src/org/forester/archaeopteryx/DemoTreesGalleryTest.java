@@ -252,7 +252,7 @@ public final class DemoTreesGalleryTest {
                 fail( ok, "the Filoviridae demo must colour by repseq:species" );
             }
         }
-        else if ( label.startsWith( "Annotation Columns" ) ) {
+        else if ( label.startsWith( "Metadata Columns" ) ) {
             if ( !tp.hasAnnotationColumns() ) {
                 fail( ok, "the annotation-columns demo must have annotation columns" );
             }
@@ -272,7 +272,7 @@ public final class DemoTreesGalleryTest {
                 fail( ok, "the alignment demo must auto-enable the alignment display over aligned tip sequences" );
             }
         }
-        else if ( label.startsWith( "Properties in Labels" ) ) {
+        else if ( label.startsWith( "Metadata in Labels" ) ) {
             // the demo's whole point is the SPLIT: two fields in the label, the rest as columns. A regression that
             // dropped either half would leave the gallery green while the demo showed nothing worth showing.
             final java.util.List<String> label_refs = tp.getLabelPropertyRefs();
@@ -282,7 +282,7 @@ public final class DemoTreesGalleryTest {
                         + label_refs );
             }
             else if ( !frame.getControlPanel().isShowProperties() ) {
-                fail( ok, "the properties-in-labels demo must turn the Properties display option on" );
+                fail( ok, "the properties-in-labels demo must turn the Metadata display option on" );
             }
             else if ( !tp.hasAnnotationColumns() || ( tp.getAnnotationColumnSpecs().size() != 4 ) ) {
                 fail( ok, "the properties-in-labels demo must render the other four fields as columns" );
@@ -333,7 +333,7 @@ public final class DemoTreesGalleryTest {
                         + tp.getColorByPropertyRef() );
             }
             else if ( ( tp.getPhylogeny().getDescription() == null ) || !tp.getPhylogeny().getDescription()
-                    .contains( "Imported annotations from table \"pangenome-presence-absence.tsv\"" ) ) {
+                    .contains( "Imported metadata from table \"pangenome-presence-absence.tsv\"" ) ) {
                 fail( ok, "the pangenome demo's import must append its provenance sentence to the description" );
             }
             else if ( !tp.canUndo() ) {
@@ -395,7 +395,7 @@ public final class DemoTreesGalleryTest {
                 fail( ok, "the demo must not auto-colour by one gene, got Color by: " + tp.getColorByPropertyRef() );
             }
             else if ( ( tp.getPhylogeny().getDescription() == null ) || !tp.getPhylogeny().getDescription()
-                    .contains( "Imported annotations from table \"sparse-accessory-genome.tsv\"" ) ) {
+                    .contains( "Imported metadata from table \"sparse-accessory-genome.tsv\"" ) ) {
                 fail( ok, "the demo's import must append its provenance sentence to the description" );
             }
             else if ( !tp.canUndo() ) {

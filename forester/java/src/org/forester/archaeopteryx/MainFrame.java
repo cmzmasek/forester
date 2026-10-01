@@ -183,7 +183,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_FOSSIL_RANGE_BARS_LABEL = "Fossil Range Bars (FAD/LAD)";
     static final String DISPLAY_FOSSIL_RANGE_BARS_TIP = "On a dated (time-scaled) phylogram, draw a stratigraphic-range bar at each fossil tip spanning its first-to-last appearance (the tip's phyloXML date min/max).";
     static final String DISPLAY_ZEBRA_STRIPES_LABEL = "Zebra Stripes";
-    static final String DISPLAY_ZEBRA_STRIPES_TIP = "Shade every other tip row with a faint band, so a label is easy to track across a wide tree to its annotation columns.";
+    static final String DISPLAY_ZEBRA_STRIPES_TIP = "Shade every other tip row with a faint band, so a label is easy to track across a wide tree to its metadata columns.";
     static final String DISPLAY_BREAK_LONG_BRANCHES_LABEL = "Break Long Branches";
     static final String DISPLAY_BREAK_LONG_BRANCHES_TIP = "On a phylogram, draw an outlier-long branch (e.g. a distant outgroup) shortened with a break mark and give the rest of the tree the freed width. The true branch length is unchanged (still shown as its label).";
     static final String DISPLAY_INTERNAL_TAXONOMY_KEY_LABEL = "Internal Taxonomy Key";
@@ -191,7 +191,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String DISPLAY_REVERSE_TIP_ORDER_LABEL = "Reverse Tip Order";
     static final String DISPLAY_REVERSE_TIP_ORDER_TIP = "Reverse the order of the tips (mirror the tree across the tip axis). In a root-top/bottom orientation the tips run sideways, so this flips them left-to-right. Rectangular layouts only.";
     static final String DISPLAY_TIP_LABELS_BELOW_COLUMNS_LABEL = "Tip Labels Below Columns";
-    static final String DISPLAY_TIP_LABELS_BELOW_COLUMNS_TIP = "Clustergram layout: in a root-top/bottom orientation with annotation columns, draw the tip labels BELOW the columns (so the dendrogram sits directly on the tip-aligned grid) instead of between the tree and the columns.";
+    static final String DISPLAY_TIP_LABELS_BELOW_COLUMNS_TIP = "Clustergram layout: in a root-top/bottom orientation with metadata columns, draw the tip labels BELOW the columns (so the dendrogram sits directly on the tip-aligned grid) instead of between the tree and the columns.";
     static final String DISPLAY_LEGEND_COLUMN_LABEL = "Legend in Its Own Column";
     static final String DISPLAY_LEGEND_COLUMN_TIP = "Reserve a column at the right for the legend instead of letting it float over the tree -- its default corner, the top right, is where a root-left tree puts its top tips and its annotation-column headers. The window then shows what a rendered figure (and Save/Export as PDF) shows. Drag a legend anywhere and it gives the column back. Rectangular root-left only; never at the cost of more than 40% of the width.";
     static final String DISPLAY_BOLD_FOUND_LABELS_LABEL = "Bold Found Labels";
@@ -1336,7 +1336,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _clustergram_item.setToolTipText("<html>One click: turn the tree into a clustergram — the dendrogram on the "
                 + "left with its tips aligned, and the numeric per-tip fields as shared-scale heat-map columns beside it "
                 + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>Import "
-                + "Annotations (CSV/TSV) first if the tree has no per-tip data yet.</i></html>");
+                + "Metadata (CSV/TSV) first if the tree has no per-tip data yet.</i></html>");
         final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
         order_menu.setFont(MainFrame.menu_font); // createMenu sets the font only in custom-colors mode
         order_menu.setToolTipText("How this tab's heat-map matrix orders its columns (the other columns keep their "
@@ -1621,7 +1621,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * Opens the "Annotation Fields" chooser: for every annotation field of the current tree, pick its ONE display
+     * Opens the "Metadata Fields" chooser: for every metadata field of the current tree, pick its ONE display
      * role -- a tip-aligned column (color strip / symbol / heat map / bar / stacked bar / pie / text) or the node's
      * own label -- plus the order the fields appear in, then applies the result to the current tree.
      * <p>
@@ -1644,9 +1644,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final List<String> all_refs = TreePanelUtil.userVisiblePropertyRefs(phy);
         if (all_refs.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "This tree has no annotation fields.\n"
-                            + "Import a table (File → Import Annotations) or load a tree with node properties first.",
-                    "No Annotation Fields", JOptionPane.INFORMATION_MESSAGE);
+                    "This tree has no metadata fields.\n"
+                            + "Import a table (File → Import Metadata) or load a tree with metadata first.",
+                    "No Metadata Fields", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         final List<String> colorable = PropertyColorScheme.colorableRefs(phy);
@@ -1799,7 +1799,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JPanel content = new JPanel(new java.awt.BorderLayout(0, 6));
         content.add(sp, java.awt.BorderLayout.CENTER);
         content.add(normalize_cb, java.awt.BorderLayout.SOUTH);
-        if (JOptionPane.showConfirmDialog(this, content, "Annotation Fields", JOptionPane.OK_CANCEL_OPTION,
+        if (JOptionPane.showConfirmDialog(this, content, "Metadata Fields", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
@@ -3962,8 +3962,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final JFileChooser fc = new JFileChooser();
         fc.setMultiSelectionEnabled(false);
-        fc.setDialogTitle("Import Annotations (CSV/TSV)");
-        fc.setFileFilter(new FileNameExtensionFilter("Annotation tables (*.csv, *.tsv, *.txt)", "csv", "tsv", "txt"));
+        fc.setDialogTitle("Import Metadata (CSV/TSV)");
+        fc.setFileFilter(new FileNameExtensionFilter("Metadata tables (*.csv, *.tsv, *.txt)", "csv", "tsv", "txt"));
         if (getCurrentDir(DirectoryPreferences.Category.OPEN) != null) {
             fc.setCurrentDirectory(getCurrentDir(DirectoryPreferences.Category.OPEN));
         }
@@ -3998,7 +3998,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         final String url = JOptionPane.showInputDialog(this,
                 "Enter a CSV/TSV URL (e.g. a Google Sheet published to the web as CSV):",
-                "Import Annotations from URL", JOptionPane.PLAIN_MESSAGE);
+                "Import Metadata from URL", JOptionPane.PLAIN_MESSAGE);
         if (ForesterUtil.isEmpty(url)) {
             return;
         }
@@ -4064,7 +4064,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final NodeDataImporter.ImportProfile profile = (tp != null) ? tp.getLastImportProfile() : null;
         if (profile == null) {
             JOptionPane.showMessageDialog(this,
-                    "No annotation import to repeat for this tree.\nUse \"Import Annotations (CSV/TSV)…\" first.",
+                    "No metadata import to repeat for this tree.\nUse \"Import Metadata (CSV/TSV)…\" first.",
                     "Nothing to Re-import", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -4089,7 +4089,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(this,
                     "Re-imported from " + name + ", but no rows matched a tip — the tree was not changed.\n\n"
                             + "Check the key column / match attribute against the edited source (use \"Import "
-                            + "Annotations (CSV/TSV)…\" to reconfigure).\n\n" + result.summary(),
+                            + "Metadata (CSV/TSV)…\" to reconfigure).\n\n" + result.summary(),
                     "Re-import: Nothing Matched", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -4175,7 +4175,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final java.util.List<AnnotationColumns.ColumnSpec> specs = clustergramColumnSpecs(phy);
         if (specs.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "This tree has no per-tip data to put in the heat map.\n\nUse File → Import Annotations (CSV/TSV) "
+                    "This tree has no per-tip data to put in the heat map.\n\nUse File → Import Metadata (CSV/TSV) "
                             + "to add columns, then run Clustergram again.",
                     "Clustergram", JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -4255,7 +4255,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * or {@code null} on cancel.
      */
     private ImportChoice showImportChoice(final Phylogeny phy, final String text) {
-        final javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Import Annotations", true);
+        final javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Import Metadata", true);
         dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE); // 'X' disposes (not just hides)
         final ImportChoice[] result = { null };
         final NodeDataImporter.Table[] cur_table = { null };
@@ -4357,7 +4357,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             addLeft(body, new JLabel("Preview (first " + rows_shown + " of " + table.getRowCount() + " rows):"));
             addLeft(body, preview_scroll);
             addLeft(body, controls);
-            addLeft(body, new JLabel("Columns to import (uncheck to skip; edit a name to rename its property):"));
+            addLeft(body, new JLabel("Columns to import (uncheck to skip; edit a name to rename its metadata field):"));
             addLeft(body, map_scroll);
             addLeft(body, summary);
             content.add(body, java.awt.BorderLayout.CENTER);
@@ -4441,7 +4441,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final int total_tips = phy.getNumberOfExternalNodes();
         final NodeDataImporter.ImportResult result = NodeDataImporter.apply(phy, table, key_col, match_by, plan);
         if ((result.getTipsAnnotated() > 0) && (tp != null)) {
-            tp.pushUndoSnapshot(before, was_edited, "Import Annotations"); // now we know it changed the tree
+            tp.pushUndoSnapshot(before, was_edited, "Import Metadata"); // now we know it changed the tree
             final String prov = importProvenance(result.getPropertyColumns(), result.getTipsAnnotated(), total_tips,
                     source_name, match_by);
             final String existing = phy.getDescription();
@@ -4464,7 +4464,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static String importProvenance(final List<String> property_columns, final int tips_annotated,
             final int total_tips, final String source_name, final NodeDataImporter.MatchBy match_by) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Imported annotations from table \"").append(source_name).append("\" onto ").append(tips_annotated)
+        sb.append("Imported metadata from table \"").append(source_name).append("\" onto ").append(tips_annotated)
           .append(" of ").append(total_tips).append(total_tips == 1 ? " tip" : " tips").append(" (matched by ")
           .append(match_by.toString().toLowerCase()).append(").");
         if (!property_columns.isEmpty()) {
@@ -4609,7 +4609,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else {
             JOptionPane.showMessageDialog(this,
                     "Imported GTDB taxonomy onto " + annotated + " of " + phy.getNumberOfExternalNodes()
-                            + " tips.\nColor by (or add an Annotation Column for) gtdb:phylum / gtdb:family / gtdb:genus …",
+                            + " tips.\nColor by (or add a Metadata Column for) gtdb:phylum / gtdb:family / gtdb:genus …",
                     "Import GTDB Taxonomy", JOptionPane.INFORMATION_MESSAGE);
         }
     }

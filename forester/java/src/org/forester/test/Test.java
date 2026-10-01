@@ -474,6 +474,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Metadata wording (one word, everything users see): ");
+        if (org.forester.archaeopteryx.MetadataWordingTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Heat-map cell borders: ");
         if (org.forester.archaeopteryx.HeatmapCellBorderTest.test()) {
             System.out.println("OK.");

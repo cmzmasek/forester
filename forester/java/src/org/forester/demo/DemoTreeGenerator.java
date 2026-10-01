@@ -633,11 +633,11 @@ public final class DemoTreeGenerator {
                 clade( 0.05, leaf( "isolate_07" ), leaf( "isolate_08" ),
                        clade( 0.03, leaf( "isolate_09" ), leaf( "isolate_10" ) ) ),
                 clade( 0.06, leaf( "isolate_11" ), leaf( "isolate_12" ) ) );
-        return tree( root, "Import annotations (demo)",
+        return tree( root, "Import metadata (demo)",
                      "A plain 12-tip tree (isolate_01..isolate_12) carrying NO per-tip data. Pair it with the "
-                             + "companion import-annotations.csv: File > Import Annotations, pick the CSV, match the "
+                             + "companion import-annotations.csv: File > Import Metadata, pick the CSV, match the "
                              + "\"name\" column against the tip name; the host/country/reads columns are joined onto "
-                             + "the tips -- then Color by host, or show reads as an annotation column." );
+                             + "the tips -- then Color by host, or show reads as a metadata column." );
     }
 
     /** The companion table for {@link #importAnnotationsTree()}: a categorical 'host', a quoted 'country' (with an
@@ -729,7 +729,7 @@ public final class DemoTreeGenerator {
                                             + "Pair it with the companion pangenome-presence-absence.tsv: 40 genes, "
                                             + "each cell an ordinal certainty 0..4 that the gene is present (0 "
                                             + "definitely absent .. 4 definitely present), a blank cell NOT "
-                                            + "ASSESSED. File > Import Annotations, match the \"strain\" column "
+                                            + "ASSESSED. File > Import Metadata, match the \"strain\" column "
                                             + "against the tip name, then View > Clustergram." );
         final List<PhylogenyNode> tips = phy.getExternalNodes();
         final int n = tips.size();
@@ -924,7 +924,7 @@ public final class DemoTreeGenerator {
                                     "50 synthetic strains in six lineages, carrying NO per-tip data. Pair it with "
                                             + "the companion sparse-accessory-genome.tsv: 18 genes, each cell an "
                                             + "ordinal certainty 0..4 that the gene is present, a blank cell NOT "
-                                            + "ASSESSED. File > Import Annotations, match the \"strain\" column "
+                                            + "ASSESSED. File > Import Metadata, match the \"strain\" column "
                                             + "against the tip name, then View > Clustergram -- and compare the two "
                                             + "clustered orders in View > Order Matrix Columns: the eight rare genes "
                                             + "clump together under \"Clustered (co-occurrence)\", which counts the "
@@ -1092,8 +1092,8 @@ public final class DemoTreeGenerator {
                      "A tree of 14 Bacteria + Archaea genomes named only by their assembly accession -- no taxonomy. "
                              + "Pair it with the companion gtdb-classifications.tsv (a GTDB-Tk-style table): "
                              + "File > Import GTDB Taxonomy, pick the TSV. Each GTDB rank becomes a gtdb:<rank> "
-                             + "property (+ a taxonomy at the most specific rank), so you can Color by gtdb:phylum "
-                             + "or gtdb:domain, add an Annotation Column for gtdb:family, and search gtdb:genus -- "
+                             + "metadata field (+ a taxonomy at the most specific rank), so you can Color by gtdb:phylum "
+                             + "or gtdb:domain, add a Metadata Column for gtdb:family, and search gtdb:genus -- "
                              + "entirely offline." );
     }
 
@@ -1131,8 +1131,8 @@ public final class DemoTreeGenerator {
         final PhylogenyNode root = clade( 0, clade( 0.05, a, b ),
                                           clade( 0.04, clade( 0.03, c, d ),
                                                  clade( 0.03, clade( 0.02, e, f ), clade( 0.02, g, h ) ) ) );
-        return tree( root, "Size by property (demo)",
-                     "Synthetic avian-influenza tree. Each tip carries a numeric 'read_count' property. "
+        return tree( root, "Size by metadata (demo)",
+                     "Synthetic avian-influenza tree. Each tip carries a numeric 'read_count' metadata field. "
                              + "Try Size by: read_count -- the tip symbol AREA is proportional to the value." );
     }
 
@@ -1219,7 +1219,7 @@ public final class DemoTreeGenerator {
         return tree( root, "Node Data Editor (demo)",
                      "Every kind of node data the editor handles, on a small BRCA1 ortholog tree: taxonomy, two "
                              + "sequences on the human tip, confidences, a dated node with a speciation event, a "
-                             + "distribution, a reference, and typed properties. Set \"Click on Node to: Edit Node "
+                             + "distribution, a reference, and typed metadata fields. Set \"Click on Node to: Edit Node "
                              + "Data\" and click a node. Schematic sequences (truncated), not real data." );
     }
 
@@ -1282,7 +1282,7 @@ public final class DemoTreeGenerator {
                                             + "identifier, type and branch-length unit (editable), two kinds of "
                                             + "support values, a polytomy and a zero-length branch, and a coverage "
                                             + "map of which tips carry taxonomy, sequences, dates, a distribution "
-                                            + "and properties. Schematic sequences, not real data." );
+                                            + "and metadata. Schematic sequences, not real data." );
         phy.setIdentifier( new Identifier( "demo:myh6-myh7", "archaeopteryx" ) );
         phy.setType( "gene tree" );
         phy.setDistanceUnit( "substitutions/site" );
@@ -1366,7 +1366,7 @@ public final class DemoTreeGenerator {
         final PhylogenyNode root = clade( 0, clade( 0.06, tips[ 0 ], tips[ 1 ], tips[ 4 ], tips[ 10 ] ),
                                           clade( 0.05, clade( 0.03, tips[ 2 ], tips[ 3 ], tips[ 6 ], tips[ 11 ] ),
                                                  clade( 0.04, tips[ 5 ], tips[ 7 ], tips[ 8 ], tips[ 9 ] ) ) );
-        return tree( root, "Color by property (demo)",
+        return tree( root, "Color by metadata (demo)",
                      "Synthetic influenza-surveillance tree. Each tip has a categorical 'host' and a numeric 'year'; "
                              + "two environmental samples carry no host. Try Color by: host (a distinct color per "
                              + "host; the legend's dashed 'no value' row counts the host-less tips) or Color by: "
@@ -1382,7 +1382,7 @@ public final class DemoTreeGenerator {
         return n;
     }
 
-    // ----- "Annotation Columns": several properties of the four supported kinds so the tool can render a color strip
+    // ----- "Metadata Columns": several metadata fields of the four supported kinds so the tool can render a color strip
     //       (categorical), a heat map / bar (numeric) and a text column side by side. Load -> Tools > Annotation Fields.
     private static Phylogeny annotationColumnsTree() {
         final PhylogenyNode[] tips = {
@@ -1399,9 +1399,9 @@ public final class DemoTreeGenerator {
         final PhylogenyNode root = clade( 0, clade( 0.05, tips[ 0 ], tips[ 1 ], tips[ 4 ], tips[ 7 ] ),
                                           clade( 0.05, clade( 0.03, tips[ 2 ], tips[ 6 ], tips[ 9 ] ),
                                                  clade( 0.03, tips[ 3 ], tips[ 5 ], tips[ 8 ] ) ) );
-        return tree( root, "Annotation columns (demo)",
-                     "Synthetic tree with four annotation kinds per tip: 'host' and 'segment' (categorical), "
-                             + "'viral_load' (numeric) and 'clade' (text). Try Tools > Annotation Fields to render "
+        return tree( root, "Metadata columns (demo)",
+                     "Synthetic tree with four kinds of metadata per tip: 'host' and 'segment' (categorical), "
+                             + "'viral_load' (numeric) and 'clade' (text). Try Tools > Metadata Fields to render "
                              + "them as tip-aligned color-strip, heat-map/bar and text columns." );
     }
 
@@ -1432,10 +1432,10 @@ public final class DemoTreeGenerator {
         final PhylogenyNode root = clade( 0, clade( 0.05, tips[ 0 ], tips[ 1 ], tips[ 2 ], tips[ 3 ] ),
                                           clade( 0.05, clade( 0.03, tips[ 4 ], tips[ 6 ] ),
                                                  clade( 0.03, tips[ 5 ], tips[ 7 ] ) ) );
-        return tree( root, "Properties in labels (demo)",
-                     "Synthetic tree whose tips each carry SIX properties: 'accession' (a different value on every "
+        return tree( root, "Metadata in labels (demo)",
+                     "Synthetic tree whose tips each carry SIX metadata fields: 'accession' (a different value on every "
                              + "tip), 'host', 'country', 'clade', 'passage' and 'year'. Showing all six in the tip "
-                             + "label makes it unreadable, so give each field ONE role in Tools > Annotation Fields: "
+                             + "label makes it unreadable, so give each field ONE role in Tools > Metadata Fields: "
                              + "keep 'accession' and 'passage' in the label, render 'host', 'country' and 'clade' as "
                              + "color-strip columns and 'year' as a heat map -- and use the up/down buttons to set "
                              + "the order the label reads in. Note that 'accession' is offered for the LABEL even "
@@ -1471,7 +1471,7 @@ public final class DemoTreeGenerator {
                                           clade( 0.05, tips[ 4 ], tips[ 5 ], tips[ 6 ], tips[ 7 ] ) );
         return tree( root, "Symbol columns (demo)",
                      "Synthetic tree whose tips carry a binary 'resistant' flag (yes / no / untested) and a "
-                             + "categorical 'host'. Try Tools > Annotation Fields and pick the 'Symbol' render "
+                             + "categorical 'host'. Try Tools > Metadata Fields and pick the 'Symbol' render "
                              + "type: a present value draws a filled mark, an explicit 'no' a hollow mark, and an "
                              + "untested tip nothing -- a presence/absence (binary) mark column. A many-valued "
                              + "categorical field ('host') becomes distinct colored marks." );
@@ -1508,7 +1508,7 @@ public final class DemoTreeGenerator {
                                           clade( 0.05, tips[ 7 ], tips[ 8 ], tips[ 9 ] ) );
         return tree( root, "Stacked bar columns (demo)",
                      "Synthetic metagenomic-sample tree: each tip carries read counts for three bacterial phyla "
-                             + "('firmicutes', 'bacteroidetes', 'proteobacteria'). Try Tools > Annotation Fields, set "
+                             + "('firmicutes', 'bacteroidetes', 'proteobacteria'). Try Tools > Metadata Fields, set "
                              + "all three to 'Stacked bar' -- they merge into one segmented bar per tip (segment length "
                              + "= the read count, so the bar's total length shows sequencing depth AND its segments show "
                              + "composition). Tick 'Normalize stacked bars to 100%' for pure proportional composition." );
@@ -1998,7 +1998,7 @@ public final class DemoTreeGenerator {
         return tree( root, "Zebra stripes (demo)",
                 "Synthetic 16-tip tree with a categorical 'host' and numeric 'reads' per tip. Turn on Settings > "
                         + "Display > Zebra Stripes -- faint alternating row bands make it easy to track a tip label "
-                        + "across to its annotation columns (Tools > Annotation Fields)." );
+                        + "across to its metadata columns (Tools > Metadata Fields)." );
     }
 
     // ----- "Reverse Tip Order": an 8-tip ladder (caterpillar) tree with sequentially-numbered tips, so the tip order
@@ -2112,7 +2112,7 @@ public final class DemoTreeGenerator {
                 "Synthetic SARS-CoV-2-like tree whose tips carry the SAMPLING DATE in the label (mixed formats: ISO "
                         + "2020-02-20, ISO year-month 2020-01, bare year 2019, month-name 01-Dec-2021) but NO "
                         + "structured <date>. Run Tools > Extract Dates from Labels... to pull each date into a <date> "
-                        + "+ a Color-by-able data:date property; the tree then gets the Calendar axis." );
+                        + "+ a Color-by-able data:date metadata field; the tree then gets the Calendar axis." );
     }
 
     // ----- "Node Age Bars (HPD)": a dated (ultrametric) mammal phylogram, branch lengths = time (My). Each internal
@@ -2471,7 +2471,7 @@ public final class DemoTreeGenerator {
                        matrixLeaf( "gene_H", 0.21, 4, 2, 0, 6, 7, 8 ) ) );
         return tree( root, "Heat map matrix (demo)",
                      "Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a "
-                             + "phylogram, then Tools > Annotation Fields and add s1..s6 as \"Heat map (matrix)\": "
+                             + "phylogram, then Tools > Metadata Fields and add s1..s6 as \"Heat map (matrix)\": "
                              + "they render on ONE shared color scale (a clustergram grid), best in a vertical "
                              + "orientation with Tip Labels Below Columns." );
     }

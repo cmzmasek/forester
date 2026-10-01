@@ -304,7 +304,7 @@ final class NodeHoverText {
                         : p.getValue() + " " + p.getUnit() ) );
             }
             if ( rows.size() > at ) {
-                rows.add( at, Row.heading( "Properties" ) );
+                rows.add( at, Row.heading( "Metadata" ) );
             }
         }
         // a card that would only say "Depth: n" (a bare unnamed node) is noise: show nothing

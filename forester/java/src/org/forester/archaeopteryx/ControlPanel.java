@@ -1083,7 +1083,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _tree_share_slider = new JSlider(treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_MIN),
                 treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_MAX),
                 treeSharePercent(AptxConstants.TREE_WIDTH_SHARE_DEFAULT));
-        _tree_share_slider.setToolTipText("the LEAST of the width the tree itself keeps; the tip labels, domains, alignment and annotation "
+        _tree_share_slider.setToolTipText("the LEAST of the width the tree itself keeps; the tip labels, domains, alignment and metadata "
                 + "columns share the rest. Greyed out when the tree already has more than the largest "
                 + "share would give it, so nothing is competing for the width");
         _tree_share_slider.setPreferredSize(new Dimension(10, _tree_share_slider.getPreferredSize().height));
@@ -1462,7 +1462,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case SHOW_PROPERTIES:
                 _show_properties_cb = new JCheckBox(title);
                 _show_properties_cb.setToolTipText(
-                        "Show the phyloXML properties a node carries (the ref and its value)");
+                        "Show the metadata a node carries (its phyloXML properties: the ref and its value)");
                 addJCheckBox(_show_properties_cb, ch_panel);
                 add(ch_panel);
                 break;
@@ -2502,7 +2502,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         label.setFont(ControlPanel.jcb_font);
         _color_by_property_cb = new JComboBox<String>();
         _color_by_property_cb.setFont(ControlPanel.js_font);
-        _color_by_property_cb.setToolTipText("color leaves by the value of a phyloXML property");
+        _color_by_property_cb.setToolTipText("color leaves by the value of a metadata field");
         _color_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
         // show a friendly property name (no namespace prefix, underscores as spaces,
         // capitalized) in the dropdown -- the underlying ref is unchanged
@@ -2532,7 +2532,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         label.setFont(ControlPanel.jcb_font);
         _size_by_property_cb = new JComboBox<String>();
         _size_by_property_cb.setFont(ControlPanel.js_font);
-        _size_by_property_cb.setToolTipText("scale the tip symbols by the value of a numeric phyloXML property");
+        _size_by_property_cb.setToolTipText("scale the tip symbols by the value of a numeric metadata field");
         _size_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
         _size_by_property_cb.setRenderer(new DefaultListCellRenderer() {
             @Override

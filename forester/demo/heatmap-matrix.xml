@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Heat map matrix (demo)</name>
-  <description>Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a phylogram, then Tools &gt; Annotation Fields and add s1..s6 as &quot;Heat map (matrix)&quot;: they render on ONE shared color scale (a clustergram grid), best in a vertical orientation with Tip Labels Below Columns.</description>
+  <description>Synthetic tree where each tip carries an abundance value across six samples (s1..s6). View as a phylogram, then Tools &gt; Metadata Fields and add s1..s6 as &quot;Heat map (matrix)&quot;: they render on ONE shared color scale (a clustergram grid), best in a vertical orientation with Tip Labels Below Columns.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>

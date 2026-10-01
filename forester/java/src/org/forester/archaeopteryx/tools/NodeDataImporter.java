@@ -45,7 +45,7 @@ import org.forester.util.ForesterUtil;
 
 /**
  * Annotation import: read a tip-keyed <b>CSV or TSV</b> table and write its columns onto the matching external
- * nodes (the "Import Annotations" tool). Pure (no GUI).
+ * nodes (the "Import Metadata" tool). Pure (no GUI).
  *
  * <p>The first row is the header. Rows are joined to tips by a <b>keyed join</b>: a chosen key column matched
  * against a chosen tip attribute (see {@link MatchBy} -- tip name, sequence accession, taxonomy id, or taxonomy
