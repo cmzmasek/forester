@@ -43,7 +43,7 @@ import org.forester.phylogeny.data.Property.AppliesTo;
  * The behaviour under test is a deliberate replacement of the old one, which appended EVERY property to the label
  * as "{@code <full ref>: <value>}", newline-joined into a string drawn as a single line -- so a ten-property tree
  * got an unreadable label with embedded newlines, in backwards ref order. The assertions below pin each of those
- * four things (values only, comma-joined, one line, and the property list's own order) so none of them can quietly
+ * four things (values only, " | "-joined, one line, and the property list's own order) so none of them can quietly
  * come back. That order is the SOURCE's order; the list itself is pinned by
  * {@link org.forester.phylogeny.data.PropertiesListTest}.
  */
@@ -78,9 +78,9 @@ public final class LabelPropertiesTest {
         // default (no explicit selection): every user-visible property, values only, one line, in the list's own
         // order -- which is the order they were added above (host, country, reads), NOT alphabetical by ref
         final String all = TreePanelUtil.labelPropertiesText( props, null );
-        if ( !"cat, Brazil, 42 kb".equals( all ) ) {
+        if ( !"cat | Brazil | 42 kb".equals( all ) ) {
             return fail( "default label text should follow the property list's own (source) order,"
-                    + " expected \"cat, Brazil, 42 kb\", got [" + all + "]" );
+                    + " expected \"cat | Brazil | 42 kb\", got [" + all + "]" );
         }
         if ( all.indexOf( '\n' ) >= 0 ) {
             return fail( "the label is drawn as ONE line -- it must never contain a newline: [" + all + "]" );
@@ -94,8 +94,18 @@ public final class LabelPropertiesTest {
         // an explicit selection picks the fields AND their order (deliberately NOT the list's own order, to prove
         // the chosen order wins rather than coinciding with it)
         final String chosen = TreePanelUtil.labelPropertiesText( props, Arrays.asList( "data:reads", "data:host" ) );
-        if ( !"42 kb, cat".equals( chosen ) ) {
-            return fail( "the chosen field order should win: expected \"42 kb, cat\", got [" + chosen + "]" );
+        if ( !"42 kb | cat".equals( chosen ) ) {
+            return fail( "the chosen field order should win: expected \"42 kb | cat\", got [" + chosen + "]" );
+        }
+        // the reason the separator is a pipe (Christian, 2026-09-30, as Archaeopteryx.js): a value that itself holds a
+        // comma must still read as ONE field -- with ", " this label looked like three fields where there are two
+        final PropertiesList comma = new PropertiesList();
+        comma.addProperty( new Property( "BVBRC:host_name", "Bottlenose dolphin, Tursiops truncatus", "", "xsd:string",
+                                         AppliesTo.NODE ) );
+        comma.addProperty( new Property( "BVBRC:species", "Brucella ceti", "", "xsd:string", AppliesTo.NODE ) );
+        final String two = TreePanelUtil.labelPropertiesText( comma, null );
+        if ( !"Bottlenose dolphin, Tursiops truncatus | Brucella ceti".equals( two ) ) {
+            return fail( "a value holding a comma must stay one field, the fields joined by \" | \": [" + two + "]" );
         }
         // a ref the node does not carry is skipped, not rendered as a gap
         final String missing = TreePanelUtil.labelPropertiesText( props,
@@ -116,7 +126,7 @@ public final class LabelPropertiesTest {
             return fail( "a null property list should yield empty text" );
         }
         // a whitespace-only value contributes no text, so it must not emit a separator either
-        if ( all.contains( ", ," ) || all.endsWith( "," ) || all.endsWith( " " ) ) {
+        if ( all.contains( "|  |" ) || all.endsWith( "|" ) || all.endsWith( " " ) ) {
             return fail( "a whitespace-only value must not leave a doubled or trailing separator: [" + all + "]" );
         }
         // the rollover popup / node panel text hides the same internal namespaces the label does

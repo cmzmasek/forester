@@ -1941,16 +1941,19 @@ public class TreePanelUtil {
     // A node easily carries ten properties, and the "Properties" display option used to append EVERY one of them to
     // the label as "<full ref>: <value>" -- NEWLINE-joined, into a string that is drawn as a single line. That gave an
     // unreadably long label ("seq1 nextstrain:country: Brazil" and worse) with literal newlines embedded in it.
-    // The label now shows VALUES ONLY, comma-joined, on one line; WHICH fields appear and in WHICH order is chosen in
+    // The label now shows VALUES ONLY, " | "-joined, on one line; WHICH fields appear and in WHICH order is chosen in
     // Tools > Annotation Fields (see TreePanel#setLabelPropertyRefs). The full "ref: value" list is still one hover
     // away in the rollover popup, and in Display Node Data -- so narrowing the label loses nothing.
 
-    /** Separator between property values in a tip label. A comma reads as a list, keeping the attributes visibly
-     *  distinct from the identity part of the label (name / accession), which is space-joined. */
-    private static final String LABEL_PROPERTY_SEPARATOR = ", ";
+    /** Separator between property values in a tip label, keeping the attributes visibly distinct from the identity
+     *  part of the label (name / accession), which is space-joined. A pipe, not a comma (Christian, 2026-09-30, as
+     *  Archaeopteryx.js): values often contain commas themselves -- a host "Bottlenose dolphin, Tursiops truncatus"
+     *  next to a species read as three fields with ", " and reads as two with " | ". */
+    private static final String LABEL_PROPERTY_SEPARATOR = " | ";
 
     /**
-     * The node's properties as ONE-LINE tip-label text: values only (no {@code ref:} prefix), comma-joined.
+     * The node's properties as ONE-LINE tip-label text: values only (no {@code ref:} prefix), joined by
+     * {@link #LABEL_PROPERTY_SEPARATOR}.
      * <p>
      * {@code refs_in_order} selects and ORDERS the fields; a ref the node does not carry is simply skipped. Pass
      * {@code null} for the default -- every user-visible property, in the property list's own order, which is the
@@ -1996,8 +1999,8 @@ public class TreePanelUtil {
     }
 
     private static void appendLabelPropertyValue( final Property p, final StringBuilder sb ) {
-        // isEmptyTrimmed, not isEmpty: a whitespace-only value contributes no text, so emitting the ", " separator
-        // for it would leave a doubled separator mid-label ("Brazil, , cat") or a trailing one
+        // isEmptyTrimmed, not isEmpty: a whitespace-only value contributes no text, so emitting the separator for it
+        // would leave a doubled separator mid-label ("Brazil |  | cat") or a trailing one
         if ( isInternalPropertyRef( p.getRef() ) || isVisualStylePropertyRef( p.getRef() )
                 || ForesterUtil.isEmptyTrimmed( p.getValue() ) ) {
             return;

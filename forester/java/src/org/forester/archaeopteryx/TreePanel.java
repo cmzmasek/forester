@@ -7378,7 +7378,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    /** The node's properties as one-line label text: the chosen fields' VALUES, comma-joined (internal aptx:*
+    /** The node's properties as one-line label text: the chosen fields' VALUES, " | "-joined (internal aptx:*
      *  metadata, such as the persisted Re-import annotation profile, is never shown). May be empty. */
     private final String propertiesToString(final PhylogenyNode node) {
         return TreePanelUtil.labelPropertiesText(node.getNodeData().getProperties(), _label_property_refs,
@@ -11495,6 +11495,90 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.fill(new java.awt.geom.Rectangle2D.Double(x - bx, y - by, w + (2 * bx), h + (2 * by)));
     }
 
+    // Heat-map cell borders (Christian, 2026-09-30, as Archaeopteryx.js a72365b): each cell outlined in a darker shade
+    // of its own hue, so a block of equal values still reads as a block while each cell can be counted. Only where a
+    // cell is big enough to carry one, and not on a heat map so large that it would turn into a mesh. Below the
+    // threshold nothing changes: the cells already tile exactly (tipRowBand, fillGridCell), so there is no seam to seal.
+    static final float HEATMAP_BORDER_MIN_PX = 5f;        // the cell's smaller side, in panel pixels
+    static final int HEATMAP_BORDER_MAX_CELLS = 60000;    // tips x heat-map columns
+    static final float HEATMAP_BORDER_W = 0.75f;          // panel pixels; the cells grow with zoom, the border does not
+    private static final double HEATMAP_BORDER_DARKEN = Math.pow(0.7, 0.8); // d3's darker(0.8): each step x0.7
+
+    /** Whether heat-map cells whose smaller side is {@code cell_min} panel pixels, {@code count} of them, are drawn
+     *  each with a border. */
+    static boolean heatmapCellsBordered(final double cell_min, final long count) {
+        return (count <= HEATMAP_BORDER_MAX_CELLS) && (cell_min >= HEATMAP_BORDER_MIN_PX);
+    }
+
+    /** A heat-map cell's border: its own colour, every channel x 0.7^0.8 and rounded (d3's darker(0.8).formatHex()),
+     *  alpha kept. */
+    static Color heatmapBorderColor(final Color fill) {
+        return new Color(darkenChannel(fill.getRed()), darkenChannel(fill.getGreen()), darkenChannel(fill.getBlue()),
+                fill.getAlpha());
+    }
+
+    private static int darkenChannel(final int c) {
+        return Math.max(0, Math.min(255, (int) Math.round(c * HEATMAP_BORDER_DARKEN)));
+    }
+
+    /** The column types whose cells are heat-map cells: one value on a colour scale. A COLOR_STRIP is a category,
+     *  not a heat map, and keeps its plain cells. */
+    private static boolean isHeatmapCellType(final AnnotationColumns.Type t) {
+        return (t == AnnotationColumns.Type.HEATMAP) || (t == AnnotationColumns.Type.MATRIX);
+    }
+
+    /** How many heat-map columns are drawn (the count the border threshold multiplies by the tips). */
+    private int heatmapColumnCount() {
+        int n = 0;
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            if (isHeatmapCellType(_annotation_columns.getColumn(i).getType())) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+    /** The narrowest heat-map column, in panel pixels, or MAX_VALUE when there is none. */
+    private double narrowestHeatmapColumn() {
+        double min = Double.MAX_VALUE;
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            if (isHeatmapCellType(_annotation_columns.getColumn(i).getType())) {
+                min = Math.min(min, annotationColumnWidth(i));
+            }
+        }
+        return min;
+    }
+
+    /** Strokes a heat-map cell's border: centred on its edge, as an SVG stroke is, so a cell drawn later lays its
+     *  border over the shared edge -- the same order of paint as Archaeopteryx.js. */
+    private void drawHeatmapCellBorder(final Graphics2D g, final java.awt.Shape cell, final Color fill) {
+        final Stroke saved = g.getStroke();
+        g.setStroke(new BasicStroke(HEATMAP_BORDER_W));
+        g.setColor(heatmapBorderColor(fill));
+        g.draw(cell);
+        g.setStroke(saved);
+    }
+
+    /** For tests: whether the last paint drew the heat-map cells with borders. */
+    boolean heatmapBorderedForTest() {
+        return _heatmap_bordered_last_paint;
+    }
+
+    /** For tests: the heat-map cell count the last paint weighed against the cap. */
+    long heatmapCellCountForTest() {
+        return _heatmap_cell_count_last_paint;
+    }
+
+    /** For tests: draw heat-map cells WITHOUT borders whatever their size, to measure what is under them (the
+     *  seam-free tiling of fillGridCell, which unbordered cells depend on). */
+    void heatmapBordersOffForTest(final boolean off) {
+        _heatmap_borders_off_for_test = off;
+    }
+
+    private boolean _heatmap_bordered_last_paint = false;
+    private long _heatmap_cell_count_last_paint = 0;
+    private boolean _heatmap_borders_off_for_test = false;
+
     /** A protein domain under the pointer, and the tip whose architecture it belongs to. */
     record DomainHit(PhylogenyNode node, ProteinDomain domain) {
     }
@@ -12416,6 +12500,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (final PhylogenyNode t : tips) {
             min_tip_y = Math.min(min_tip_y, t.getYcoord());
         }
+        // a row is 2 x getYdistance() tall; the cell's smaller side is that or the narrowest heat-map column
+        final long cell_count = (long) tips.size() * heatmapColumnCount();
+        final boolean bordered = !_heatmap_borders_off_for_test
+                && heatmapCellsBordered(Math.min(narrowestHeatmapColumn(), 2.0 * pad), cell_count);
+        _heatmap_bordered_last_paint = bordered;
+        _heatmap_cell_count_last_paint = cell_count;
         float x = annotationColumnsStartX();
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
@@ -12436,6 +12526,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         if (c != null) {
                             g.setColor(c);
                             fillGridCell(g, xi, cy, w, cell_h, exporting);
+                            if (bordered && isHeatmapCellType(type)) {
+                                drawHeatmapCellBorder(g, new java.awt.geom.Rectangle2D.Float(xi, cy, w, cell_h), c);
+                            }
                         }
                         break;
                     }
@@ -12536,6 +12629,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         for (final PhylogenyNode t : tips) {
             min_tip_y = Math.min(min_tip_y, t.getYcoord());
         }
+        // as the horizontal path: the cell's smaller side is a row (2 x getYdistance()) or the narrowest heat-map column
+        final long cell_count = (long) tips.size() * heatmapColumnCount();
+        final boolean bordered = !_heatmap_borders_off_for_test
+                && heatmapCellsBordered(Math.min(narrowestHeatmapColumn(), 2.0 * pad), cell_count);
+        _heatmap_bordered_last_paint = bordered;
+        _heatmap_cell_count_last_paint = cell_count;
         float x = annotationColumnsStartX();
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
@@ -12555,6 +12654,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         if (c != null) {
                             g.setColor(c);
                             fillGridCell(g, xi, cy, w, cell_h, exporting);
+                            if (bordered && isHeatmapCellType(type)) {
+                                // in logical coords like the fill: a 90 degree rotation keeps the stroke's width
+                                drawHeatmapCellBorder(g, new java.awt.geom.Rectangle2D.Float(xi, cy, w, cell_h), c);
+                            }
                         }
                         break;
                     }
@@ -13991,6 +14094,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Color fg = getTreeColorSet().getSequenceColor();
         final Color saved_color = g.getColor();
         final Font saved_font = g.getFont();
+        // a ring cell's smaller side is its ring width or its arc at the ring's INNER edge (the arc grows outward),
+        // walked over the same radii the rings are drawn at
+        double cell_min = Double.MAX_VALUE;
+        double rr = circularAnnotationRingStart(radius);
+        for (int i = 0; i < _annotation_columns.size(); ++i) {
+            final int w = annotationColumnWidth(i);
+            if (isHeatmapCellType(_annotation_columns.getColumn(i).getType())) {
+                cell_min = Math.min(cell_min, Math.min(w, rr * 2.0 * half_step));
+            }
+            rr += w + annotationColumnGapAfter(i);
+        }
+        final long cell_count = (long) tips.size() * heatmapColumnCount();
+        final boolean bordered = !_heatmap_borders_off_for_test && heatmapCellsBordered(cell_min, cell_count);
+        _heatmap_bordered_last_paint = bordered;
+        _heatmap_cell_count_last_paint = cell_count;
         double r = circularAnnotationRingStart(radius);
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             final int w = annotationColumnWidth(i);
@@ -14009,7 +14127,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         final Color c = _annotation_columns.cellColor(t, i);
                         if (c != null) {
                             g.setColor(c);
-                            g.fill(annularSector(cx, cy, r0, r1, a0, a1));
+                            final java.awt.Shape sector = annularSector(cx, cy, r0, r1, a0, a1);
+                            g.fill(sector);
+                            if (bordered && isHeatmapCellType(type)) {
+                                drawHeatmapCellBorder(g, sector, c); // one bordered sector per cell, as JS draws it
+                            }
                         }
                         break;
                     }

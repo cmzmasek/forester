@@ -474,6 +474,15 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Heat-map cell borders: ");
+        if (org.forester.archaeopteryx.HeatmapCellBorderTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Per-tab display state: ");
         if (org.forester.archaeopteryx.PerTabDisplayStateTest.test()) {
             System.out.println("OK.");

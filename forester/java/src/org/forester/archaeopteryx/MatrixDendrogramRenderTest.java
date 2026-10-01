@@ -488,10 +488,29 @@ public final class MatrixDendrogramRenderTest {
      * thousands (measured here: 7330 against 257). At WHOLE-number scales both collapse to the noise floor, which is
      * why the scale below is deliberately not one -- and the screen render is the fixture check: it must seam, or
      * the detector is blind and the export assertion would pass on any picture at all.
+     * <p>
+     * Measured with heat-map cell BORDERS off: this fixture's cells are big enough to be bordered, and a border lies
+     * exactly where a seam would (between two equal cells), so the detector counted the borders as seams (7246
+     * against 7009). The tiling under test is what an UNBORDERED cell -- a small one, or one of a very large heat
+     * map -- depends on; the borders are HeatmapCellBorderTest's.
      */
     private static void seamlessWhenScaled( final boolean[] ok, final TreePanel tp ) {
         tp.setMatrixColumnOrder( MatrixColumnOrder.Mode.CLUSTERED );
-        paint( tp );
+        tp.heatmapBordersOffForTest( true );
+        try {
+            paint( tp );
+            if ( tp.heatmapBorderedForTest() ) {
+                fail( ok, "fixture: the seam check must measure UNBORDERED cells" );
+                return;
+            }
+            seamlessWhenScaledUnbordered( ok, tp );
+        }
+        finally {
+            tp.heatmapBordersOffForTest( false );
+        }
+    }
+
+    private static void seamlessWhenScaledUnbordered( final boolean[] ok, final TreePanel tp ) {
         final double scale = 1.37; // deliberately not a whole number: that is what puts an edge mid-pixel
         final int screen = seamPixels( scaledRender( tp, scale, false ) );
         final int export = seamPixels( scaledRender( tp, scale, true ) );
