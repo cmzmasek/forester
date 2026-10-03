@@ -459,6 +459,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // whether the switch is offered: a function of the whole tree's data AND of its lengths in time, cached by the
     // whole tree's identity and forgotten wherever the mode or the kept lengths change (switch, undo, Reset, arrival)
     private Phylogeny _branch_length_toggle_for = null;
+    /** Moves wherever the Time | Div offer is asked again (a date, property or length written in place, undo, the
+     *  switch): an open clock plot is worked out again then. See {@link ClockPlotWindow#treePainted}. */
+    private long _clock_plot_epoch = 0;
+    /** The nodes the clock plot's pointer is on, as the tree shows them: lit in the tree. */
+    private java.util.List<PhylogenyNode> _clock_plot_lit = java.util.Collections.emptyList();
     // the lengths this tab's branches had in time when it last left time: what Time gives back. Immutable; an undo
     // snapshot carries the ones of its moment
     private BranchLengthLayout.TimeLengths _time_lengths = null;
@@ -801,6 +806,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHints(_rendering_hints);
         paintPhylogeny(g2d, false, false, 0, 0, 0, 0);
+        final ClockPlotWindow clock = clockPlotWindowOfThisTab();
+        if (clock != null) {
+            clock.treePainted(this); // an open clock plot follows the view, the colours and the selection
+        }
     }
 
     public final void setEdited(final boolean edited) {
@@ -819,6 +828,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (edited && !_restoring_snapshot && (_history != null)) {
             _history.clearRedo();
             notifyEditMenu();
+        }
+        if (edited) {
+            ++_clock_plot_epoch; // an edit may change what a point is (a date) or wears (a node style, a branch colour)
         }
     }
 
@@ -6255,6 +6267,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _time_lengths = new BranchLengthLayout.TimeLengths();
                 _time_axis_type = Options.TIME_AXIS_TYPE.NONE;
                 _branch_length_toggle_for = null;
+                ++_clock_plot_epoch; // an open clock plot is worked out again
             }
         }
         return _branch_length_mode;
@@ -6369,6 +6382,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  tree can be laid out both ways is asked again, since the identity-keyed cache cannot know. */
     void invalidateBranchLengthToggle() {
         _branch_length_toggle_for = null;
+        ++_clock_plot_epoch; // an open clock plot is worked out again
     }
 
     /** A restored snapshot brings its branch lengths in the layout they were captured in: the mode follows the
@@ -6411,6 +6425,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         _branch_length_toggle_for = null; // offered or not follows the restored lengths, not the cached answer
+        ++_clock_plot_epoch; // an open clock plot is worked out again
         reseedBranchLengthsControl();
     }
 
@@ -6437,6 +6452,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _time_axis_type = null; // the arrival took the axis away from a tree that is in time after all
         }
         _branch_length_toggle_for = null;
+        ++_clock_plot_epoch; // an open clock plot is worked out again
         reseedBranchLengthsControl();
         repaint();
     }
@@ -6454,6 +6470,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final BranchLengthLayout.TimeLengths time = timeLengths();
         _branch_length_mode = BranchLengthLayout.MODE.TIME;
         _branch_length_toggle_for = null;
+        ++_clock_plot_epoch; // an open clock plot is worked out again
         if ( ( _phylogeny != null ) && !_phylogeny.isEmpty() ) {
             layOut( BranchLengthLayout.MODE.TIME, time, true );
         }
@@ -6466,6 +6483,159 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  scaled by the (huge) divergence corr and paint absurdly long (covering the whole canvas). Gates those overlays. */
     boolean isBranchLengthTimeCalibrated() {
         return branchLengthMode() != BranchLengthLayout.MODE.DIVERGENCE;
+    }
+
+    // ---- the clock plot (ClockPlot, ClockPlotWindow) --------------------------------------------------------------
+
+    /** Whether the tree has a clock plot: offered Time | Div, and three tips or more, not all on one date. Asked of the
+     *  WHOLE tree, also while a subtree of it is on view, so the button does not come and go with the view. */
+    boolean isClockPlotOffered() {
+        return (_phylogeny != null) && !_phylogeny.isEmpty() && isBranchLengthToggleApplicable()
+                && ClockPlot.tipsMakeALine(wholeTree());
+    }
+
+    /** The clock plot of the tree on display (the clade's own in a subtree view), or null where the tree has none. */
+    ClockPlot.Data clockPlotData() {
+        if ((_phylogeny == null) || _phylogeny.isEmpty()) {
+            return null;
+        }
+        return ClockPlot.data(wholeTree(), timeLengths(), _phylogeny); // asks the rule itself
+    }
+
+    /** Whether the clock plot's dates are calendar years: the time axis the tree's dates DERIVE, not the one chosen
+     *  for the tab (as Archaeopteryx.js reads it): the plot measures the dates, whatever axis is drawn under the tree. */
+    boolean isClockPlotCalendar() {
+        return derivedTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR;
+    }
+
+    /**
+     * Everything a point's colour is read from that is not node data (node data changes only by an edit, which moves
+     * {@link #clockPlotEpoch}): the selection and the search hits, "Color by", Use Visual Styles, events, the palette.
+     * Equal keys, equal colours, so an open clock plot skips its colour pass: 1.34 ms of a paint on a tree of 1,373
+     * nodes (influenza.tree), against 0.04 for the node count (measured 2026-10-02).
+     */
+    java.util.List<Object> clockPlotColourKey() {
+        final TreeColorSet cs = getTreeColorSet();
+        return java.util.Arrays.asList(
+                (getFoundNodes0() == null) ? null : new HashSet<Long>(getFoundNodes0()),
+                (getFoundNodes1() == null) ? null : new HashSet<Long>(getFoundNodes1()),
+                _property_color_scheme, isColorByProperty(), shows(DisplayOption.USE_STYLE),
+                shows(DisplayOption.WRITE_EVENTS), cs, cs.getFoundColor0(), cs.getFoundColor1(),
+                cs.getFoundColor0and1(), cs.getBranchColor(), _clock_plot_epoch);
+    }
+
+    long clockPlotEpoch() {
+        return _clock_plot_epoch;
+    }
+
+    /** The open clock plot window, when THIS tab is the current one; null otherwise. */
+    private ClockPlotWindow clockPlotWindowOfThisTab() {
+        if ((getMainPanel() == null) || (getMainPanel().getMainFrame() == null)
+                || (getMainPanel().getCurrentTreePanel() != this)) {
+            return null;
+        }
+        return getMainPanel().getMainFrame().clockPlotWindow();
+    }
+
+    /** A node pointed at in the tree rings its point in an open clock plot. */
+    void clockPlotHover(final PhylogenyNode node) {
+        final ClockPlotWindow clock = clockPlotWindowOfThisTab();
+        if (clock != null) {
+            clock.markNode(node);
+        }
+    }
+
+    /** The colour a node's point wears: the search hit's or the selection's, else, for a tip, the colour it is drawn
+     *  in ("Color by", a node style, ...); null for the panel's ink. As Archaeopteryx.js's {@code clockPointColor}: an
+     *  ancestor takes no colour but a hit's. */
+    Color clockPlotColorOf(final PhylogenyNode node, final boolean tip) {
+        final boolean in0 = isInFoundNodes0(node);
+        final boolean in1 = isInFoundNodes1(node);
+        if (in0 && in1) {
+            return getTreeColorSet().getFoundColor0and1();
+        }
+        if (in0) {
+            return getTreeColorSet().getFoundColor0();
+        }
+        if (in1) {
+            return getTreeColorSet().getFoundColor1();
+        }
+        return tip ? nodeDisplayColor(node) : null;
+    }
+
+    boolean isClockPlotHit(final PhylogenyNode node) {
+        return isInFoundNodes0(node) || isInFoundNodes1(node);
+    }
+
+    /** The selection is found set 0, as Select Node(s) makes it. */
+    boolean isClockPlotSelected(final PhylogenyNode node) {
+        return isInFoundNodes0(node);
+    }
+
+    boolean hasClockPlotSelection() {
+        return (getFoundNodes0() != null) && !getFoundNodes0().isEmpty();
+    }
+
+    /** A click on a point, or a box dragged over tips: selects ({@code add}) or deselects every one of the nodes, in
+     *  the tree's own selection (found set 0), whatever Click-to says. */
+    void selectFromClockPlot(final java.util.List<PhylogenyNode> nodes, final boolean add) {
+        if ((nodes == null) || nodes.isEmpty()) {
+            return;
+        }
+        if (add) {
+            ensureFoundNodes0Visible();
+            for (final PhylogenyNode n : nodes) {
+                getFoundNodes0().add(n.getId());
+            }
+        }
+        else if (getFoundNodes0() != null) {
+            for (final PhylogenyNode n : nodes) {
+                getFoundNodes0().remove(n.getId());
+            }
+        }
+        refreshFoundNodes0Bookkeeping();
+        repaint();
+    }
+
+    /** Deselect all: clears the selection (found set 0). */
+    void deselectAllFromClockPlot() {
+        if (hasClockPlotSelection()) {
+            getFoundNodes0().clear();
+            refreshFoundNodes0Bookkeeping();
+            repaint();
+        }
+    }
+
+    /** Lights, in the tree, the nodes of the clock plot's pointed dot, each as the tree shows it: itself, or the
+     *  highest collapsed clade holding it (the one drawn), each once. Null or empty puts the light out. */
+    void setClockPlotLit(final java.util.List<PhylogenyNode> nodes) {
+        final java.util.List<PhylogenyNode> lit = new ArrayList<PhylogenyNode>();
+        if (nodes != null) {
+            for (final PhylogenyNode n : nodes) {
+                final PhylogenyNode seen = clockPlotTreeNode(n);
+                if (!lit.contains(seen)) {
+                    lit.add(seen);
+                }
+            }
+        }
+        if (!lit.equals(_clock_plot_lit)) {
+            _clock_plot_lit = lit.isEmpty() ? java.util.Collections.<PhylogenyNode> emptyList() : lit;
+            repaint();
+        }
+    }
+
+    private static PhylogenyNode clockPlotTreeNode(final PhylogenyNode node) {
+        PhylogenyNode seen = node;
+        for (PhylogenyNode n = node.getParent(); n != null; n = n.getParent()) {
+            if (n.isCollapse()) {
+                seen = n;
+            }
+        }
+        return seen;
+    }
+
+    java.util.List<PhylogenyNode> clockPlotLitForTest() {
+        return _clock_plot_lit;
     }
 
     /** Invalidate the identity-keyed time-axis caches (derived type + max node-date) after an IN-PLACE change to the
@@ -15830,6 +16000,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((node != _hover_node) || (sub != _hover_subtree)) {
             _hover_node = node;
             _hover_subtree = sub;
+            clockPlotHover(node);
             repaint();
         }
     }
@@ -15886,6 +16057,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * Screen only -- hover is transient state and must never reach an export.
      */
     private void paintHoverPreview(final Graphics2D g, final boolean to_screen) {
+        if (to_screen) {
+            for (final PhylogenyNode n : _clock_plot_lit) {
+                paintFocusGlow(g, n, hoverGlowColor(n, false, false)); // the nodes of the clock plot's pointed dot
+            }
+        }
         // _hover_node is always in the currently-displayed tree: it is only set on hover, and any tree swap
         // clears it via setNodeInPreorderToNull (the shared structural-change chokepoint).
         if (!to_screen || (_hover_node == null)) {
@@ -18710,8 +18886,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _nodes_in_preorder = null;
         // a tree-structure change (navigation, collapse, delete, ...) invalidates a branch-hover preview whose
         // node may now be detached/relaid-out; this is the shared chokepoint for those changes
+        if (_hover_node != null) {
+            clockPlotHover(null); // the node pointed at is gone from under the pointer: its point is ringed no more
+        }
         _hover_node = null;
         _click_suppressed = null;
+        _clock_plot_lit = java.util.Collections.emptyList(); // lit nodes may be detached; the plot lights them again
     }
 
     final void setOvOn(final boolean ov_on) {

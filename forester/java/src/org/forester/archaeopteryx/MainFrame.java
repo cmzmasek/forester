@@ -3070,6 +3070,46 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     /** The currently-open modeless Settings dialog (set/cleared by the launcher), or null. */
     SettingsDialog _open_settings_dialog;
 
+    /** The open Clock plot window (it plots the current tab), or null. */
+    private ClockPlotWindow _clock_plot_window;
+
+    ClockPlotWindow clockPlotWindow() {
+        return _clock_plot_window;
+    }
+
+    /** The Clock plot button: opens the window for the current tab's tree, or closes it when open. */
+    void toggleClockPlot() {
+        if (_clock_plot_window != null) {
+            _clock_plot_window.dispose();
+            return;
+        }
+        final TreePanel tp = (getMainPanel() == null) ? null : getMainPanel().getCurrentTreePanel();
+        if (tp == null) {
+            return;
+        }
+        final ClockPlotWindow w = new ClockPlotWindow(this);
+        _clock_plot_window = w;
+        if (!w.showFor(tp)) {
+            _clock_plot_window = null;
+            w.dispose();
+        }
+        syncClockPlotButton();
+    }
+
+    /** Closes NOW: the window forgets itself as it is disposed, not when a later event says so. */
+    void clockPlotWindowClosed(final ClockPlotWindow w) {
+        if (_clock_plot_window == w) {
+            _clock_plot_window = null;
+            syncClockPlotButton();
+        }
+    }
+
+    private void syncClockPlotButton() {
+        if ((getMainPanel() != null) && (getMainPanel().getControlPanel() != null)) {
+            getMainPanel().getControlPanel().populateBranchLengthsControl();
+        }
+    }
+
     /** Track the open Settings dialog so a main-window tab switch can re-seed its per-tab controls; auto-clears when
      *  the dialog is disposed. */
     void setOpenSettingsDialog(final SettingsDialog dialog) {
@@ -3524,6 +3564,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 cp.setSizeByPropertySelectionToNone();
                 cp.setAncestralPieSelectionToNone();
                 cp.setBranchLengthsSelectionToTime();
+                ClockPlotWindow.resetOptionsToDefaults(); // Regression line on, Internal nodes off
+                if (_clock_plot_window != null) {
+                    _clock_plot_window.applyOptions();
+                }
                 // re-seed the always-visible control-panel controls (theme radios + search checkboxes) that hold
                 // their own state -- else they stay stale and the search checkboxes clobber the reset on next click
                 cp.resyncFromOptions();

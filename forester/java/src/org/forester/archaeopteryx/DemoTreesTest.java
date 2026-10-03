@@ -275,6 +275,8 @@ public final class DemoTreesTest {
         ok &= beastAnnotationsOk( "beast-negative-span.nex" );
         // what Nextstrain / TreeTime / MrBayes really write, each read exactly as File > Open reads it
         ok &= nextstrainNexusOk( "nextstrain-nexus.nex" );
+        // the clock plot, and its twin sampled on one date (Time | Div offered, no plot)
+        ok &= clockPlotPairOk( "clock-plot.nex", "clock-plot-one-date.nex" );
         ok &= treeTimePairOk( "treetime-nexus.nex", "treetime-divergence.nex" );
         ok &= treeTimeNewickOk( "treetime-tree.nwk" );
         ok &= mrBayesConsensusOk( "mrbayes-consensus.con.tre" );
@@ -2324,6 +2326,56 @@ public final class DemoTreesTest {
             return null;
         }
         return n.getNodeData().getProperties().getProperties( ref ).get( 0 ).getValue();
+    }
+
+    /** The clock-plot pair, read as File > Open reads it: 20 tips on 17 dates (four identical samples share one date
+     *  and one divergence), every node dated and recording its divergence, in time -- and its twin, every tip on
+     *  2024.0, offered Time | Div and refused the plot. The numbers the README quotes are pinned in ClockPlotTest. */
+    private static boolean clockPlotPairOk( final String file_name, final String twin_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        final Phylogeny twin = loadAsOpened( twin_name );
+        if ( ( phy == null ) || ( twin == null ) ) {
+            return false;
+        }
+        final java.util.Set<String> dates = new java.util.HashSet<String>();
+        int identical = 0;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.getNodeData().isHasDate() || ( propertyValue( n, BranchLengthLayout.DIV_PROPERTY_REF ) == null ) ) {
+                note( file_name + ": every node is dated and records its divergence; " + n.getName() + " does not" );
+                return false;
+            }
+            if ( n.isExternal() ) {
+                dates.add( n.getNodeData().getDate().getValue().toPlainString() );
+                if ( n.getName().matches( "Americas/(7|8|9|10)/2023" )
+                        && "2023.25".equals( n.getNodeData().getDate().getValue().toPlainString() )
+                        && "0.0128".equals( propertyValue( n, BranchLengthLayout.DIV_PROPERTY_REF ) ) ) {
+                    ++identical;
+                }
+            }
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 20 ) || ( dates.size() != 17 ) || ( identical != 4 ) ) {
+            note( file_name + ": 20 tips on 17 dates, four identical samples; got " + phy.getNumberOfExternalNodes() + ", "
+                    + dates.size() + ", " + identical );
+            return false;
+        }
+        final BranchLengthLayout.TimeLengths time = BranchLengthLayout.TimeLengths.onScreen( phy );
+        if ( BranchLengthLayout.arrivesShowingDivergence( phy ) || !ClockPlot.isOffered( phy, time ) ) {
+            note( file_name + ": arrives in time and has a clock plot" );
+            return false;
+        }
+        for( final Iterator<PhylogenyNode> it = twin.iteratorExternalForward(); it.hasNext(); ) {
+            if ( !"2024".equals( it.next().getNodeData().getDate().getValue().stripTrailingZeros().toPlainString() ) ) {
+                note( twin_name + ": every tip sampled on 2024.0" );
+                return false;
+            }
+        }
+        final BranchLengthLayout.TimeLengths twin_time = BranchLengthLayout.TimeLengths.onScreen( twin );
+        if ( !BranchLengthLayout.isApplicable( twin, twin_time ) || ClockPlot.isOffered( twin, twin_time ) ) {
+            note( twin_name + ": offered Time | Div, refused the clock plot" );
+            return false;
+        }
+        return true;
     }
 
     /** Auspice's "download Nexus" of a time tree opens like the same build's JSON: every node dated in calendar

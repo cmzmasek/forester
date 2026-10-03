@@ -237,6 +237,11 @@ public class MainPanel extends JPanel implements ComponentListener {
         if ((index >= 0) && (getTabbedPane().getTabCount() > 0)) {
             // the tab's windows (node data, Tree Properties, Tree as Text) show a tree that is going away
             getTreePanels().get(index).removeAllEditNodeJFrames();
+            // ...and so does the clock plot of it: closed now, since no paint of a tab may follow (the last tab)
+            if ((getMainFrame() != null) && (getMainFrame().clockPlotWindow() != null)
+                    && getMainFrame().clockPlotWindow().isFor(getTreePanels().get(index))) {
+                getMainFrame().clockPlotWindow().dispose();
+            }
             getTabbedPane().remove(index);
             getTreePanels().remove(index);
             _treegraphic_scroll_panes.remove(index);

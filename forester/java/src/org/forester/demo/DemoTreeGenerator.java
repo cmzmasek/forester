@@ -165,6 +165,8 @@ public final class DemoTreeGenerator {
         writeText( dir, "nextstrain-div-spelling.nex", nextstrainDivSpellingNexus() );
         writeText( dir, "beast-lengths-not-heights.nex", beastLengthsNotHeightsNexus() );
         writeText( dir, "nextstrain-nexus.nex", nextstrainNexus() );
+        writeText( dir, "clock-plot.nex", clockPlotNexus( false ) );
+        writeText( dir, "clock-plot-one-date.nex", clockPlotNexus( true ) );
         writeText( dir, "treetime-nexus.nex", treeTimeNexus( true ) );
         writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
         writeText( dir, "treetime-tree.nwk", treeTimeNewick() );
@@ -534,6 +536,82 @@ public final class DemoTreeGenerator {
                 .append( auspiceInternal( "NODE_0000003", 2011.5, root, root, clock, "{2010.6,2012.2}", "East Africa" ) ).append( ')' )
                 .append( "NODE_0000000[&num_date=2010,num_date_CI={2008.9,2010.8},div=0]:0)__ROOT[&num_date=2010,div=0]:0;\nend;\n" );
         return sb.toString();
+    }
+
+    /**
+     * "Clock plot": an Auspice-style Nexus (num_date, div, region on every node; lengths in years) of 20 samples over
+     * six years, divergence accumulating at 0.002 substitutions per site per year from a root in 2017, each tip a
+     * little off that clock. Two things to find on the plot: ONE OUTLIER (Asia/6/2022, 0.004 above the clock: a
+     * sample whose date or sequence is wrong) and FOUR IDENTICAL SAMPLES (Americas/7-10/2023: one date, one
+     * divergence), drawn as one dot that names, lights and selects all four.
+     * <p>
+     * {@code one_date}: the twin the rule REFUSES. The same tree with every tip sampled on 2024.0: Time | Div is still
+     * offered (the dates and divergence state every branch), the clock plot is not -- a tree sampled at one moment
+     * has no slope to estimate.
+     */
+    private static String clockPlotNexus( final boolean one_date ) {
+        final double root = 2017.0;
+        final double clock = 0.002;
+        // {name, date, region, offset from the clock in 1e-4 subs/site}; "" closes a clade
+        final Object[][] europe = { { "Europe/1/2018", 2018.2, -2 }, { "Europe/2/2018", 2018.6, 3 },
+                { "(", 2019.0 }, { "Europe/3/2019", 2019.4, 1 }, { "Europe/4/2020", 2020.1, -3 },
+                { "Europe/5/2021", 2021.3, 2 }, { ")" } };
+        final Object[][] asia = { { "(", 2019.6 }, { "Asia/1/2020", 2020.0, 4 }, { "Asia/2/2020", 2020.5, -1 },
+                { "Asia/3/2021", 2021.0, -4 }, { ")" }, { "(", 2020.9 }, { "Asia/4/2021", 2021.6, 2 },
+                { "Asia/5/2022", 2022.2, -2 }, { "Asia/6/2022", 2022.7, 40 }, { ")" } };
+        final Object[][] americas = { { "(", 2022.9 }, { "Americas/7/2023", 2023.25, 3 },
+                { "Americas/8/2023", 2023.25, 3 }, { "Americas/9/2023", 2023.25, 3 }, { "Americas/10/2023", 2023.25, 3 },
+                { ")" }, { "Americas/1/2021", 2021.4, -3 }, { "Americas/2/2022", 2022.1, 1 }, { "(", 2022.0 },
+                { "Americas/3/2023", 2023.0, -1 }, { "Americas/4/2023", 2023.6, 2 }, { "Americas/5/2024", 2024.1, -2 },
+                { ")" } };
+        final StringBuilder sb = new StringBuilder( "#NEXUS\nbegin trees;\n  tree clock_plot = (" );
+        sb.append( clockPlotClade( "Europe", 2017.8, europe, root, clock, one_date ) ).append( ',' );
+        sb.append( clockPlotClade( "Asia", 2018.5, asia, root, clock, one_date ) ).append( ',' );
+        sb.append( clockPlotClade( "Americas", 2020.2, americas, root, clock, one_date ) );
+        sb.append( ")ROOT[&num_date=" ).append( plain( root ) ).append( ",div=0]:0;\nend;\n" );
+        return sb.toString();
+    }
+
+    /** One region's clade of {@link #clockPlotNexus}: its members in order, "(" opening a subclade at a date and ")"
+     *  closing it. An internal node sits exactly on the clock; a tip at its offset from it. */
+    private static String clockPlotClade( final String region, final double date, final Object[][] members,
+                                          final double root, final double clock, final boolean one_date ) {
+        final java.util.Deque<StringBuilder> open = new java.util.ArrayDeque<StringBuilder>();
+        final java.util.Deque<Double> dates = new java.util.ArrayDeque<Double>();
+        open.push( new StringBuilder() );
+        dates.push( date );
+        for( final Object[] m : members ) {
+            final String name = (String) m[ 0 ];
+            if ( name.equals( "(" ) ) {
+                open.push( new StringBuilder() );
+                dates.push( (Double) m[ 1 ] );
+            }
+            else if ( name.equals( ")" ) ) {
+                final double d = dates.pop();
+                final String inner = open.pop().toString();
+                appendMember( open.peek(), "(" + inner + ")" + clockPlotNode( "NODE_" + region + "_" + plain( d ), d,
+                                                                       dates.peek(), region, ( d - root ) * clock ) );
+            }
+            else {
+                final double d = one_date ? 2024.0 : (Double) m[ 1 ];
+                final double div = ( ( ( (Double) m[ 1 ] ) - root ) * clock ) + ( ( (Integer) m[ 2 ] ) * 1e-4 );
+                appendMember( open.peek(), name + clockPlotNode( null, d, dates.peek(), region, div ) );
+            }
+        }
+        return "(" + open.pop() + ")" + clockPlotNode( "NODE_" + region, date, root, region, ( date - root ) * clock );
+    }
+
+    private static void appendMember( final StringBuilder sb, final String member ) {
+        if ( sb.length() > 0 ) {
+            sb.append( ',' );
+        }
+        sb.append( member );
+    }
+
+    private static String clockPlotNode( final String name, final double date, final double parent_date,
+                                         final String region, final double div ) {
+        return ( ( name == null ) ? "" : name ) + "[&num_date=" + plain( date ) + ",region=" + region + ",div="
+                + plain( div ) + "]:" + plain( date - parent_date );
     }
 
     private static String auspiceTip( final String[] t, final double parent_date, final double root, final double clock,

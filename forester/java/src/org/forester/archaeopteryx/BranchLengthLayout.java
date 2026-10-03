@@ -411,7 +411,7 @@ final class BranchLengthLayout {
 
     /** The node's date VALUE, or null when it states none. Asks whether the value is THERE, never whether it is
      *  zero: 0 is the height of every contemporaneous BEAST tip. */
-    private static Double dateValue( final PhylogenyNode node ) {
+    static Double dateValue( final PhylogenyNode node ) {
         if ( ( node.getNodeData() == null ) || ( node.getNodeData().getDate() == null )
                 || ( node.getNodeData().getDate().getValue() == null ) ) {
             return null;
@@ -600,6 +600,37 @@ final class BranchLengthLayout {
     /** {@link #isApplicable(Phylogeny, TimeLengths)} of a tree that is showing time. */
     static boolean isApplicable( final Phylogeny phy ) {
         return isApplicable( phy, TimeLengths.onScreen( phy ) );
+    }
+
+    /**
+     * Each node's CUMULATIVE divergence from the root, by node id, of a tree both layouts can state every branch of
+     * (no depth asked); null for any other tree. A tree that RECORDS its divergence states it on each node, a
+     * negative value included; on a clock-rate tree it is the sum, from the root down, of each branch's divergence
+     * as the divergence layout draws it (rate x time, each piece clamped at 0 by itself), the root at 0. As
+     * Archaeopteryx.js reads it for the clock plot ({@code auspiceNodeDiv}, {@code captureDivergence}).
+     *
+     * @param time the lengths the tree has in time: on screen, or kept
+     */
+    static Map<Long, Double> divergenceFromRoot( final Phylogeny phy, final TimeLengths time ) {
+        final DIVERGENCE_SOURCE source = everyBranchSource( phy, time );
+        if ( source == DIVERGENCE_SOURCE.NONE ) {
+            return null;
+        }
+        final Map<Long, Double> of = new HashMap<Long, Double>();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( source == DIVERGENCE_SOURCE.STORED ) {
+                of.put( n.getId(), recordedDivergence( n ) );
+            }
+            else if ( n.isRoot() || ( n.getParent() == null ) ) {
+                of.put( n.getId(), Double.valueOf( 0.0 ) );
+            }
+            else {
+                of.put( n.getId(), Double.valueOf( of.get( n.getParent().getId() ).doubleValue()
+                        + divergence( n, source, time ) ) );
+            }
+        }
+        return of;
     }
 
     /**

@@ -2213,6 +2213,24 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Clock plot (date against divergence, a line through the tips): ");
+        if (org.forester.archaeopteryx.ClockPlotTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Clock plot window (linked to the tree): ");
+        if (org.forester.archaeopteryx.ClockPlotWindowTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        }
+        else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("BEAST branch mode (Time | Div on the demo pair): ");
         if (org.forester.archaeopteryx.BeastBranchModeTest.test()) {
             System.out.println("OK.");

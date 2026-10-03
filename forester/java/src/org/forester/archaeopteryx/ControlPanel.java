@@ -151,6 +151,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JToggleButton _branch_length_time_tb;
     private JToggleButton _branch_length_div_tb;
     private JPanel        _branch_lengths_panel;
+    /** Opens/closes the Clock plot window; shown for a tree that has a clock plot, pressed while it is open. */
+    private JToggleButton _clock_plot_tb;
+    static final String   CLOCK_PLOT_TIP = "Plot each tip's date against its divergence from the root, with a "
+            + "least-squares line through the tips (its slope is the rate), in a window linked to the tree";
     /** Short enough for a two-button row in a ~160px column; the tooltip carries the full meaning. */
     private static final String BRANCH_LENGTH_DIV_SHORT      = "Div";
     // TIME is the lengths the tree states in time, and the gap between its dates only where it states none (a
@@ -2690,6 +2694,20 @@ final class ControlPanel extends JPanel implements ActionListener {
         _branch_lengths_panel.add(_branch_length_div_tb);
         add(_branch_lengths_panel);
         _branch_lengths_panel.setVisible(false); // revealed by populate only for a tree that carries both
+        // The clock plot draws the same two quantities against each other, so it sits under the switch; a button of
+        // its own because it opens a window and leaves the layout alone (as in Archaeopteryx.js)
+        _clock_plot_tb = new JToggleButton(ClockPlotWindow.TITLE);
+        _clock_plot_tb.setFont(ControlPanel.jcb_font);
+        _clock_plot_tb.setMargin(new Insets(2, 1, 2, 1));
+        describe(_clock_plot_tb, CLOCK_PLOT_TIP);
+        _clock_plot_tb.addActionListener(e -> {
+            if (getMainPanel().getMainFrame() != null) {
+                getMainPanel().getMainFrame().toggleClockPlot();
+            }
+            populateBranchLengthsControl(); // pressed exactly while the window is open, whatever the click did
+        });
+        add(_clock_plot_tb);
+        _clock_plot_tb.setVisible(false);
     }
 
     /** Reseed the Time | Div toggle from the current tree and show/hide the whole row (so it collapses) depending on
@@ -2725,8 +2743,15 @@ final class ControlPanel extends JPanel implements ActionListener {
         // ...and the row stays while DIVERGENCE is on screen, whatever the tree has lost since: it is the way back
         final boolean shown = applicable
                 || ((tp != null) && (tp.getBranchLengthMode() == BranchLengthLayout.MODE.DIVERGENCE));
-        final boolean changed = _branch_lengths_panel.isVisible() != shown;
+        boolean changed = _branch_lengths_panel.isVisible() != shown;
         _branch_lengths_panel.setVisible(shown);
+        if (_clock_plot_tb != null) {
+            final boolean clock = (tp != null) && tp.isClockPlotOffered();
+            changed |= _clock_plot_tb.isVisible() != clock;
+            _clock_plot_tb.setVisible(clock);
+            _clock_plot_tb.setSelected((getMainPanel().getMainFrame() != null)
+                    && (getMainPanel().getMainFrame().clockPlotWindow() != null));
+        }
         if (changed) {
             revalidate();
             repaint();
@@ -2749,6 +2774,11 @@ final class ControlPanel extends JPanel implements ActionListener {
     /** Test hook: the Div button's tooltip, which says whether the divergence is recorded or derived. */
     String branchLengthDivTooltipForTest() {
         return (_branch_length_div_tb == null) ? null : _branch_length_div_tb.getToolTipText();
+    }
+
+    /** Test hook: the Clock plot button. */
+    JToggleButton clockPlotButtonForTest() {
+        return _clock_plot_tb;
     }
 
     /** Test hook: whether the Time | Div control is currently visible. */

@@ -497,8 +497,19 @@ public final class ResetToDefaultsTest {
                         fail( ok, "precondition: a settings file should exist before reset" );
                     }
 
+                    // the Clock plot window's two checkboxes, kept while the program runs: driven away from how they open
+                    ClockPlotWindow.setOptionsForTest( !ClockPlotWindow.DEFAULT_LINE, !ClockPlotWindow.DEFAULT_INTERNAL );
+                    if ( ( ClockPlotWindow.lineOptionForTest() == ClockPlotWindow.DEFAULT_LINE )
+                            || ( ClockPlotWindow.internalOptionForTest() == ClockPlotWindow.DEFAULT_INTERNAL ) ) {
+                        fail( ok, "precondition: the clock plot's checkboxes should differ from their defaults before reset" );
+                    }
+
                     // 2. RESET
                     frame.resetToDefaults();
+                    if ( ( ClockPlotWindow.lineOptionForTest() != ClockPlotWindow.DEFAULT_LINE )
+                            || ( ClockPlotWindow.internalOptionForTest() != ClockPlotWindow.DEFAULT_INTERNAL ) ) {
+                        fail( ok, "Reset must put the clock plot's Regression line back on and Internal nodes off" );
+                    }
 
                     // 3a. the live Options reset in place
                     if ( o.getRasterExportScale() != 4 ) {
