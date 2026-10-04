@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" branch_length_unit="substitutions/site" rerootable="true">
+  <name>Root-to-tip (demo)</name>
+  <description>A divergence tree (branch lengths in substitutions/site) whose 16 tips carry a sampling date and whose ancestors carry none: the tree a root-to-tip regression is run on before dating. The control panel offers the Clock plot, and no Time | Div, since the tree states no time.</description>
+  <clade>
+    <clade>
+      <name>P</name>
+      <branch_length>0.004</branch_length>
+      <clade>
+        <name>P-1</name>
+        <branch_length>0.0032</branch_length>
+        <date unit="year">
+          <value>2019.6</value>
+        </date>
+      </clade>
+      <clade>
+        <name>P-2</name>
+        <branch_length>0.004</branch_length>
+        <date unit="year">
+          <value>2020.3</value>
+        </date>
+      </clade>
+      <clade>
+        <name>PQ</name>
+        <branch_length>0.004</branch_length>
+        <clade>
+          <name>P-3</name>
+          <branch_length>0.0048</branch_length>
+          <date unit="year">
+            <value>2021.1</value>
+          </date>
+        </clade>
+        <clade>
+          <name>P-4</name>
+          <branch_length>0.0064</branch_length>
+          <date unit="year">
+            <value>2021.8</value>
+          </date>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <name>Q</name>
+      <branch_length>0.0032</branch_length>
+      <clade>
+        <name>Q-1</name>
+        <branch_length>0.004</branch_length>
+        <date unit="year">
+          <value>2019.9</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Q-2</name>
+        <branch_length>0.0096</branch_length>
+        <date unit="year">
+          <value>2020.9</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Q-3</name>
+        <branch_length>0.0136</branch_length>
+        <date unit="year">
+          <value>2022.4</value>
+        </date>
+      </clade>
+      <clade>
+        <name>Q-4</name>
+        <branch_length>0.0172</branch_length>
+        <date unit="year">
+          <value>2022.9</value>
+        </date>
+      </clade>
+    </clade>
+    <clade>
+      <name>R</name>
+      <branch_length>0.01</branch_length>
+      <clade>
+        <name>R-1</name>
+        <branch_length>0.0056</branch_length>
+        <date unit="year">
+          <value>2021.5</value>
+        </date>
+      </clade>
+      <clade>
+        <name>R-2</name>
+        <branch_length>0.0048</branch_length>
+        <date unit="year">
+          <value>2022</value>
+        </date>
+      </clade>
+      <clade>
+        <name>RS</name>
+        <branch_length>0.0068</branch_length>
+        <clade>
+          <name>R-3</name>
+          <branch_length>0.004</branch_length>
+          <date unit="year">
+            <value>2023.1</value>
+          </date>
+        </clade>
+        <clade>
+          <name>R-4</name>
+          <branch_length>0.0056</branch_length>
+          <date unit="year">
+            <value>2023.7</value>
+          </date>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <name>S</name>
+      <branch_length>0.0128</branch_length>
+      <clade>
+        <name>S-1</name>
+        <branch_length>0.0048</branch_length>
+        <date unit="year">
+          <value>2022.6</value>
+        </date>
+      </clade>
+      <clade>
+        <name>S-2</name>
+        <branch_length>0.0092</branch_length>
+        <date unit="year">
+          <value>2023.3</value>
+        </date>
+      </clade>
+      <clade>
+        <name>S-3</name>
+        <branch_length>0.01</branch_length>
+        <date unit="year">
+          <value>2024</value>
+        </date>
+      </clade>
+      <clade>
+        <name>S-4</name>
+        <branch_length>0.0136</branch_length>
+        <date unit="year">
+          <value>2024.5</value>
+        </date>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

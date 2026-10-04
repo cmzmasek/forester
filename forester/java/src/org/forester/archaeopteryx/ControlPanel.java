@@ -2694,7 +2694,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         _branch_lengths_panel.add(_branch_length_div_tb);
         add(_branch_lengths_panel);
         _branch_lengths_panel.setVisible(false); // revealed by populate only for a tree that carries both
-        // The clock plot draws the same two quantities against each other, so it sits under the switch; a button of
+        // The clock plot draws the same two quantities against each other, so it sits under the switch (and where
+        // the switch would be, on a divergence tree whose tips alone are dated: the root-to-tip kind); a button of
         // its own because it opens a window and leaves the layout alone (as in Archaeopteryx.js)
         _clock_plot_tb = new JToggleButton(ClockPlotWindow.TITLE);
         _clock_plot_tb.setFont(ControlPanel.jcb_font);

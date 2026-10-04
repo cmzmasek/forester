@@ -167,6 +167,8 @@ public final class DemoTreeGenerator {
         writeText( dir, "nextstrain-nexus.nex", nextstrainNexus() );
         writeText( dir, "clock-plot.nex", clockPlotNexus( false ) );
         writeText( dir, "clock-plot-one-date.nex", clockPlotNexus( true ) );
+        write( dir, "root-to-tip.xml", rootToTipTree( false ) );
+        write( dir, "root-to-tip-tip-undated.xml", rootToTipTree( true ) );
         writeText( dir, "treetime-nexus.nex", treeTimeNexus( true ) );
         writeText( dir, "treetime-divergence.nex", treeTimeNexus( false ) );
         writeText( dir, "treetime-tree.nwk", treeTimeNewick() );
@@ -599,6 +601,72 @@ public final class DemoTreeGenerator {
             }
         }
         return "(" + open.pop() + ")" + clockPlotNode( "NODE_" + region, date, root, region, ( date - root ) * clock );
+    }
+
+    /**
+     * "Root-to-tip": a DIVERGENCE tree whose tips alone are dated -- the tree a root-to-tip regression is run on
+     * BEFORE dating, to ask whether there is a clock signal worth dating (the second kind of clock plot, joint with
+     * Archaeopteryx.js). Sixteen isolates in four clades sampled 2019.6 to 2024.5, branch lengths in
+     * substitutions/site accumulating at 0.004 per year from a root in 2018.0 (the ancestors' dates are used to lay
+     * the lengths down and never written), each tip a little off that clock (its offset, in 4e-4 subs/site, is the
+     * third field). Every tip carries a {@code <date>} (unit "year"); no ancestor does. BY HAND over the tips: means
+     * 2022.1 and 0.016375, Sxx 32.58, Sxy 0.12832, Syy 5.1823e-4 -> slope 0.0039386 (the rate), R2 0.975, the line
+     * reaches the root (0) at 2017.94; the clade of S, 0.0128 from the root: slope 0.0042136, R2 0.933, its top by
+     * the line at 2021.37 (pinned in ClockPlotTest).
+     * <p>
+     * {@code undated_tip}: the twin the rule REFUSES -- S-3 without its date (and none in its name). A plot that
+     * drops tips silently answers a different question than it was asked, so a tree with a gap is not offered one.
+     */
+    private static Phylogeny rootToTipTree( final boolean undated_tip ) {
+        final double rate = 0.004;
+        final double root_date = 2018.0;
+        final PhylogenyNode root = new PhylogenyNode();
+        // a clade: {name, its date, its members}; a tip: {name, date, offset}
+        final Object[][] clades = {
+                { "P", 2019.0, new Object[][] { { "P-1", 2019.6, 2 }, { "P-2", 2020.3, -3 },
+                        { "PQ", 2020.0, new Object[][] { { "P-3", 2021.1, 1 }, { "P-4", 2021.8, -2 } } } } },
+                { "Q", 2018.8, new Object[][] { { "Q-1", 2019.9, -1 }, { "Q-2", 2020.9, 3 }, { "Q-3", 2022.4, -2 },
+                        { "Q-4", 2022.9, 2 } } },
+                { "R", 2020.5, new Object[][] { { "R-1", 2021.5, 4 }, { "R-2", 2022.0, -3 },
+                        { "RS", 2022.2, new Object[][] { { "R-3", 2023.1, 1 }, { "R-4", 2023.7, -1 } } } } },
+                { "S", 2021.2, new Object[][] { { "S-1", 2022.6, -2 }, { "S-2", 2023.3, 2 }, { "S-3", 2024.0, -3 },
+                        { "S-4", 2024.5, 1 } } } };
+        for( final Object[] c : clades ) {
+            root.addAsChild( rootToTipNode( c, 0, root_date, rate, undated_tip ) );
+        }
+        final Phylogeny phy = tree( root, "Root-to-tip (demo)",
+                                    "A divergence tree (branch lengths in substitutions/site) whose 16 tips carry a "
+                                            + "sampling date and whose ancestors carry none: the tree a root-to-tip "
+                                            + "regression is run on before dating. The control panel offers the Clock "
+                                            + "plot, and no Time | Div, since the tree states no time."
+                                            + ( undated_tip ? " Tip S-3 carries no date, so the plot is refused." : "" ) );
+        phy.setDistanceUnit( "substitutions/site" );
+        return phy;
+    }
+
+    /** One node of {@link #rootToTipTree}: a clade at its (unwritten) date, or a tip at its date and offset; the
+     *  branch length is the divergence gained from the parent's. */
+    private static PhylogenyNode rootToTipNode( final Object[] spec, final double parent_div, final double root_date,
+                                                final double rate, final boolean undated_tip ) {
+        final PhylogenyNode n = new PhylogenyNode();
+        n.setName( (String) spec[ 0 ] );
+        final double date = (Double) spec[ 1 ];
+        if ( spec[ 2 ] instanceof Object[][] ) {
+            final double div = ( date - root_date ) * rate;
+            n.setDistanceToParent( Double.parseDouble( plain( div - parent_div ) ) );
+            for( final Object[] m : (Object[][]) spec[ 2 ] ) {
+                n.addAsChild( rootToTipNode( m, div, root_date, rate, undated_tip ) );
+            }
+        }
+        else {
+            final double div = ( ( date - root_date ) * rate ) + ( ( (Integer) spec[ 2 ] ) * 4e-4 );
+            n.setDistanceToParent( Double.parseDouble( plain( div - parent_div ) ) );
+            if ( !( undated_tip && "S-3".equals( n.getName() ) ) ) {
+                n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", new java.math.BigDecimal( plain( date ) ),
+                                                                                null, null, "year" ) );
+            }
+        }
+        return n;
     }
 
     private static void appendMember( final StringBuilder sb, final String member ) {

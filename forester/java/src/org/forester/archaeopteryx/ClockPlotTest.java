@@ -13,9 +13,11 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.forester.archaeopteryx.tools.TipDateExtractor;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Date;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesList;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
@@ -50,6 +52,30 @@ import org.forester.phylogeny.data.Property.AppliesTo;
  *
  * The tree: ROOT(1999, 0) -> X(1999.5, 0.0005) -> A, B; ROOT -> Y(2000.5, 0.001) -> C, D, E. Its branch lengths are
  * the gaps between its dates, so it is in time, as an Auspice build arrives.
+ * <p>
+ * The SECOND kind, a divergence tree whose tips alone are dated (Archaeopteryx.js e22361c, 2d7fabe; the fixtures and
+ * numbers of its {@code test/clock_test.js}), from the Nexus
+ * {@code ((A[&num_date=2000]:0.01,B[&num_date=2001]:0.03)X:0.005,(C[&num_date=2002]:0.02,D[&num_date=2003]:0.06,E[&num_date=2004]:0.04)Y:0.01)}:
+ *
+ * <pre>
+ *   tip   date   path from the root
+ *   A     2000   0.005 + 0.01 = 0.015
+ *   B     2001   0.005 + 0.03 = 0.035
+ *   C     2002   0.01 + 0.02 = 0.03
+ *   D     2003   0.01 + 0.06 = 0.07
+ *   E     2004   0.01 + 0.04 = 0.05
+ *
+ *   means 2002 and 0.04; Sxx = 10, Sxy = 0.105, Syy = 0.00175
+ *   slope 0.0105, intercept 0.04 - 0.0105 x 2002 = -20.981
+ *   R2 = 0.105^2 / (10 x 0.00175) = 0.63
+ *   the line reaches the root (0) at 20.981 / 0.0105 = 1998.190476...
+ * </pre>
+ *
+ * and for the clade Y = (C, D, E), itself 0.01 from the root: means 2003 and 0.05; Sxx = 2, Sxy = 0.02, Syy = 0.0008;
+ * slope 0.01, intercept -19.98, R2 0.25; the line reaches Y's divergence (0.01) at 1999. With the dates in the tips'
+ * NAMES instead (A_2000, B|2001-07-02, ...: a year alone is mid-year, and 2 July 2001 is the middle of a non-leap
+ * year exactly) every date shifts by 0.5: the slope and R2 stand, the intercept is -20.98625 and the root by the
+ * line 1998.690476...
  */
 public final class ClockPlotTest {
 
@@ -75,6 +101,13 @@ public final class ClockPlotTest {
         ok &= testD3Ticks();
         ok &= testNumbers();
         ok &= testDemoPair();
+        ok &= testRootToTipRule();
+        ok &= testRootToTipData();
+        ok &= testRootToTipAges();
+        ok &= testRootToTipNames();
+        ok &= testRootToTipFromLabels();
+        ok &= testSwineH1CrossRun();
+        ok &= testRootToTipDemoPair();
         return ok;
     }
 
@@ -313,7 +346,7 @@ public final class ClockPlotTest {
      * A tip's divergence is 0.01 x (4 - its age): A 0.04, B 0.03, C 0.035, D 0.02 -- on the line div = 0.04 - 0.01 x
      * age exactly. ((A:2, B:1):2, (C:2.5, D:1):1), node ages 2 and 3.
      */
-    private static boolean testAges() {
+    private static Phylogeny agesTree() {
         final PhylogenyNode root = new PhylogenyNode();
         root.setName( "R" );
         dateNoUnit( root, 4 );
@@ -327,6 +360,11 @@ public final class ClockPlotTest {
         t.setRoot( root );
         t.setRooted( true );
         t.externalNodesHaveChanged();
+        return t;
+    }
+
+    private static boolean testAges() {
+        final Phylogeny t = agesTree();
         if ( !BranchLengthLayout.isApplicable( t ) ) {
             return fail( "control: the ages tree is offered Time | Div" );
         }
@@ -596,7 +634,10 @@ public final class ClockPlotTest {
     }
 
     private static Phylogeny read( final String demo ) {
-        final File f = new File( System.getProperty( "user.dir" ), "forester/demo/" + demo );
+        return readFile( new File( System.getProperty( "user.dir" ), "forester/demo/" + demo ) );
+    }
+
+    private static Phylogeny readFile( final File f ) {
         try {
             final Phylogeny[] phys = FigureRenderer.readTrees( f );
             return ( phys.length == 1 ) ? phys[ 0 ] : null;
@@ -604,6 +645,375 @@ public final class ClockPlotTest {
         catch ( final Exception e ) {
             return null;
         }
+    }
+
+    /** A tree from its text, read the way File > Open reads a file of that {@code suffix} (".nex", ".nwk"). */
+    private static Phylogeny parse( final String text, final String suffix ) {
+        try {
+            final File f = File.createTempFile( "clock_plot_test", suffix );
+            f.deleteOnExit();
+            java.nio.file.Files.writeString( f.toPath(), text );
+            return readFile( f );
+        }
+        catch ( final Exception e ) {
+            return null;
+        }
+    }
+
+    // ---- the second kind: a divergence tree whose tips alone are dated ------------------------------------------
+
+    private static final String ROOT_TO_TIP_NEXUS = "#NEXUS\nBegin trees;\ntree T = [&R] ((A[&num_date=2000]:0.01,B[&num_date=2001]:0.03)X:0.005,"
+            + "(C[&num_date=2002]:0.02,D[&num_date=2003]:0.06,E[&num_date=2004]:0.04)Y:0.01);\nEnd;\n";
+
+    private static Phylogeny rootToTip() {
+        return parse( ROOT_TO_TIP_NEXUS, ".nex" );
+    }
+
+    private static ClockPlot.Kind kind( final Phylogeny p ) {
+        return ClockPlot.kind( p, time( p ) );
+    }
+
+    /** Which trees are kind 2: dated tips, undated ancestors, a length on every branch, no clock rates -- and the
+     *  line's own rule on top. */
+    private static boolean testRootToTipRule() {
+        final Phylogeny t = rootToTip();
+        if ( t == null ) {
+            return fail( "the root-to-tip fixture could not be read" );
+        }
+        if ( BranchLengthLayout.isApplicable( t ) ) {
+            return fail( "control: the ancestors are undated, so no Time | Div" );
+        }
+        if ( !ClockPlot.isRootToTipTree( t ) || ( kind( t ) != ClockPlot.Kind.ROOT_TO_TIP ) || !ClockPlot.isOffered( t, time( t ) ) ) {
+            return fail( "dated tips over divergence lengths: a root-to-tip plot, got " + kind( t ) );
+        }
+        // one ancestor dated: neither kind (not a time tree, and not tips-only)
+        final Phylogeny dated = rootToTip();
+        date( named( dated, "X" ), 1999 );
+        if ( ( kind( dated ) != null ) || ( data( dated ) != null ) ) {
+            return fail( "one ancestor dated: no plot" );
+        }
+        // one tip undated: refused, not dropped from the plot
+        final Phylogeny undated = rootToTip();
+        named( undated, "C" ).getNodeData().setDate( null );
+        if ( ( kind( undated ) != null ) || ( data( undated ) != null ) ) {
+            return fail( "one tip undated: no plot" );
+        }
+        // one branch without a length
+        final Phylogeny gap = parse( ROOT_TO_TIP_NEXUS.replace( "C[&num_date=2002]:0.02", "C[&num_date=2002]" ), ".nex" );
+        if ( named( gap, "C" ).getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+            return fail( "fixture: C has no length, got " + named( gap, "C" ).getDistanceToParent() );
+        }
+        if ( kind( gap ) != null ) {
+            return fail( "a branch without a length: no plot" );
+        }
+        // the line's own rule: three tips, not all on one date
+        final Phylogeny two = parse( "#NEXUS\nBegin trees;\ntree T = [&R] (A[&num_date=2000]:0.01,B[&num_date=2001]:0.03);\nEnd;\n", ".nex" );
+        if ( !ClockPlot.isRootToTipTree( two ) || ( kind( two ) != null ) ) {
+            return fail( "two tips: the kind, and no plot" );
+        }
+        final Phylogeny same = parse( ROOT_TO_TIP_NEXUS.replaceAll( "num_date=200\\d", "num_date=2000" ), ".nex" );
+        if ( !ClockPlot.isRootToTipTree( same ) || ( kind( same ) != null ) ) {
+            return fail( "every tip on one date: the kind, and no plot" );
+        }
+        // a clock-model tree is kind 1 and never this one: its lengths are time
+        final Phylogeny ages = agesTree();
+        if ( ( kind( ages ) != ClockPlot.Kind.DIVERGENCE ) || ClockPlot.isRootToTipTree( ages ) ) {
+            return fail( "a clock-model tree keeps its Time | Div plot" );
+        }
+        // ...and one with a rate on every branch but no heights -- dated tips, undated ancestors -- is neither kind
+        final Phylogeny rated = parse( "#NEXUS\nBegin trees;\ntree T = [&R] ((A[&rate=0.01,num_date=2000]:2,B[&rate=0.01,num_date=2001]:1)[&rate=0.01]:2,"
+                + "(C[&rate=0.01,num_date=2002]:2.5,D[&rate=0.01,num_date=2003]:1)[&rate=0.01]:1);\nEnd;\n", ".nex" );
+        if ( ( BranchLengthLayout.divergenceSource( rated ) != BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE )
+                || BranchLengthLayout.isApplicable( rated ) ) {
+            return fail( "fixture: a rate on every branch, and no Time | Div" );
+        }
+        if ( ClockPlot.isRootToTipTree( rated ) || ( kind( rated ) != null ) ) {
+            return fail( "a clock rate on every branch: the lengths are time, so no root-to-tip plot" );
+        }
+        // a plain tree with no date anywhere, in the file or in a name: no plot
+        final Phylogeny plain = parse( "((A:1,B:2):1,(C:1,D:3):2);", ".nwk" );
+        if ( ( plain == null ) || ClockPlot.isRootToTipTree( plain ) || ( kind( plain ) != null ) ) {
+            return fail( "a plain Newick tree without dates: no plot" );
+        }
+        return true;
+    }
+
+    private static boolean testRootToTipData() {
+        final Phylogeny t = rootToTip();
+        final ClockPlot.Data d = data( t );
+        if ( ( d == null ) || ( d._kind != ClockPlot.Kind.ROOT_TO_TIP ) || !d._forward || !"year".equals( d._unit ) || d._from_rates
+                || ( d._div_unit != null ) || !d._calendar || ( d._from_names != 0 ) || ( d._ambiguous_names != 0 ) ) {
+            return fail( "what the plot is: root-to-tip, calendar years by the unit, no divergence unit stated, no names read" );
+        }
+        if ( d._points.size() != 5 ) {
+            return fail( "the tips only: no ancestor is dated, got " + d._points.size() );
+        }
+        final String[][] want = { { "A", "2000", "0.015" }, { "B", "2001", "0.035" }, { "C", "2002", "0.03" }, { "D", "2003", "0.07" },
+                { "E", "2004", "0.05" } };
+        for( final ClockPlot.Point p : d._points ) {
+            if ( !p._tip ) {
+                return fail( "an ancestor has a point" );
+            }
+            boolean found = false;
+            for( final String[] w : want ) {
+                if ( w[ 0 ].equals( p._node.getName() ) ) {
+                    found = true;
+                    if ( ( p._date != Double.parseDouble( w[ 1 ] ) ) || !close( p._div, Double.parseDouble( w[ 2 ] ) ) ) {
+                        return fail( "tip " + w[ 0 ] + " at " + w[ 1 ] + ", " + w[ 2 ] + " from the root: " + p._date + " " + p._div );
+                    }
+                }
+            }
+            if ( !found ) {
+                return fail( "an unexpected point: " + p._node.getName() );
+            }
+        }
+        if ( ( d._root != t.getRoot() ) || d.rootDated() || ( d._root_div != 0 ) ) {
+            return fail( "the root: no date of its own, divergence 0" );
+        }
+        final ClockPlot.Fit f = d._fit;
+        if ( ( f == null ) || ( f._n != 5 ) || !close( f._slope, 0.0105 ) || !close( f._intercept, -20.981 ) || !close( f._r2, 0.63 ) ) {
+            return fail( "slope 0.0105, intercept -20.981, R2 0.63: " + f._slope + " " + f._intercept + " " + f._r2 );
+        }
+        if ( !close( f._rate, 0.0105 ) || !close( f._root_date, 20.981 / 0.0105 ) ) {
+            return fail( "rate 0.0105; the root by the line at 1998.190: " + f._rate + " " + f._root_date );
+        }
+        // E: the line at 2004 is -20.981 + 21.042 = 0.061, and E is 0.05
+        for( final ClockPlot.Point p : d._points ) {
+            if ( "E".equals( p._node.getName() ) && ( Math.abs( p._residual - ( -0.011 ) ) > 1e-12 ) ) {
+                return fail( "E lies 0.011 under the line: " + p._residual );
+            }
+        }
+        // the view of Y: its own line, and its divergence is its path from the TREE's root
+        final Phylogeny view = TreePanelUtil.subTree( named( t, "Y" ), t );
+        final ClockPlot.Data c = ClockPlot.data( t, time( t ), view );
+        if ( ( c == null ) || ( c._points.size() != 3 ) || ( c._root != view.getRoot() ) || !close( c._root_div, 0.01 ) || c.rootDated() ) {
+            return fail( "the view of Y: three tips, Y 0.01 from the root and undated" );
+        }
+        final ClockPlot.Fit cf = c._fit;
+        if ( ( cf == null ) || ( cf._n != 3 ) || !close( cf._slope, 0.01 ) || !close( cf._intercept, -19.98 ) || !close( cf._r2, 0.25 ) ) {
+            return fail( "the clade's line: slope 0.01, intercept -19.98, R2 0.25" );
+        }
+        if ( !close( cf._root_date, 1999 ) ) {
+            return fail( "the clade's root by the line at 1999: " + cf._root_date );
+        }
+        // the divergence's unit is the tree's own where it states one; the first kind's is subs/site
+        t.setDistanceUnit( "substitutions/site" );
+        if ( !"substitutions/site".equals( data( t )._div_unit ) ) {
+            return fail( "a stated branch length unit is the divergence's unit" );
+        }
+        t.setDistanceUnit( "  " );
+        if ( data( t )._div_unit != null ) {
+            return fail( "a blank unit is none" );
+        }
+        final ClockPlot.Data k1 = data( build() );
+        if ( !"subs/site".equals( k1._div_unit ) || !k1._calendar || ( k1._from_names != 0 ) || ( k1._ambiguous_names != 0 ) ) {
+            return fail( "kind 1: subs/site, calendar years by the unit, no names read" );
+        }
+        return true;
+    }
+
+    /** Tips dated by AGE (a geologic unit, no dated pair to read the direction off): time still runs toward the
+     *  youngest tip, so the slope is negative and the rate is reported positive. A..E at 4, 3, 2, 1, 0 million
+     *  years: 2000..2004 reflected, so the same sums with Sxy's sign flipped; intercept 0.04 + 0.0105 x 2 = 0.061. */
+    private static boolean testRootToTipAges() {
+        final Phylogeny t = rootToTip();
+        final String[] names = { "A", "B", "C", "D", "E" };
+        for( int i = 0; i < names.length; ++i ) {
+            final Date d = new Date();
+            d.setValue( new BigDecimal( String.valueOf( 4 - i ) ) );
+            d.setUnit( "mya" );
+            named( t, names[ i ] ).getNodeData().setDate( d );
+        }
+        final ClockPlot.Data d = data( t );
+        if ( ( d == null ) || ( d._kind != ClockPlot.Kind.ROOT_TO_TIP ) || d._forward || !"mya".equals( d._unit ) || d._calendar ) {
+            return fail( "ages: the dates run the other way, and are no calendar" );
+        }
+        final ClockPlot.Fit f = d._fit;
+        if ( !close( f._slope, -0.0105 ) || !close( f._rate, 0.0105 ) || !close( f._r2, 0.63 ) || !close( f._intercept, 0.061 ) ) {
+            return fail( "slope -0.0105, rate +0.0105, R2 0.63, intercept 0.061: " + f._slope + " " + f._rate + " " + f._r2 + " " + f._intercept );
+        }
+        if ( !close( f._root_date, 0.061 / 0.0105 ) ) {
+            return fail( "the root by the line at 5.81 Ma: " + f._root_date );
+        }
+        return true;
+    }
+
+    /** Christian, 2026-10-03: a tip dated only by its NAME counts (the class comment's numbers). */
+    private static boolean testRootToTipNames() {
+        final Phylogeny t = parse( "((A_2000:0.01,B|2001-07-02:0.03)X:0.005,(C_2002:0.02,D_2003:0.06,E_2004:0.04)Y:0.01);", ".nwk" );
+        if ( ( t == null ) || ( t.getNumberOfExternalNodes() != 5 ) ) {
+            return fail( "the names fixture could not be read" );
+        }
+        if ( kind( t ) != ClockPlot.Kind.ROOT_TO_TIP ) {
+            return fail( "dates in the tip names: a root-to-tip plot, got " + kind( t ) );
+        }
+        final ClockPlot.Data d = data( t );
+        if ( ( d._from_names != 5 ) || ( d._ambiguous_names != 0 ) || !d._calendar || !d._forward || ( d._unit != null ) ) {
+            return fail( "five tips dated by their names, none ambiguous, calendar years, no stated unit: " + d._from_names + " "
+                    + d._ambiguous_names + " " + d._calendar + " " + d._unit );
+        }
+        final java.util.List<String> dates = new java.util.ArrayList<String>();
+        for( final ClockPlot.Point p : d._points ) {
+            dates.add( p._node.getName().charAt( 0 ) + " " + ClockPlot.plain( p._date ) );
+        }
+        java.util.Collections.sort( dates );
+        if ( !dates.toString().equals( "[A 2000.5, B 2001.5, C 2002.5, D 2003.5, E 2004.5]" ) ) {
+            return fail( "a year alone is mid-year; 2 July 2001 is mid-year exactly: " + dates );
+        }
+        final ClockPlot.Fit f = d._fit;
+        if ( ( f == null ) || !close( f._slope, 0.0105 ) || !close( f._r2, 0.63 ) || !close( f._intercept, -20.98625 )
+                || !close( f._root_date, 20.98625 / 0.0105 ) ) {
+            return fail( "slope 0.0105, R2 0.63, intercept -20.98625, the root by the line at 1998.690: " + f._intercept + " " + f._root_date );
+        }
+        // a date the file states wins over the one in the name
+        final Phylogeny stated = parse( "#NEXUS\nBegin trees;\ntree T = [&R] ((A_2000[&num_date=1999]:0.01,B_2001:0.03)X:0.005,"
+                + "(C_2002:0.02,D_2003:0.06,E_2004:0.04)Y:0.01);\nEnd;\n", ".nex" );
+        final ClockPlot.Data s = data( stated );
+        ClockPlot.Point a = null;
+        for( final ClockPlot.Point p : s._points ) {
+            if ( "A_2000".equals( p._node.getName() ) ) {
+                a = p;
+            }
+        }
+        if ( ( s._from_names != 4 ) || ( a == null ) || ( a._date != 1999 ) ) {
+            return fail( "A: the stated 1999, not the name's 2000.5; the other four by their names: " + s._from_names + " " + ( a == null ? "-" : a._date ) );
+        }
+        // an ancestor's name dates nothing
+        final Phylogeny xn = parse( "((A_2000:0.01,B_2001:0.03)X_1999:0.005,(C_2002:0.02,D_2003:0.06,E_2004:0.04)Y:0.01);", ".nwk" );
+        if ( ( kind( xn ) != ClockPlot.Kind.ROOT_TO_TIP ) || ( data( xn )._points.size() != 5 ) ) {
+            return fail( "an ancestor named with a year is not dated by it" );
+        }
+        // one tip with no date in the file and none in its name: refused, not dropped
+        final Phylogeny gap = parse( "((A_2000:0.01,B_2001:0.03)X:0.005,(C:0.02,D_2003:0.06,E_2004:0.04)Y:0.01);", ".nwk" );
+        if ( ClockPlot.isRootToTipTree( gap ) || ( kind( gap ) != null ) ) {
+            return fail( "one tip undated by file and name: no plot" );
+        }
+        // a day/month-ambiguous numeric date is read day first and counted: 03/04/2002 is 3 April, day 93 of a
+        // non-leap year
+        final Phylogeny amb = parse( "((A_2000:0.01,B_2001:0.03)X:0.005,(C_03/04/2002:0.02,D_2003:0.06,E_2004:0.04)Y:0.01);", ".nwk" );
+        final ClockPlot.Data ad = data( amb );
+        ClockPlot.Point c = null;
+        for( final ClockPlot.Point p : ad._points ) {
+            if ( "C_03/04/2002".equals( p._node.getName() ) ) {
+                c = p;
+            }
+        }
+        if ( ( ad._from_names != 5 ) || ( ad._ambiguous_names != 1 ) || ( c == null ) || !close( c._date, 2002 + ( 92.5 / 365 ) ) ) {
+            return fail( "one ambiguous name, read day first: 3 April 2002: " + ad._from_names + " " + ad._ambiguous_names
+                    + " " + ( c == null ? "-" : c._date ) );
+        }
+        // the one-date check reads the same dates: every name the same year, no plot; the kind stands
+        final Phylogeny one = parse( "((A_2000:0.01,B_2000:0.03)X:0.005,(C_2000:0.02,D_2000:0.06,E_2000:0.04)Y:0.01);", ".nwk" );
+        if ( !ClockPlot.isRootToTipTree( one ) || ( kind( one ) != null ) ) {
+            return fail( "every name on one year: the kind, and no plot" );
+        }
+        // ...and stated dates that differ make the line though every name says one year: the file's date wins there too
+        final Phylogeny differ = parse( "#NEXUS\nBegin trees;\ntree T = [&R] ((A_2000[&num_date=2000]:0.01,B_2000[&num_date=2001]:0.03)X:0.005,"
+                + "(C_2000[&num_date=2002]:0.02,D_2000[&num_date=2003]:0.06,E_2000[&num_date=2004]:0.04)Y:0.01);\nEnd;\n", ".nex" );
+        if ( ( kind( differ ) != ClockPlot.Kind.ROOT_TO_TIP ) || ( data( differ )._from_names != 0 ) ) {
+            return fail( "every name one year, the stated dates five: a plot, by the file" );
+        }
+        return true;
+    }
+
+    /** A plain tree whose tips get their dates from Extract Dates from Labels is the same kind before (by the names)
+     *  and after (by the file, which then wins), with the same plot either way. */
+    private static boolean testRootToTipFromLabels() {
+        final Phylogeny phy = read( "date-in-labels.xml" );
+        if ( phy == null ) {
+            return fail( "date-in-labels.xml could not be read" );
+        }
+        if ( ( kind( phy ) != ClockPlot.Kind.ROOT_TO_TIP ) || ( data( phy )._from_names != 10 ) ) {
+            return fail( "date-in-labels.xml: ten tips dated by their names, a root-to-tip plot" );
+        }
+        final ClockPlot.Fit by_names = data( phy )._fit;
+        for( final TipDateExtractor.TipDate row : TipDateExtractor.preview( phy, TipDateExtractor.DayMonthOrder.DAY_FIRST ) ) {
+            if ( !TipDateExtractor.applyToNode( row.node(), row.match() ) ) {
+                return fail( "fixture: " + row.label() + " has a date to extract" );
+            }
+        }
+        final ClockPlot.Data after = data( phy );
+        if ( ( after == null ) || ( after._kind != ClockPlot.Kind.ROOT_TO_TIP ) || ( after._from_names != 0 ) || !after._calendar ) {
+            return fail( "dates written onto the tips: still a root-to-tip plot, now by the file" );
+        }
+        // the extractor rounds a decimal year to four places: the line it fits is the same to that
+        if ( !close( after._fit._slope, by_names._slope, 1e-3 ) || !close( after._fit._root_date, by_names._root_date, 1e-5 ) ) {
+            return fail( "the same line by the file as by the names: " + after._fit._slope + " / " + by_names._slope );
+        }
+        return true;
+    }
+
+    /**
+     * JOINT CROSS-RUN with Archaeopteryx.js (2d7fabe): its {@code docs/data/swH1-HA1.nexus} (fifty swine H1 HA1
+     * strains named ".../YYYY|clade", lengths stated, no unit, no date annotation anywhere) is a root-to-tip tree
+     * dated by its names. The numbers are THEIRS, from their run of their code, held to 1e-12; ours are sent back.
+     */
+    private static boolean testSwineH1CrossRun() {
+        final Phylogeny t = readFile( new File( System.getProperty( "user.dir" ), "forester/test_data/clock/swH1-HA1.nexus" ) );
+        if ( t == null ) {
+            return fail( "forester/test_data/clock/swH1-HA1.nexus could not be read" );
+        }
+        final ClockPlot.Data d = data( t );
+        if ( ( d == null ) || ( d._kind != ClockPlot.Kind.ROOT_TO_TIP ) || ( d._fit == null ) ) {
+            return fail( "swH1-HA1.nexus: a root-to-tip plot with a line" );
+        }
+        final ClockPlot.Fit f = d._fit;
+        if ( ( f._n != 50 ) || ( d._from_names != 50 ) || ( d._ambiguous_names != 0 ) || !d._calendar || ( d._unit != null )
+                || ( d._div_unit != null ) || d.rootDated() || ( d._root_div != 0 ) ) {
+            return fail( "swH1-HA1.nexus: 50 tips by their names, calendar, no units, an undated root at 0: " + f._n + " "
+                    + d._from_names + " " + d._ambiguous_names + " " + d._calendar + " " + d._unit + " " + d._div_unit );
+        }
+        if ( !close( f._slope, 0.00434714238019987, 1e-12 ) || !close( f._rate, 0.00434714238019987, 1e-12 )
+                || !close( f._intercept, -8.493052180996681, 1e-12 ) || !close( f._r2, 0.5915897595418261, 1e-12 )
+                || !close( f._root_date, 1953.7092273950764, 1e-12 ) ) {
+            return fail( "swH1-HA1.nexus against Archaeopteryx.js: slope " + f._slope + " intercept " + f._intercept + " R2 " + f._r2
+                    + " root by the line " + f._root_date );
+        }
+        return true;
+    }
+
+    /** forester/demo/root-to-tip.xml and its refused twin, read as File > Open reads them: the numbers the README row
+     *  quotes, computed by hand in DemoTreeGenerator. */
+    private static boolean testRootToTipDemoPair() {
+        final Phylogeny phy = read( "root-to-tip.xml" );
+        final Phylogeny twin = read( "root-to-tip-tip-undated.xml" );
+        if ( ( phy == null ) || ( twin == null ) ) {
+            return fail( "the root-to-tip demo pair could not be read" );
+        }
+        final ClockPlot.Data d = data( phy );
+        if ( ( d == null ) || ( d._kind != ClockPlot.Kind.ROOT_TO_TIP ) || ( d.tipCount() != 16 ) || ( d._fit._n != 16 ) || d.rootDated()
+                || !d._calendar || ( d._from_names != 0 ) || !"substitutions/site".equals( d._div_unit ) ) {
+            return fail( "root-to-tip.xml: 16 tips in the line, no root date, calendar years, substitutions/site" );
+        }
+        if ( !close( d._fit._slope, 0.0039386126, 1e-7 ) || !ClockPlot.number( d._fit._rate, 3 ).equals( "0.00394" )
+                || !ClockPlot.number( d._fit._r2, 3 ).equals( "0.975" ) || !ClockPlot.date( d._fit._root_date, true ).equals( "2017.94" ) ) {
+            return fail( "rate 0.00394, R2 0.975, root by the line 2017.94: " + d._fit._rate + " " + d._fit._r2 + " " + d._fit._root_date );
+        }
+        // the tip furthest off the line
+        ClockPlot.Point worst = null;
+        for( final ClockPlot.Point p : d._points ) {
+            if ( ( worst == null ) || ( Math.abs( p._residual ) > Math.abs( worst._residual ) ) ) {
+                worst = p;
+            }
+        }
+        if ( !"R-1".equals( worst._node.getName() ) || !ClockPlot.signed( worst._residual ).equals( "+0.00159" ) ) {
+            return fail( "the tip furthest off the line: R-1, +0.00159: " + worst._node.getName() + " " + worst._residual );
+        }
+        // the clade of S, 0.0128 from the root: its own line
+        final ClockPlot.Data c = ClockPlot.data( phy, time( phy ), TreePanelUtil.subTree( named( phy, "S" ), phy ) );
+        if ( ( c == null ) || ( c._points.size() != 4 ) || !close( c._root_div, 0.0128 ) || c.rootDated()
+                || !close( c._fit._slope, 0.0042135922, 1e-7 ) || !ClockPlot.number( c._fit._r2, 3 ).equals( "0.933" )
+                || !ClockPlot.date( c._fit._root_date, true ).equals( "2021.37" ) ) {
+            return fail( "the clade of S: four tips, 0.0128 from the root, R2 0.933, its top by the line at 2021.37" );
+        }
+        // the twin: S-3 undated, the plot refused
+        if ( named( twin, "S-3" ).getNodeData().isHasDate() || ( ClockPlot.rootToTipDate( named( twin, "S-3" ) ) != null ) ) {
+            return fail( "fixture: S-3 has no date in the file and none in its name" );
+        }
+        if ( ClockPlot.isRootToTipTree( twin ) || ( kind( twin ) != null ) || ( data( twin ) != null ) ) {
+            return fail( "root-to-tip-tip-undated.xml: refused the plot" );
+        }
+        return true;
     }
 
     private ClockPlotTest() {

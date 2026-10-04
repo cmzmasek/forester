@@ -36,9 +36,12 @@ import org.forester.phylogeny.PhylogenyNode;
 
 /**
  * The CLOCK PLOT window: modeless, linked to the tree of the current tab (Christian, 2026-10-02: "desktop should copy
- * what JS did for the clock plot"; Archaeopteryx.js 3.23.0 {@code showClockPlot}). The drawing is
- * {@link ClockPlotPanel}; under it the two checkboxes, Deselect all, what the line says (Rate, the root date by the
- * line over the one in the tree, R², Tips) and a note.
+ * what JS did for the clock plot"; Archaeopteryx.js 3.23.0 {@code showClockPlot}, the root-to-tip kind e22361c). The
+ * drawing is {@link ClockPlotPanel}; under it the two checkboxes, Deselect all, what the line says (Rate, the root
+ * date by the line over the one in the tree, R², Tips) and a note. On a root-to-tip tree ({@link ClockPlot.Kind})
+ * no ancestor is dated, so Internal nodes is not offered (hidden, not greyed: there is nothing it could show), the
+ * tree's root date reads "none: only the tips are dated", the rate is in the tree's own branch length unit where it
+ * states one, and the note says what the divergence is.
  * <p>
  * The plot follows the tree on view. {@link #treePainted} is called at the end of every screen paint of the current
  * tab, so it costs next to nothing when nothing changed: the plot is worked out again only for another tab, another
@@ -52,6 +55,22 @@ final class ClockPlotWindow extends JDialog {
     static final String        TITLE            = "Clock plot";
     static final String        NOTE_LINE        = "The line is fitted to the tips only. Tips share ancestry, so R² describes the fit and is no test. Click a point to select its node; drag to select the tips in a box.";
     static final String        NOTE_RATES       = "Divergence here is each branch’s time × its clock rate: the points show the model’s rates, not a measurement of their own. ";
+    static final String        NOTE_ROOT_TO_TIP = "Divergence here is each tip’s distance from the root along the branch lengths the file states; only the tips are dated. ";
+    static final String        ROOT_DATE_NONE   = "none: only the tips are dated";
+
+    /** What the note says of tips dated by their names (Archaeopteryx.js 2d7fabe, joint wording): how many, that a
+     *  year alone is mid-year, and how many had their day and month guessed; "" for none. */
+    static String namesNote( final int from_names, final int ambiguous_names ) {
+        if ( from_names <= 0 ) {
+            return "";
+        }
+        return ( ( from_names == 1 ) ? "One tip is dated by its name"
+                : String.format( java.util.Locale.US, "%,d", from_names ) + " tips are dated by their names" )
+                + " (a year alone is taken as mid-year"
+                + ( ( ambiguous_names > 0 ) ? "; " + String.format( java.util.Locale.US, "%,d", ambiguous_names )
+                        + " with day and month ambiguous, read day first" : "" )
+                + "). ";
+    }
     /** Tips only to begin with (Christian, 2026-10-02, in Archaeopteryx.js): the line is theirs, and a deep root crowds
      *  them into a corner. Kept while the program runs; Reset to Defaults puts them back. */
     static final boolean       DEFAULT_LINE     = true;
@@ -254,7 +273,7 @@ final class ClockPlotWindow extends JDialog {
             _seen_epoch = epoch;
             _seen_colors = null;
             _tp.setClockPlotLit( null );
-            _plot.setData( data, _tp.isClockPlotCalendar() );
+            _plot.setData( data );
             updateStats( data );
             laid = true;
         }
@@ -300,14 +319,17 @@ final class ClockPlotWindow extends JDialog {
         _stat_rows.clear();
         final boolean calendar = _plot.isCalendar();
         final ClockPlot.Fit fit = data._fit;
-        final String per = " subs/site per "
+        // the rate in the divergence's unit where the tree states one (subs/site with Time | Div; a root-to-tip
+        // tree's own, or none) per the dates' unit
+        final String per = ( ( data._div_unit == null ) ? "" : " " + data._div_unit ) + " per "
                 + ( calendar ? "year" : ( ( data._unit != null ) && !data._unit.trim().isEmpty() ? data._unit.trim() : "unit of time" ) );
         if ( fit != null ) {
             _stat_rows.add( new String[] { "Rate", ClockPlot.number( fit._rate, 3 ) + per } );
             _stat_rows.add( new String[] { "Root date, by the line",
                     ( fit._root_date == null ) ? "none: divergence does not rise with time"
                             : ClockPlot.date( fit._root_date.doubleValue(), calendar ) } );
-            _stat_rows.add( new String[] { "Root date, in the tree", ClockPlot.date( data._root_date, calendar ) } );
+            _stat_rows.add( new String[] { "Root date, in the tree",
+                    data.rootDated() ? ClockPlot.date( data._root_date, calendar ) : ROOT_DATE_NONE } );
             _stat_rows.add( new String[] { "R²",
                     ( fit._r2 == null ) ? "none: every tip has one divergence" : ClockPlot.number( fit._r2.doubleValue(), 3 ) } );
         }
@@ -338,7 +360,10 @@ final class ClockPlotWindow extends JDialog {
             _stats.add( v, c );
             ++c.gridy;
         }
-        _note.setText( ( data._from_rates ? NOTE_RATES : "" ) + NOTE_LINE );
+        // no ancestor of a root-to-tip tree is dated: nothing for Internal nodes to show, so the choice is not offered
+        _internal_cb.setVisible( data._kind != ClockPlot.Kind.ROOT_TO_TIP );
+        _note.setText( ( data._from_rates ? NOTE_RATES : "" ) + ( ( data._kind == ClockPlot.Kind.ROOT_TO_TIP ) ? NOTE_ROOT_TO_TIP : "" )
+                + namesNote( data._from_names, data._ambiguous_names ) + NOTE_LINE );
         _note.setColumns( 0 );
         _note.setSize( new Dimension( ClockPlotPanel.W, Short.MAX_VALUE ) );
         _stats.revalidate();

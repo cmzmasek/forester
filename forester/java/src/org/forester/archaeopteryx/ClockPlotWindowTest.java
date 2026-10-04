@@ -25,7 +25,10 @@ import org.forester.phylogeny.PhylogenyNode;
  * twin {@code clock-plot-one-date.nex} that has Time | Div but no plot): the button, what the window says, pointing
  * (a dot of four identical samples names and lights all four), the selection both ways (click, box, Deselect all),
  * a node pointed at in the tree ringing its point, the checkboxes, a subtree view, a collapsed clade, a tab without a
- * plot, and closing at once. Headful: headless, every check here is a green no-op.
+ * plot, and closing at once. Then the SECOND kind ({@code root-to-tip.xml}, its refused twin, and
+ * {@code date-in-labels.xml} whose tips are dated by their names): the button without Time | Div, what the window
+ * says, Internal nodes not offered, re-rooting moving the line, an ancestor dated in place closing the window.
+ * Headful: headless, every check here is a green no-op.
  */
 public final class ClockPlotWindowTest {
 
@@ -43,7 +46,7 @@ public final class ClockPlotWindowTest {
         final boolean internal = ClockPlotWindow.internalOptionForTest();
         try {
             ClockPlotWindow.setOptionsForTest( ClockPlotWindow.DEFAULT_LINE, ClockPlotWindow.DEFAULT_INTERNAL );
-            return panelOk() && windowOk();
+            return notesOk() && panelOk() && windowOk() && rootToTipOk();
         }
         catch ( final Throwable t ) {
             t.printStackTrace();
@@ -125,7 +128,10 @@ public final class ClockPlotWindowTest {
         final RecordingHost host = new RecordingHost();
         final ClockPlotPanel panel = new ClockPlotPanel( host );
         panel.setSize( ClockPlotPanel.W, ClockPlotPanel.H );
-        panel.setData( data, true );
+        panel.setData( data );
+        if ( !panel.isCalendar() ) {
+            return fail( "clock-plot.nex: calendar years, the model's own answer" );
+        }
         if ( panel.marksForTest().size() != 20 ) {
             return fail( "tips only to begin with: 20 marks, got " + panel.marksForTest().size() );
         }
@@ -243,7 +249,7 @@ public final class ClockPlotWindowTest {
         if ( !panel.ticksX().get( 0 )._label.equals( "2018" ) ) {
             return fail( "calendar years over six years: " + panel.ticksX().get( 0 )._label );
         }
-        panel.setData( data, false );
+        panel.setData( withCalendar( data, false ) );
         if ( !panel.xTitle().equals( "Date (year)" ) ) {
             return fail( "a plain date axis names its unit: " + panel.xTitle() );
         }
@@ -272,9 +278,9 @@ public final class ClockPlotWindowTest {
         points.addAll( data._points );
         final ClockPlotPanel panel = new ClockPlotPanel( new RecordingHost() );
         panel.setShowInternal( true );
-        panel.setData( new ClockPlot.Data( data._forward, data._unit, data._from_rates, points, data._root, data._root_date,
-                                           data._root_div, data._fit ),
-                       true );
+        panel.setData( new ClockPlot.Data( data._kind, data._forward, data._unit, data._div_unit, data._from_rates, data._calendar,
+                                           data._from_names, data._ambiguous_names, points, data._root, data._root_date,
+                                           data._root_div, data._fit ) );
         ClockPlotPanel.Mark m = null;
         for( final ClockPlotPanel.Mark k : panel.marksForTest() ) {
             if ( k._p == tip ) {
@@ -292,9 +298,9 @@ public final class ClockPlotWindowTest {
         near.add( new ClockPlot.Point( tip._node, tip._date + ( 3 / px_per_year ), tip._div, true ) );
         near.add( new ClockPlot.Point( tip._node, tip._date, tip._div + ( 3 / px_per_div ), true ) );
         final ClockPlotPanel p2 = new ClockPlotPanel( new RecordingHost() );
-        p2.setData( new ClockPlot.Data( data._forward, data._unit, data._from_rates, near, data._root, data._root_date,
-                                        data._root_div, data._fit ),
-                    true );
+        p2.setData( new ClockPlot.Data( data._kind, data._forward, data._unit, data._div_unit, data._from_rates, data._calendar,
+                                        data._from_names, data._ambiguous_names, near, data._root, data._root_date,
+                                        data._root_div, data._fit ) );
         for( final ClockPlotPanel.Mark k : p2.marksForTest() ) {
             if ( k._p == tip ) {
                 final List<ClockPlotPanel.Mark> one = p2.marksAt( k._px, k._py );
@@ -314,16 +320,23 @@ public final class ClockPlotWindowTest {
             return fail( "beast-tip-dates.nex: calendar dates, divergence from the rates" );
         }
         final ClockPlotPanel panel = new ClockPlotPanel( new RecordingHost() );
-        panel.setData( d, true );
+        panel.setData( d );
         if ( !( panel.x( 2010 ) < panel.x( 2012 ) ) ) {
             return fail( "calendar dates: earlier to the left" );
         }
-        final ClockPlot.Data ages = new ClockPlot.Data( false, null, true, d._points, d._root, d._root_date, d._root_div, d._fit );
-        panel.setData( ages, false );
+        final ClockPlot.Data ages = new ClockPlot.Data( d._kind, false, null, d._div_unit, true, false, 0, 0, d._points, d._root,
+                                                        d._root_date, d._root_div, d._fit );
+        panel.setData( ages );
         if ( !( panel.x( 2012 ) < panel.x( 2010 ) ) || !panel.xTitle().equals( "Age" ) ) {
             return fail( "ages: the older (larger) to the left, the axis called Age" );
         }
         return true;
+    }
+
+    /** The same plot, said to be (or not to be) in calendar years. */
+    private static ClockPlot.Data withCalendar( final ClockPlot.Data d, final boolean calendar ) {
+        return new ClockPlot.Data( d._kind, d._forward, d._unit, d._div_unit, d._from_rates, calendar, d._from_names,
+                                   d._ambiguous_names, d._points, d._root, d._root_date, d._root_div, d._fit );
     }
 
     private static void click( final ClockPlotPanel panel, final ClockPlotPanel.Mark m ) {
@@ -634,6 +647,146 @@ public final class ClockPlotWindowTest {
         frame.getMainPanel().closeCurrentPane();
         if ( ( frame.clockPlotWindow() != null ) || ( ( w4 != null ) && w4.isDisplayable() ) ) {
             fail( ok, "closing the tab closes its clock plot" );
+        }
+    }
+
+    /** What the note says of tips dated by their names (joint wording, Archaeopteryx.js 2d7fabe). */
+    private static boolean notesOk() {
+        if ( !ClockPlotWindow.namesNote( 0, 0 ).isEmpty() ) {
+            return fail( "no tip dated by its name: nothing said" );
+        }
+        if ( !ClockPlotWindow.namesNote( 1, 0 ).equals( "One tip is dated by its name (a year alone is taken as mid-year). " ) ) {
+            return fail( "one tip: " + ClockPlotWindow.namesNote( 1, 0 ) );
+        }
+        if ( !ClockPlotWindow.namesNote( 1234, 2 ).equals( "1,234 tips are dated by their names (a year alone is taken as mid-year; 2 with day and month ambiguous, read day first). " ) ) {
+            return fail( "many, two ambiguous: " + ClockPlotWindow.namesNote( 1234, 2 ) );
+        }
+        return true;
+    }
+
+    // ---- the second kind: a divergence tree whose tips alone are dated -------------------------------------------
+
+    private static boolean rootToTipOk() throws Exception {
+        final Phylogeny undated = read( "root-to-tip-tip-undated.xml" );
+        final Phylogeny names = read( "date-in-labels.xml" );
+        final Phylogeny rtt = read( "root-to-tip.xml" );
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        // several trees: the LAST tab is selected
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                .createInstance( new Phylogeny[] { undated, names, rtt }, new Configuration(), "root-to-tip" ) );
+        final boolean[] ok = { true };
+        try {
+            SwingUtilities.invokeAndWait( () -> inRootToTipFrame( mf[ 0 ], ok ) );
+        }
+        finally {
+            SwingUtilities.invokeAndWait( () -> {
+                if ( mf[ 0 ].clockPlotWindow() != null ) {
+                    mf[ 0 ].clockPlotWindow().dispose();
+                }
+                mf[ 0 ].dispose();
+            } );
+        }
+        return ok[ 0 ];
+    }
+
+    private static void inRootToTipFrame( final MainFrame frame, final boolean[] ok ) {
+        final ControlPanel cp = frame.getMainPanel().getControlPanel();
+        final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+        if ( ( tp.getPhylogeny().getNumberOfExternalNodes() != 16 ) || ( tp.getPhylogeny().getNode( "S-3" ) == null ) ) {
+            fail( ok, "precondition: root-to-tip.xml is the current tab" );
+            return;
+        }
+        cp.populateBranchLengthsControl();
+        // the button, and no Time | Div row: the tree states no time
+        if ( cp.isBranchLengthsControlVisible() || !cp.clockPlotButtonForTest().isVisible() ) {
+            fail( ok, "root-to-tip.xml: the Clock plot button, and no Time | Div" );
+        }
+        cp.clockPlotButtonForTest().doClick();
+        final ClockPlotWindow w = frame.clockPlotWindow();
+        if ( ( w == null ) || !w.isVisible() ) {
+            fail( ok, "the button opens the window" );
+            return;
+        }
+        if ( !rows( w ).equals( "Rate=0.00394 substitutions/site per year|Root date, by the line=2017.94|Root date, in the tree=none: only the tips are dated|R²=0.975|Tips=16|" ) ) {
+            fail( ok, "what the window says of a root-to-tip tree: " + rows( w ) );
+        }
+        if ( !w.noteForTest().equals( ClockPlotWindow.NOTE_ROOT_TO_TIP + ClockPlotWindow.NOTE_LINE ) ) {
+            fail( ok, "the note says what the divergence is: " + w.noteForTest() );
+        }
+        if ( w.internalCheckBoxForTest().isVisible() || !w.lineCheckBoxForTest().isVisible() ) {
+            fail( ok, "Internal nodes is not offered (no ancestor is dated); Regression line is" );
+        }
+        final ClockPlotPanel plot = w.plotForTest();
+        if ( ( plot.marksForTest().size() != 16 ) || !plot.isCalendar() || !plot.yTitle().equals( "Divergence (substitutions/site)" )
+                || !plot.xTitle().equals( "Date" ) ) {
+            fail( ok, "16 tips, calendar years, the divergence axis in the tree's own unit: " + plot.yTitle() + " / " + plot.xTitle() );
+        }
+        for( final ClockPlotPanel.Mark m : plot.marksForTest() ) {
+            if ( !m._p._tip ) {
+                fail( ok, "an ancestor has a point" );
+            }
+        }
+        // re-rooting: the answer depends on the root -- every point moves, and the line with it
+        final int lays = plot.laysForTest();
+        final String before = rows( w );
+        tp.setRerootDialogsForTest( m -> {
+        }, warning -> true );
+        tp.reRoot( tp.getPhylogeny().getNode( "Q" ) );
+        paint( tp );
+        if ( plot.laysForTest() != ( lays + 1 ) ) {
+            fail( ok, "re-rooting works the plot out again: " + lays + " -> " + plot.laysForTest() );
+        }
+        if ( rows( w ).equals( before ) || !rows( w ).contains( "Tips=16|" ) ) {
+            fail( ok, "re-rooting moves the line: " + rows( w ) );
+        }
+        if ( frame.clockPlotWindow() != w ) {
+            fail( ok, "the window stays open across a re-root" );
+            return;
+        }
+        // an ancestor dated in place (the node editor): the tree is neither kind, the window closes, the button goes
+        tp.getPhylogeny().getNode( "P" ).getNodeData().setDate( new org.forester.phylogeny.data.Date( "", new java.math.BigDecimal( "2019" ), null, null, "year" ) );
+        tp.invalidateBranchLengthToggle();
+        paint( tp );
+        if ( ( frame.clockPlotWindow() != null ) || w.isDisplayable() ) {
+            fail( ok, "an ancestor dated: the plot is refused, the window closes" );
+        }
+        cp.populateBranchLengthsControl();
+        if ( cp.clockPlotButtonForTest().isVisible() || cp.clockPlotButtonForTest().isSelected() ) {
+            fail( ok, "...and the button goes" );
+        }
+        // the tab of tips dated by their NAMES: the button, and the note says so
+        frame.getMainPanel().getTabbedPane().setSelectedIndex( 1 );
+        final TreePanel ntp = frame.getMainPanel().getCurrentTreePanel();
+        if ( ntp.getPhylogeny().getNumberOfExternalNodes() != 10 ) {
+            fail( ok, "precondition: date-in-labels.xml is the current tab" );
+            return;
+        }
+        paint( ntp );
+        cp.populateBranchLengthsControl();
+        if ( !cp.clockPlotButtonForTest().isVisible() || cp.isBranchLengthsControlVisible() ) {
+            fail( ok, "date-in-labels.xml: tips dated by their names, the Clock plot button and no Time | Div" );
+        }
+        cp.clockPlotButtonForTest().doClick();
+        final ClockPlotWindow w2 = frame.clockPlotWindow();
+        if ( w2 == null ) {
+            fail( ok, "opened for the names tab" );
+            return;
+        }
+        if ( !w2.noteForTest().equals( ClockPlotWindow.NOTE_ROOT_TO_TIP + "10 tips are dated by their names (a year alone is taken as mid-year). "
+                + ClockPlotWindow.NOTE_LINE ) ) {
+            fail( ok, "the note counts the tips dated by their names: " + w2.noteForTest() );
+        }
+        if ( !rows( w2 ).startsWith( "Rate=1.05 per year|" ) || !rows( w2 ).contains( "Root date, in the tree=none: only the tips are dated|" )
+                || !rows( w2 ).contains( "Tips=10|" ) || !w2.plotForTest().isCalendar() || !w2.plotForTest().yTitle().equals( "Divergence" ) ) {
+            fail( ok, "dates read off names are calendar years; no unit stated anywhere: " + rows( w2 ) + " " + w2.plotForTest().yTitle() );
+        }
+        // the refused twin's tab: the window closes, no button
+        frame.getMainPanel().getTabbedPane().setSelectedIndex( 0 );
+        final TreePanel utp = frame.getMainPanel().getCurrentTreePanel();
+        paint( utp );
+        cp.populateBranchLengthsControl();
+        if ( ( frame.clockPlotWindow() != null ) || w2.isDisplayable() || cp.clockPlotButtonForTest().isVisible() ) {
+            fail( ok, "root-to-tip-tip-undated.xml: one tip undated, no plot, the window closed" );
         }
     }
 

@@ -277,6 +277,8 @@ public final class DemoTreesTest {
         ok &= nextstrainNexusOk( "nextstrain-nexus.nex" );
         // the clock plot, and its twin sampled on one date (Time | Div offered, no plot)
         ok &= clockPlotPairOk( "clock-plot.nex", "clock-plot-one-date.nex" );
+        // the root-to-tip kind: a divergence tree whose tips alone are dated, and its twin with one tip undated
+        ok &= rootToTipPairOk( "root-to-tip.xml", "root-to-tip-tip-undated.xml" );
         ok &= treeTimePairOk( "treetime-nexus.nex", "treetime-divergence.nex" );
         ok &= treeTimeNewickOk( "treetime-tree.nwk" );
         ok &= mrBayesConsensusOk( "mrbayes-consensus.con.tre" );
@@ -2373,6 +2375,60 @@ public final class DemoTreesTest {
         final BranchLengthLayout.TimeLengths twin_time = BranchLengthLayout.TimeLengths.onScreen( twin );
         if ( !BranchLengthLayout.isApplicable( twin, twin_time ) || ClockPlot.isOffered( twin, twin_time ) ) {
             note( twin_name + ": offered Time | Div, refused the clock plot" );
+            return false;
+        }
+        return true;
+    }
+
+    /** The root-to-tip pair, read as File > Open reads it: a divergence tree (substitutions/site) of 16 tips, every
+     *  tip dated (unit "year") and no ancestor, every branch with a length, NOT offered Time | Div and not a time tree
+     *  (it may be re-rooted), offered the root-to-tip clock plot -- and its twin, S-3 undated by the file and by its
+     *  name, refused the plot. The numbers the README quotes are pinned in ClockPlotTest. */
+    private static boolean rootToTipPairOk( final String file_name, final String twin_name ) {
+        final Phylogeny phy = loadAsOpened( file_name );
+        final Phylogeny twin = loadAsOpened( twin_name );
+        if ( ( phy == null ) || ( twin == null ) ) {
+            return false;
+        }
+        int tips = 0;
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isExternal() ) {
+                ++tips;
+                if ( !n.getNodeData().isHasDate() || !"year".equals( n.getNodeData().getDate().getUnit() ) ) {
+                    note( file_name + ": every tip is dated in years; " + n.getName() + " is not" );
+                    return false;
+                }
+            }
+            else if ( n.getNodeData().isHasDate() ) {
+                note( file_name + ": no ancestor is dated; " + n.getName() + " is" );
+                return false;
+            }
+            if ( !n.isRoot() && ( n.getDistanceToParent() == org.forester.phylogeny.data.PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
+                note( file_name + ": every branch states a length; " + n.getName() + "'s does not" );
+                return false;
+            }
+        }
+        if ( ( tips != 16 ) || !"substitutions/site".equals( phy.getDistanceUnit() ) ) {
+            note( file_name + ": 16 tips in substitutions/site; got " + tips + ", " + phy.getDistanceUnit() );
+            return false;
+        }
+        final BranchLengthLayout.TimeLengths time = BranchLengthLayout.TimeLengths.onScreen( phy );
+        if ( BranchLengthLayout.isApplicable( phy, time ) || AptxUtil.isTimeTree( phy ) ) {
+            note( file_name + ": no Time | Div, and not a time tree" );
+            return false;
+        }
+        if ( ClockPlot.kind( phy, time ) != ClockPlot.Kind.ROOT_TO_TIP ) {
+            note( file_name + ": the root-to-tip clock plot, got " + ClockPlot.kind( phy, time ) );
+            return false;
+        }
+        final PhylogenyNode s3 = twin.getNode( "S-3" );
+        if ( s3.getNodeData().isHasDate() || ( ClockPlot.rootToTipDate( s3 ) != null ) ) {
+            note( twin_name + ": S-3 is dated neither by the file nor by its name" );
+            return false;
+        }
+        if ( ClockPlot.isRootToTipTree( twin ) || ( ClockPlot.kind( twin, BranchLengthLayout.TimeLengths.onScreen( twin ) ) != null ) ) {
+            note( twin_name + ": one tip undated, the plot is refused" );
             return false;
         }
         return true;

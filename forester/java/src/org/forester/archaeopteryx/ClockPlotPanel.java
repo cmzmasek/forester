@@ -168,10 +168,10 @@ final class ClockPlotPanel extends JComponent {
 
     // ---- what is shown ---------------------------------------------------------------------------------------------
 
-    /** Lays the plot down for {@code data}. */
-    void setData( final ClockPlot.Data data, final boolean calendar ) {
+    /** Lays the plot down for {@code data}; whether its dates are calendar years is the model's own answer. */
+    void setData( final ClockPlot.Data data ) {
         _data = data;
-        _calendar = calendar && ( data != null ) && data._forward;
+        _calendar = ( data != null ) && data._calendar && data._forward;
         lay();
     }
 
@@ -375,7 +375,7 @@ final class ClockPlotPanel extends JComponent {
         g.setColor( ink() );
         final String x_title = xTitle();
         g.drawString( x_title, (float) ( ( ( left + right ) / 2.0 ) - ( tfm.stringWidth( x_title ) / 2.0 ) ), H - 6 );
-        final String y_title = "Divergence (subs/site)";
+        final String y_title = yTitle();
         final AffineTransform saved = g.getTransform();
         g.translate( 12 + tfm.getAscent() - 9, ( top + bottom ) / 2.0 );
         g.rotate( -Math.PI / 2 );
@@ -457,6 +457,12 @@ final class ClockPlotPanel extends JComponent {
             g.draw( dot );
             g.setStroke( new BasicStroke( 1f ) );
         }
+    }
+
+    /** What the divergence axis is called: with the divergence's unit where the tree states one (subs/site with
+     *  Time | Div, a root-to-tip tree's own branch length unit). */
+    String yTitle() {
+        return "Divergence" + ( ForesterUtil.isEmpty( _data._div_unit ) ? "" : " (" + _data._div_unit + ")" );
     }
 
     String xTitle() {

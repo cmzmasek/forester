@@ -462,6 +462,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** Moves wherever the Time | Div offer is asked again (a date, property or length written in place, undo, the
      *  switch): an open clock plot is worked out again then. See {@link ClockPlotWindow#treePainted}. */
     private long _clock_plot_epoch = 0;
+    // the cached answer of isClockPlotOffered, and what it was asked for
+    private Phylogeny _clock_plot_offered_for = null;
+    private long _clock_plot_offered_epoch = -1;
+    private boolean _clock_plot_offered_time_div = false;
+    private boolean _clock_plot_offered = false;
     /** The nodes the clock plot's pointer is on, as the tree shows them: lit in the tree. */
     private java.util.List<PhylogenyNode> _clock_plot_lit = java.util.Collections.emptyList();
     // the lengths this tab's branches had in time when it last left time: what Time gives back. Immutable; an undo
@@ -6487,11 +6492,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     // ---- the clock plot (ClockPlot, ClockPlotWindow) --------------------------------------------------------------
 
-    /** Whether the tree has a clock plot: offered Time | Div, and three tips or more, not all on one date. Asked of the
-     *  WHOLE tree, also while a subtree of it is on view, so the button does not come and go with the view. */
+    /** Whether the tree has a clock plot of either kind ({@link ClockPlot#kind}): offered Time | Div, or a divergence
+     *  tree whose tips alone are dated -- and three tips or more, not all on one date. Asked of the WHOLE tree, also
+     *  while a subtree of it is on view, so the button does not come and go with the view. Cached by the whole
+     *  tree's identity and the clock-plot epoch (every edit, undo and in-place change moves it): the root-to-tip
+     *  rule reads a date off every tip's NAME, 30 ms on 10,000 dated names and 330 ms on 100,000 (measured
+     *  2026-10-03), and the control panel asks on every tab switch. */
     boolean isClockPlotOffered() {
-        return (_phylogeny != null) && !_phylogeny.isEmpty() && isBranchLengthToggleApplicable()
-                && ClockPlot.tipsMakeALine(wholeTree());
+        if ((_phylogeny == null) || _phylogeny.isEmpty()) {
+            return false;
+        }
+        final Phylogeny whole = wholeTree();
+        final boolean time_div = isBranchLengthToggleApplicable();
+        if ((whole != _clock_plot_offered_for) || (_clock_plot_offered_epoch != _clock_plot_epoch)
+                || (_clock_plot_offered_time_div != time_div)) {
+            _clock_plot_offered = ClockPlot.kind(whole, time_div) != null;
+            _clock_plot_offered_for = whole;
+            _clock_plot_offered_epoch = _clock_plot_epoch;
+            _clock_plot_offered_time_div = time_div;
+        }
+        return _clock_plot_offered;
     }
 
     /** The clock plot of the tree on display (the clade's own in a subtree view), or null where the tree has none. */
@@ -6500,12 +6520,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return null;
         }
         return ClockPlot.data(wholeTree(), timeLengths(), _phylogeny); // asks the rule itself
-    }
-
-    /** Whether the clock plot's dates are calendar years: the time axis the tree's dates DERIVE, not the one chosen
-     *  for the tab (as Archaeopteryx.js reads it): the plot measures the dates, whatever axis is drawn under the tree. */
-    boolean isClockPlotCalendar() {
-        return derivedTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR;
     }
 
     /**

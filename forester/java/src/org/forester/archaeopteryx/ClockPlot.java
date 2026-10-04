@@ -10,12 +10,16 @@ package org.forester.archaeopteryx;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.forester.archaeopteryx.tools.TipDateExtractor;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.util.ForesterUtil;
 
 /**
  * The CLOCK PLOT, its pure half: every node as a point, its DATE against its DIVERGENCE from the root, and a straight
@@ -25,17 +29,29 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * {@code calendarTickMonths}); Christian, 2026-10-02: "desktop should copy what JS did for the clock plot". The panel
  * is {@link ClockPlotPanel}.
  * <p>
- * <b>Which trees have one.</b> A tree offered Time | Div ({@link BranchLengthLayout#isApplicable}): each node states
- * a date and a divergence from the root, recorded on it or summed from each branch's time x its clock rate
- * ({@link BranchLengthLayout#divergenceFromRoot}). Which of the two layouts is on screen does not matter. And its LINE
- * can be drawn: three tips or more, not all on one date -- a tree sampled at one moment has no slope to estimate.
- * Asked of the WHOLE tree, never of the view: in the view of a clade too small or too uniform for a line the points
- * are drawn and the line is not. (A second kind, a divergence tree whose tips alone are dated, is described by
- * Archaeopteryx.js and built by neither side.)
+ * <b>Which trees have one</b> ({@link Kind}, THE RULE, joint with Archaeopteryx.js; the second kind built there in
+ * e22361c on Christian's word, 2026-10-03, and ported here):
+ * <ol>
+ * <li>DIVERGENCE: a tree offered Time | Div ({@link BranchLengthLayout#isApplicable}): each node states a date and a
+ * divergence from the root, recorded on it or summed from each branch's time x its clock rate
+ * ({@link BranchLengthLayout#divergenceFromRoot}). Every node is a point; which of the two layouts is on screen does
+ * not matter.</li>
+ * <li>ROOT_TO_TIP: a tree whose branch lengths are its divergence and whose TIPS alone are dated, with no date on
+ * any ancestor (it is not a time tree): a tip's divergence is the sum of the stated lengths from the root. Tips
+ * only. This is the tree a clock plot is wanted for most -- is there a signal worth dating? -- and the one whose
+ * answer depends on its root: re-rooting moves every point ({@link #isRootToTipTree}). A tip is dated by what the
+ * file states for it, or else by the date its NAME carries (Christian, 2026-10-03: names count; JS 2d7fabe;
+ * {@link #rootToTipDate}).</li>
+ * </ol>
+ * The first kind is asked first; the two cannot both hold. In both the plot is offered when its LINE can be drawn:
+ * three tips or more, not all on one date -- a tree sampled at one moment has no slope to estimate. Asked of the
+ * WHOLE tree, never of the view: in the view of a clade too small or too uniform for a line the points are drawn
+ * and the line is not.
  * <p>
  * <b>The fit</b> is ordinary least squares over the TIPS alone. A tip's date is an observation; an ancestor's was
  * inferred, usually with a clock, and counting it would have the estimate confirm itself. The line is not forced
- * through the root, so the date it reaches the root's divergence at can be held against the date the tree states.
+ * through the root, so the date it reaches the root's divergence at can be held against the date the tree states --
+ * where the tree states one; a root-to-tip tree does not, and there the line's date is the only estimate.
  */
 final class ClockPlot {
 
@@ -43,6 +59,14 @@ final class ClockPlot {
     static final int MIN_TIPS = 3;
 
     private ClockPlot() {
+    }
+
+    /** Which clock plot a tree has (the class comment). */
+    enum Kind {
+        /** A tree with Time | Div: every node dated and with a divergence from the root. */
+        DIVERGENCE,
+        /** A divergence tree whose tips alone are dated: a tip's divergence is its path from the root. */
+        ROOT_TO_TIP
     }
 
     /** One node of the plot. */
@@ -97,31 +121,54 @@ final class ClockPlot {
     /** The clock plot of a tree, or of the clade on view. */
     static final class Data {
 
+        final Kind          _kind;
         /** Whether the dates increase toward the tips (calendar dates); false for ages. */
         final boolean       _forward;
         /** The dates' unit as the tree states it, or null. */
         final String        _unit;
+        /** The divergence's unit: "subs/site" on a tree with Time | Div, a root-to-tip tree's stated branch length
+         *  unit, or null where it states none. */
+        final String        _div_unit;
         /** Whether the divergence is time x clock rate (a BEAST clock-model tree), not recorded. */
         final boolean       _from_rates;
-        /** Every node of the view, in preorder. */
+        /** Whether the dates are calendar years: their unit says so, or they were read off the tips' names, which
+         *  carry no other kind of date. The model's own answer, as Archaeopteryx.js's: never the axis on screen. */
+        final boolean       _calendar;
+        /** How many tips are dated by their names (a root-to-tip tree; 0 otherwise). */
+        final int           _from_names;
+        /** How many of those names carry a day/month-ambiguous numeric date, read day first. */
+        final int           _ambiguous_names;
+        /** Every node of the view, in preorder; on a root-to-tip tree the tips only, no ancestor being dated. */
         final List<Point>   _points;
         /** The top of the view. */
         final PhylogenyNode _root;
+        /** NaN where the top of the view states no date: on a root-to-tip tree always. */
         final double        _root_date;
         final double        _root_div;
         /** The line through the view's tips, or null where it has none (fewer than three, or one date). */
         final Fit           _fit;
 
-        Data( final boolean forward, final String unit, final boolean from_rates, final List<Point> points,
+        Data( final Kind kind, final boolean forward, final String unit, final String div_unit, final boolean from_rates,
+              final boolean calendar, final int from_names, final int ambiguous_names, final List<Point> points,
               final PhylogenyNode root, final double root_date, final double root_div, final Fit fit ) {
+            _kind = kind;
             _forward = forward;
             _unit = unit;
+            _div_unit = div_unit;
             _from_rates = from_rates;
+            _calendar = calendar;
+            _from_names = from_names;
+            _ambiguous_names = ambiguous_names;
             _points = Collections.unmodifiableList( points );
             _root = root;
             _root_date = root_date;
             _root_div = root_div;
             _fit = fit;
+        }
+
+        /** Whether the top of the view states a date of its own, to hold the line's against. */
+        boolean rootDated() {
+            return !Double.isNaN( _root_date );
         }
 
         int tipCount() {
@@ -135,20 +182,129 @@ final class ClockPlot {
         }
     }
 
+    /** A tip's date on a root-to-tip tree, and where it came from. */
+    static final class TipDate {
+
+        final double  _value;
+        /** Read off the tip's name, no date being stated for it. */
+        final boolean _from_name;
+        /** A numeric date whose day and month could be either way round, read day first. */
+        final boolean _ambiguous;
+
+        TipDate( final double value, final boolean from_name, final boolean ambiguous ) {
+            _value = value;
+            _from_name = from_name;
+            _ambiguous = ambiguous;
+        }
+    }
+
     /**
-     * Whether the tree has a clock plot (see the class comment).
+     * A tip's date on a root-to-tip tree: the one the file states, else the one its NAME carries, read by the
+     * label-date parser both programs anchor BEAST heights with ({@link TipDateExtractor#parse}, as Archaeopteryx.js's
+     * {@code forester.parseTipLabelDate}): the rightmost date in the label, a year alone taken as mid-year
+     * (2020 -> 2020.5), a day/month-ambiguous numeric date read DAY FIRST and counted. Null for no date at all. A
+     * stated date wins over the name; an ancestor is never dated by its name.
+     */
+    static TipDate rootToTipDate( final PhylogenyNode tip ) {
+        final Double stated = BranchLengthLayout.dateValue( tip );
+        if ( stated != null ) {
+            return new TipDate( stated.doubleValue(), false, false );
+        }
+        final TipDateExtractor.DateMatch m = ForesterUtil.isEmpty( tip.getName() ) ? null
+                : TipDateExtractor.parse( tip.getName(), TipDateExtractor.DayMonthOrder.DAY_FIRST );
+        return ( m == null ) ? null : new TipDate( m.decimalYear(), true, m.ambiguous() );
+    }
+
+    /**
+     * Kind 2 of the rule, before the tips are counted (Archaeopteryx.js's {@code isRootToTipTree}): every tip is
+     * dated, by the file or by its name ({@link #rootToTipDate}); no ancestor states a date (the root included; a
+     * name dates no ancestor); every branch states a length -- a length of 0, or a negative one, is a length the
+     * file stated; one that is not there is not -- and no clock rate on every branch: a clock-model tree's lengths
+     * are time, so it keeps its Time | Div plot or has none. Every tip must be dated and every branch must state a
+     * length: a tip with either missing has no point, and a plot that drops tips silently answers a different
+     * question than it was asked, so the tree is refused the plot, not plotted with tips missing.
+     */
+    static boolean isRootToTipTree( final Phylogeny whole ) {
+        if ( ( whole == null ) || whole.isEmpty() ) {
+            return false;
+        }
+        int branches = 0;
+        for( final PhylogenyNodeIterator it = whole.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isExternal() ? ( rootToTipDate( n ) == null ) : ( BranchLengthLayout.dateValue( n ) != null ) ) {
+                return false;
+            }
+            if ( n.isRoot() || ( n.getParent() == null ) ) {
+                continue;
+            }
+            ++branches;
+            if ( n.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+                return false;
+            }
+        }
+        return ( branches > 0 )
+                && ( BranchLengthLayout.divergenceSource( whole ) != BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE );
+    }
+
+    /** Each node's distance from the TREE's root along the stated branch lengths, by node id: a root-to-tip tree's
+     *  divergence (Archaeopteryx.js's {@code rootToTipDistances}). A branch without a length adds nothing -- a guard:
+     *  {@link #isRootToTipTree} refuses such a tree. */
+    static Map<Long, Double> rootToTipDistances( final Phylogeny whole ) {
+        final Map<Long, Double> of = new HashMap<Long, Double>();
+        for( final PhylogenyNodeIterator it = whole.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isRoot() || ( n.getParent() == null ) ) {
+                of.put( n.getId(), Double.valueOf( 0.0 ) );
+            }
+            else {
+                final double len = n.getDistanceToParent();
+                of.put( n.getId(), Double.valueOf( of.get( n.getParent().getId() ).doubleValue()
+                        + ( ( ( len != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) && Double.isFinite( len ) ) ? len : 0 ) ) );
+            }
+        }
+        return of;
+    }
+
+    /**
+     * Which clock plot the tree has, or null for none (the class comment): DIVERGENCE where it is offered Time | Div,
+     * else ROOT_TO_TIP where its tips alone are dated over stated lengths -- and in either only where its tips make
+     * a line. Asked of the WHOLE tree a tab holds, never of the view.
+     *
+     * @param time_div whether the tree is offered Time | Div (a tab caches that answer)
+     */
+    static Kind kind( final Phylogeny whole, final boolean time_div ) {
+        if ( ( whole == null ) || whole.isEmpty() ) {
+            return null;
+        }
+        final Kind kind = time_div ? Kind.DIVERGENCE : ( isRootToTipTree( whole ) ? Kind.ROOT_TO_TIP : null );
+        return ( ( kind != null ) && tipsMakeALine( whole, kind == Kind.ROOT_TO_TIP ) ) ? kind : null;
+    }
+
+    /**
+     * {@link #kind(Phylogeny, boolean)}, asking the tree itself whether it is offered Time | Div.
+     *
+     * @param time the lengths it has in time: on screen, or kept
+     */
+    static Kind kind( final Phylogeny whole, final BranchLengthLayout.TimeLengths time ) {
+        if ( ( whole == null ) || whole.isEmpty() || ( time == null ) ) {
+            return null;
+        }
+        return kind( whole, BranchLengthLayout.isApplicable( whole, time ) );
+    }
+
+    /**
+     * Whether the tree has a clock plot of either kind.
      *
      * @param whole the WHOLE tree a tab holds
      * @param time the lengths it has in time: on screen, or kept
      */
     static boolean isOffered( final Phylogeny whole, final BranchLengthLayout.TimeLengths time ) {
-        return ( whole != null ) && !whole.isEmpty() && ( time != null ) && BranchLengthLayout.isApplicable( whole, time )
-                && tipsMakeALine( whole );
+        return kind( whole, time ) != null;
     }
 
-    /** The half of {@link #isOffered} that is the plot's own: three tips or more, not all on one date. (The other
-     *  half, Time | Div, a tab caches.) */
-    static boolean tipsMakeALine( final Phylogeny whole ) {
+    /** The half of {@link #kind} that is the line's own, the same for both kinds: three tips or more, not all on one
+     *  date -- the dates the kind reads: on a root-to-tip tree ({@code names}) a tip's name dates it too. */
+    static boolean tipsMakeALine( final Phylogeny whole, final boolean names ) {
         int tips = 0;
         Double first = null;
         boolean differ = false;
@@ -158,7 +314,14 @@ final class ClockPlot {
             if ( !n.isExternal() ) {
                 continue;
             }
-            final Double d = BranchLengthLayout.dateValue( n );
+            final Double d;
+            if ( names ) {
+                final TipDate t = rootToTipDate( n );
+                d = ( t == null ) ? null : Double.valueOf( t._value );
+            }
+            else {
+                d = BranchLengthLayout.dateValue( n );
+            }
             ++tips;
             if ( first == null ) {
                 first = d;
@@ -216,20 +379,37 @@ final class ClockPlot {
      * @return null where the tree has no clock plot
      */
     static Data data( final Phylogeny whole, final BranchLengthLayout.TimeLengths time, final Phylogeny view ) {
-        if ( !isOffered( whole, time ) ) {
+        final Kind kind = kind( whole, time );
+        if ( kind == null ) {
             return null;
         }
-        final Map<Long, Double> div_of = BranchLengthLayout.divergenceFromRoot( whole, time );
+        final boolean root_to_tip = kind == Kind.ROOT_TO_TIP;
+        // a root-to-tip tree's divergence is the path from the TREE's root, in the view of a clade too: the clade's
+        // top then has one as well, and the line's root date is where it reaches that
+        final Map<Long, Double> div_of = root_to_tip ? rootToTipDistances( whole )
+                : BranchLengthLayout.divergenceFromRoot( whole, time );
         final Phylogeny shown = ( ( view == null ) || view.isEmpty() ) ? whole : view;
         final List<Point> points = new ArrayList<Point>();
         final List<Double> xs = new ArrayList<Double>();
         final List<Double> ys = new ArrayList<Double>();
+        int from_names = 0;
+        int ambiguous_names = 0;
         for( final PhylogenyNodeIterator it = shown.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            final Double date = BranchLengthLayout.dateValue( n );
+            Double date = BranchLengthLayout.dateValue( n );
+            if ( root_to_tip && n.isExternal() && ( date == null ) ) {
+                final TipDate named = rootToTipDate( n ); // every tip has one: the kind says so
+                date = ( named == null ) ? null : Double.valueOf( named._value );
+                if ( ( named != null ) && named._from_name ) {
+                    ++from_names;
+                    if ( named._ambiguous ) {
+                        ++ambiguous_names;
+                    }
+                }
+            }
             final Double div = div_of.get( n.getId() );
             if ( ( date == null ) || ( div == null ) ) {
-                continue; // a guard, not a rule: every node of a tree offered Time | Div states both
+                continue; // an undated ancestor (root-to-tip); else a guard, not a rule: a tree offered Time | Div states both
             }
             final Point p = new Point( n, date.doubleValue(), div.doubleValue(), n.isExternal() );
             points.add( p );
@@ -238,7 +418,15 @@ final class ClockPlot {
                 ys.add( div );
             }
         }
-        final boolean forward = BranchLengthLayout.datesIncreaseTowardTips( whole );
+        // a root-to-tip tree has no dated pair to read the direction off: its dates are calendar dates unless their
+        // unit says ages (the first stated unit here; a majority of them in Archaeopteryx.js)
+        final Options.TIME_AXIS_TYPE axis = AptxUtil.deriveTimeAxisType( whole );
+        final boolean forward = root_to_tip ? ( axis != Options.TIME_AXIS_TYPE.GEOLOGIC )
+                : BranchLengthLayout.datesIncreaseTowardTips( whole );
+        // calendar years: the dates' unit says so, or they were read off the tips' names, which carry no other kind
+        // of date
+        final boolean calendar = forward && ( ( axis == Options.TIME_AXIS_TYPE.CALENDAR )
+                || ( root_to_tip && ( axis == Options.TIME_AXIS_TYPE.NONE ) && ( from_names > 0 ) ) );
         final PhylogenyNode top = shown.getRoot();
         final Double top_date = BranchLengthLayout.dateValue( top );
         final Double top_div = div_of.get( top.getId() );
@@ -253,9 +441,16 @@ final class ClockPlot {
                 }
             }
         }
-        return new Data( forward,
+        final String length_unit = ForesterUtil.isEmpty( whole.getDistanceUnit() ) ? null : whole.getDistanceUnit().trim();
+        return new Data( kind,
+                         forward,
                          AptxUtil.timeTreeUnit( whole ),
-                         BranchLengthLayout.divergenceSource( whole ) == BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE,
+                         root_to_tip ? ( ( ( length_unit != null ) && !length_unit.isEmpty() ) ? length_unit : null )
+                                 : BranchLengthLayout.distanceUnit( BranchLengthLayout.MODE.DIVERGENCE, null ),
+                         !root_to_tip && ( BranchLengthLayout.divergenceSource( whole ) == BranchLengthLayout.DIVERGENCE_SOURCE.CLOCK_RATE ),
+                         calendar,
+                         from_names,
+                         ambiguous_names,
                          points,
                          top,
                          ( top_date == null ) ? Double.NaN : top_date.doubleValue(),
