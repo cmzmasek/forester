@@ -33,13 +33,13 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;
 
 /**
- * Headful test for {@link CladeAnnotationReportWindow}: it shows the report's summary and every row, exports the
+ * Headful test for {@link ReportWindow}: it shows the report's summary and every row, exports the
  * report's TSV byte for byte, and closes. A green no-op where there is no display.
  */
-public final class CladeAnnotationReportWindowTest {
+public final class ReportWindowTest {
 
     public static void main( final String[] args ) {
-        System.out.println( "CladeAnnotationReportWindow: " + ( test() ? "OK." : "FAILED." ) );
+        System.out.println( "ReportWindow: " + ( test() ? "OK." : "FAILED." ) );
         System.exit( test() ? 0 : 1 );
     }
 
@@ -73,7 +73,7 @@ public final class CladeAnnotationReportWindowTest {
             return fail( "precondition: three tip rows, got " + report.getRows().size() );
         }
         final File[] remembered = { null };
-        final CladeAnnotationReportWindow w = new CladeAnnotationReportWindow( null, "report test", report, null,
+        final ReportWindow w = new ReportWindow( null, "report test", report, null,
                                                                                dir -> remembered[ 0 ] = dir );
         try {
             w.setVisible( true );
@@ -106,6 +106,23 @@ public final class CladeAnnotationReportWindowTest {
             if ( w.getReport() != report ) {
                 return fail( "the window keeps the report it was given" );
             }
+            if ( w.actionButtonForTest() != null ) {
+                return fail( "a window without an action has no action button" );
+            }
+            // an action button runs its action once and then disables itself
+            final int[] ran = { 0 };
+            final ReportWindow a = new ReportWindow( null, "action test", report, null, null, "Apply", () -> ran[ 0 ]++ );
+            try {
+                a.setVisible( true );
+                a.actionButtonForTest().doClick();
+                a.actionButtonForTest().doClick(); // disabled: nothing
+                if ( ( ran[ 0 ] != 1 ) || a.actionButtonForTest().isEnabled() ) {
+                    return fail( "the action runs once and the button disables itself; ran " + ran[ 0 ] );
+                }
+            }
+            finally {
+                a.dispose();
+            }
         }
         catch ( final Exception e ) {
             return fail( "unexpected: " + e );
@@ -137,10 +154,10 @@ public final class CladeAnnotationReportWindowTest {
     }
 
     private static boolean fail( final String msg ) {
-        System.out.println( "  CladeAnnotationReportWindow test failed: " + msg );
+        System.out.println( "  ReportWindow test failed: " + msg );
         return false;
     }
 
-    private CladeAnnotationReportWindowTest() {
+    private ReportWindowTest() {
     }
 }

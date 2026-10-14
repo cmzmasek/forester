@@ -915,8 +915,8 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        System.out.print("Clade annotation report window: ");
-        if (org.forester.archaeopteryx.CladeAnnotationReportWindowTest.test()) {
+        System.out.print("Report window: ");
+        if (org.forester.archaeopteryx.ReportWindowTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -925,6 +925,22 @@ public final class Test {
         }
         System.out.print("Clade taxon source (per tab): ");
         if (org.forester.archaeopteryx.CladeTaxonSourceTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Internal taxonomy audit: ");
+        if (org.forester.analysis.InternalTaxonomyAuditTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Check Internal Taxa tool: ");
+        if (org.forester.archaeopteryx.InternalTaxaCheckToolTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {

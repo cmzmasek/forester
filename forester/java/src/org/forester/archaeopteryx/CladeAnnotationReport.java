@@ -43,7 +43,7 @@ import org.forester.ws.seqdb.TaxonomicLineageService;
  * merged. Pure (cache-only through the service), so it can be built before anything is drawn or written, and
  * exported as TSV.
  */
-final class CladeAnnotationReport {
+final class CladeAnnotationReport implements TableReport {
 
     /** One line of the report. {@code internal} marks an ignored internal annotation rather than a tip. */
     static final class Row {
@@ -251,12 +251,27 @@ final class CladeAnnotationReport {
         return _rows;
     }
 
+    @Override
+    public String[] getColumns() {
+        return COLUMNS.clone();
+    }
+
+    @Override
+    public List<String[]> getCells() {
+        final List<String[]> out = new ArrayList<String[]>();
+        for( final Row r : _rows ) {
+            out.add( new String[] { r.getRank(), r.getNode(), r.getTaxon(), r.getSource(), r.getNote() } );
+        }
+        return out;
+    }
+
     /** One line per rank. */
     List<String> getSummaryLines() {
         return _summary;
     }
 
-    String getSummary() {
+    @Override
+    public String getSummary() {
         return String.join( "\n", _summary );
     }
 
@@ -275,19 +290,13 @@ final class CladeAnnotationReport {
         return _unplaced;
     }
 
-    /** Tab-separated, one header line then one line per row; a cell's tabs and line breaks become spaces. */
-    String toTsv() {
-        final StringBuilder sb = new StringBuilder( String.join( "\t", COLUMNS ) ).append( '\n' );
-        for( final Row r : _rows ) {
-            sb.append( tsvCell( r.getRank() ) ).append( '\t' ).append( tsvCell( r.getNode() ) ).append( '\t' )
-                    .append( tsvCell( r.getTaxon() ) ).append( '\t' ).append( tsvCell( r.getSource() ) ).append( '\t' )
-                    .append( tsvCell( r.getNote() ) ).append( '\n' );
-        }
-        return sb.toString();
+    @Override
+    public String toTsv() {
+        return TableReport.tsvOf( COLUMNS, getCells() );
     }
 
     static String tsvCell( final String s ) {
-        return ( s == null ) ? "" : s.replace( '\t', ' ' ).replace( '\r', ' ' ).replace( '\n', ' ' );
+        return TableReport.tsvCell( s );
     }
 
     /** The taxon of the tip-level rows at {@code rank}, keyed by node label -- a test convenience. */

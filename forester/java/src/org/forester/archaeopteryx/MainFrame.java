@@ -89,6 +89,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.analysis.AncestralTaxonomyInference;
+import org.forester.analysis.InternalTaxonomyAudit;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.LabelDataExtractor;
 import org.forester.archaeopteryx.tools.TipDateExtractor;
@@ -249,6 +250,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem _gsdir_taxonomy_item;
     JMenuItem _create_tanglegram_item;
     JMenuItem _lineage_inference;
+    JMenuItem _check_internal_taxa;
     // file menu:
     JMenuItem _open_item;
     /** File -> Open Recent: rebuilt from the persisted history each time a file is opened. */
@@ -774,6 +776,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions(getOptions());
         } else if (o == _export_black_and_white_cbmi) {
             updateOptions(getOptions());
+        } else if (o == _check_internal_taxa) {
+            if (isSubtreeDisplayed()) {
+                JOptionPane.showMessageDialog(this, "Subtree is shown.", "Cannot check internal taxa",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            checkInternalTaxa();
         } else if (o == _lineage_inference) {
             if (isSubtreeDisplayed()) {
                 JOptionPane.showMessageDialog(this,
@@ -1511,7 +1520,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                          final String title) {
         final CladeAnnotationReport report = CladeAnnotationReport.of(tp.getPhylogeny(), ranks,
                 TreePanelUtil.getDefaultLineageService(), source);
-        final CladeAnnotationReportWindow w = new CladeAnnotationReportWindow(this, title, report,
+        final ReportWindow w = new ReportWindow(this, title, report,
                 getCurrentDir(DirectoryPreferences.Category.EXPORT),
                 dir -> setCurrentDir(DirectoryPreferences.Category.EXPORT, dir));
         w.setVisible(true);
@@ -2928,6 +2937,80 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         runAncestralInference(tp, phy, service, overwrite, null);
+    }
+
+    static final String CHECK_INTERNAL_TAXA = "Check Internal Taxa against Tips & NCBI…";
+
+    /**
+     * Analysis > "Check Internal Taxa against Tips & NCBI…": audits every internal node's taxonomy against the
+     * lineages of the tips below it and against NCBI Taxonomy (see {@link InternalTaxonomyAudit}), after an optional
+     * online lookup of what neither the tree nor the cache holds, and opens the findings as a report whose "Apply
+     * corrections" button writes the proposals (undoable, with provenance).
+     */
+    void checkInternalTaxa() {
+        final TreePanel tp = _mainpanel.getCurrentTreePanel();
+        if ((tp == null) || (tp.getPhylogeny() == null) || tp.getPhylogeny().isEmpty()) {
+            return;
+        }
+        final Phylogeny phy = tp.getPhylogeny();
+        final TaxonomicLineageService service = TreePanelUtil.getDefaultLineageService();
+        final SortedSet<String> lookups = new java.util.TreeSet<>(TreePanelUtil.tipsWithoutLineage(phy, service));
+        final int tips_missing = lookups.size();
+        final java.util.Set<String> internal_missing = InternalTaxonomyAudit.internalTaxaToLookUp(phy, service);
+        lookups.addAll(internal_missing);
+        final JCheckBox online_cb = new JCheckBox("Look up online what neither the tree nor the cache holds ("
+                + tips_missing + (tips_missing == 1 ? " tip" : " tips") + ", " + internal_missing.size()
+                + " internal " + (internal_missing.size() == 1 ? "taxon" : "taxa") + "; needs an internet connection)",
+                !lookups.isEmpty());
+        online_cb.setEnabled(!lookups.isEmpty());
+        final Object[] message = {
+                "Check every internal node's taxonomy against the lineages of the tips below it",
+                "(a taxon none of them belongs to is a wrong taxon; one only some belong to sits too deep;",
+                "the tips also tell its rank) and against NCBI Taxonomy by its id (name and rank).",
+                "The findings open as a report; its \"Apply corrections\" button writes the proposals (undoable).",
+                " ", online_cb };
+        if (JOptionPane.showConfirmDialog(this, message, "Check Internal Taxa", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+        if (online_cb.isSelected() && !lookups.isEmpty()) {
+            new Thread(new OnlineTaxonResolver(this, "internal-taxa check", lookups,
+                    err -> runInternalTaxaCheck(tp, service, err))).start();
+            return;
+        }
+        runInternalTaxaCheck(tp, service, null);
+    }
+
+    /**
+     * EDT-only: audits the LIVE tree (cache-only), opens the report window and returns it; {@code fetch_error} is
+     * non-null when an online lookup partially failed. The window's action applies the corrections through
+     * {@link TreePanel#applyInternalTaxonomyCorrections}.
+     */
+    ReportWindow runInternalTaxaCheck(final TreePanel tp, final TaxonomicLineageService service,
+                                      final String fetch_error) {
+        final Phylogeny phy = tp.getPhylogeny();
+        final java.util.List<InternalTaxonomyAudit.Finding> findings = InternalTaxonomyAudit
+                .audit(phy, TreePanelUtil.tipLineages(phy, service), service);
+        final InternalTaxonomyAuditReport report = new InternalTaxonomyAuditReport(findings);
+        final String title = "Check Internal Taxa: report";
+        if (fetch_error != null) {
+            JOptionPane.showMessageDialog(this, "Some taxa could not be resolved:\n" + fetch_error, title,
+                    JOptionPane.WARNING_MESSAGE);
+        }
+        final int proposals = report.proposalCount();
+        final ReportWindow w = new ReportWindow(this, title, report,
+                getCurrentDir(DirectoryPreferences.Category.EXPORT),
+                dir -> setCurrentDir(DirectoryPreferences.Category.EXPORT, dir),
+                (proposals > 0) ? ("Apply " + proposals + (proposals == 1 ? " correction" : " corrections")) : null,
+                (proposals > 0) ? () -> {
+                    final int changed = tp.applyInternalTaxonomyCorrections(findings);
+                    repaint();
+                    JOptionPane.showMessageDialog(this, "Corrected " + changed + " internal node taxonom"
+                            + (changed == 1 ? "y" : "ies") + " (undo with Edit > Undo).", title,
+                            JOptionPane.INFORMATION_MESSAGE);
+                } : null);
+        w.setVisible(true);
+        return w;
     }
 
     /** EDT-only: build the tip lineages (cache + on-tree), run the pure inference engine on {@code phy}, and (when

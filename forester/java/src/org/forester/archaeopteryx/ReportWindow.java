@@ -41,19 +41,21 @@ import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * The modeless window that shows a {@link CladeAnnotationReport}: the per-rank summary on top, the rows as a
- * sortable table, and an "Export TSV…" button. Opened by "Annotate Clades by Rank" (report-only, or from the
- * result dialog's "Show Report…") and by "Colorize Subtrees via Taxonomic Rank". Reading only; it never touches
- * the tree.
+ * The modeless window that shows a {@link TableReport}: its summary on top, its rows as a sortable table, an
+ * "Export TSV…" button and, when the caller gives one, an action button (the internal-taxonomy check's "Apply
+ * corrections"). Opened by "Annotate Clades by Rank" (report-only, or from the result dialog's "Show Report…"),
+ * "Colorize Subtrees via Taxonomic Rank" and "Check Internal Taxa". Reading only by itself: only the caller's
+ * action ever touches the tree.
  */
-final class CladeAnnotationReportWindow extends JFrame {
+final class ReportWindow extends JFrame {
 
     private static final long      serialVersionUID = 1L;
-    private final CladeAnnotationReport _report;
+    private final TableReport      _report;
     private final JTable           _table;
     private final JTextArea        _summary;
     private final File             _initial_dir;
     private final Consumer<File>   _remember_dir;
+    private final JButton          _action;
 
     /**
      * @param owner        the main window (for placement); may be null
@@ -62,8 +64,17 @@ final class CladeAnnotationReportWindow extends JFrame {
      * @param initial_dir  where the export file chooser opens; may be null
      * @param remember_dir told the directory of a written export; may be null
      */
-    CladeAnnotationReportWindow( final Frame owner, final String title, final CladeAnnotationReport report,
-                                 final File initial_dir, final Consumer<File> remember_dir ) {
+    ReportWindow( final Frame owner, final String title, final TableReport report, final File initial_dir,
+                  final Consumer<File> remember_dir ) {
+        this( owner, title, report, initial_dir, remember_dir, null, null );
+    }
+
+    /**
+     * @param action_label the text of an extra button left of "Export TSV…", or null for none
+     * @param action       what that button does (it disables itself after running once)
+     */
+    ReportWindow( final Frame owner, final String title, final TableReport report, final File initial_dir,
+                  final Consumer<File> remember_dir, final String action_label, final Runnable action ) {
         super( title );
         _report = report;
         _initial_dir = initial_dir;
@@ -74,9 +85,9 @@ final class CladeAnnotationReportWindow extends JFrame {
         _summary.setLineWrap( true );
         _summary.setWrapStyleWord( true );
         _summary.setFont( FormWidgets.monoFont( _summary.getFont() ) );
-        _summary.setRows( Math.max( 2, Math.min( 6, report.getSummaryLines().size() + 1 ) ) );
+        _summary.setRows( Math.max( 2, Math.min( 6, report.getSummary().split( "\n" ).length + 1 ) ) );
         final JScrollPane summary_scroll = new JScrollPane( _summary );
-        final DefaultTableModel model = new DefaultTableModel( CladeAnnotationReport.COLUMNS, 0 ) {
+        final DefaultTableModel model = new DefaultTableModel( report.getColumns(), 0 ) {
 
             private static final long serialVersionUID = 1L;
 
@@ -85,17 +96,16 @@ final class CladeAnnotationReportWindow extends JFrame {
                 return false;
             }
         };
-        for( final CladeAnnotationReport.Row r : report.getRows() ) {
-            model.addRow( new Object[] { r.getRank(), r.getNode(), r.getTaxon(), r.getSource(), r.getNote() } );
+        for( final String[] r : report.getCells() ) {
+            model.addRow( r );
         }
         _table = new JTable( model );
         _table.setAutoCreateRowSorter( true );
         _table.setFillsViewportHeight( true );
-        _table.getColumnModel().getColumn( 0 ).setPreferredWidth( 70 );
-        _table.getColumnModel().getColumn( 1 ).setPreferredWidth( 220 );
-        _table.getColumnModel().getColumn( 2 ).setPreferredWidth( 160 );
-        _table.getColumnModel().getColumn( 3 ).setPreferredWidth( 200 );
-        _table.getColumnModel().getColumn( 4 ).setPreferredWidth( 360 );
+        final int[] widths = { 70, 220, 160, 200, 360 };
+        for( int c = 0; c < _table.getColumnCount(); ++c ) {
+            _table.getColumnModel().getColumn( c ).setPreferredWidth( widths[ Math.min( c, widths.length - 1 ) ] );
+        }
         final JScrollPane table_scroll = new JScrollPane( _table );
         table_scroll.setPreferredSize( new Dimension( 1040, 420 ) );
         final JButton export = new JButton( "Export TSV…" );
@@ -104,6 +114,17 @@ final class CladeAnnotationReportWindow extends JFrame {
         final JButton close = new JButton( "Close" );
         close.addActionListener( e -> dispose() );
         final JPanel buttons = new JPanel( new FlowLayout( FlowLayout.RIGHT ) );
+        if ( ( action_label != null ) && ( action != null ) ) {
+            _action = new JButton( action_label );
+            _action.addActionListener( e -> {
+                _action.setEnabled( false ); // once: the corrections are in the tree, undo takes them out
+                action.run();
+            } );
+            buttons.add( _action );
+        }
+        else {
+            _action = null;
+        }
         buttons.add( export );
         buttons.add( close );
         getContentPane().setLayout( new BorderLayout( 6, 6 ) );
@@ -145,8 +166,13 @@ final class CladeAnnotationReportWindow extends JFrame {
         Files.write( f.toPath(), _report.toTsv().getBytes( StandardCharsets.UTF_8 ) );
     }
 
-    CladeAnnotationReport getReport() {
+    TableReport getReport() {
         return _report;
+    }
+
+    /** The action button, or null when the window has none. */
+    JButton actionButtonForTest() {
+        return _action;
     }
 
     JTable tableForTest() {

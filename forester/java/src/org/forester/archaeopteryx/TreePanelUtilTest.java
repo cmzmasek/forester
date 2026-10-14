@@ -78,7 +78,67 @@ public final class TreePanelUtilTest {
                 && testLadderizeProvenance()
                 && testRootingProvenance() && testSubTreeKeepsRerootable() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy()
                 && testNodeIdentityInGrouping() && testAmbiguityReport() && testPlacementSources()
-                && testUnresolvedBySource() && testMetadataPlacement() && testWriteLineageMetadata();
+                && testUnresolvedBySource() && testMetadataPlacement() && testWriteLineageMetadata()
+                && testLineageFromFields();
+    }
+
+    /** A tip's per-rank fields rebuild its lineage (root to tip by rank order, the own taxonomy as the deepest level
+     *  when it has a name), feed {@code tipLineages} when nothing is cached, and count as a stored lineage. */
+    private static boolean testLineageFromFields() {
+        final PhylogenyNode cat = rankLeaf( "cat", "Felis catus", "species", "9685" );
+        property( cat, "ncbi:family", "Felidae" );
+        property( cat, "ncbi:order", "Carnivora" ); // out of order on purpose
+        property( cat, "ncbi:species", "Felis catus" ); // the own taxon, named by a field too
+        property( cat, "ncbi:class", "Mammalia" );
+        final TaxonLineage tl = TreePanelUtil.lineageFromFields( cat );
+        if ( tl.isEmpty() || !"Felis catus".equals( tl.getScientificName() ) || !"species".equals( tl.getRank() )
+                || !"9685".equals( tl.getTaxId() ) ) {
+            return fail( "the own taxonomy is the deepest level; got " + tl );
+        }
+        final java.util.List<String> names = new java.util.ArrayList<String>();
+        for( final TaxonLineage.Ancestor a : tl.getAncestors() ) {
+            names.add( a.getRank() + ":" + a.getName() );
+        }
+        if ( !names.equals( Arrays.asList( "class:Mammalia", "order:Carnivora", "family:Felidae" ) ) ) {
+            return fail( "ancestors in canonical rank order, the own level not repeated; got " + names );
+        }
+        if ( !"Carnivora".equals( tl.at( "order" ) ) ) {
+            return fail( "the rebuilt lineage answers rank questions" );
+        }
+        // no own taxonomy: the deepest field is the taxon
+        final PhylogenyNode bare = bareLeaf( "x" );
+        property( bare, "gtdb:phylum", "Pseudomonadota" );
+        property( bare, "gtdb:genus", "Escherichia" );
+        final TaxonLineage g = TreePanelUtil.lineageFromFields( bare );
+        if ( !"Escherichia".equals( g.getScientificName() ) || !"genus".equals( g.getRank() ) || ( g.getAncestors().size() != 1 )
+                || !"Pseudomonadota".equals( g.getAncestors().get( 0 ).getName() ) ) {
+            return fail( "gtdb: fields rebuild a lineage too; got " + g );
+        }
+        // ncbi: fields win over gtdb: ones, never mixed; no fields -> EMPTY
+        property( bare, "ncbi:order", "Enterobacterales" );
+        if ( !"Enterobacterales".equals( TreePanelUtil.lineageFromFields( bare ).getScientificName() )
+                || !TreePanelUtil.lineageFromFields( bare ).getAncestors().isEmpty() ) {
+            return fail( "the ncbi: namespace wins whole, never mixed with gtdb:" );
+        }
+        if ( !TreePanelUtil.lineageFromFields( bareLeaf( "none" ) ).isEmpty() ) {
+            return fail( "no fields: EMPTY" );
+        }
+        // tipLineages prefers the cache, then the fields, then the stored taxonomy; tipsWithoutLineage skips a
+        // field-carrying tip
+        final PhylogenyNode stored = namedLeaf( "stored", "Canis lupus" );
+        final Phylogeny tree = phylogeny( node( cat, bare, stored ) );
+        final Map<PhylogenyNode, TaxonLineage> lineages = TreePanelUtil.tipLineages( tree, new FakeLineageService() );
+        if ( !"Carnivora".equals( lineages.get( cat ).at( "order" ) ) || !"Enterobacterales".equals( lineages.get( bare ).getScientificName() )
+                || !"Canis lupus".equals( lineages.get( stored ).getScientificName() ) || !lineages.get( stored ).getAncestors().isEmpty() ) {
+            return fail( "tipLineages: fields before the stored taxonomy; got " + lineages );
+        }
+        // "cat" has field ANCESTORS to intersect, so no lookup; "x" has a single field naming only itself and
+        // "stored" an own taxon with no ancestors: both still need one
+        final SortedSet<String> without = TreePanelUtil.tipsWithoutLineage( tree, new FakeLineageService() );
+        if ( !without.equals( new java.util.TreeSet<String>( Arrays.asList( "Canis lupus", "x" ) ) ) ) {
+            return fail( "a tip with field ancestors needs no lookup, one with a lone field or a bare own taxon does; got " + without );
+        }
+        return true;
     }
 
     /** A tip's per-rank metadata field (ncbi:<rank>, else gtdb:<rank>) is its OWN identity at that rank: it places

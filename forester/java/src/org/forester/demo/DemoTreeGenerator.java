@@ -111,6 +111,7 @@ public final class DemoTreeGenerator {
         write( dir, "stacked-bar-columns.xml", stackedBarColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "ncbi-lineage-metadata.xml", ncbiLineageMetadataTree() );
+        write( dir, "internal-taxa-check.xml", internalTaxaCheckTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -1731,6 +1732,42 @@ public final class DemoTreeGenerator {
                              + "tip is placed OFFLINE by its fields: 4 clades at family (Felidae, Canidae, Muridae, "
                              + "Hominidae), 3 at order (Carnivora, Rodentia, Primates). Color by ncbi:family and "
                              + "search ncbi:order work on the same fields. Branch lengths are illustrative." );
+    }
+
+    // ----- "Check Internal Taxa against Tips & NCBI": six mammals whose tips carry their lineage as ncbi:<rank> fields
+    //       (so the check runs OFFLINE), under FOUR internal annotations of which three are wrong in three different
+    //       ways: "genus Felidae" over the cats (wrong RANK: the tips' lineages say family), "order Rodentia" over the
+    //       cats and the dog (wrong TAXON: no tip below is a rodent; proposed Carnivora), "family Muridae" over the mice
+    //       AND the human (NOT shared by all tips; proposed Mammalia), and "family Muridae" over the mice (consistent).
+    private static Phylogeny internalTaxaCheckTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode cats = clade( 0.05, classTip( "Felis catus", "Carnivora", "Felidae", "Felis" ),
+                                          classTip( "Panthera leo", "Carnivora", "Felidae", "Panthera" ) );
+        taxon( cats, "Felidae", "genus" ); // wrong rank
+        final PhylogenyNode carnivores = clade( 0.04, cats, classTip( "Canis lupus", "Carnivora", "Canidae", "Canis" ) );
+        taxon( carnivores, "Rodentia", "order" ); // wrong taxon
+        final PhylogenyNode mice = clade( 0.03, classTip( "Mus musculus", "Rodentia", "Muridae", "Mus" ),
+                                          classTip( "Rattus norvegicus", "Rodentia", "Muridae", "Rattus" ) );
+        taxon( mice, "Muridae", "family" ); // consistent
+        final PhylogenyNode mice_and_human = clade( 0.05, mice, classTip( "Homo sapiens", "Primates", "Hominidae", "Homo" ) );
+        taxon( mice_and_human, "Muridae", "family" ); // not shared by the human
+        final PhylogenyNode root = clade( 0, carnivores, mice_and_human );
+        return tree( root, "Check internal taxa (demo)",
+                     "Synthetic mammal tree whose six tips carry their NCBI lineage as metadata fields (ncbi:class "
+                             + "... ncbi:species), so Analysis > Check Internal Taxa against Tips & NCBI runs OFFLINE, "
+                             + "and whose four internal annotations are wrong in three different ways: 'genus Felidae' "
+                             + "over the cats has the wrong RANK (the tips' lineages say family); 'order Rodentia' over "
+                             + "the cats and the dog is the wrong TAXON (no tip below it is a rodent; Carnivora is "
+                             + "proposed); 'family Muridae' over the mice and the human is NOT SHARED by all tips below "
+                             + "it (Mammalia is proposed); 'family Muridae' over the two mice is consistent. The report "
+                             + "lists the four findings with three corrections; Apply writes them (undoable)." );
+    }
+
+    /** A species tip with its lineage as ncbi: fields down from the class (Mammalia). */
+    private static PhylogenyNode classTip( final String species, final String order, final String family,
+                                           final String genus ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = lineageTip( species, order, family, genus );
+        addProperty( n, "ncbi:class", "Mammalia", TEXT );
+        return n;
     }
 
     /** A species tip carrying its lineage as ncbi:<rank> fields (plus the species as its taxonomy), as the lineage

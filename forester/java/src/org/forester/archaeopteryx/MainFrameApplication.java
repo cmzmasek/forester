@@ -1600,6 +1600,10 @@ public final class MainFrameApplication extends MainFrame {
         _analysis_menu.add(_lineage_inference = new JMenuItem(INFER_ANCESTOR_TAXONOMIES));
         customizeJMenuItem(_lineage_inference);
         _lineage_inference.setToolTipText("Inference of ancestor taxonomies/lineages");
+        _analysis_menu.add(_check_internal_taxa = new JMenuItem(CHECK_INTERNAL_TAXA));
+        customizeJMenuItem(_check_internal_taxa);
+        _check_internal_taxa.setToolTipText("Check every internal node's taxonomy against the lineages of the tips"
+                + " below it and against NCBI Taxonomy, and correct wrong taxa, ranks and names (undoable)");
         _jmenubar.add(_analysis_menu);
     }
 

@@ -63,8 +63,8 @@ public final class AptxUtilTest {
     }
 
     public static boolean test() {
-        return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChoices()
-                && testRankCounts() && testRankCoverageCounts() && testNodePruningOutcome()
+        return testHasAtLeastOneNodeWithDomainArchitecture() && testGraphicsExportTypes() && testRankChooserHelpers()
+                && testRankCounts() && testNodePruningOutcome()
                 && testBranchesToCollapse() && testConfigFileOption() && testScanForDataPresence()
                 && testAssignDistinctColors() && testQualitativePalette() && testGatherDomainNames() && testShortenLabel()
                 && testInternalNamesLookLikeConfidenceValues() && testInternalLabelPolicy()
@@ -1351,62 +1351,9 @@ public final class AptxUtilTest {
         return true;
     }
 
-    /**
-     * getRankChoices offers, in canonical order: every rank present on the tree (labeled
-     * "rank (count) (P% coverage)") AND the major Linnaean ranks even when absent (labeled plainly) --
-     * so a genus-only tree can still be colored by, e.g., order, which the taxonomy DB will resolve.
-     */
-    private static boolean testRankChoices() {
-        // with no present ranks, the major ranks are still offered (plain), in canonical order
-        final List<String> majors = Arrays.asList( AptxUtil.getRankChoices( new LinkedHashMap<String, Integer>(),
-                                                                            null,
-                                                                            0 ) );
-        for( final String r : new String[] { "superkingdom", "kingdom", "phylum", "class", "order", "family", "genus",
-                "species" } ) {
-            if ( !majors.contains( r ) ) {
-                return fail( "major rank '" + r + "' must always be offered; got " + majors );
-            }
-        }
-        if ( !( ( majors.indexOf( "order" ) < majors.indexOf( "family" ) )
-                && ( majors.indexOf( "family" ) < majors.indexOf( "genus" ) )
-                && ( majors.indexOf( "genus" ) < majors.indexOf( "species" ) ) ) ) {
-            return fail( "ranks must be offered in canonical order; got " + majors );
-        }
-        // a present rank is labeled with count + coverage; absent majors stay plain
-        final Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
-        counts.put( "order", 2 );
-        final Map<String, Integer> coverage = new LinkedHashMap<String, Integer>();
-        coverage.put( "order", 6 ); // 6 of 10 external nodes -> 60%
-        final List<String> choices = Arrays.asList( AptxUtil.getRankChoices( counts, coverage, 10 ) );
-        if ( !choices.contains( "order (2) (60% coverage)" ) ) {
-            return fail( "a present rank must be labeled \"rank (count) (P% coverage)\"; got " + choices );
-        }
-        if ( !choices.contains( "family" ) || !choices.contains( "genus" ) ) {
-            return fail( "absent major ranks must still be offered plainly; got " + choices );
-        }
-        // a present NON-major rank is offered too (labeled), even though it is not in the always-offer set
-        final Map<String, Integer> sub = new LinkedHashMap<String, Integer>();
-        sub.put( "subfamily", 3 );
-        final List<String> sub_choices = Arrays.asList( AptxUtil.getRankChoices( sub, null, 10 ) );
-        if ( !sub_choices.contains( "subfamily (3) (0% coverage)" ) ) {
-            return fail( "a present non-major rank must be offered; got " + sub_choices );
-        }
-        // a present NON-major rank with count 0 must NOT be offered (it is neither colorizable nor a major)
-        final Map<String, Integer> zero_sub = new LinkedHashMap<String, Integer>();
-        zero_sub.put( "subfamily", 0 );
-        final List<String> zero_choices = Arrays.asList( AptxUtil.getRankChoices( zero_sub, null, 10 ) );
-        if ( zero_choices.contains( "subfamily (0) (0% coverage)" ) || zero_choices.contains( "subfamily" ) ) {
-            return fail( "a present non-major rank with count 0 must not be offered; got " + zero_choices );
-        }
-        // two present ranks come out in canonical order (order before genus), regardless of map insertion order
-        final Map<String, Integer> two = new LinkedHashMap<String, Integer>();
-        two.put( "genus", 4 ); // inserted out of canonical order on purpose
-        two.put( "order", 2 );
-        final List<String> two_choices = Arrays.asList( AptxUtil.getRankChoices( two, null, 10 ) );
-        if ( two_choices.indexOf( "order (2) (0% coverage)" ) >= two_choices.indexOf( "genus (4) (0% coverage)" ) ) {
-            return fail( "present ranks must be emitted in canonical order (order before genus); got " + two_choices );
-        }
-        // coveragePercentLabel (still used to build the labels above)
+    /** The two chooser helpers still in use: the percent label and the bare-rank index into a chooser's entries. */
+    private static boolean testRankChooserHelpers() {
+        // coveragePercentLabel
         if ( !AptxUtil.coveragePercentLabel( 0, 100 ).equals( "0%" )
                 || !AptxUtil.coveragePercentLabel( 1, 300 ).equals( "<1%" ) // 0.33% rounds to 0 -> <1%
                 || !AptxUtil.coveragePercentLabel( 1, 200 ).equals( "1%" )  // 0.5% rounds half-up to 1%
@@ -1430,34 +1377,6 @@ public final class AptxUtilTest {
         return true;
     }
 
-    /**
-     * getRankCoverageCounts: an external node is covered by rank R when a non-root ancestor (or
-     * itself) carries rank R. Tree: ((l1,l2)order=Diptera, l3) -- order covers l1,l2 (2 of 3 leaves).
-     */
-    private static boolean testRankCoverageCounts() {
-        final Phylogeny phy = new Phylogeny();
-        final PhylogenyNode root = new PhylogenyNode();
-        final PhylogenyNode order_node = new PhylogenyNode();
-        order_node.getNodeData().setTaxonomy( taxonomy( "Diptera", "order" ) );
-        order_node.addAsChild( leaf( "l1" ) );
-        order_node.addAsChild( leaf( "l2" ) );
-        root.addAsChild( order_node );
-        root.addAsChild( leaf( "l3" ) ); // outside any ranked subtree
-        phy.setRoot( root );
-        phy.externalNodesHaveChanged();
-        final Map<String, Integer> coverage = AptxUtil.getRankCoverageCounts( phy );
-        if ( ( coverage.get( "order" ) == null ) || ( coverage.get( "order" ) != 2 ) ) {
-            return fail( "rank 'order' must cover exactly the 2 leaves under it; got " + coverage.get( "order" ) );
-        }
-        if ( coverage.containsKey( "family" ) ) {
-            return fail( "a rank not present must not appear in the coverage map" );
-        }
-        // empty / null trees are handled without error
-        if ( !AptxUtil.getRankCoverageCounts( null ).isEmpty() || !AptxUtil.getRankCoverageCounts( new Phylogeny() ).isEmpty() ) {
-            return fail( "null/empty tree must yield empty coverage" );
-        }
-        return true;
-    }
 
     private static PhylogenyNode leaf( final String name ) {
         final PhylogenyNode n = new PhylogenyNode();

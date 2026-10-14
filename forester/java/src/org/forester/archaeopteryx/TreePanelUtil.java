@@ -1963,6 +1963,9 @@ public class TreePanelUtil {
                 }
             }
             if ( ( tl == null ) || tl.isEmpty() ) {
+                tl = lineageFromFields( tip ); // the per-rank fields a lookup or the GTDB import left in the tree
+            }
+            if ( ( tl == null ) || tl.isEmpty() ) {
                 tl = lineageFromStoredTaxonomy( tip );
             }
             out.put( tip, ( tl == null ) ? TaxonLineage.EMPTY : tl );
@@ -1991,6 +1994,53 @@ public class TreePanelUtil {
             }
         }
         return new TaxonLineage( ncbiId( tax ), tax.getRank(), own, null, anc );
+    }
+
+    /**
+     * A tip's lineage from its per-rank metadata fields ({@code ncbi:<rank>}, else {@code gtdb:<rank>}): one level
+     * per field, root&rarr;tip by the canonical rank order, each with its rank and no id; the tip's own
+     * {@code <taxonomy>} (name, rank, NCBI id) is the deepest level when it carries a name, else the deepest field
+     * is. {@link TaxonLineage#EMPTY} when the tip has no such field. Pure. This is what lets the ancestral-taxonomy
+     * inference and the internal-taxonomy check run OFFLINE on a tree whose lookups were written into it.
+     */
+    final static TaxonLineage lineageFromFields( final PhylogenyNode tip ) {
+        if ( tip.getNodeData().getProperties() == null ) {
+            return TaxonLineage.EMPTY;
+        }
+        final Map<String, String> by_rank = new HashMap<String, String>();
+        for( final String prefix : new String[] { NCBI_REF_PREFIX, GtdbTaxonomy.REF_PREFIX } ) {
+            for( final Property p : tip.getNodeData().getProperties().getProperties() ) {
+                final String ref = ( p.getRef() == null ) ? "" : p.getRef().toLowerCase( Locale.ROOT );
+                if ( ref.startsWith( prefix ) && !ForesterUtil.isEmpty( p.getValue() )
+                        && !ForesterUtil.isEmpty( p.getValue().trim() ) ) {
+                    by_rank.putIfAbsent( ref.substring( prefix.length() ), p.getValue().trim() );
+                }
+            }
+            if ( !by_rank.isEmpty() ) {
+                break; // one namespace: the ncbi: fields when present, else the gtdb: ones -- never a mix
+            }
+        }
+        if ( by_rank.isEmpty() ) {
+            return TaxonLineage.EMPTY;
+        }
+        final List<TaxonLineage.Ancestor> levels = new ArrayList<TaxonLineage.Ancestor>();
+        for( final String rank : TaxonomyUtil.TAXONOMY_RANKS_LIST ) { // canonical order, domain ... species
+            final String name = by_rank.get( rank );
+            if ( name != null ) {
+                levels.add( new TaxonLineage.Ancestor( name, rank, null ) );
+            }
+        }
+        final Taxonomy tax = tip.getNodeData().isHasTaxonomy() ? tip.getNodeData().getTaxonomy() : null;
+        final String own = ( tax == null ) ? null : taxonomyLabel( tax );
+        if ( !ForesterUtil.isEmpty( own ) ) {
+            // the tip's own taxon is the deepest level; a field naming the same taxon is that level, not an ancestor
+            if ( !levels.isEmpty() && own.equalsIgnoreCase( levels.get( levels.size() - 1 ).getName() ) ) {
+                levels.remove( levels.size() - 1 );
+            }
+            return new TaxonLineage( ncbiId( tax ), tax.getRank(), own, null, levels );
+        }
+        final TaxonLineage.Ancestor deepest = levels.remove( levels.size() - 1 );
+        return new TaxonLineage( null, deepest.getRank(), deepest.getName(), null, levels );
     }
 
     /** The NCBI tax-id from a taxonomy's identifier (only the "ncbi" provider), or null. */
@@ -2037,6 +2087,9 @@ public class TreePanelUtil {
      *  so it must fetch. Mirrors {@link #lineageFromStoredTaxonomy}, which strips own-name entries, so the two agree
      *  on what counts as an ancestor (else an own-only lineage would be neither fetched nor usable). */
     private final static boolean hasStoredLineage( final PhylogenyNode tip ) {
+        if ( !lineageFromFields( tip ).getAncestors().isEmpty() ) {
+            return true; // per-rank fields give real ancestors
+        }
         if ( !tip.getNodeData().isHasTaxonomy() ) {
             return false;
         }

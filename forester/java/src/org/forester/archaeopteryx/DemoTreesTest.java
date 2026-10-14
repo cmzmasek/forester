@@ -117,6 +117,9 @@ public final class DemoTreesTest {
         ok &= hasCategoricalRef( "ncbi-lineage-metadata.xml", "ncbi:family" );
         ok &= placesFromFields( "ncbi-lineage-metadata.xml", "family", 4 );
         ok &= placesFromFields( "ncbi-lineage-metadata.xml", "order", 3 );
+        // the internal-taxa check demo: four annotated internal nodes, three wrong in three different ways, three
+        // corrections proposed -- all found OFFLINE from the tips' ncbi: fields
+        ok &= internalTaxaCheckFinds( "internal-taxa-check.xml" );
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
         // break long branches: a phylogram with branch lengths AND a genuine outlier branch (> the auto cap), so the
@@ -2719,6 +2722,37 @@ public final class DemoTreesTest {
             if ( !n.isExternal() && n.getNodeData().isHasTaxonomy() ) {
                 return note( file_name + " internal nodes must carry NO taxonomy (ready for ancestral inference)" );
             }
+        }
+        return true;
+    }
+
+    /** The internal-taxa demo: offline (no service), the check reads the tips' fields and finds exactly one
+     *  consistent annotation, one wrong rank (genus Felidae -> family), one wrong taxon (Rodentia -> Carnivora) and
+     *  one not shared by all tips (Muridae -> Mammalia): the three corrections the catalogue quotes. */
+    private static boolean internalTaxaCheckFinds( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final java.util.List<org.forester.analysis.InternalTaxonomyAudit.Finding> findings = org.forester.analysis.InternalTaxonomyAudit
+                .audit( phy, TreePanelUtil.tipLineages( phy, null ), null );
+        final java.util.Map<org.forester.analysis.InternalTaxonomyAudit.Verdict, Integer> counts = org.forester.analysis.InternalTaxonomyAudit
+                .countByVerdict( findings );
+        if ( ( findings.size() != 4 ) || ( counts.get( org.forester.analysis.InternalTaxonomyAudit.Verdict.OK ) != 1 )
+                || ( counts.get( org.forester.analysis.InternalTaxonomyAudit.Verdict.WRONG_RANK ) != 1 )
+                || ( counts.get( org.forester.analysis.InternalTaxonomyAudit.Verdict.WRONG_TAXON ) != 1 )
+                || ( counts.get( org.forester.analysis.InternalTaxonomyAudit.Verdict.NOT_SHARED_BY_ALL_TIPS ) != 1 ) ) {
+            return note( file_name + ": expected 1 consistent, 1 wrong rank, 1 wrong taxon, 1 not shared; got "
+                    + org.forester.analysis.InternalTaxonomyAudit.summary( findings ) );
+        }
+        final java.util.Set<String> proposed = new java.util.TreeSet<String>();
+        for( final org.forester.analysis.InternalTaxonomyAudit.Finding f : findings ) {
+            if ( f.hasProposal() ) {
+                proposed.add( f.getProposed() );
+            }
+        }
+        if ( !proposed.equals( new java.util.TreeSet<String>( java.util.Arrays.asList( "family Felidae", "order Carnivora", "class Mammalia" ) ) ) ) {
+            return note( file_name + ": the three proposals must be family Felidae, order Carnivora, class Mammalia; got " + proposed );
         }
         return true;
     }

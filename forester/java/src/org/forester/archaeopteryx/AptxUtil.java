@@ -1497,47 +1497,8 @@ public final class AptxUtil {
 
 
 
-    // The major Linnaean ranks the rank-colorization chooser always offers (the taxonomy DB can
-    // resolve a tip to any of them), even when no node in the tree is annotated at that rank -- so a
-    // genus/species-only tree can still be colored by, say, order. NCBI uses "superkingdom" for the
-    // domain level, hence its inclusion here rather than "domain".
-    private static final Set<String> OFFERABLE_RANKS = new HashSet<String>(Arrays.asList("superkingdom",
-                                                                                         "kingdom",
-                                                                                         "phylum",
-                                                                                         "class",
-                                                                                         "order",
-                                                                                         "family",
-                                                                                         "genus",
-                                                                                         "species"));
-
     /**
-     * The ranks to offer in the "Colorize Subtrees via Taxonomic Rank" chooser, in canonical order:
-     * every rank actually present on the tree (labeled {@code "rank (count) (P% coverage)"}) plus the
-     * major Linnaean ranks ({@link #OFFERABLE_RANKS}) even when absent (labeled plainly). The latter
-     * is the key change behind the colorizer fix: a tip can be placed at a rank via the taxonomy DB
-     * even when no node is literally annotated at that rank, so the chooser must offer it regardless.
-     */
-    final static String[] getRankChoices(final Map<String, Integer> present_ranks,
-                                         final Map<String, Integer> coverage_counts,
-                                         final int total_external) {
-        final List<String> ranks = new ArrayList<String>();
-        for (final String e : TaxonomyUtil.TAXONOMY_RANKS_LIST) {
-            if (e.equals(TaxonomyUtil.UNKNOWN) || e.equals(TaxonomyUtil.OTHER)) {
-                continue;
-            }
-            final Integer count = (present_ranks == null) ? null : present_ranks.get(e);
-            if ((count != null) && (count > 0)) {
-                final Integer covered = (coverage_counts == null) ? null : coverage_counts.get(e);
-                ranks.add(e + " (" + count + ") (" + coveragePercentLabel(covered, total_external) + " coverage)");
-            } else if (OFFERABLE_RANKS.contains(e)) {
-                ranks.add(e);
-            }
-        }
-        return ranks.toArray(new String[0]);
-    }
-
-    /**
-     * The index in {@code choices} (as produced by {@link #getRankChoices}) whose bare rank equals
+     * The index in {@code choices} (as a rank chooser lists them) whose bare rank equals
      * {@code bare_rank}, or {@code -1} if none. A choice may carry a "(count) (coverage)" suffix while
      * {@code bare_rank} is the plain rank, so each choice is compared by its prefix before " (". Used to
      * pre-select the last-used rank in the "Annotate Clades by Rank" chooser. Case-insensitive.
@@ -1570,31 +1531,6 @@ public final class AptxUtil {
         return (pct < 1) ? "<1%" : (pct + "%");
     }
 
-    /**
-     * Per taxonomic rank, how many external nodes that rank would color: an external node is covered
-     * by rank R if any non-root node on its path to the root carries taxonomy rank R. This is the
-     * structural ("direct rank annotation") coverage that drives the rank chooser's "P% coverage"
-     * hint; it does not run the colorizer's secondary lineage-matching/UniProt pass, so it is a fast,
-     * deterministic lower bound. Keys are lower-cased ranks.
-     */
-    final static Map<String, Integer> getRankCoverageCounts(final Phylogeny tree) {
-        final Map<String, Integer> covered = new HashMap<String, Integer>();
-        if ((tree != null) && !tree.isEmpty()) {
-            for (final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
-                final Set<String> ranks_on_path = new HashSet<String>();
-                for (PhylogenyNode n = it.next(); n != null; n = n.getParent()) {
-                    if (!n.isRoot() && n.getNodeData().isHasTaxonomy()
-                            && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getRank())) {
-                        ranks_on_path.add(n.getNodeData().getTaxonomy().getRank().toLowerCase());
-                    }
-                }
-                for (final String r : ranks_on_path) {
-                    covered.merge(r, 1, Integer::sum);
-                }
-            }
-        }
-        return covered;
-    }
 
     /** Outcome of a "Delete/Retain Selected Nodes" request; OK means the prune may proceed. */
     static enum NodePruningOutcome {

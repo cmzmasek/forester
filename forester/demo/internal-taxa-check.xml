@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Check internal taxa (demo)</name>
+  <description>Synthetic mammal tree whose six tips carry their NCBI lineage as metadata fields (ncbi:class ... ncbi:species), so Analysis &gt; Check Internal Taxa against Tips &amp; NCBI runs OFFLINE, and whose four internal annotations are wrong in three different ways: &apos;genus Felidae&apos; over the cats has the wrong RANK (the tips&apos; lineages say family); &apos;order Rodentia&apos; over the cats and the dog is the wrong TAXON (no tip below it is a rodent; Carnivora is proposed); &apos;family Muridae&apos; over the mice and the human is NOT SHARED by all tips below it (Mammalia is proposed); &apos;family Muridae&apos; over the two mice is consistent. The report lists the four findings with three corrections; Apply writes them (undoable).</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <taxonomy>
+        <scientific_name>Rodentia</scientific_name>
+        <rank>order</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <taxonomy>
+          <scientific_name>Felidae</scientific_name>
+          <rank>genus</rank>
+        </taxonomy>
+        <clade>
+          <name>Felis catus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Felis catus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Felis</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Felis catus</property>
+          <property ref="ncbi:class" datatype="xsd:string" applies_to="node">Mammalia</property>
+        </clade>
+        <clade>
+          <name>Panthera leo</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Panthera leo</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Panthera</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Panthera leo</property>
+          <property ref="ncbi:class" datatype="xsd:string" applies_to="node">Mammalia</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>Canis lupus</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <scientific_name>Canis lupus</scientific_name>
+          <rank>species</rank>
+        </taxonomy>
+        <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+        <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+        <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Canis</property>
+        <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Canis lupus</property>
+        <property ref="ncbi:class" datatype="xsd:string" applies_to="node">Mammalia</property>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <taxonomy>
+        <scientific_name>Muridae</scientific_name>
+        <rank>family</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <taxonomy>
+          <scientific_name>Muridae</scientific_name>
+          <rank>family</rank>
+        </taxonomy>
+        <clade>
+          <name>Mus musculus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Mus musculus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Rodentia</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Muridae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Mus</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Mus musculus</property>
+          <property ref="ncbi:class" datatype="xsd:string" applies_to="node">Mammalia</property>
+        </clade>
+        <clade>
+          <name>Rattus norvegicus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Rattus norvegicus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Rodentia</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Muridae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Rattus</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Rattus norvegicus</property>
+          <property ref="ncbi:class" datatype="xsd:string" applies_to="node">Mammalia</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>Homo sapiens</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <scientific_name>Homo sapiens</scientific_name>
+          <rank>species</rank>
+        </taxonomy>
+        <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Primates</property>
+        <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Hominidae</property>
+        <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Homo</property>
+        <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Homo sapiens</property>
+        <property ref="ncbi:class" datatype="xsd:string" applies_to="node">Mammalia</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

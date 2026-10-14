@@ -88,6 +88,7 @@ import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.forester.analysis.InternalTaxonomyAudit;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -10912,6 +10913,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         return n;
+    }
+
+    /**
+     * Writes the proposed corrections of an internal-taxonomy check ({@link InternalTaxonomyAudit#apply}, every
+     * verdict) onto this tree: an undo checkpoint first, then the provenance sentence and the edited mark when
+     * anything changed. Returns the number of nodes changed.
+     */
+    final int applyInternalTaxonomyCorrections(final java.util.List<InternalTaxonomyAudit.Finding> findings) {
+        pushUndoCheckpoint("Check Internal Taxa");
+        final int changed = InternalTaxonomyAudit.apply(findings,
+                java.util.EnumSet.allOf(InternalTaxonomyAudit.Verdict.class));
+        if (changed > 0) {
+            appendProvenance(InternalTaxonomyAudit.provenance(_phylogeny, changed));
+            setEdited(true);
+            rebuildCladeBands(); // a corrected annotation may change what the clade bands place
+            repaint();
+        }
+        return changed;
     }
 
     /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}). */
