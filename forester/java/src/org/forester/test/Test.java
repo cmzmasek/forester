@@ -899,6 +899,38 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Clade annotation report: ");
+        if (org.forester.archaeopteryx.CladeAnnotationReportTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Rank/source chooser panel: ");
+        if (org.forester.archaeopteryx.RankSourcePanelTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Clade annotation report window: ");
+        if (org.forester.archaeopteryx.CladeAnnotationReportWindowTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Clade taxon source (per tab): ");
+        if (org.forester.archaeopteryx.CladeTaxonSourceTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Tree panel util: ");
         if (org.forester.archaeopteryx.TreePanelUtilTest.test()) {
             System.out.println("OK.");

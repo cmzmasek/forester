@@ -110,6 +110,7 @@ public final class DemoTreeGenerator {
         write( dir, "symbol-columns.xml", symbolColumnsTree() );
         write( dir, "stacked-bar-columns.xml", stackedBarColumnsTree() );
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
+        write( dir, "ncbi-lineage-metadata.xml", ncbiLineageMetadataTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -1704,6 +1705,44 @@ public final class DemoTreeGenerator {
             throws PhyloXmlDataFormatException {
         final PhylogenyNode n = leaf( species_name );
         taxon( n, order, "order" );
+        return n;
+    }
+
+    // ----- "Lineage as metadata fields": what "Annotate Clades by Rank" / "Colorize Subtrees via Taxonomic Rank"
+    //       leave behind after an online run with "write each looked-up lineage into the tree" -- every tip carries
+    //       its NCBI lineage as ncbi:order / ncbi:family / ncbi:genus / ncbi:species fields, NO internal node carries a
+    //       taxonomy -- so the tree's OWN annotations place every tip offline: 4 clades at family, 3 at order.
+    private static Phylogeny ncbiLineageMetadataTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode felids = clade( 0.05, lineageTip( "Felis catus", "Carnivora", "Felidae", "Felis" ),
+                                            lineageTip( "Panthera leo", "Carnivora", "Felidae", "Panthera" ) );
+        final PhylogenyNode canids = clade( 0.05, lineageTip( "Canis lupus", "Carnivora", "Canidae", "Canis" ),
+                                            lineageTip( "Vulpes vulpes", "Carnivora", "Canidae", "Vulpes" ) );
+        final PhylogenyNode murids = clade( 0.04, lineageTip( "Mus musculus", "Rodentia", "Muridae", "Mus" ),
+                                            lineageTip( "Rattus norvegicus", "Rodentia", "Muridae", "Rattus" ) );
+        final PhylogenyNode hominids = clade( 0.03, lineageTip( "Homo sapiens", "Primates", "Hominidae", "Homo" ),
+                                              lineageTip( "Pan troglodytes", "Primates", "Hominidae", "Pan" ) );
+        final PhylogenyNode root = clade( 0, clade( 0.06, felids, canids ), clade( 0.05, murids, hominids ) );
+        return tree( root, "Lineage as metadata fields (demo)",
+                     "Synthetic mammal tree whose eight tips each carry their NCBI lineage as metadata fields "
+                             + "(ncbi:order, ncbi:family, ncbi:genus, ncbi:species) -- exactly what Tools > Annotate "
+                             + "Clades by Rank or Colorize Subtrees via Taxonomic Rank write into a tree after an "
+                             + "online run with 'write each looked-up lineage into the tree' ticked -- and whose "
+                             + "internal nodes carry NO taxonomy. With 'Taxa from: the tree's own annotations' every "
+                             + "tip is placed OFFLINE by its fields: 4 clades at family (Felidae, Canidae, Muridae, "
+                             + "Hominidae), 3 at order (Carnivora, Rodentia, Primates). Color by ncbi:family and "
+                             + "search ncbi:order work on the same fields. Branch lengths are illustrative." );
+    }
+
+    /** A species tip carrying its lineage as ncbi:<rank> fields (plus the species as its taxonomy), as the lineage
+     *  write-back leaves it. */
+    private static PhylogenyNode lineageTip( final String species, final String order, final String family,
+                                             final String genus ) throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( species );
+        taxon( n, species, "species" );
+        addProperty( n, "ncbi:order", order, TEXT );
+        addProperty( n, "ncbi:family", family, TEXT );
+        addProperty( n, "ncbi:genus", genus, TEXT );
+        addProperty( n, "ncbi:species", species, TEXT );
         return n;
     }
 

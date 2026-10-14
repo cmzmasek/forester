@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Lineage as metadata fields (demo)</name>
+  <description>Synthetic mammal tree whose eight tips each carry their NCBI lineage as metadata fields (ncbi:order, ncbi:family, ncbi:genus, ncbi:species) -- exactly what Tools &gt; Annotate Clades by Rank or Colorize Subtrees via Taxonomic Rank write into a tree after an online run with &apos;write each looked-up lineage into the tree&apos; ticked -- and whose internal nodes carry NO taxonomy. With &apos;Taxa from: the tree&apos;s own annotations&apos; every tip is placed OFFLINE by its fields: 4 clades at family (Felidae, Canidae, Muridae, Hominidae), 3 at order (Carnivora, Rodentia, Primates). Color by ncbi:family and search ncbi:order work on the same fields. Branch lengths are illustrative.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.06</branch_length>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <clade>
+          <name>Felis catus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Felis catus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Felis</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Felis catus</property>
+        </clade>
+        <clade>
+          <name>Panthera leo</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Panthera leo</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Panthera</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Panthera leo</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <clade>
+          <name>Canis lupus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Canis lupus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Canis</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Canis lupus</property>
+        </clade>
+        <clade>
+          <name>Vulpes vulpes</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Vulpes vulpes</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Carnivora</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Vulpes</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Vulpes vulpes</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <clade>
+        <branch_length>0.04</branch_length>
+        <clade>
+          <name>Mus musculus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Mus musculus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Rodentia</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Muridae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Mus</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Mus musculus</property>
+        </clade>
+        <clade>
+          <name>Rattus norvegicus</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Rattus norvegicus</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Rodentia</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Muridae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Rattus</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Rattus norvegicus</property>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.03</branch_length>
+        <clade>
+          <name>Homo sapiens</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Homo sapiens</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Primates</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Hominidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Homo</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Homo sapiens</property>
+        </clade>
+        <clade>
+          <name>Pan troglodytes</name>
+          <branch_length>0.02</branch_length>
+          <taxonomy>
+            <scientific_name>Pan troglodytes</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+          <property ref="ncbi:order" datatype="xsd:string" applies_to="node">Primates</property>
+          <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Hominidae</property>
+          <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Pan</property>
+          <property ref="ncbi:species" datatype="xsd:string" applies_to="node">Pan troglodytes</property>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

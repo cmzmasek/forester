@@ -53,6 +53,7 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
+import org.forester.archaeopteryx.tools.GtdbTaxonomy;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 import org.forester.util.TaxonomyUtil;
@@ -1052,6 +1053,19 @@ public class TreePanelUtil {
             return _name;
         }
 
+        /** True when {@code o} names the same taxon as this one: by tax-id when BOTH carry one, else by name
+         *  (case-insensitive) -- so an id-less tree annotation and an id-bearing database hit of the same name do
+         *  not read as a conflict. Looser than {@link #equals}, which is the grouping key. */
+        boolean sameTaxon( final RankTaxon o ) {
+            if ( o == null ) {
+                return false;
+            }
+            if ( ( _id != null ) && ( o._id != null ) ) {
+                return _id.equals( o._id );
+            }
+            return _name.equalsIgnoreCase( o._name );
+        }
+
         /** The equality / grouping key: the tax-id when present, else the lower-cased name. */
         private String key() {
             return ( _id != null ) ? ( "id:" + _id ) : ( "nm:" + _name.toLowerCase( Locale.ROOT ) );
@@ -1088,6 +1102,11 @@ public class TreePanelUtil {
      * record is never cached) first. Trees with UniProt and/or mixed NCBI/UniProt identifiers are very
      * common.
      */
+    /** For tests: replaces the process-wide service ({@code null} restores the real one on its next use). */
+    static synchronized void setDefaultLineageServiceForTest( final TaxonomicLineageService s ) {
+        _default_lineage_service = s;
+    }
+
     final static synchronized TaxonomicLineageService getDefaultLineageService() {
         if ( _default_lineage_service == null ) {
             _default_lineage_service = new AccessionAwareLineageService( NcbiTaxonomyLineageService.getShared(),
@@ -1135,7 +1154,20 @@ public class TreePanelUtil {
                                                      final Map<String, Color> legend_out,
                                                      final Map<String, Color> overrides,
                                                      final Map<String, Integer> counts_out ) {
-        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service );
+        return colorPhylogenyAccordingToRanks( tree, rank, service, legend_out, overrides, counts_out,
+                                               TaxonSource.DATABASE );
+    }
+
+    /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}); the {@link TaxonSource#DATABASE}
+     *  overloads above keep the long-standing behaviour. */
+    final static int colorPhylogenyAccordingToRanks( final Phylogeny tree,
+                                                     final String rank,
+                                                     final TaxonomicLineageService service,
+                                                     final Map<String, Color> legend_out,
+                                                     final Map<String, Color> overrides,
+                                                     final Map<String, Integer> counts_out,
+                                                     final TaxonSource source ) {
+        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service, source );
         final Map<PhylogenyNode, RankTaxon> roots = maximalMonochromaticRoots( tree, assignment );
         final Map<String, Color> colors = AptxUtil.assignDistinctColors( legendTaxa( assignment, roots ) );
         applyColorOverrides( colors, overrides );
@@ -1214,11 +1246,21 @@ public class TreePanelUtil {
                                              final TaxonomicLineageService service,
                                              final Map<String, Color> overrides,
                                              final Map<String, Integer> counts_out ) {
+        return cladeBands( tree, rank, service, overrides, counts_out, TaxonSource.DATABASE );
+    }
+
+    /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}). */
+    final static List<CladeBand> cladeBands( final Phylogeny tree,
+                                             final String rank,
+                                             final TaxonomicLineageService service,
+                                             final Map<String, Color> overrides,
+                                             final Map<String, Integer> counts_out,
+                                             final TaxonSource source ) {
         final List<CladeBand> bands = new ArrayList<CladeBand>();
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return bands;
         }
-        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service );
+        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service, source );
         final Map<PhylogenyNode, RankTaxon> roots = maximalMonochromaticRoots( tree, assignment );
         final Map<String, Color> colors = AptxUtil.assignDistinctColors( legendTaxa( assignment, roots ) );
         applyColorOverrides( colors, overrides );
@@ -1243,10 +1285,17 @@ public class TreePanelUtil {
      */
     final static int writeCladeTaxonomies( final Phylogeny tree, final String rank,
                                            final TaxonomicLineageService service, final boolean overwrite ) {
+        return writeCladeTaxonomies( tree, rank, service, overwrite, TaxonSource.DATABASE );
+    }
+
+    /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}). */
+    final static int writeCladeTaxonomies( final Phylogeny tree, final String rank,
+                                           final TaxonomicLineageService service, final boolean overwrite,
+                                           final TaxonSource source ) {
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return 0;
         }
-        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service );
+        final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service, source );
         int written = 0;
         for( final Entry<PhylogenyNode, RankTaxon> e : maximalMonochromaticRoots( tree, assignment ).entrySet() ) {
             final PhylogenyNode root = e.getKey();
@@ -1349,42 +1398,80 @@ public class TreePanelUtil {
     }
 
     /**
-     * Every node -- tip AND internal -- mapped to its OWN taxon at {@code rank} (absent when it has none): the one
-     * node&rarr;taxon assignment (Spine B) that both the branch colorizer and the clade bands read. A node's own
-     * taxon is resolved, in order: (1) its own {@code <taxonomy>} annotated at exactly {@code rank}; else (2) its
-     * own taxon resolved to a lineage via the cache-only {@code service} (looked up by its NCBI tax-id and/or name);
-     * else -- for a TIP only -- (3) the nearest PROPER-ancestor annotation at
-     * {@code rank}. An INTERNAL node stops at (2): it contributes its OWN identity (so a curated / inferred internal
-     * taxon becomes visible to the visualization) but never an ancestor's.
-     * <p>
-     * Values are keyed by tax-id where available ({@link RankTaxon}), so HOMONYMS do not merge; a closing pass
-     * ({@link #canonicalizeTaxonIds}) rewrites an id-less entry to a same-named id-bearing one, so the SAME taxon
-     * arriving from mixed sources (some with an id, some without) stays ONE group. Network-pure (cache-only).
-     * <p>
-     * "Tip identity wins" still holds: this per-node own taxon feeds {@link #maximalMonochromaticRoots}, which lets a
-     * clade's resolvable tips win over a conflicting ancestor annotation and uses an internal annotation only to fill
-     * gaps. The escape hatch to override a bad DB hit is to annotate the node itself at {@code rank}.
+     * Every node -- tip AND internal -- mapped to its OWN taxon at {@code rank} (absent when it has none), from the
+     * {@link TaxonSource#DATABASE} source: the long-standing behaviour. See {@link #placeNodes} for the rules and
+     * {@link #assignNodesToRankTaxon(Phylogeny, String, TaxonomicLineageService, TaxonSource)} for a chosen source.
      */
     final static Map<PhylogenyNode, RankTaxon> assignNodesToRankTaxon( final Phylogeny tree,
                                                                        final String rank,
                                                                        final TaxonomicLineageService service ) {
-        // IDENTITY-keyed: PhylogenyNode.equals/hashCode compare by VALUE (name + sequence + taxonomy), so two nameless
-        // internal nodes carrying the same <taxonomy> -- exactly what "write the clade taxa" and "Infer Ancestor
-        // Taxonomies" produce on nested clades -- would otherwise collapse onto ONE key.
+        return assignNodesToRankTaxon( tree, rank, service, TaxonSource.DATABASE );
+    }
+
+    /**
+     * {@link #placeNodes} projected to the PLACED nodes' taxa -- the one node&rarr;taxon assignment (Spine B) that
+     * the branch colorizer, the clade bands and the clade-taxon writer read. Values are keyed by tax-id where
+     * available ({@link RankTaxon}), so HOMONYMS do not merge; a closing pass ({@link #canonicalizeTaxonIds})
+     * rewrites an id-less entry to a same-named id-bearing one, so the SAME taxon arriving from mixed sources (some
+     * with an id, some without) stays ONE group. Identity-keyed (see {@link #placeNodes}); network-pure.
+     */
+    final static Map<PhylogenyNode, RankTaxon> assignNodesToRankTaxon( final Phylogeny tree,
+                                                                       final String rank,
+                                                                       final TaxonomicLineageService service,
+                                                                       final TaxonSource source ) {
         final Map<PhylogenyNode, RankTaxon> assignment = new IdentityHashMap<PhylogenyNode, RankTaxon>();
-        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
-            return assignment;
-        }
-        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode node = it.next();
-            final RankTaxon rt = node.isExternal() ? tipRankTaxon( node, rank, service )
-                                                   : ownRankTaxon( node, rank, service );
-            if ( rt != null ) {
-                assignment.put( node, rt );
+        for( final Entry<PhylogenyNode, TaxonPlacement> e : placeNodes( tree, rank, service, source ).entrySet() ) {
+            if ( e.getValue().isPlaced() ) {
+                assignment.put( e.getKey(), e.getValue().getTaxon() );
             }
         }
         canonicalizeTaxonIds( assignment );
         return assignment;
+    }
+
+    /**
+     * Every node's {@link TaxonPlacement} at {@code rank} from {@code source} -- the taxon AND where it came from,
+     * so a report can say per tip which source placed it, why it stayed unplaced, and when the database contradicted
+     * the tree. A TIP is placed, in order:
+     * <ol>
+     * <li>by its own {@code <taxonomy>} annotated at exactly {@code rank} (every source: a tip's own identity is
+     *     never overridden);</li>
+     * <li>{@link TaxonSource#TREE}, and {@link TaxonSource#TREE_THEN_DATABASE} when there is one: by the nearest
+     *     PROPER ancestor's annotation at {@code rank};</li>
+     * <li>the database sources: by the cached lineage of its own NCBI tax-id, else of its own taxonomy name, else
+     *     of its label ({@link #tipQueryName}); under {@link TaxonSource#DATABASE} this OVERRIDES an ancestor's
+     *     annotation (recorded as {@link TaxonPlacement#getTreeSays} when they differ), and the ancestor's
+     *     annotation only fills the gap when the database cannot place the tip;</li>
+     * <li>else UNPLACED, with the reason: nothing in the tree, not looked up yet, unknown to the database,
+     *     ambiguous, or a lineage with no taxon at this rank.</li>
+     * </ol>
+     * An INTERNAL node contributes only its OWN identity (its annotation at {@code rank}, else -- database sources
+     * -- its own cached lineage), never an ancestor's, and is absent when it has none.
+     * <p>
+     * Identity-keyed: {@code PhylogenyNode.equals} compares name + taxonomy, so nested nameless internal nodes with
+     * the same annotation would otherwise share one key. Network-pure: under {@link TaxonSource#TREE} the service
+     * is never consulted; otherwise only its cache ({@link TaxonomicLineageService#lineageOf}) is read -- callers
+     * fetch {@link #unresolvedTipTaxa} off the EDT first.
+     */
+    final static Map<PhylogenyNode, TaxonPlacement> placeNodes( final Phylogeny tree,
+                                                                final String rank,
+                                                                final TaxonomicLineageService service,
+                                                                final TaxonSource source ) {
+        final Map<PhylogenyNode, TaxonPlacement> out = new IdentityHashMap<PhylogenyNode, TaxonPlacement>();
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
+            return out;
+        }
+        final TaxonSource src = ( source == null ) ? TaxonSource.DATABASE : source;
+        final TaxonomicLineageService svc = ( src == TaxonSource.TREE ) ? null : service;
+        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            final TaxonPlacement p = node.isExternal() ? placeTip( node, rank, svc, src )
+                                                       : placeInternal( node, rank, svc );
+            if ( p != null ) {
+                out.put( node, p );
+            }
+        }
+        return out;
     }
 
     /** Backward-compatible tip-only, NAME-valued view of {@link #assignNodesToRankTaxon} (each {@link RankTaxon}
@@ -1405,17 +1492,126 @@ public class TreePanelUtil {
      *  (2) its own taxon resolved to a cached lineage, tax-id first then name. No ancestor / node-name fallback. */
     final static RankTaxon ownRankTaxon( final PhylogenyNode node, final String rank,
                                          final TaxonomicLineageService service ) {
-        // (1) own taxonomy annotated at exactly this rank -- the most specific identity, no network
+        final TaxonPlacement p = placeInternal( node, rank, service );
+        return ( p == null ) ? null : p.getTaxon();
+    }
+
+    /** An INTERNAL node's placement: its own annotation at {@code rank}, else (a database source) its own cached
+     *  lineage; null when it has neither. Never an ancestor's. */
+    private static TaxonPlacement placeInternal( final PhylogenyNode node, final String rank,
+                                                 final TaxonomicLineageService service ) {
         final RankTaxon self = selfRankTaxonRT( node, rank );
         if ( self != null ) {
-            return self;
+            return new TaxonPlacement( self, TaxonPlacement.Source.OWN_ANNOTATION, null, null );
         }
-        // (2) resolve the own taxon's lineage (cache-only): try the NCBI tax-id AND the own name -- either may be the
-        // key the cache was primed under (the colorize fetch flow primes by NAME via unresolvedTipTaxa/tipQueryName,
-        // while a Fetch-tool run primes by tax-id), so an id-only lookup would miss a name-primed cache
         if ( ( service != null ) && node.getNodeData().isHasTaxonomy() ) {
-            final Taxonomy tax = node.getNodeData().getTaxonomy();
-            return resolveRankViaService( service, rank, ncbiId( tax ), ownTaxonName( tax ) );
+            return viaOwnTaxonomy( node.getNodeData().getTaxonomy(), rank, service );
+        }
+        return null;
+    }
+
+    /** A TIP's placement; see {@link #placeNodes} for the order of the sources. {@code service} is null under the
+     *  {@link TaxonSource#TREE} source. */
+    private static TaxonPlacement placeTip( final PhylogenyNode tip, final String rank,
+                                            final TaxonomicLineageService service, final TaxonSource source ) {
+        final RankTaxon self = selfRankTaxonRT( tip, rank );
+        if ( self != null ) {
+            return new TaxonPlacement( self, TaxonPlacement.Source.OWN_ANNOTATION, null, null );
+        }
+        final String field = metadataRankField( tip, rank );
+        if ( field != null ) {
+            return new TaxonPlacement( metadataRankTaxon( tip, rank ), TaxonPlacement.Source.OWN_METADATA,
+                                       "field " + field, null );
+        }
+        final PhylogenyNode anc_node = annotatedAncestor( tip, rank );
+        final RankTaxon ancestor = ( anc_node == null ) ? null : selfRankTaxonRT( anc_node, rank );
+        final String anc_detail = ( ancestor == null ) ? null : ( "from the ancestor annotated \"" + ancestor.getName() + "\"" );
+        if ( source == TaxonSource.TREE ) {
+            return ( ancestor != null ) ? new TaxonPlacement( ancestor, TaxonPlacement.Source.ANCESTOR_ANNOTATION, anc_detail, null )
+                                        : TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_NO_ANNOTATION, null );
+        }
+        if ( ( source == TaxonSource.TREE_THEN_DATABASE ) && ( ancestor != null ) ) {
+            return new TaxonPlacement( ancestor, TaxonPlacement.Source.ANCESTOR_ANNOTATION, anc_detail, null );
+        }
+        // the databases (cache-only here): the own taxonomy by id, then by name; else the label. NOT gated on
+        // isHasTaxonomy for the label: a tip carrying an effectively nameless taxonomy (rank-only / a non-NCBI id)
+        // is still resolved by its node name.
+        TaxonPlacement db = tip.getNodeData().isHasTaxonomy()
+                ? viaOwnTaxonomy( tip.getNodeData().getTaxonomy(), rank, service ) : null;
+        final String q = tipQueryName( tip );
+        if ( ( db == null ) && !ForesterUtil.isEmpty( q ) ) {
+            final RankTaxon by_label = resolveRankViaService( service, rank, null, q );
+            if ( by_label != null ) {
+                db = new TaxonPlacement( by_label, TaxonPlacement.Source.DATABASE_BY_LABEL, "looked up \"" + q + "\"", null );
+            }
+        }
+        if ( db != null ) {
+            if ( ( ancestor != null ) && !ancestor.sameTaxon( db.getTaxon() ) ) {
+                return new TaxonPlacement( db.getTaxon(), db.getSource(), db.getDetail(), ancestor ); // a conflict
+            }
+            return db;
+        }
+        if ( ancestor != null ) {
+            return new TaxonPlacement( ancestor, TaxonPlacement.Source.ANCESTOR_ANNOTATION, anc_detail, null ); // fills the gap
+        }
+        // unplaced: say why
+        final String key = lookupKey( tip );
+        if ( ForesterUtil.isEmpty( key ) ) {
+            return TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_NO_ANNOTATION, null );
+        }
+        final TaxonLineage cached = ( service == null ) ? null : service.lineageOf( key );
+        final String quoted = "\"" + key + "\"";
+        if ( cached == null ) {
+            return TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_NOT_LOOKED_UP, quoted );
+        }
+        final List<TaxonLineage> candidates = service.ambiguousCandidates( key );
+        if ( !candidates.isEmpty() ) {
+            return TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_AMBIGUOUS, quoted + " names " + candidates.size()
+                    + " taxa: " + candidateSummary( candidates ) );
+        }
+        if ( cached.isEmpty() ) {
+            return TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_UNKNOWN, quoted );
+        }
+        return TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_NO_SUCH_RANK, quoted
+                + ( ForesterUtil.isEmpty( cached.getScientificName() ) ? "" : ( " is " + cached.getScientificName() ) ) );
+    }
+
+    /** "Bacillus [55087, in Arthropoda]; Bacillus [1386, in Bacillota]" -- each candidate with its id and the
+     *  broadest ranked group that tells the homonyms apart. */
+    static String candidateSummary( final List<TaxonLineage> candidates ) {
+        final StringBuilder sb = new StringBuilder();
+        for( final TaxonLineage c : candidates ) {
+            sb.append( ( sb.length() == 0 ) ? "" : "; " ).append( c.getScientificName() ).append( " [" )
+                    .append( ( c.getTaxId() == null ) ? "no id" : c.getTaxId() );
+            for( final String rank : new String[] { "phylum", "kingdom", "domain" } ) {
+                final String group = c.at( rank );
+                if ( ( group != null ) && !group.equalsIgnoreCase( c.getScientificName() ) ) {
+                    sb.append( ", in " ).append( group );
+                    break;
+                }
+            }
+            sb.append( ']' );
+        }
+        return sb.toString();
+    }
+
+    /** The node's own taxonomy resolved through the cache: by its NCBI id, else by its name (scientific, code,
+     *  common) -- either may be the key the cache was primed under. Null when neither is cached or the lineage
+     *  has no taxon at {@code rank}. */
+    private static TaxonPlacement viaOwnTaxonomy( final Taxonomy tax, final String rank,
+                                                  final TaxonomicLineageService service ) {
+        if ( service == null ) {
+            return null;
+        }
+        final String id = ncbiId( tax );
+        final RankTaxon by_id = resolveRankViaService( service, rank, id, null );
+        if ( by_id != null ) {
+            return new TaxonPlacement( by_id, TaxonPlacement.Source.DATABASE_BY_ID, "looked up NCBI id " + id, null );
+        }
+        final String name = ownTaxonName( tax );
+        final RankTaxon by_name = resolveRankViaService( service, rank, null, name );
+        if ( by_name != null ) {
+            return new TaxonPlacement( by_name, TaxonPlacement.Source.DATABASE_BY_NAME, "looked up \"" + name + "\"", null );
         }
         return null;
     }
@@ -1444,24 +1640,140 @@ public class TreePanelUtil {
         return null;
     }
 
-    /** A TIP's taxon at {@code rank}: {@link #ownRankTaxon}, else (2b) resolve by the tip's node NAME (a bare-named
-     *  tip with no {@code <taxonomy>}; {@link #tipQueryName} also walks to an ancestor scientific name -- the
-     *  long-standing tip behavior), else (3) the nearest PROPER-ancestor annotation at {@code rank}. */
-    private final static RankTaxon tipRankTaxon( final PhylogenyNode tip, final String rank,
-                                                 final TaxonomicLineageService service ) {
-        final RankTaxon own = ownRankTaxon( tip, rank, service );
-        if ( own != null ) {
-            return own;
+    /** The nearest PROPER ancestor of {@code tip} whose own {@code <taxonomy>} is annotated at exactly {@code rank},
+     *  or null. */
+    private static PhylogenyNode annotatedAncestor( final PhylogenyNode tip, final String rank ) {
+        for( PhylogenyNode n = tip.getParent(); n != null; n = n.getParent() ) {
+            if ( selfRankTaxonRT( n, rank ) != null ) {
+                return n;
+            }
         }
-        // (2b) resolve by the tip's query name -- its own name, else the NODE name, else an ancestor scientific name
-        // (tipQueryName): the long-standing tip fallback. NOT gated on isHasTaxonomy, so a tip carrying an effectively
-        // nameless taxonomy (rank-only / a non-NCBI id) is still resolved by its node name, as before Spine B.
-        final RankTaxon by_name = resolveRankViaService( service, rank, null, tipQueryName( tip ) );
-        if ( by_name != null ) {
-            return by_name;
+        return null;
+    }
+
+    /** The namespace of the per-rank lineage fields the online sources write: {@code ncbi:family} = "Felidae". The
+     *  GTDB import writes the same shape under {@code gtdb:} ({@link GtdbTaxonomy#REF_PREFIX}). */
+    static final String NCBI_REF_PREFIX = "ncbi:";
+
+    /**
+     * The per-rank metadata field that names {@code node}'s taxon at {@code rank} -- {@code ncbi:<rank>} first (what
+     * this program writes), else {@code gtdb:<rank>} (what the GTDB import writes) -- or null when neither is set.
+     * A tip's own lineage field is its OWN identity: it counts like an annotation at the rank, so a tree that
+     * carries them is annotated offline and needs no lookup.
+     */
+    static String metadataRankField( final PhylogenyNode node, final String rank ) {
+        if ( ForesterUtil.isEmpty( rank ) || ( node.getNodeData().getProperties() == null ) ) {
+            return null;
         }
-        // (3) nearest ancestor annotation at rank
-        return ancestorRankTaxonRT( tip, rank );
+        for( final String prefix : new String[] { NCBI_REF_PREFIX, GtdbTaxonomy.REF_PREFIX } ) {
+            final String ref = prefix + rank.toLowerCase( Locale.ROOT );
+            for( final Property p : node.getNodeData().getProperties().getProperties() ) {
+                if ( ref.equalsIgnoreCase( p.getRef() ) && !ForesterUtil.isEmpty( p.getValue() )
+                        && !ForesterUtil.isEmpty( p.getValue().trim() ) ) {
+                    return ref;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The taxon the field {@link #metadataRankField} names (no id: the field holds the name), or null. */
+    static RankTaxon metadataRankTaxon( final PhylogenyNode node, final String rank ) {
+        final String ref = metadataRankField( node, rank );
+        if ( ref == null ) {
+            return null;
+        }
+        for( final Property p : node.getNodeData().getProperties().getProperties() ) {
+            if ( ref.equalsIgnoreCase( p.getRef() ) ) {
+                return new RankTaxon( null, p.getValue().trim() );
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The lineage the cache holds for {@code tip}, under whichever key it was primed: its NCBI id, else its query
+     * name ({@link #tipQueryName}: its own taxonomy name, else its label). Null when none is cached or the cached
+     * entry is EMPTY.
+     */
+    static TaxonLineage cachedLineageOf( final PhylogenyNode tip, final TaxonomicLineageService service ) {
+        if ( service == null ) {
+            return null;
+        }
+        final List<String> keys = new ArrayList<String>();
+        if ( tip.getNodeData().isHasTaxonomy() ) {
+            keys.add( ncbiId( tip.getNodeData().getTaxonomy() ) );
+        }
+        keys.add( tipQueryName( tip ) );
+        for( final String key : keys ) {
+            if ( !ForesterUtil.isEmpty( key ) ) {
+                final TaxonLineage tl = service.lineageOf( key );
+                if ( ( tl != null ) && !tl.isEmpty() ) {
+                    return tl;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * WRITES every tip's cached (looked-up) lineage into the tree as per-rank metadata fields -- {@code ncbi:phylum}
+     * ... {@code ncbi:species}, one {@code xsd:string} node property per Linnaean rank of the lineage -- so the next
+     * rank annotation, colorization, "Color by", search or table works OFFLINE from the tree itself, and the lineage
+     * survives a save (phyloXML has no place for it inside {@code <taxonomy>}). The persistent counterpart of a
+     * lookup, following the GTDB import's {@code gtdb:<rank>} fields. A tip's existing {@code ncbi:*} fields are
+     * replaced as a whole (no stale deeper rank from an earlier, longer lineage); a tip with nothing cached is left
+     * untouched. Returns the number of tips written. Pure on the service (cache-only); the caller checkpoints undo
+     * and appends {@link #lineageMetadataProvenance}.
+     */
+    final static int writeLineageMetadata( final Phylogeny tree, final TaxonomicLineageService service ) {
+        if ( ( tree == null ) || tree.isEmpty() || ( service == null ) ) {
+            return 0;
+        }
+        int written = 0;
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode tip = it.next();
+            final TaxonLineage tl = cachedLineageOf( tip, service );
+            if ( ( tl == null ) || tl.namesByRank().isEmpty() ) {
+                continue;
+            }
+            PropertiesList props = tip.getNodeData().getProperties();
+            if ( props == null ) {
+                props = new PropertiesList();
+                tip.getNodeData().setProperties( props );
+            }
+            props.getProperties().removeIf( p -> ( p.getRef() != null )
+                    && p.getRef().toLowerCase( Locale.ROOT ).startsWith( NCBI_REF_PREFIX ) );
+            for( final Entry<String, String> e : tl.namesByRank().entrySet() ) {
+                props.addProperty( new Property( NCBI_REF_PREFIX + e.getKey(), e.getValue(), "", "xsd:string",
+                                                 Property.AppliesTo.NODE ) );
+            }
+            written++;
+        }
+        return written;
+    }
+
+    /** The provenance sentence for {@link #writeLineageMetadata} (pure/testable; the caller appends it). */
+    final static String lineageMetadataProvenance( final Phylogeny phy, final int count ) {
+        final String name = ForesterUtil.isEmpty( phy.getName() ) ? "" : phy.getName();
+        return "Used NCBI Taxonomy to write the looked-up lineage of " + count + ( count == 1 ? " tip" : " tips" )
+                + " as metadata fields (ncbi:domain ... ncbi:species) in tree named \"" + name + "\" with "
+                + phy.getNumberOfExternalNodes() + " tips.";
+    }
+
+    /**
+     * What the database is asked for a tip: its own NCBI tax-id when its taxonomy carries one (an exact lookup,
+     * immune to name ambiguity), else its {@link #tipQueryName query name}. The key {@link #unresolvedTipTaxa}
+     * hands the fetcher and {@link #placeNodes} checks the cache under.
+     */
+    final static String lookupKey( final PhylogenyNode tip ) {
+        if ( tip.getNodeData().isHasTaxonomy() ) {
+            final String id = ncbiId( tip.getNodeData().getTaxonomy() );
+            if ( !ForesterUtil.isEmpty( id ) ) {
+                return id;
+            }
+        }
+        return tipQueryName( tip );
     }
 
     /** The queryable NAME of a taxon's OWN identity (scientific &rarr; code &rarr; common), matching
@@ -1570,36 +1882,62 @@ public class TreePanelUtil {
     }
 
     /**
-     * The distinct taxon query-names of tips that cannot resolve their OWN identity at {@code rank} yet -- i.e.
-     * exactly the names a caller must {@link TaxonomicLineageService#fetch} (off the EDT) to place more tips.
-     * A tip is excluded only when it self-resolves (its own taxonomy is annotated at {@code rank}) or its
-     * query-name is already in the cache; an ANCESTOR annotation does NOT suppress the fetch, because under
-     * "tip identity wins" the tip's own DB resolution must be available to override a wrong/partial ancestor.
-     * Cache hits are excluded even when the cache lacks {@code rank} (refetching would not help), so a second
-     * call after a fetch pass returns an empty set (no repeated prompts).
+     * The distinct lookup keys ({@link #lookupKey}: an NCBI id, else a query name) of the tips the
+     * {@link TaxonSource#DATABASE} source would still look up at {@code rank} -- exactly what a caller must
+     * {@link TaxonomicLineageService#fetch} (off the EDT) to place more tips. See the {@code source} overload.
      */
     final static SortedSet<String> unresolvedTipTaxa( final Phylogeny tree,
                                                       final String rank,
                                                       final TaxonomicLineageService service ) {
-        final SortedSet<String> names = new TreeSet<String>();
-        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
-            return names;
+        return unresolvedTipTaxa( tree, rank, service, TaxonSource.DATABASE );
+    }
+
+    /**
+     * The distinct lookup keys of the tips {@code source} would still look up at {@code rank}: none under
+     * {@link TaxonSource#TREE}; under {@link TaxonSource#DATABASE} every tip that does not resolve its OWN identity
+     * in-tree (an ANCESTOR annotation does not count, because "tip identity wins" needs the tip's own lookup to be
+     * able to override a wrong or partial ancestor); under {@link TaxonSource#TREE_THEN_DATABASE} only the tips
+     * neither their own nor an ancestor's annotation places. A key already in the cache is excluded even when the
+     * cached lineage lacks {@code rank} (refetching would not help), so a second call after a fetch pass returns an
+     * empty set (no repeated prompts).
+     */
+    final static SortedSet<String> unresolvedTipTaxa( final Phylogeny tree,
+                                                      final String rank,
+                                                      final TaxonomicLineageService service,
+                                                      final TaxonSource source ) {
+        final SortedSet<String> keys = new TreeSet<String>();
+        if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) || ( source == TaxonSource.TREE ) ) {
+            return keys;
         }
         for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode tip = it.next();
-            if ( selfRankTaxon( tip, rank ) != null ) {
-                continue; // the tip resolves its OWN identity in-tree; an ancestor annotation does NOT count here
+            if ( ( selfRankTaxon( tip, rank ) != null ) || ( metadataRankField( tip, rank ) != null ) ) {
+                continue; // the tip resolves its OWN identity in-tree (its annotation or a per-rank metadata field)
             }
-            final String q = tipQueryName( tip );
-            if ( ForesterUtil.isEmpty( q ) ) {
+            if ( ( source == TaxonSource.TREE_THEN_DATABASE ) && ( annotatedAncestor( tip, rank ) != null ) ) {
+                continue; // the tree places it; this source asks the database only for the gaps
+            }
+            final String key = lookupKey( tip );
+            if ( ForesterUtil.isEmpty( key ) ) {
                 continue;
             }
-            if ( ( service != null ) && ( service.lineageOf( q ) != null ) ) {
+            if ( ( service != null ) && ( service.lineageOf( key ) != null ) ) {
                 continue; // already attempted/cached -- refetching would not help
             }
-            names.add( q );
+            keys.add( key );
         }
-        return names;
+        return keys;
+    }
+
+    /** How many TIPS of {@code placements} are placed. */
+    final static int placedTipCount( final Map<PhylogenyNode, TaxonPlacement> placements ) {
+        int n = 0;
+        for( final Entry<PhylogenyNode, TaxonPlacement> e : placements.entrySet() ) {
+            if ( e.getKey().isExternal() && e.getValue().isPlaced() ) {
+                n++;
+            }
+        }
+        return n;
     }
 
     /**

@@ -111,6 +111,12 @@ public final class DemoTreesTest {
         // own identity wins over the wrong internal annotation)
         ok &= hasRank( "colorize-by-rank.xml", "order" );
         ok &= colorizesOfflineInto( "colorize-by-rank.xml", "order", 3 );
+        ok &= reportsIgnoredAnnotation( "colorize-by-rank.xml", "order", "Rodentia" );
+        // lineage as metadata fields: no internal taxonomy, yet the tree's own annotations place every tip offline
+        // through its ncbi:<rank> fields -- 4 clades at family, 3 at order -- and nothing is ever looked up
+        ok &= hasCategoricalRef( "ncbi-lineage-metadata.xml", "ncbi:family" );
+        ok &= placesFromFields( "ncbi-lineage-metadata.xml", "family", 4 );
+        ok &= placesFromFields( "ncbi-lineage-metadata.xml", "order", 3 );
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
         // break long branches: a phylogram with branch lengths AND a genuine outlier branch (> the auto cap), so the
@@ -2712,6 +2718,63 @@ public final class DemoTreesTest {
             final PhylogenyNode n = it.next();
             if ( !n.isExternal() && n.getNodeData().isHasTaxonomy() ) {
                 return note( file_name + " internal nodes must carry NO taxonomy (ready for ancestral inference)" );
+            }
+        }
+        return true;
+    }
+
+    /** The lineage-fields demo: no node carries a taxonomy at {@code rank}, every tip is placed by its own
+     *  {@code ncbi:<rank>} field from the tree source alone, the clades number {@code groups}, and not even an online
+     *  source would look anything up. */
+    private static boolean placesFromFields( final String file_name, final String rank, final int groups ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        for( final Iterator<PhylogenyNode> it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy() && rank.equals( n.getNodeData().getTaxonomy().getRank() ) ) {
+                return note( file_name + ": no node may carry a taxonomy at '" + rank + "' (the fields must do the placing)" );
+            }
+        }
+        final java.util.Map<PhylogenyNode, TaxonPlacement> p = TreePanelUtil.placeNodes( phy, rank, null, TaxonSource.TREE );
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            if ( ( p.get( tip ) == null ) || ( p.get( tip ).getSource() != TaxonPlacement.Source.OWN_METADATA ) ) {
+                return note( file_name + ": every tip must be placed by its own field at '" + rank + "'; " + tip.getName()
+                        + " got " + p.get( tip ) );
+            }
+        }
+        final int bands = TreePanelUtil.cladeBands( phy, rank, null, null, null, TaxonSource.TREE ).size();
+        if ( bands != groups ) {
+            return note( file_name + ": expected " + groups + " clades at '" + rank + "', got " + bands );
+        }
+        if ( !TreePanelUtil.unresolvedTipTaxa( phy, rank, null, TaxonSource.DATABASE ).isEmpty() ) {
+            return note( file_name + ": a tip placed by its field must never be looked up" );
+        }
+        return true;
+    }
+
+    /** The demo's deliberately WRONG internal annotation ({@code taxon} over a clade whose tips carry another
+     *  order) is what the per-tip report exists to show: from the tree's own annotations, at {@code rank}, every tip
+     *  is placed, nothing is looked up, and exactly that annotation is reported as ignored -- the count the demo
+     *  catalogue quotes. */
+    private static boolean reportsIgnoredAnnotation( final String file_name, final String rank, final String taxon ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final CladeAnnotationReport r = CladeAnnotationReport.of( phy, java.util.Collections.singletonList( rank ), null,
+                                                                  TaxonSource.TREE );
+        if ( ( r.getUnplacedCount() != 0 ) || ( r.getConflictCount() != 0 ) ) {
+            return note( file_name + ": from the tree every tip must be placed at '" + rank + "' and nothing conflicts; got "
+                    + r.getSummary() );
+        }
+        if ( r.getIgnoredInternalCount() != 1 ) {
+            return note( file_name + ": exactly ONE internal annotation must be reported as ignored; got " + r.getSummary() );
+        }
+        for( final CladeAnnotationReport.Row row : r.getRows() ) {
+            if ( row.isInternal() && !taxon.equals( row.getTaxon() ) ) {
+                return note( file_name + ": the ignored annotation must be " + taxon + ", got " + row.getTaxon() );
             }
         }
         return true;

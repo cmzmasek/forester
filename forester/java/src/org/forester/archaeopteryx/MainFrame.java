@@ -405,7 +405,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Options _options;
     private Phylogeny _species_tree;
     /** The "no extra level" entry in the optional level-2 / level-3 rank choosers. */
-    static final String CLADE_LEVEL_NONE = "(none)";
+    static final String CLADE_LEVEL_NONE = RankSourcePanel.NONE;
     /** The level-1 rank chooser's "turn it off" entry. Levels 2 and 3 have always had a "(none)", but level 1 did
      *  not, so once clades were annotated there was no way to remove them: {@link TreePanel#clearCladeBands()}
      *  existed with no caller outside the tests. Offered ONLY when there are bands to remove, so the entry never
@@ -416,8 +416,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      *  internal-node taxonomies that "Also write the clade taxa into the tree" may have written (those are tree
      *  data, with their own provenance sentence, and are undone with Undo). */
     static final String CLADE_LEVEL_CLEAR = "(none) — stop drawing the clade marks";
-    // the rank last chosen in "Annotate Clades by Rank", pre-selected next time (per session); null = first use
+    // the rank last chosen in "Annotate Clades by Rank" / "Colorize Subtrees via Taxonomic Rank", pre-selected next
+    // time (per session); null = first use
     private String _last_clade_rank;
+    // the taxon source last chosen there (per session); null = first use -> TaxonSource.defaultFor
+    private TaxonSource _last_taxon_source;
     final ProcessPool _process_pool;
 
     MainFrame() {
@@ -1412,61 +1415,106 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
             return;
         }
-        final Map<String, Integer> present_ranks = AptxUtil.getRankCounts(phy);
-        final Map<String, Integer> coverage_counts = AptxUtil.getRankCoverageCounts(phy);
-        final String[] ranks = AptxUtil.getRankChoices(present_ranks, coverage_counts, phy.getNumberOfExternalNodes());
-        String rank = (String) JOptionPane.showInputDialog(this,
-                "What rank should the colorization be based on?",
-                "Rank Selection",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                ranks,
-                ranks[0]);
-        if (ForesterUtil.isEmpty(rank)) {
+        final TaxonomicLineageService svc = TreePanelUtil.getDefaultLineageService();
+        final RankSourcePanel chooser = new RankSourcePanel(phy, svc, initialTaxonSource(phy), null, 0);
+        if (_last_clade_rank != null) {
+            chooser.selectRank(_last_clade_rank);
+        }
+        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
+        panel.add(new JLabel("Colorize subtrees by rank:"));
+        panel.add(chooser.rankBox());
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Taxa from:"));
+        panel.add(chooser.sourcePanel());
+        panel.add(new JLabel(" "));
+        panel.add(chooser.writeLineagesBox());
+        if (JOptionPane.showConfirmDialog(this, panel, "Colorize Subtrees via Taxonomic Rank",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
-        if (rank.indexOf('(') > 0) {
-            rank = rank.substring(0, rank.indexOf('(')).trim();
+        final String r = chooser.selectedRank();
+        if (ForesterUtil.isEmpty(r)) {
+            return;
         }
-        // Decide whether the DB is needed BEFORE colorizing (cache-only, never blocks the EDT), so we
-        // colorize the tree exactly once -- either here, or (on the online path) in the resolver after
-        // the fetch -- rather than colorizing now and again, which flashed a partial result.
-        final String r = rank;
-        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r,
-                TreePanelUtil.getDefaultLineageService());
-        if (!unresolved.isEmpty()) {
-            final int choice = JOptionPane.showConfirmDialog(this,
-                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon lacks" : "taxa lack")
-                            + " a \"" + r + "\"-rank identity in the tree itself.\n"
-                            + "Resolve online via the NCBI and UniProt databases so each tip's own identity sets its color"
-                            + " (overriding any internal-node annotation)?\n"
-                            + "Decline to colorize from the tree's existing annotations. (Requires an internet connection.)",
-                    "Resolve Taxa Online?",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE);
-            if (choice == JOptionPane.YES_OPTION) {
-                new Thread(new OnlineTaxonResolver(this, "rank colorization (" + r + ")", unresolved, err -> {
-                    tp.pushUndoCheckpoint("Colorize by Rank"); // checkpoint at the actual (deferred) colorization
-                    final int colorized = tp.colorByRank(r);
-                    if (err != null) {
-                        // colorByRank mutated branch colors but does not set the edited flag; on the error
-                        // path we skip reportRankColorization, so mark the tree edited here.
-                        if (colorized > 0) {
-                            tp.setEdited(true);
-                        }
-                        JOptionPane.showMessageDialog(this,
-                                "Colorized " + colorized + " clade(s), but some taxa could not be resolved:\n" + err,
-                                "Taxonomy Rank-Colorization (" + r + ")", JOptionPane.WARNING_MESSAGE);
-                    } else {
-                        tp.reportRankColorization(r, colorized);
-                    }
-                })).start();
-                return; // the background resolver colorizes and reports when done
-            }
+        final TaxonSource source = chooser.selectedSource();
+        final boolean write_lineages = chooser.isWriteLineages();
+        _last_clade_rank = r;
+        _last_taxon_source = source;
+        // The chosen source decides whether anything is looked up: an online source fetches what its cache lacks
+        // (off the EDT), the tree source never does. Either way the tree is colorized exactly once, afterwards.
+        final SortedSet<String> unresolved = TreePanelUtil.unresolvedTipTaxa(phy, r, svc, source);
+        if (source.isOnline() && !unresolved.isEmpty()) {
+            new Thread(new OnlineTaxonResolver(this, "rank colorization (" + r + ")", unresolved, err -> {
+                tp.pushUndoCheckpoint("Colorize by Rank"); // checkpoint at the actual (deferred) colorization
+                final int kept = write_lineages ? tp.writeLineageMetadata() : 0;
+                reportRankColorization(tp, r, source, tp.colorByRank(r, source), kept, err);
+            })).start();
+            return; // the background resolver colorizes and reports when done
         }
-        // no online resolution -- colorize once from what the tree (and cache) already know
         tp.pushUndoCheckpoint("Colorize by Rank");
-        tp.reportRankColorization(r, tp.colorByRank(r));
+        final int kept = write_lineages ? tp.writeLineageMetadata() : 0;
+        reportRankColorization(tp, r, source, tp.colorByRank(r, source), kept, null);
+    }
+
+    /** The source a rank dialog opens on: the one last chosen this session, else the tree's own annotations when the
+     *  tree carries any rank, else the databases. */
+    private TaxonSource initialTaxonSource(final Phylogeny phy) {
+        return (_last_taxon_source != null) ? _last_taxon_source
+                : TaxonSource.defaultFor(!AptxUtil.getRankCounts(phy).isEmpty());
+    }
+
+    /** The colorization's result dialog, with a "Show Report…" option that opens the per-tip audit. */
+    private void reportRankColorization(final TreePanel tp, final String rank, final TaxonSource source,
+                                        final int colorizations, final int lineages_kept, final String error) {
+        if (colorizations > 0) {
+            tp.setEdited(true);
+        }
+        final String title = "Taxonomy Rank-Colorization (" + rank + ")";
+        final java.util.List<String> ranks = java.util.Collections.singletonList(rank);
+        final String kept = lineagesKeptLine(lineages_kept);
+        if (error != null) {
+            resultDialog(title, "Colorized " + colorizations + " clade(s), but some taxa could not be resolved:\n"
+                    + error + "\nTaxa from: " + source.getLabel() + "." + kept, JOptionPane.WARNING_MESSAGE, tp, ranks, source);
+        } else if (colorizations > 0) {
+            resultDialog(title, "Taxonomy colorization via " + rank + " completed:\n"
+                    + ((colorizations > 1) ? ("colorized " + colorizations + " clades") : "colorized one clade")
+                    + "\nTaxa from: " + source.getLabel() + "." + kept, JOptionPane.INFORMATION_MESSAGE, tp, ranks, source);
+        } else {
+            resultDialog(title, "Could not place any tip at rank \"" + rank + "\" from: " + source.getLabel() + ".\n"
+                    + "The report lists every tip and why it stayed unplaced; try another rank or source." + kept,
+                    JOptionPane.WARNING_MESSAGE, tp, ranks, source);
+        }
+    }
+
+    /** The result-dialog line for the lineages written into the tree, or "" when none were. */
+    static String lineagesKeptLine(final int tips) {
+        return (tips > 0) ? ("\nWrote the looked-up lineage of " + tips + (tips == 1 ? " tip" : " tips")
+                + " into the tree as metadata fields (ncbi:phylum \u2026 ncbi:species; undoable).") : "";
+    }
+
+    /**
+     * A result dialog with the buttons "OK" and "Show Report…"; the latter opens the per-tip
+     * {@link CladeAnnotationReport} for {@code ranks} from {@code source} (cache-only, nothing is changed).
+     */
+    private void resultDialog(final String title, final String message, final int type, final TreePanel tp,
+                              final java.util.List<String> ranks, final TaxonSource source) {
+        final String[] options = { "OK", "Show Report…" };
+        final int choice = JOptionPane.showOptionDialog(this, message, title, JOptionPane.DEFAULT_OPTION, type, null,
+                options, options[0]);
+        if (choice == 1) {
+            showCladeReport(tp, ranks, source, title + ": report");
+        }
+    }
+
+    /** Opens the modeless per-tip report window for {@code ranks} from {@code source}. */
+    void showCladeReport(final TreePanel tp, final java.util.List<String> ranks, final TaxonSource source,
+                         final String title) {
+        final CladeAnnotationReport report = CladeAnnotationReport.of(tp.getPhylogeny(), ranks,
+                TreePanelUtil.getDefaultLineageService(), source);
+        final CladeAnnotationReportWindow w = new CladeAnnotationReportWindow(this, title, report,
+                getCurrentDir(DirectoryPreferences.Category.EXPORT),
+                dir -> setCurrentDir(DirectoryPreferences.Category.EXPORT, dir));
+        w.setVisible(true);
     }
 
     /**
@@ -1890,23 +1938,22 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
             return;
         }
-        final String[] ranks = AptxUtil.getRankChoices(AptxUtil.getRankCounts(phy),
-                AptxUtil.getRankCoverageCounts(phy), phy.getNumberOfExternalNodes());
-        final String[] choices = cladeRankChoices(ranks, tp.hasCladeBands());
-        final JComboBox<String> rank_box = new JComboBox<>(choices);
+        final TaxonomicLineageService svc = TreePanelUtil.getDefaultLineageService();
+        // The rank chooser's entries state what the CHOSEN source places; changing the source rebuilds them, so
+        // the number read in the chooser is the number the annotation will deliver -- no second prompt.
+        final RankSourcePanel chooser = new RankSourcePanel(phy, svc, initialTaxonSource(phy),
+                tp.hasCladeBands() ? CLADE_LEVEL_CLEAR : null, 2);
+        final JComboBox<String> rank_box = chooser.rankBox();
         // Preselect against the model actually shown -- the "remove" entry shifts every rank's index by one --
         // and fall back to the rank currently DRAWN (finest first) when this session has no remembered rank.
-        final List<String> drawn = tp.cladeLevelRanks();
-        rank_box.setSelectedIndex(cladeRankPreselectIndex(choices, _last_clade_rank,
+        final java.util.List<String> drawn = tp.cladeLevelRanks();
+        rank_box.setSelectedIndex(cladeRankPreselectIndex(itemsOf(rank_box), _last_clade_rank,
                                                           drawn.isEmpty() ? null : drawn.get(0)));
         // Levels 2 and 3: optional extra ranks, drawn as nested bar/bracket columns outside the first. Each entry
         // has its own label angle -- an outer rank has few, long names worth reading straight, inner ones must stay
         // narrow. Which rank ends up where is NOT taken from this order: CladeLevel.order sorts them finest-first.
-        final String[] optional = new String[ranks.length + 1];
-        optional[0] = CLADE_LEVEL_NONE;
-        System.arraycopy(ranks, 0, optional, 1, ranks.length);
-        final JComboBox<String> rank_box_2 = new JComboBox<>(optional);
-        final JComboBox<String> rank_box_3 = new JComboBox<>(optional);
+        final JComboBox<String> rank_box_2 = chooser.extraRankBoxes().get(0);
+        final JComboBox<String> rank_box_3 = chooser.extraRankBoxes().get(1);
         final JRadioButton boxes_rb = new JRadioButton("Shaded boxes (behind the clades)", true);
         final JRadioButton bars_rb = new JRadioButton("Bars + labels (at the right edge)");
         final JRadioButton brackets_rb = new JRadioButton("Brackets ] + labels (black & white, no legend)");
@@ -1954,12 +2001,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JCheckBox write_cb = new JCheckBox("Also write the clade taxa into the tree (rank + NCBI id; undoable)",
                 false);
         final JCheckBox overwrite_cb = new JCheckBox("    ...overwriting existing internal-node taxonomies", false);
-        // "stop drawing" has no rank to write, so the write options are meaningless with it selected -- grey them
-        // out rather than accept the contradiction and drop it silently
+        final JCheckBox report_only_cb = new JCheckBox(
+                "Report only: list every tip's taxon and its source, draw and write nothing", false);
+        report_only_cb.setToolTipText("Opens the per-tip report (the taxon, where it came from, conflicts with the"
+                + " tree, why a tip stayed unplaced) without changing the drawing or the tree.");
+        // "stop drawing" has no rank to write or report, so those options are meaningless with it selected -- grey
+        // them out rather than accept the contradiction and drop it silently
         final java.awt.event.ActionListener syncWrite = e -> {
             final boolean removing = CLADE_LEVEL_CLEAR.equals(rank_box.getSelectedItem());
             write_cb.setEnabled(!removing);
             overwrite_cb.setEnabled(!removing);
+            report_only_cb.setEnabled(!removing);
         };
         rank_box.addActionListener(syncWrite);
         syncWrite.actionPerformed(null);
@@ -1967,6 +2019,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         panel.add(new JLabel("Annotate clades by rank:"));
         panel.add(rank_box);
         panel.add(angle_box);
+        panel.add(new JLabel(" "));
+        panel.add(new JLabel("Taxa from:"));
+        panel.add(chooser.sourcePanel());
         panel.add(new JLabel(" "));
         panel.add(new JLabel("Show as:"));
         panel.add(boxes_rb);
@@ -1982,11 +2037,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         panel.add(new JLabel(" "));
         panel.add(write_cb);
         panel.add(overwrite_cb);
+        panel.add(chooser.writeLineagesBox());
+        panel.add(report_only_cb);
         if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
         }
-        if (CLADE_LEVEL_CLEAR.equals(rank_box.getSelectedItem())) {
+        if (chooser.isFirstEntrySelected()) {
             // "remove" wins over every other control in the dialog -- there is no rank to draw or report. The write
             // checkboxes are disabled while this entry is selected, so nothing is silently dropped here.
             final TreePanel.CLADE_VIS was = tp.getCladeBandsMode();
@@ -2009,46 +2066,46 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final boolean write = write_cb.isSelected();
         final boolean overwrite = write && overwrite_cb.isSelected();
         final boolean skip_singletons = skip_singletons_cb.isSelected();
-        final String r = bareRank((String) rank_box.getSelectedItem());
+        final boolean report_only = report_only_cb.isSelected();
+        final String r = chooser.selectedRank();
         if (ForesterUtil.isEmpty(r)) {
             return;
         }
+        final TaxonSource source = chooser.selectedSource();
+        final boolean write_lineages = chooser.isWriteLineages() && !report_only;
         _last_clade_rank = r; // remember for the next invocation's pre-selection
+        _last_taxon_source = source;
         final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS
                 : brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BOXES;
         final List<CladeLevel.Spec> specs = new ArrayList<>();
         specs.add(new CladeLevel.Spec(r, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
         if (mode != TreePanel.CLADE_VIS.BOXES) { // boxes are single-level by design
-            addCladeLevelSpec(specs, rank_box_2, angle_box_2);
-            addCladeLevelSpec(specs, rank_box_3, angle_box_3);
+            addCladeLevelSpec(specs, chooser.selectedExtraRank(0), angle_box_2);
+            addCladeLevelSpec(specs, chooser.selectedExtraRank(1), angle_box_3);
         }
-        // Every annotated rank has to be checked, not just the primary one. A tree carrying in-tree clade
-        // annotations at (say) family only resolves 'family' offline, so a prompt gated on the primary rank alone
-        // never appears -- and the extra levels then silently draw nothing, because nothing put their lineages in
-        // the cache. Union the unresolved tips over all the ranks that were asked for.
+        // An online source looks up what its cache lacks, over EVERY rank asked for (a tree annotated at family only
+        // resolves family offline; the extra levels would otherwise silently draw nothing). The tree source never
+        // looks anything up.
         final SortedSet<String> unresolved = new java.util.TreeSet<>();
         for (final CladeLevel.Spec spec : specs) {
-            unresolved.addAll(TreePanelUtil.unresolvedTipTaxa(phy, spec.getRank(),
-                    TreePanelUtil.getDefaultLineageService()));
+            unresolved.addAll(TreePanelUtil.unresolvedTipTaxa(phy, spec.getRank(), svc, source));
         }
-        if (!unresolved.isEmpty()) {
-            final int choice = JOptionPane.showConfirmDialog(this,
-                    unresolved.size() + " tip " + ((unresolved.size() == 1) ? "taxon lacks" : "taxa lack")
-                            + " an identity at " + ((specs.size() == 1) ? ("the \"" + r + "\" rank")
-                                    : ("one or more of the ranks " + ranksOf(specs)))
-                            + " in the tree itself.\n"
-                            + "Resolve online via the NCBI and UniProt databases so each tip's own identity marks its clade"
-                            + " (overriding any internal-node annotation)?\n"
-                            + "Decline to annotate from the tree's existing annotations. (Requires an internet connection.)",
-                    "Resolve Taxa Online?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (choice == JOptionPane.YES_OPTION) {
-                new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
-                        err -> reportCladeBands(tp, r, specs, mode, write, overwrite, skip_singletons, err)))
-                                .start();
-                return;
-            }
+        if (source.isOnline() && !unresolved.isEmpty()) {
+            new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
+                    err -> reportCladeBands(tp, r, specs, mode, write, overwrite, write_lineages, skip_singletons,
+                                            source, report_only, err))).start();
+            return;
         }
-        reportCladeBands(tp, r, specs, mode, write, overwrite, skip_singletons, null);
+        reportCladeBands(tp, r, specs, mode, write, overwrite, write_lineages, skip_singletons, source, report_only,
+                         null);
+    }
+
+    private static String[] itemsOf(final JComboBox<String> box) {
+        final String[] out = new String[box.getItemCount()];
+        for (int i = 0; i < out.length; ++i) {
+            out[i] = box.getItemAt(i);
+        }
+        return out;
     }
 
     /** The chosen ranks, quoted, for a message: {@code "order", "class", "phylum"}. */
@@ -2060,34 +2117,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return sb.toString();
     }
 
-    /**
-     * The level-1 rank chooser's entries: the tree's ranks, preceded by {@link #CLADE_LEVEL_CLEAR} when there is
-     * something to remove. Returns {@code ranks} itself when there is not, so a first invocation shows only ranks.
-     */
-    static String[] cladeRankChoices(final String[] ranks, final boolean has_clade_bands) {
-        if (!has_clade_bands || (ranks == null)) {
-            return ranks;
-        }
-        final String[] out = new String[ranks.length + 1];
-        out[0] = CLADE_LEVEL_CLEAR;
-        System.arraycopy(ranks, 0, out, 1, ranks.length);
-        return out;
-    }
-
-    /** The bare rank from a chooser entry, which may carry a "(count) (coverage)" suffix. */
-    private static String bareRank(final String choice) {
-        if (ForesterUtil.isEmpty(choice) || CLADE_LEVEL_NONE.equals(choice)
-                || CLADE_LEVEL_CLEAR.equals(choice)) {
-            return null; // neither "none" entry is a rank (the caller handles CLEAR before it gets here)
-        }
-        final int paren = choice.indexOf('(');
-        return (paren > 0) ? choice.substring(0, paren).trim() : choice.trim();
-    }
-
     /** Appends one optional nested level, if its rank chooser is set to something other than "(none)". */
-    private static void addCladeLevelSpec(final List<CladeLevel.Spec> specs, final JComboBox<String> rank_box,
+    private static void addCladeLevelSpec(final List<CladeLevel.Spec> specs, final String rank,
                                           final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box) {
-        final String rank = bareRank((String) rank_box.getSelectedItem());
         if (!ForesterUtil.isEmpty(rank)) {
             specs.add(new CladeLevel.Spec(rank, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
         }
@@ -2142,18 +2174,38 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * @param rank the PRIMARY rank -- the one the "write into the tree" option and the dialog titles use; the
-     *            nested extra levels in {@code specs} are display-only
+     * @param rank        the PRIMARY rank -- the one the "write into the tree" option and the dialog titles use; the
+     *                    nested extra levels in {@code specs} are display-only
+     * @param write_lineages write every tip's looked-up lineage into the tree as {@code ncbi:<rank>} fields
+     * @param source      where each tip's taxon is taken from
+     * @param report_only open the per-tip report and change nothing (no drawing, no write)
      */
     private void reportCladeBands(final TreePanel tp, final String rank, final List<CladeLevel.Spec> specs,
                                   final TreePanel.CLADE_VIS mode, final boolean write, final boolean overwrite,
-                                  final boolean skip_singletons, final String error) {
-        int wrote = 0;
-        if (write) {
-            tp.pushUndoCheckpoint("Annotate Clade Taxa"); // a tree-data mutation -> checkpoint before writing
-            wrote = tp.writeCladeTaxonomiesByRank(rank, overwrite);
+                                  final boolean write_lineages, final boolean skip_singletons,
+                                  final TaxonSource source, final boolean report_only, final String error) {
+        final java.util.List<String> asked = new ArrayList<>();
+        for (final CladeLevel.Spec spec : specs) {
+            asked.add(spec.getRank());
         }
-        final int n = tp.setCladeLevels(specs, mode, skip_singletons);
+        final String title = "Annotate Clades by Rank (" + rank + ")";
+        if (report_only) {
+            if (error != null) {
+                JOptionPane.showMessageDialog(this, "Some taxa could not be resolved:\n" + error, title,
+                        JOptionPane.WARNING_MESSAGE);
+            }
+            showCladeReport(tp, asked, source, title + ": report");
+            return;
+        }
+        int wrote = 0;
+        int kept = 0;
+        if (write || write_lineages) {
+            tp.pushUndoCheckpoint("Annotate Clade Taxa"); // a tree-data mutation -> ONE checkpoint before writing
+            // the lineages first: a tip's new ncbi: fields are its own identity, which the clade-taxon writer reads
+            kept = write_lineages ? tp.writeLineageMetadata() : 0;
+            wrote = write ? tp.writeCladeTaxonomiesByRank(rank, overwrite, source) : 0;
+        }
+        final int n = tp.setCladeLevels(specs, mode, skip_singletons, source);
         if (n > 0) {
             tp.setEdited(true);
             // bars/brackets extend to the right of the labels; fit the width so they are immediately
@@ -2172,6 +2224,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (drawn_ranks.size() > 1) {
             msg.append("\nThe finest rank is drawn nearest the tips, the broadest outermost.");
         }
+        msg.append("\nTaxa from: ").append(source.getLabel()).append('.');
         // a rank that placed nothing is not drawn and not counted above -- say so rather than let the user wonder
         // why they asked for three columns and got two
         if (drawn_ranks.size() < specs.size()) {
@@ -2189,28 +2242,26 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             msg.append("\nWrote a taxonomy onto ").append(wrote).append(" internal clade node")
                     .append(wrote == 1 ? "" : "s").append(" (rank + NCBI id; saved with the tree).");
         }
+        msg.append(lineagesKeptLine(kept));
         if (error != null) {
             msg.append("\nSome taxa could not be resolved:\n").append(error);
-            JOptionPane.showMessageDialog(this, msg.toString(), "Annotate Clades by Rank (" + rank + ")",
-                    JOptionPane.WARNING_MESSAGE);
-        } else if ((n > 0) || (wrote > 0)) {
-            JOptionPane.showMessageDialog(this, msg.toString(), "Annotate Clades by Rank (" + rank + ")",
-                    JOptionPane.INFORMATION_MESSAGE);
+            resultDialog(title, msg.toString(), JOptionPane.WARNING_MESSAGE, tp, asked, source);
+        } else if ((n > 0) || (wrote > 0) || (kept > 0)) {
+            resultDialog(title, msg.toString(), JOptionPane.INFORMATION_MESSAGE, tp, asked, source);
         } else if (tp.cladeBandCount() > 0) {
             // every placed clade at this rank is a single-member clade and "Skip single-member clades" hid them all
             // -- distinct from "no tip could be placed" (0 bands): here the tips WERE placed, the legend was built.
             final int total = tp.cladeBandCount();
-            JOptionPane.showMessageDialog(this,
-                    "Placed " + total + (total == 1 ? " clade" : " clades") + " at rank \"" + rank + "\", but "
+            resultDialog(title, "Placed " + total + (total == 1 ? " clade" : " clades") + " at rank \"" + rank + "\", but "
                             + (total == 1 ? "it is a single-member clade" : "they are all single-member clades")
                             + " and \"Skip single-member clades\" hid " + (total == 1 ? "it" : "them") + ".\n"
                             + "Turn that option off (or use Boxes) to show " + (total == 1 ? "it" : "them")
                             + " -- or pick a coarser rank with multi-tip clades.",
-                    "Annotate Clades by Rank (" + rank + ")", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.INFORMATION_MESSAGE, tp, asked, source);
         } else {
-            JOptionPane.showMessageDialog(this, "Could not place any tip at rank \"" + rank + "\".\n"
-                    + "Try a different rank, or check that the tips carry resolvable taxonomic names.",
-                    "Annotate Clades by Rank (" + rank + ")", JOptionPane.WARNING_MESSAGE);
+            resultDialog(title, "Could not place any tip at rank \"" + rank + "\" from: " + source.getLabel() + ".\n"
+                    + "The report lists every tip and why it stayed unplaced; try another rank or source.",
+                    JOptionPane.WARNING_MESSAGE, tp, asked, source);
         }
     }
 

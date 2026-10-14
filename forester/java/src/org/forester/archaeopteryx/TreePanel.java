@@ -8508,6 +8508,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private java.util.List<CladeLevel>      _clade_levels = null;
     private CLADE_VIS                 _clade_bands_mode = CLADE_VIS.BOXES;
     private boolean                   _clade_bands_skip_singletons = true; // BARS/BRACKETS: skip a single-tip clade
+    // Where the clade bands take each tip's taxon from (the user's choice in the dialog); a rebuild after an edit,
+    // an undo or a navigation uses the same source, so the figure never changes under the user.
+    private TaxonSource               _clade_taxon_source = TaxonSource.DATABASE;
+    // The same for the branch colorization, so a legend recolour re-applies with the source the user chose.
+    private TaxonSource               _branch_rank_colorize_source = TaxonSource.DATABASE;
 
     /** On-screen angle of a clade bar/bracket taxon label in the root-left layout (root-top/bottom labels are always
      *  upright, circular labels ride the spoke). VERTICAL (90deg, reads up -- the compact default) can overlap when
@@ -10659,9 +10664,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * (sorted by taxon name). UI-free; returns the number of colorized subtrees.
      */
     final int colorByRank(final String rank) {
+        return colorByRank(rank, TaxonSource.DATABASE);
+    }
+
+    /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}); remembered for legend recolours. */
+    final int colorByRank(final String rank, final TaxonSource source) {
         if ((_phylogeny == null) || (_phylogeny.getNumberOfExternalNodes() < 2)) {
             return 0;
         }
+        _branch_rank_colorize_source = (source == null) ? TaxonSource.DATABASE : source;
         setWaitCursor();
         // a rank colorization takes over branch coloring, so turn off any active color-by-property
         // (otherwise its legend would be drawn over the rank-colored branches) and sync the dropdown
@@ -10700,7 +10711,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final Map<String, Color> legend = new HashMap<>();
         final Map<String, Integer> counts = new HashMap<>();
         final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks(_phylogeny, rank,
-                TreePanelUtil.getDefaultLineageService(), legend, rankOverridesFor(rank), counts);
+                TreePanelUtil.getDefaultLineageService(), legend, rankOverridesFor(rank), counts,
+                _branch_rank_colorize_source);
         if (!legend.isEmpty()) {
             _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
             _rank_legend_counts = counts;
@@ -10763,12 +10775,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      */
     final int setCladeLevels(final java.util.List<CladeLevel.Spec> specs, final CLADE_VIS mode,
                              final boolean skip_singletons) {
+        return setCladeLevels(specs, mode, skip_singletons, TaxonSource.DATABASE);
+    }
+
+    /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}); kept for every later rebuild. */
+    final int setCladeLevels(final java.util.List<CladeLevel.Spec> specs, final CLADE_VIS mode,
+                             final boolean skip_singletons, final TaxonSource source) {
         _clade_level_specs = CladeLevel.order(specs);
         _clade_bands_mode = mode;
         _clade_bands_skip_singletons = skip_singletons;
+        _clade_taxon_source = (source == null) ? TaxonSource.DATABASE : source;
         rebuildCladeBands();
         repaint();
         return drawnCladeBandCount();
+    }
+
+    /** The source the clade bands take their taxa from (the dialog's choice; {@link TaxonSource#DATABASE} for a
+     *  caller that never chose). */
+    final TaxonSource getCladeTaxonSource() {
+        return _clade_taxon_source;
+    }
+
+    /** The source the branch colorization took its taxa from. */
+    final TaxonSource getBranchRankColorizeSource() {
+        return _branch_rank_colorize_source;
     }
 
     /** The levels currently drawn, finest rank first (nearest the tips); never null. */
@@ -10862,8 +10892,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * {@link #pushUndoCheckpoint} first (mirrors {@link #colorByRank}). Returns the number of nodes written.
      */
     final int writeCladeTaxonomiesByRank(final String rank, final boolean overwrite) {
+        return writeCladeTaxonomiesByRank(rank, overwrite, TaxonSource.DATABASE);
+    }
+
+    /**
+     * Writes every tip's looked-up lineage into the tree as {@code ncbi:<rank>} metadata fields (see
+     * {@link TreePanelUtil#writeLineageMetadata}), appends a provenance sentence, surfaces the new fields in the
+     * control panel and marks the tree edited when anything was written. A tree-data MUTATION: the caller must
+     * {@link #pushUndoCheckpoint} first. Returns the number of tips written.
+     */
+    final int writeLineageMetadata() {
+        final int n = TreePanelUtil.writeLineageMetadata(_phylogeny, TreePanelUtil.getDefaultLineageService());
+        if (n > 0) {
+            appendProvenance(TreePanelUtil.lineageMetadataProvenance(_phylogeny, n));
+            setEdited(true);
+            if (_control_panel != null) {
+                _control_panel.populateColorByPropertyBox(); // the new fields are categorical: "Color by" them
+                _control_panel.rebuildSearchFields(true); // and search them (forced: same tree, new data)
+            }
+        }
+        return n;
+    }
+
+    /** {@code source}: where each tip's taxon is taken from ({@link TaxonSource}). */
+    final int writeCladeTaxonomiesByRank(final String rank, final boolean overwrite, final TaxonSource source) {
         final int n = TreePanelUtil.writeCladeTaxonomies(_phylogeny, rank, TreePanelUtil.getDefaultLineageService(),
-                overwrite);
+                overwrite, source);
         if (n > 0) {
             appendProvenance(TreePanelUtil.cladeTaxonomyProvenance(_phylogeny, rank, n, overwrite));
             setEdited(true);
@@ -10965,7 +11019,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // the taxonomy actually says, not something imposed -- a clade whose broader rank is unresolved simply
             // has no mark outside it, which is honest about the gap rather than inventing a parent
             per_level.add(TreePanelUtil.cladeBands(_phylogeny, spec.getRank(),
-                    TreePanelUtil.getDefaultLineageService(), rankOverridesFor(spec.getRank()), level_counts));
+                    TreePanelUtil.getDefaultLineageService(), rankOverridesFor(spec.getRank()), level_counts,
+                    _clade_taxon_source));
             for (final Map.Entry<String, Integer> e : level_counts.entrySet()) {
                 counts.putIfAbsent(e.getKey(), e.getValue()); // finest level first -> the finer count wins
             }

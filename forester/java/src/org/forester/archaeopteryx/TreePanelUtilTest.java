@@ -77,7 +77,348 @@ public final class TreePanelUtilTest {
                 && testTruncateToPixelWidth() && testAncestralPieData() && testBeastStateSetsFromNewick()
                 && testLadderizeProvenance()
                 && testRootingProvenance() && testSubTreeKeepsRerootable() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy()
-                && testNodeIdentityInGrouping() && testAmbiguityReport();
+                && testNodeIdentityInGrouping() && testAmbiguityReport() && testPlacementSources()
+                && testUnresolvedBySource() && testMetadataPlacement() && testWriteLineageMetadata();
+    }
+
+    /** A tip's per-rank metadata field (ncbi:<rank>, else gtdb:<rank>) is its OWN identity at that rank: it places
+     *  the tip under every source, beats an ancestor's annotation and the database, is never looked up, and is
+     *  absent when blank or at another rank. */
+    private static boolean testMetadataPlacement() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "Felis catus", lineage( "order", "Carnivora", "family", "Felidae" ) );
+        try {
+            svc.fetch( "Felis catus" );
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        final PhylogenyNode rodents = internalTax( "order", "Rodentia" );
+        final PhylogenyNode ncbi = bareLeaf( "Felis catus" ); // the database says Carnivora, the field says Felidae-order? no: a field at ORDER
+        property( ncbi, "ncbi:order", "Fieldia" );
+        final PhylogenyNode gtdb = bareLeaf( "g" );
+        property( gtdb, "gtdb:order", "Gtdbia" );
+        final PhylogenyNode both = bareLeaf( "b" );
+        property( both, "gtdb:order", "Gtdbia" );
+        property( both, "ncbi:order", "Fieldia" ); // ncbi: wins over gtdb:
+        final PhylogenyNode blank = bareLeaf( "blank" );
+        property( blank, "ncbi:order", "  " ); // a blank field is no field
+        final PhylogenyNode other_rank = bareLeaf( "o" );
+        property( other_rank, "ncbi:family", "Felidae" ); // a field at another rank says nothing about the order
+        for( final PhylogenyNode n : new PhylogenyNode[] { ncbi, gtdb, both, blank, other_rank } ) {
+            rodents.addAsChild( n );
+        }
+        final Phylogeny tree = phylogeny( node( rodents, orderLeaf( "dog", "Carnivora", null ) ) );
+        for( final TaxonSource source : TaxonSource.values() ) {
+            final Map<PhylogenyNode, TaxonPlacement> p = TreePanelUtil.placeNodes( tree, "order", svc, source );
+            for( final String err : new String[] {
+                    placementIs( p, ncbi, TaxonPlacement.Source.OWN_METADATA, "Fieldia" ),
+                    placementIs( p, gtdb, TaxonPlacement.Source.OWN_METADATA, "Gtdbia" ),
+                    placementIs( p, both, TaxonPlacement.Source.OWN_METADATA, "Fieldia" ),
+                    placementIs( p, blank, TaxonPlacement.Source.ANCESTOR_ANNOTATION, "Rodentia" ),
+                    placementIs( p, other_rank, TaxonPlacement.Source.ANCESTOR_ANNOTATION, "Rodentia" ) } ) {
+                if ( err != null ) {
+                    return fail( source + ": " + err );
+                }
+            }
+            if ( !"field ncbi:order".equals( p.get( ncbi ).getDetail() ) || !"field gtdb:order".equals( p.get( gtdb ).getDetail() ) ) {
+                return fail( "the detail names the field; got " + p.get( ncbi ).getDetail() + " / " + p.get( gtdb ).getDetail() );
+            }
+            if ( p.get( ncbi ).isConflict() ) {
+                return fail( "a tip's own field is its identity, not a database override of the tree" );
+            }
+            final SortedSet<String> keys = TreePanelUtil.unresolvedTipTaxa( tree, "order", svc, source );
+            if ( keys.contains( "Felis catus" ) || keys.contains( "g" ) || keys.contains( "b" ) ) {
+                return fail( source + ": a tip placed by its own field is never looked up; got " + keys );
+            }
+        }
+        if ( !"ncbi:order".equals( TreePanelUtil.metadataRankField( ncbi, "ORDER" ) )
+                || ( TreePanelUtil.metadataRankField( ncbi, "family" ) != null )
+                || ( TreePanelUtil.metadataRankField( bareLeaf( "none" ), "order" ) != null )
+                || ( TreePanelUtil.metadataRankField( ncbi, "" ) != null ) ) {
+            return fail( "metadataRankField: case-insensitive rank, null for another rank, no properties or a blank rank" );
+        }
+        // the clade grouping reads the fields too: Fieldia x2 (ncbi, both) + Gtdbia (g) split the Rodentia clade
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> roots = TreePanelUtil.maximalMonochromaticRoots( tree,
+                TreePanelUtil.assignNodesToRankTaxon( tree, "order", null, TaxonSource.TREE ) );
+        if ( ( roots.get( ncbi ) == null ) || ( roots.get( gtdb ) == null ) || ( roots.get( rodents ) != null ) ) {
+            return fail( "the grouping must see the field-placed tips; got " + roots );
+        }
+        return true;
+    }
+
+    /** The lineage writer: one ncbi:<rank> field per Linnaean rank of each tip's cached lineage, found under the
+     *  id, the name or the label; a tip's earlier ncbi: fields replaced as a whole; untouched tips untouched. */
+    private static boolean testWriteLineageMetadata() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.know( "9685", lineage( "class", "Mammalia", "order", "Carnivora", "family", "Felidae" ) );
+        svc.know( "Canis lupus", lineage( "order", "Carnivora", "family", "Canidae" ) );
+        svc.know( "P12345", lineage( "order", "Primates" ) );
+        try {
+            for( final String q : new String[] { "9685", "Canis lupus", "P12345", "Unknownus" } ) {
+                svc.fetch( q );
+            }
+        }
+        catch ( final Exception e ) {
+            return fail( "fake fetch must not throw: " + e );
+        }
+        final PhylogenyNode cat = rankLeaf( "cat", "Felis catus", "species", "9685" ); // found by its id
+        property( cat, "ncbi:order", "Stale" ); // an earlier, wrong field
+        property( cat, "ncbi:subspecies", "StaleDeeper" ); // a deeper rank the new lineage lacks: must go
+        property( cat, "data:host", "keep" ); // not ours: stays
+        final PhylogenyNode dog = namedLeaf( "dog", "Canis lupus" ); // found by its taxonomy name
+        final PhylogenyNode acc = bareLeaf( "P12345" ); // found by its label
+        final PhylogenyNode unknown = bareLeaf( "Unknownus" ); // cached as not found: untouched
+        final PhylogenyNode fresh = bareLeaf( "never" ); // never looked up: untouched
+        final Phylogeny tree = phylogeny( node( node( cat, dog ), node( acc, unknown, fresh ) ) );
+        tree.setName( "lineages" );
+        final int n = TreePanelUtil.writeLineageMetadata( tree, svc );
+        if ( n != 3 ) {
+            return fail( "three tips have a cached lineage; wrote " + n );
+        }
+        if ( !"Carnivora".equals( field( cat, "ncbi:order" ) ) || !"Felidae".equals( field( cat, "ncbi:family" ) )
+                || !"Mammalia".equals( field( cat, "ncbi:class" ) ) ) {
+            return fail( "the cat's lineage must be written rank by rank; got " + cat.getNodeData().getProperties() );
+        }
+        if ( ( field( cat, "ncbi:subspecies" ) != null ) || !"keep".equals( field( cat, "data:host" ) )
+                || ( count( cat, "ncbi:order" ) != 1 ) ) {
+            return fail( "earlier ncbi: fields are replaced as a whole, other fields kept; got " + cat.getNodeData().getProperties() );
+        }
+        if ( !"Canidae".equals( field( dog, "ncbi:family" ) ) || !"Primates".equals( field( acc, "ncbi:order" ) ) ) {
+            return fail( "lineages are found under the taxonomy name and under the label too" );
+        }
+        if ( ( unknown.getNodeData().getProperties() != null ) || ( fresh.getNodeData().getProperties() != null ) ) {
+            return fail( "a tip without a cached lineage is left untouched" );
+        }
+        // the fields now place the tips offline, and the writer is idempotent
+        if ( TreePanelUtil.placeNodes( tree, "family", null, TaxonSource.TREE ).get( cat ).getSource() != TaxonPlacement.Source.OWN_METADATA ) {
+            return fail( "the written fields are the tips' own identity from then on" );
+        }
+        if ( ( TreePanelUtil.writeLineageMetadata( tree, svc ) != 3 ) || ( count( cat, "ncbi:order" ) != 1 ) ) {
+            return fail( "writing again replaces, never duplicates" );
+        }
+        if ( ( TreePanelUtil.writeLineageMetadata( tree, null ) != 0 ) || ( TreePanelUtil.writeLineageMetadata( null, svc ) != 0 ) ) {
+            return fail( "no service or no tree: nothing written" );
+        }
+        final String prov = TreePanelUtil.lineageMetadataProvenance( tree, 3 );
+        if ( !prov.equals( "Used NCBI Taxonomy to write the looked-up lineage of 3 tips as metadata fields (ncbi:domain ... ncbi:species) in tree named \"lineages\" with 5 tips." ) ) {
+            return fail( "provenance: " + prov );
+        }
+        return true;
+    }
+
+    private static void property( final PhylogenyNode n, final String ref, final String value ) {
+        org.forester.phylogeny.data.PropertiesList pl = n.getNodeData().getProperties();
+        if ( pl == null ) {
+            pl = new org.forester.phylogeny.data.PropertiesList();
+            n.getNodeData().setProperties( pl );
+        }
+        pl.addProperty( new org.forester.phylogeny.data.Property( ref, value, "", "xsd:string",
+                org.forester.phylogeny.data.Property.AppliesTo.NODE ) );
+    }
+
+    private static String field( final PhylogenyNode n, final String ref ) {
+        if ( n.getNodeData().getProperties() == null ) {
+            return null;
+        }
+        for( final org.forester.phylogeny.data.Property p : n.getNodeData().getProperties().getProperties() ) {
+            if ( ref.equals( p.getRef() ) ) {
+                return p.getValue();
+            }
+        }
+        return null;
+    }
+
+    private static int count( final PhylogenyNode n, final String ref ) {
+        int c = 0;
+        for( final org.forester.phylogeny.data.Property p : n.getNodeData().getProperties().getProperties() ) {
+            if ( ref.equals( p.getRef() ) ) {
+                c++;
+            }
+        }
+        return c;
+    }
+
+    /** The fixture of {@link #testPlacementSources} / {@link #testUnresolvedBySource}: a WRONG "order Rodentia"
+     *  annotation over a cat (id 9685, Carnivora in the cache) and a bare tip "u"; a plain node over tips that are
+     *  cached without an order, ambiguous, unknown, not looked up, placeable by label, by name, or id-bearing but
+     *  not looked up; and a dog annotated at order itself. */
+    private static Phylogeny placementTree( final FakeLineageService svc ) {
+        svc.know( "Felis catus", lineage( "order", "Carnivora", "genus", "Felis" ) );
+        svc.know( "9685", lineage( "order", "Carnivora", "genus", "Felis" ) );
+        svc.know( "Homo sapiens", lineage( "class", "Mammalia" ) ); // cached, but no order in its lineage
+        svc.know( "Felis", lineage( "order", "Carnivora", "genus", "Felis" ) ); // a GENUS-annotated internal node's name
+        svc.ambiguous( "Bacillus", new TaxonLineage( "55087", "genus", "Bacillus", null, null ),
+                       new TaxonLineage( "1386", "genus", "Bacillus", null, null ) );
+        try {
+            for( final String q : new String[] { "Felis catus", "9685", "Homo sapiens", "Unknownus", "Felis" } ) {
+                svc.fetch( q ); // "Unknownus" caches a negative
+            }
+        }
+        catch ( final Exception e ) {
+            throw new RuntimeException( e );
+        }
+        final PhylogenyNode rodents = internalTax( "order", "Rodentia" );
+        rodents.addAsChild( rankLeaf( "cat", "Felis catus", "species", "9685" ) );
+        rodents.addAsChild( bareLeaf( "u" ) );
+        rodents.addAsChild( node( bareLeaf( "r1" ), bareLeaf( "r2" ) ) ); // a plain internal node UNDER the annotated one
+        final PhylogenyNode felis_clade = genusInternal( "Felis" ); // annotated BELOW the asked rank; its name is cached
+        felis_clade.addAsChild( bareLeaf( "kitten" ) );
+        felis_clade.addAsChild( bareLeaf( "kitten2" ) );
+        final PhylogenyNode plain = node( bareLeaf( "Homo sapiens" ), bareLeaf( "Bacillus" ), bareLeaf( "Unknownus" ),
+                                          bareLeaf( "notyet" ), bareLeaf( "Felis catus" ), namedLeaf( "byname", "Felis catus" ),
+                                          rankLeaf( "mouse", "Mus musculus", "species", "10090" ) );
+        return phylogeny( node( rodents, plain, felis_clade, orderLeaf( "dog", "Carnivora", null ) ) );
+    }
+
+    /** Null when {@code node}'s placement has the expected source and taxon, else what is wrong. */
+    private static String placementIs( final Map<PhylogenyNode, TaxonPlacement> placements, final PhylogenyNode node,
+                                       final TaxonPlacement.Source source, final String taxon ) {
+        final TaxonPlacement p = placements.get( node );
+        if ( p == null ) {
+            return node.getName() + ": no placement at all";
+        }
+        if ( p.getSource() != source ) {
+            return node.getName() + ": expected " + source + ", got " + p;
+        }
+        if ( ( taxon == null ) != ( p.getTaxon() == null ) || ( ( taxon != null ) && !taxon.equals( p.getTaxon().getName() ) ) ) {
+            return node.getName() + ": expected taxon " + taxon + ", got " + p;
+        }
+        return null;
+    }
+
+    /**
+     * Every placement source is reached, and the three {@link TaxonSource}s order them as documented: TREE never
+     * consults the service; DATABASE lets a tip's own lookup override the ancestor's annotation and records the
+     * conflict; TREE_THEN_DATABASE asks the database only where the tree is silent. An unplaced tip says WHY.
+     */
+    private static boolean testPlacementSources() {
+        final FakeLineageService svc = new FakeLineageService();
+        final Phylogeny tree = placementTree( svc );
+        final PhylogenyNode cat = findLeaf( tree, "cat" );
+        final PhylogenyNode rodents = cat.getParent();
+        final PhylogenyNode plain = findLeaf( tree, "notyet" ).getParent();
+        // --- TREE
+        final int lookups = svc.lookups();
+        final Map<PhylogenyNode, TaxonPlacement> t = TreePanelUtil.placeNodes( tree, "order", svc, TaxonSource.TREE );
+        if ( svc.lookups() != lookups ) {
+            return fail( "the TREE source must never consult the service" );
+        }
+        for( final String err : new String[] {
+                placementIs( t, cat, TaxonPlacement.Source.ANCESTOR_ANNOTATION, "Rodentia" ),
+                placementIs( t, findLeaf( tree, "u" ), TaxonPlacement.Source.ANCESTOR_ANNOTATION, "Rodentia" ),
+                placementIs( t, findLeaf( tree, "dog" ), TaxonPlacement.Source.OWN_ANNOTATION, "Carnivora" ),
+                placementIs( t, findLeaf( tree, "Homo sapiens" ), TaxonPlacement.Source.UNPLACED_NO_ANNOTATION, null ),
+                placementIs( t, findLeaf( tree, "notyet" ), TaxonPlacement.Source.UNPLACED_NO_ANNOTATION, null ),
+                placementIs( t, rodents, TaxonPlacement.Source.OWN_ANNOTATION, "Rodentia" ) } ) {
+            if ( err != null ) {
+                return fail( "TREE: " + err );
+            }
+        }
+        if ( !t.get( cat ).getDetail().contains( "Rodentia" ) || t.get( cat ).isConflict() ) {
+            return fail( "an ancestor placement names the ancestor and is no conflict; got " + t.get( cat ) );
+        }
+        final PhylogenyNode sub = findLeaf( tree, "r1" ).getParent();
+        final PhylogenyNode felis_clade = findLeaf( tree, "kitten" ).getParent();
+        if ( t.containsKey( plain ) || t.containsKey( sub ) ) {
+            return fail( "an internal node with no identity of its own has no placement -- never an ancestor's" );
+        }
+        if ( t.containsKey( felis_clade ) ) {
+            return fail( "under TREE an internal node annotated below the rank has no placement (its cached lineage is not consulted)" );
+        }
+        // --- DATABASE
+        final Map<PhylogenyNode, TaxonPlacement> d = TreePanelUtil.placeNodes( tree, "order", svc, TaxonSource.DATABASE );
+        for( final String err : new String[] {
+                placementIs( d, cat, TaxonPlacement.Source.DATABASE_BY_ID, "Carnivora" ),
+                placementIs( d, findLeaf( tree, "u" ), TaxonPlacement.Source.ANCESTOR_ANNOTATION, "Rodentia" ),
+                placementIs( d, findLeaf( tree, "dog" ), TaxonPlacement.Source.OWN_ANNOTATION, "Carnivora" ),
+                placementIs( d, findLeaf( tree, "Homo sapiens" ), TaxonPlacement.Source.UNPLACED_NO_SUCH_RANK, null ),
+                placementIs( d, findLeaf( tree, "Bacillus" ), TaxonPlacement.Source.UNPLACED_AMBIGUOUS, null ),
+                placementIs( d, findLeaf( tree, "Unknownus" ), TaxonPlacement.Source.UNPLACED_UNKNOWN, null ),
+                placementIs( d, findLeaf( tree, "notyet" ), TaxonPlacement.Source.UNPLACED_NOT_LOOKED_UP, null ),
+                placementIs( d, findLeaf( tree, "Felis catus" ), TaxonPlacement.Source.DATABASE_BY_LABEL, "Carnivora" ),
+                placementIs( d, findLeaf( tree, "byname" ), TaxonPlacement.Source.DATABASE_BY_NAME, "Carnivora" ),
+                placementIs( d, findLeaf( tree, "mouse" ), TaxonPlacement.Source.UNPLACED_NOT_LOOKED_UP, null ) } ) {
+            if ( err != null ) {
+                return fail( "DATABASE: " + err );
+            }
+        }
+        if ( !d.get( cat ).isConflict() || !"Rodentia".equals( d.get( cat ).getTreeSays().getName() )
+                || !d.get( cat ).getDetail().contains( "9685" ) ) {
+            return fail( "the database overriding the tree must be on record, with the id it looked up; got " + d.get( cat ) );
+        }
+        if ( d.get( findLeaf( tree, "u" ) ).isConflict() ) {
+            return fail( "an ancestor filling a gap is not a conflict" );
+        }
+        if ( d.containsKey( sub ) || ( d.get( felis_clade ) == null )
+                || ( d.get( felis_clade ).getSource() != TaxonPlacement.Source.DATABASE_BY_NAME )
+                || !"Carnivora".equals( d.get( felis_clade ).getTaxon().getName() ) ) {
+            return fail( "under DATABASE an internal node contributes its own cached identity, never an ancestor's; got "
+                    + d.get( sub ) + " / " + d.get( felis_clade ) );
+        }
+        if ( !d.get( findLeaf( tree, "Bacillus" ) ).getDetail().contains( "2 taxa" )
+                || !d.get( findLeaf( tree, "Homo sapiens" ) ).getDetail().contains( "Homo sapiens" )
+                || !d.get( findLeaf( tree, "mouse" ) ).getDetail().contains( "10090" ) ) {
+            return fail( "an unplaced tip must say what was (or would be) looked up" );
+        }
+        // a conflict is by TAXON, not by key: an id-less ancestor annotation naming the database's (id-bearing) taxon
+        // agrees -- the grouping key would call them different
+        svc.knowLineage( "9686", new TaxonLineage( "9686", "species", "Felis catus", null, java.util.Collections
+                .singletonList( new TaxonLineage.Ancestor( "Carnivora", "order", "33554" ) ) ) );
+        final PhylogenyNode carnivores = internalTax( "order", "Carnivora" );
+        final PhylogenyNode cat2 = rankLeaf( "cat2", "Felis catus", "species", "9686" );
+        carnivores.addAsChild( cat2 );
+        carnivores.addAsChild( bareLeaf( "u2" ) );
+        final Phylogeny agree = phylogeny( node( carnivores, orderLeaf( "rat", "Rodentia", null ) ) );
+        final TaxonPlacement agreed = TreePanelUtil.placeNodes( agree, "order", svc, TaxonSource.DATABASE ).get( cat2 );
+        if ( ( agreed.getSource() != TaxonPlacement.Source.DATABASE_BY_ID ) || agreed.isConflict()
+                || !"33554".equals( agreed.getTaxon().getId() ) ) {
+            return fail( "an ancestor naming the same taxon (without an id) is no conflict; got " + agreed );
+        }
+        // --- TREE_THEN_DATABASE
+        final Map<PhylogenyNode, TaxonPlacement> m = TreePanelUtil.placeNodes( tree, "order", svc,
+                                                                               TaxonSource.TREE_THEN_DATABASE );
+        for( final String err : new String[] {
+                placementIs( m, cat, TaxonPlacement.Source.ANCESTOR_ANNOTATION, "Rodentia" ),
+                placementIs( m, findLeaf( tree, "Felis catus" ), TaxonPlacement.Source.DATABASE_BY_LABEL, "Carnivora" ),
+                placementIs( m, findLeaf( tree, "notyet" ), TaxonPlacement.Source.UNPLACED_NOT_LOOKED_UP, null ) } ) {
+            if ( err != null ) {
+                return fail( "TREE_THEN_DATABASE: " + err );
+            }
+        }
+        if ( m.get( cat ).isConflict() ) {
+            return fail( "with the tree first there is nothing to override" );
+        }
+        // the plain assignment is the placed projection, canonicalized
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> a = TreePanelUtil.assignNodesToRankTaxon( tree, "order", svc,
+                                                                                                     TaxonSource.TREE );
+        if ( a.containsKey( findLeaf( tree, "notyet" ) ) || !"Rodentia".equals( a.get( cat ).getName() ) ) {
+            return fail( "assignNodesToRankTaxon(source) must project the placed nodes of that source" );
+        }
+        return true;
+    }
+
+    /** What each source would still look up: nothing for TREE; DATABASE every tip whose OWN identity is not in the
+     *  tree or the cache (an ancestor does not count, and an id-bearing tip is looked up BY ID); TREE_THEN_DATABASE
+     *  only the tips the tree leaves unplaced. */
+    private static boolean testUnresolvedBySource() {
+        final FakeLineageService svc = new FakeLineageService();
+        final Phylogeny tree = placementTree( svc );
+        if ( !TreePanelUtil.unresolvedTipTaxa( tree, "order", svc, TaxonSource.TREE ).isEmpty() ) {
+            return fail( "the TREE source looks nothing up" );
+        }
+        final SortedSet<String> db = TreePanelUtil.unresolvedTipTaxa( tree, "order", svc, TaxonSource.DATABASE );
+        if ( !db.equals( new java.util.TreeSet<String>( Arrays.asList( "u", "r1", "r2", "kitten", "kitten2", "notyet", "10090" ) ) ) ) {
+            return fail( "DATABASE must look up the not-yet-cached tips, by id where the tip carries one; got " + db );
+        }
+        if ( !db.equals( TreePanelUtil.unresolvedTipTaxa( tree, "order", svc ) ) ) {
+            return fail( "the three-argument form is the DATABASE source" );
+        }
+        final SortedSet<String> gaps = TreePanelUtil.unresolvedTipTaxa( tree, "order", svc, TaxonSource.TREE_THEN_DATABASE );
+        if ( !gaps.equals( new java.util.TreeSet<String>( Arrays.asList( "kitten", "kitten2", "notyet", "10090" ) ) ) ) {
+            return fail( "TREE_THEN_DATABASE must skip the tips an ancestor places; got " + gaps );
+        }
+        return true;
     }
 
     /**
@@ -2244,6 +2585,11 @@ public final class TreePanelUtilTest {
             _cache.put( name.toLowerCase( Locale.ROOT ), TaxonLineage.EMPTY );
         }
 
+        /** Puts a ready-made lineage (with ids) straight into the cache under {@code key}. */
+        void knowLineage( final String key, final TaxonLineage lineage ) {
+            _cache.put( key.toLowerCase( Locale.ROOT ), lineage );
+        }
+
         @Override
         public java.util.List<TaxonLineage> ambiguousCandidates( final String taxon ) {
             final java.util.List<TaxonLineage> c = ( taxon == null ) ? null : _ambiguous.get( taxon.toLowerCase( Locale.ROOT ) );
@@ -2260,8 +2606,16 @@ public final class TreePanelUtilTest {
             _db.put( name.toLowerCase( Locale.ROOT ), new TaxonLineage( null, null, null, null, anc ) );
         }
 
+        private int _lookups;
+
+        /** How many times {@link #lineageOf} was asked -- the TREE source must leave this untouched. */
+        int lookups() {
+            return _lookups;
+        }
+
         @Override
         public TaxonLineage lineageOf( final String taxon ) {
+            ++_lookups;
             return ( taxon == null ) ? null : _cache.get( taxon.toLowerCase( Locale.ROOT ) );
         }
 

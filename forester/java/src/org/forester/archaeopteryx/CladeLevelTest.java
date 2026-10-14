@@ -53,10 +53,10 @@ public final class CladeLevelTest {
      */
     private static boolean clearAffordance() {
         final String[] ranks = { "genus (12) (98%)", "family (5) (100%)", "order (2) (100%)" };
-        if ( MainFrame.cladeRankChoices( ranks, false ) != ranks ) {
+        if ( RankSourcePanel.withFirst( ranks, null ) != ranks ) {
             return fail( "with nothing drawn, the chooser should offer the ranks unchanged" );
         }
-        final String[] with = MainFrame.cladeRankChoices( ranks, true );
+        final String[] with = RankSourcePanel.withFirst( ranks, MainFrame.CLADE_LEVEL_CLEAR );
         if ( ( with.length != ranks.length + 1 ) || !MainFrame.CLADE_LEVEL_CLEAR.equals( with[ 0 ] ) ) {
             return fail( "with bands drawn, the \"remove\" entry should come FIRST, got "
                     + java.util.Arrays.toString( with ) );
