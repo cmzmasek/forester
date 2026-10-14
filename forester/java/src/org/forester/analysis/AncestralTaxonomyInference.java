@@ -22,7 +22,6 @@ package org.forester.analysis;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +75,10 @@ public final class AncestralTaxonomyInference {
         }
         // Each node's "shared path" = the levels (root->deepest) common to ALL of its descendant tips.
         // Computed once postorder (children are visited before their parent).
-        final Map<PhylogenyNode, List<Ancestor>> shared = new HashMap<PhylogenyNode, List<Ancestor>>();
+        // IDENTITY-keyed: PhylogenyNode.equals compares name + taxonomy, so nested nameless internal nodes that already
+        // carry the same taxon (a previous run's output, or a curated backbone) would otherwise share ONE entry and
+        // hand each other's shared path to their parents.
+        final Map<PhylogenyNode, List<Ancestor>> shared = new java.util.IdentityHashMap<PhylogenyNode, List<Ancestor>>();
         int resolved_tips = 0;
         int unresolved_tips = 0;
         for( final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {

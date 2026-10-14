@@ -54,4 +54,14 @@ public interface TaxonomicLineageService {
      *             error -- it returns {@link TaxonLineage#EMPTY}).
      */
     TaxonLineage fetch( String taxon ) throws IOException;
+
+    /**
+     * For a name whose {@link #fetch} found it AMBIGUOUS -- several taxa carry it, e.g. <i>Bacillus</i> the
+     * bacterial genus and <i>Bacillus</i> the stick-insect genus -- the candidates, each as its own lineage; empty
+     * for a resolved, not-found or never-fetched name. Such a name is deliberately left unplaced (cached as
+     * {@link TaxonLineage#EMPTY}) rather than guessed, and this is what lets a caller SAY so. Cache-only, EDT-safe.
+     */
+    default java.util.List<TaxonLineage> ambiguousCandidates( final String taxon ) {
+        return java.util.Collections.emptyList();
+    }
 }

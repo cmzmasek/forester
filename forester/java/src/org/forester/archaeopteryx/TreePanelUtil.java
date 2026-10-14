@@ -30,11 +30,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 
@@ -1366,7 +1368,10 @@ public class TreePanelUtil {
     final static Map<PhylogenyNode, RankTaxon> assignNodesToRankTaxon( final Phylogeny tree,
                                                                        final String rank,
                                                                        final TaxonomicLineageService service ) {
-        final Map<PhylogenyNode, RankTaxon> assignment = new HashMap<PhylogenyNode, RankTaxon>();
+        // IDENTITY-keyed: PhylogenyNode.equals/hashCode compare by VALUE (name + sequence + taxonomy), so two nameless
+        // internal nodes carrying the same <taxonomy> -- exactly what "write the clade taxa" and "Infer Ancestor
+        // Taxonomies" produce on nested clades -- would otherwise collapse onto ONE key.
+        final Map<PhylogenyNode, RankTaxon> assignment = new IdentityHashMap<PhylogenyNode, RankTaxon>();
         if ( ( tree == null ) || tree.isEmpty() || ForesterUtil.isEmpty( rank ) ) {
             return assignment;
         }
@@ -1387,7 +1392,7 @@ public class TreePanelUtil {
     final static Map<PhylogenyNode, String> assignTipsToRankTaxon( final Phylogeny tree,
                                                                    final String rank,
                                                                    final TaxonomicLineageService service ) {
-        final Map<PhylogenyNode, String> out = new HashMap<PhylogenyNode, String>();
+        final Map<PhylogenyNode, String> out = new IdentityHashMap<PhylogenyNode, String>();
         for( final Entry<PhylogenyNode, RankTaxon> e : assignNodesToRankTaxon( tree, rank, service ).entrySet() ) {
             if ( e.getKey().isExternal() ) {
                 out.put( e.getKey(), e.getValue().getName() );
@@ -1606,7 +1611,7 @@ public class TreePanelUtil {
      */
     final static Map<PhylogenyNode, TaxonLineage> tipLineages( final Phylogeny tree,
                                                                final TaxonomicLineageService service ) {
-        final Map<PhylogenyNode, TaxonLineage> out = new HashMap<PhylogenyNode, TaxonLineage>();
+        final Map<PhylogenyNode, TaxonLineage> out = new IdentityHashMap<PhylogenyNode, TaxonLineage>(); // see assignNodesToRankTaxon
         if ( ( tree == null ) || tree.isEmpty() ) {
             return out;
         }
@@ -1725,16 +1730,26 @@ public class TreePanelUtil {
      * </ul>
      * Then the maximal (topmost) node of each taxon is returned. Paraphyly yields several same-taxon roots.
      * Equality is tax-id-aware ({@link RankTaxon}), so homonyms are not merged into one clade.
+     * <p>
+     * Both maps are keyed by node IDENTITY, never by {@code PhylogenyNode.equals} (which compares name + taxonomy):
+     * nested nameless internal nodes annotated with the same taxon -- the shape "write the clade taxa" and "Infer
+     * Ancestor Taxonomies" leave behind, and a mis-annotated backbone (17 nested "genus Bacteria" nodes in a real
+     * tree) -- are distinct nodes whose subtrees resolve DIFFERENTLY (one mixed, one placed). Merging them handed a
+     * mixed node its sibling's taxon and drew 30 same-rank bands inside another. The returned map iterates in
+     * POSTORDER (deeper clades first), as before, and rejects a node that is not of {@code tree}.
      */
     final static Map<PhylogenyNode, RankTaxon> maximalMonochromaticRoots( final Phylogeny tree,
                                                                           final Map<PhylogenyNode, RankTaxon> assignment ) {
-        final Map<PhylogenyNode, RankTaxon> subtree = new HashMap<PhylogenyNode, RankTaxon>();
-        final Map<PhylogenyNode, RankTaxon> roots = new LinkedHashMap<PhylogenyNode, RankTaxon>();
+        final Map<PhylogenyNode, RankTaxon> subtree = new IdentityHashMap<PhylogenyNode, RankTaxon>();
+        final Map<PhylogenyNode, Integer> postorder = new IdentityHashMap<PhylogenyNode, Integer>();
+        final Map<PhylogenyNode, RankTaxon> roots = new TreeMap<PhylogenyNode, RankTaxon>( ( a, b ) -> Integer
+                .compare( postorderIndex( postorder, a ), postorderIndex( postorder, b ) ) );
         if ( ( tree == null ) || tree.isEmpty() ) {
             return roots;
         }
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
+            postorder.put( n, postorder.size() );
             final RankTaxon own = assignment.get( n ); // the node's OWN taxon (null when it has none)
             if ( n.isExternal() ) {
                 subtree.put( n, own ); // a placed tip, or null (unplaced); the leaf never "conflicts"
@@ -1786,6 +1801,16 @@ public class TreePanelUtil {
             }
         }
         return roots;
+    }
+
+    /** The postorder position of {@code n} in the tree {@link #maximalMonochromaticRoots} walked -- the ordering key
+     *  of its result; loud for a node of another tree rather than silently matching a value-equal one. */
+    private static int postorderIndex( final Map<PhylogenyNode, Integer> postorder, final PhylogenyNode n ) {
+        final Integer i = postorder.get( n );
+        if ( i == null ) {
+            throw new IllegalArgumentException( "node " + n.getId() + " is not a node of the tree the clade roots were computed for" );
+        }
+        return i;
     }
 
     final static boolean isHasAssignedEvent( final PhylogenyNode node ) {

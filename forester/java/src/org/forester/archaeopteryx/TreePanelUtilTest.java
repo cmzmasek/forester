@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -75,7 +76,122 @@ public final class TreePanelUtilTest {
                 && testIsDuplicateOfAncestorTaxon() && testScaleAxisFloating() && testDomainBoxHeight()
                 && testTruncateToPixelWidth() && testAncestralPieData() && testBeastStateSetsFromNewick()
                 && testLadderizeProvenance()
-                && testRootingProvenance() && testSubTreeKeepsRerootable() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy();
+                && testRootingProvenance() && testSubTreeKeepsRerootable() && testLadderizeState() && testLadderizePolytomy() && testScientificNameIsItalic() && testNodeNameDuplicatesTaxonomy()
+                && testNodeIdentityInGrouping() && testAmbiguityReport();
+    }
+
+    /**
+     * Node IDENTITY, not value equality, keys the grouping. {@code PhylogenyNode.equals} compares name + taxonomy, so
+     * two nameless internal nodes carrying the same (mis)annotation are "equal" -- and a value-keyed map handed a
+     * MIXED node its sibling's taxon, drawing same-rank bands inside one another (30 pairs in a real tree). Fixture:
+     * two nameless internal nodes both annotated "genus Bacteria"; under N1 two tips of different genera (mixed),
+     * under N2 two tips with no genus of their own (filled from N2's annotation).
+     */
+    private static boolean testNodeIdentityInGrouping() {
+        final PhylogenyNode n1 = genusInternal( "Bacteria" );
+        n1.addAsChild( genusLeafId( "e1", "Escherichia", "561" ) );
+        n1.addAsChild( genusLeafId( "s1", "Shigella", "620" ) );
+        final PhylogenyNode n2 = genusInternal( "Bacteria" );
+        n2.addAsChild( bareLeaf( "u1" ) );
+        n2.addAsChild( bareLeaf( "u2" ) );
+        final PhylogenyNode n3 = genusInternal( "Bacteria" ); // a second, value-equal filled clade (paraphyly)
+        n3.addAsChild( bareLeaf( "u3" ) );
+        n3.addAsChild( bareLeaf( "u4" ) );
+        if ( !n1.equals( n2 ) || ( n1.hashCode() != n2.hashCode() ) || !n2.equals( n3 ) ) {
+            return fail( "precondition: the nameless same-taxon internal nodes must be value-EQUAL, else this test cannot see the bug" );
+        }
+        final Phylogeny tree = phylogeny( node( n1, n2, n3 ) );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> assignment = TreePanelUtil.assignNodesToRankTaxon( tree, "genus", null );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> roots = TreePanelUtil.maximalMonochromaticRoots( tree, assignment );
+        // exactly: Escherichia at e1, Shigella at s1, Bacteria at N2 AND at N3 -- never at N1 (mixed) or the root (mixed)
+        if ( roots.get( n1 ) != null ) {
+            return fail( "a mixed node must not become a root because a value-equal sibling is placed" );
+        }
+        if ( roots.get( tree.getRoot() ) != null ) {
+            return fail( "the root is mixed; it must not inherit the placed sibling's taxon" );
+        }
+        if ( ( roots.get( n2 ) == null ) || !"Bacteria".equals( roots.get( n2 ).getName() ) || ( roots.get( n3 ) == null ) ) {
+            return fail( "N2 and N3 must EACH be a Bacteria clade root (two value-equal roots are two roots); got " + roots );
+        }
+        final PhylogenyNode e1 = findLeaf( tree, "e1" );
+        if ( ( roots.get( e1 ) == null ) || !"Escherichia".equals( roots.get( e1 ).getName() )
+                || ( roots.get( findLeaf( tree, "s1" ) ) == null ) || ( roots.size() != 4 ) ) {
+            return fail( "expected exactly the roots e1, s1, N2 and N3; got " + roots );
+        }
+        // two TIPS can be value-equal too (a duplicated label with the same taxonomy): each takes ITS OWN parent's
+        // genus, and both are present in the assignment and in the tip-lineage map
+        final PhylogenyNode esch = genusInternal( "Escherichia" );
+        final PhylogenyNode dup1 = namedLeaf( "dup", "Escherichia coli" );
+        esch.addAsChild( dup1 );
+        final PhylogenyNode shig = genusInternal( "Shigella" );
+        final PhylogenyNode dup2 = namedLeaf( "dup", "Escherichia coli" );
+        shig.addAsChild( dup2 );
+        if ( !dup1.equals( dup2 ) ) {
+            return fail( "precondition: the duplicated tips must be value-equal" );
+        }
+        final Phylogeny dups = phylogeny( node( esch, shig ) );
+        final Map<PhylogenyNode, TreePanelUtil.RankTaxon> dup_assignment = TreePanelUtil.assignNodesToRankTaxon( dups, "genus", null );
+        if ( ( dup_assignment.get( dup1 ) == null ) || ( dup_assignment.get( dup2 ) == null )
+                || !"Escherichia".equals( dup_assignment.get( dup1 ).getName() )
+                || !"Shigella".equals( dup_assignment.get( dup2 ).getName() ) ) {
+            return fail( "each duplicated tip must take its OWN parent's genus; got " + dup_assignment.get( dup1 ) + " / " + dup_assignment.get( dup2 ) );
+        }
+        if ( TreePanelUtil.tipLineages( dups, new FakeLineageService() ).size() != 2 ) {
+            return fail( "the tip-lineage map must hold both duplicated tips" );
+        }
+        // the symptom itself: no clade root lies inside another
+        for( final PhylogenyNode a : roots.keySet() ) {
+            for( PhylogenyNode p = a.getParent(); p != null; p = p.getParent() ) {
+                if ( roots.containsKey( p ) ) {
+                    return fail( "root " + roots.get( a ) + " lies inside root " + roots.get( p ) );
+                }
+            }
+        }
+        // iteration stays POSTORDER (deeper first): e1 comes before N2
+        if ( roots.keySet().iterator().next() != e1 ) {
+            return fail( "the roots must iterate in postorder, as before" );
+        }
+        // a node of another tree is rejected loudly, never matched by value
+        try {
+            roots.containsKey( bareLeaf( "stranger" ) );
+            return fail( "a node of another tree must be rejected, not matched by value" );
+        }
+        catch ( final IllegalArgumentException expected ) {
+            // the roots map is keyed by position in THIS tree
+        }
+        return true;
+    }
+
+    /** The online resolver's report names each ambiguous tip name and its candidates, and otherwise passes the
+     *  transport error through untouched. */
+    private static boolean testAmbiguityReport() {
+        final FakeLineageService svc = new FakeLineageService();
+        svc.ambiguous( "Bacillus",
+                       new TaxonLineage( "55087", "genus", "Bacillus", null, java.util.Collections
+                               .singletonList( new TaxonLineage.Ancestor( "Arthropoda", "phylum", "6656" ) ) ),
+                       new TaxonLineage( "1386", "genus", "Bacillus", null, java.util.Collections
+                               .singletonList( new TaxonLineage.Ancestor( "Bacillota", "phylum", "1239" ) ) ) );
+        final java.util.SortedSet<String> names = new java.util.TreeSet<String>( Arrays.asList( "Bacillus", "Felis" ) );
+        final String r = OnlineTaxonResolver.withAmbiguities( "no connection", names, svc );
+        if ( ( r == null ) || !r.startsWith( "no connection\n" ) ) {
+            return fail( "the transport error must come first; got " + r );
+        }
+        if ( !r.contains( "\"Bacillus\" names 2 taxa" ) || !r.contains( "Bacillus [55087, genus, in Arthropoda]" )
+                || !r.contains( "Bacillus [1386, genus, in Bacillota]" ) || !r.contains( "left unplaced" ) ) {
+            return fail( "each candidate must be named with its id, rank and phylum; got " + r );
+        }
+        if ( r.contains( "Felis" ) ) {
+            return fail( "a name that is not ambiguous must not be reported" );
+        }
+        if ( OnlineTaxonResolver.withAmbiguities( null, names, svc ) == null ) {
+            return fail( "with no transport error the ambiguity alone is the report" );
+        }
+        final java.util.SortedSet<String> plain = new java.util.TreeSet<String>( Arrays.asList( "Felis" ) );
+        if ( ( OnlineTaxonResolver.withAmbiguities( null, plain, svc ) != null )
+                || !"x".equals( OnlineTaxonResolver.withAmbiguities( "x", plain, svc ) ) ) {
+            return fail( "nothing ambiguous: the error passes through unchanged (null stays null)" );
+        }
+        return true;
     }
 
     private static boolean testScientificNameIsItalic() {
@@ -2119,8 +2235,20 @@ public final class TreePanelUtilTest {
     /** In-memory {@link TaxonomicLineageService}: {@code lineageOf} is cache-only; {@code fetch} copies from the "DB". */
     private static final class FakeLineageService implements TaxonomicLineageService {
 
-        private final Map<String, TaxonLineage> _db    = new HashMap<String, TaxonLineage>();
-        private final Map<String, TaxonLineage> _cache = new HashMap<String, TaxonLineage>();
+        private final Map<String, TaxonLineage>                 _db        = new HashMap<String, TaxonLineage>();
+        private final Map<String, TaxonLineage>                 _cache     = new HashMap<String, TaxonLineage>();
+        private final Map<String, java.util.List<TaxonLineage>> _ambiguous = new HashMap<String, java.util.List<TaxonLineage>>();
+
+        void ambiguous( final String name, final TaxonLineage... candidates ) {
+            _ambiguous.put( name.toLowerCase( Locale.ROOT ), Arrays.asList( candidates ) );
+            _cache.put( name.toLowerCase( Locale.ROOT ), TaxonLineage.EMPTY );
+        }
+
+        @Override
+        public java.util.List<TaxonLineage> ambiguousCandidates( final String taxon ) {
+            final java.util.List<TaxonLineage> c = ( taxon == null ) ? null : _ambiguous.get( taxon.toLowerCase( Locale.ROOT ) );
+            return ( c == null ) ? java.util.Collections.<TaxonLineage> emptyList() : c;
+        }
 
         void know( final String name, final Map<String, String> rank_to_name ) {
             // model a resolved lineage as rank-carrying ancestors (own taxon left blank); TaxonLineage.at(rank)

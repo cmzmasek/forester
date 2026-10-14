@@ -27,16 +27,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.util.ForesterUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * A clean {@link TaxonomicLineageService} backed by NCBI Taxonomy via the E-utilities REST API:
- * one <i>esearch</i> maps a scientific name to a tax-id, one <i>efetch</i> returns the full
- * lineage in a single XML response (so we never resolve ranks one ancestor at a time). It serves every
+ * <i>esearch</i> maps a name to a tax-id, one <i>efetch</i> returns the full
+ * lineage in a single XML response (so we never resolve ranks one ancestor at a time).
+ *
+ * <p><b>A name is never guessed.</b> The search runs in three narrowing stages -- the quoted name as a
+ * {@code [Scientific Name]}, then as any name ({@code [All Names]}: synonyms, common names, "human"), then
+ * unrestricted, as NCBI's own search box does -- and the FIRST stage with a hit decides. One hit resolves the
+ * name; several hits make it AMBIGUOUS ({@link #ambiguousCandidates}): it is left unplaced, because the first hit
+ * of a homonym is a coin toss ("Bacteria" used to resolve to the stick-insect genus <i>Bacteria</i> Latreille,
+ * "Bacillus" still would). Quoting keeps a name's own brackets and parentheses ("[Haemophilus] ducreyi",
+ * "Buchnera aphidicola (Baizongia pistaciae)") from being read as search syntax. A tax-id carried IN the label
+ * ({@code OX=47803}, the UniProt FASTA header) is used directly ({@link #embeddedTaxId}). It serves every
  * consumer -- the rank colorizer / clade-bands ({@link #lineageOf}/{@link #fetch} &rarr;
  * {@link TaxonLineage#at}) and the "Fetch Sequence &amp; Taxonomic Data" tool (the taxon's own fields +
  * {@link TaxonLineage#lineageNames}) -- from one {@link TaxonLineage} per taxon. Results -- including
@@ -50,14 +60,38 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
 
     private static final String                  ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=taxonomy&tool=Archaeopteryx&term=";
     private static final String                  EFETCH  = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&tool=Archaeopteryx&retmode=xml&id=";
-    // EMPTY entries double as a negative cache (taxon was queried, nothing found).
+    /** The esearch field restrictions, tried in this order; the first stage with any hit decides. */
+    static final String[]                        SEARCH_STAGES = { "[Scientific Name]", "[All Names]", "" };
+    // "OX=47803" as a UniProt FASTA header writes it: at the start or after whitespace / a '|' separator
+    private static final Pattern                 EMBEDDED_TAX_ID = Pattern.compile( "(?:^|[\\s|])OX=(\\d+)(?![\\w])" );
+    // EMPTY entries double as a negative cache (taxon was queried, nothing found -- or found ambiguous).
     private final Map<String, TaxonLineage>      _cache        = Collections
             .synchronizedMap( new HashMap<String, TaxonLineage>() );
+    // name -> the several taxa that carry it (an EMPTY in _cache with an entry here = ambiguous, not unknown)
+    private final Map<String, List<TaxonLineage>> _ambiguous   = Collections
+            .synchronizedMap( new HashMap<String, List<TaxonLineage>>() );
     // persistent (cross-session) cache of positive resolutions; best-effort, never a dependency.
-    private final TaxonomyDiskCache              _disk         = new TaxonomyDiskCache();
+    private final TaxonomyDiskCache              _disk;
+    private final Http                           _http;
     private volatile boolean                     _loaded;
 
     private static NcbiTaxonomyLineageService    _shared;
+
+    /** The transport seam: a URL to its response body. Production is {@link WsHttp#httpGet}; tests answer from
+     *  canned fixtures, so the staged search and the ambiguity rule run without a network. */
+    interface Http {
+        String get( String url ) throws IOException;
+    }
+
+    public NcbiTaxonomyLineageService() {
+        this( WsHttp::httpGet, new TaxonomyDiskCache() );
+    }
+
+    /** For tests: an in-memory transport and an explicit (temporary) disk cache. */
+    NcbiTaxonomyLineageService( final Http http, final TaxonomyDiskCache disk ) {
+        _http = http;
+        _disk = disk;
+    }
 
     /**
      * The process-wide shared instance, so the rank colorizer, the "Fetch Sequence &amp; Taxonomic
@@ -156,21 +190,36 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
                 return _cache.get( k );
             }
         }
-        // A bare NCBI tax-id (e.g. the organism id read from a sequence entry) is authoritative: efetch it
-        // directly, skipping esearch and its name-ambiguity. Otherwise map the name to a tax-id via esearch.
+        // A bare NCBI tax-id (e.g. the organism id read from a sequence entry), or one carried in the label
+        // ("OX=47803"), is authoritative: efetch it directly, skipping esearch and its name-ambiguity. Otherwise map
+        // the name to a tax-id via the staged esearch.
         final String id;
         if ( isTaxId( taxon ) ) {
             id = taxon.trim();
         }
         else {
-            id = parseEsearchFirstId( WsHttp.httpGet( ESEARCH + WsHttp.encode( taxon ) ) );
+            final String embedded = embeddedTaxId( taxon );
+            if ( embedded != null ) {
+                id = embedded;
+            }
+            else {
+                final List<String> ids = searchName( taxon );
+                if ( ids.size() > 1 ) {
+                    // several taxa carry this name: never pick one. Remember the candidates (for the report) and
+                    // cache the name as unplaced, in memory only, so it is neither re-queried nor re-prompted.
+                    _ambiguous.put( k, parseEfetchAll( _http.get( EFETCH + WsHttp.encode( String.join( ",", ids ) ) ) ) );
+                    _cache.put( k, TaxonLineage.EMPTY );
+                    return TaxonLineage.EMPTY;
+                }
+                id = ids.isEmpty() ? null : ids.get( 0 );
+            }
         }
         if ( ForesterUtil.isEmpty( id ) ) {
             // esearch found nothing -- a definitive negative; cache it (in memory only) so we never re-query.
             _cache.put( k, TaxonLineage.EMPTY );
             return TaxonLineage.EMPTY;
         }
-        final TaxonLineage parsed = parseEfetchFull( WsHttp.httpGet( EFETCH + WsHttp.encode( id ) ) );
+        final TaxonLineage parsed = parseEfetchFull( _http.get( EFETCH + WsHttp.encode( id ) ) );
         // "usable" = TaxonLineage.isEmpty() is false: a scientific name OR any ancestors. This is deliberately more
         // lenient than the pre-Spine-A colorizer gate ("has a Linnaean rank"): a genuinely rank-less taxon (a
         // top-level taxon, or one NCBI has no Linnaean ranks for) is now cached positive instead of re-prompted /
@@ -184,6 +233,46 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
         // esearch found the taxon but efetch returned nothing usable (empty) -- possibly a truncated/transient
         // response. Do NOT cache, so a later attempt can retry.
         return TaxonLineage.EMPTY;
+    }
+
+    @Override
+    public List<TaxonLineage> ambiguousCandidates( final String taxon ) {
+        if ( ForesterUtil.isEmpty( taxon ) ) {
+            return Collections.emptyList();
+        }
+        final List<TaxonLineage> c = _ambiguous.get( key( taxon ) );
+        return ( c == null ) ? Collections.<TaxonLineage> emptyList() : Collections.unmodifiableList( c );
+    }
+
+    /**
+     * The tax-ids NCBI returns for {@code name}, from the first {@link #SEARCH_STAGES stage} that returns any:
+     * empty = unknown, one = resolved, several = ambiguous. The name is sent in double quotes so its own brackets,
+     * parentheses and spaces are data, not Entrez syntax; the unrestricted last stage is NCBI's own search-box
+     * behaviour and catches forms NCBI lists differently ("Bacillus subtilis (strain 168)", "Oryza sativa subsp.
+     * japonica"). Network.
+     */
+    private List<String> searchName( final String name ) throws IOException {
+        final String quoted = '"' + name.trim().replace( '"', ' ' ) + '"';
+        for( final String stage : SEARCH_STAGES ) {
+            final String term = stage.isEmpty() ? name.trim() : ( quoted + stage );
+            final List<String> ids = parseEsearchIds( _http.get( ESEARCH + WsHttp.encode( term ) ) );
+            if ( !ids.isEmpty() ) {
+                return ids;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * The NCBI tax-id a label carries as a UniProt-style {@code OX=} qualifier ("... OS=Fusarium phyllophilum
+     * OX=47803 GN=..."), or {@code null}. Pure.
+     */
+    public static String embeddedTaxId( final String label ) {
+        if ( ForesterUtil.isEmpty( label ) ) {
+            return null;
+        }
+        final Matcher m = EMBEDDED_TAX_ID.matcher( label );
+        return m.find() ? m.group( 1 ) : null;
     }
 
     /** True if {@code s} is a non-empty run of digits (an NCBI tax-id). */
@@ -206,16 +295,29 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
 
     /** The first {@code <Id>} under {@code <IdList>} in an esearch response, or {@code null}. Pure. */
     static String parseEsearchFirstId( final String xml ) {
+        final List<String> ids = parseEsearchIds( xml );
+        return ids.isEmpty() ? null : ids.get( 0 );
+    }
+
+    /** Every {@code <Id>} under {@code <IdList>} in an esearch response, in NCBI's order; empty for none or for a
+     *  malformed response. Pure. */
+    static List<String> parseEsearchIds( final String xml ) {
+        final List<String> out = new ArrayList<String>();
         final Document doc = WsHttp.parseXml( xml );
         if ( doc == null ) {
-            return null;
+            return out;
         }
-        final NodeList ids = doc.getElementsByTagName( "Id" );
-        if ( ids.getLength() < 1 ) {
-            return null;
+        final Element list = WsHttp.firstChildElement( doc.getDocumentElement(), "IdList" );
+        if ( list == null ) {
+            return out;
         }
-        final String id = ids.item( 0 ).getTextContent();
-        return ForesterUtil.isEmpty( id ) ? null : id.trim();
+        for( final Element e : WsHttp.childElements( list, "Id" ) ) {
+            final String id = WsHttp.text( e );
+            if ( !ForesterUtil.isEmpty( id ) ) {
+                out.add( id.trim() );
+            }
+        }
+        return out;
     }
 
     /**
@@ -226,14 +328,28 @@ public final class NcbiTaxonomyLineageService implements TaxonomicLineageService
      * never throws.
      */
     static TaxonLineage parseEfetchFull( final String xml ) {
+        final List<TaxonLineage> all = parseEfetchAll( xml );
+        return all.isEmpty() ? TaxonLineage.EMPTY : all.get( 0 );
+    }
+
+    /** Every {@code <Taxon>} of an efetch response (one per id of a multi-id request), each parsed as
+     *  {@link #parseEfetchFull} parses a single one; empty for none or a malformed response. Pure. */
+    static List<TaxonLineage> parseEfetchAll( final String xml ) {
+        final List<TaxonLineage> out = new ArrayList<TaxonLineage>();
         final Document doc = WsHttp.parseXml( xml );
         if ( doc == null ) {
-            return TaxonLineage.EMPTY;
+            return out;
         }
-        final Element taxon = WsHttp.firstChildElement( doc.getDocumentElement(), "Taxon" );
-        if ( taxon == null ) {
-            return TaxonLineage.EMPTY;
+        for( final Element taxon : WsHttp.childElements( doc.getDocumentElement(), "Taxon" ) ) {
+            final TaxonLineage tl = parseTaxon( taxon );
+            if ( !tl.isEmpty() ) {
+                out.add( tl );
+            }
         }
+        return out;
+    }
+
+    private static TaxonLineage parseTaxon( final Element taxon ) {
         final String sci = trimOrNull( WsHttp.text( WsHttp.firstChildElement( taxon, "ScientificName" ) ) );
         final String tax_id = trimOrNull( WsHttp.text( WsHttp.firstChildElement( taxon, "TaxId" ) ) );
         final String rank = trimOrNull( WsHttp.text( WsHttp.firstChildElement( taxon, "Rank" ) ) );

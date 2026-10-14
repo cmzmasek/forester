@@ -39,7 +39,46 @@ public final class AncestralTaxonomyInferenceTest {
 
     public static boolean test() {
         return testMultifurcationAndTaxId() && testPreserveVsOverwrite() && testUnresolvedDescendant()
-                && testNameOnly() && testCopyUpAndEdges() && testCommonTaxon();
+                && testNameOnly() && testCopyUpAndEdges() && testCommonTaxon() && testSameTaxonNodesAreDistinct();
+    }
+
+    /**
+     * Two nameless internal nodes already carrying the same taxon (a previous run's output, a curated backbone) are
+     * value-EQUAL under {@code PhylogenyNode.equals}, yet their descendants share DIFFERENT paths. The bookkeeping
+     * must key by node identity: value-keyed, N1 reported N2's deeper path and the root was written the class the
+     * tips under N1 do not share.
+     */
+    private static boolean testSameTaxonNodesAreDistinct() {
+        final Map<PhylogenyNode, TaxonLineage> map = new HashMap<PhylogenyNode, TaxonLineage>();
+        final PhylogenyNode a = leaf( "a" );
+        map.put( a, lin( "phylum", "X", "1", "class", "Y", "2", "genus", "a", "3" ) );
+        final PhylogenyNode b = leaf( "b" );
+        map.put( b, lin( "phylum", "X", "1", "class", "Z", "4", "genus", "b", "5" ) );
+        final PhylogenyNode c = leaf( "c" );
+        map.put( c, lin( "phylum", "X", "1", "class", "Y", "2", "genus", "c", "6" ) );
+        final PhylogenyNode d = leaf( "d" );
+        map.put( d, lin( "phylum", "X", "1", "class", "Y", "2", "genus", "d", "7" ) );
+        final PhylogenyNode n1 = internal( a, b ); // its tips share only the phylum X
+        annotate( n1, "Stale" );
+        final PhylogenyNode n2 = internal( c, d ); // its tips share X > Y
+        annotate( n2, "Stale" );
+        if ( !n1.equals( n2 ) || ( n1.hashCode() != n2.hashCode() ) ) {
+            return fail( "precondition: the two annotated nameless nodes must be value-equal, else this test sees nothing" );
+        }
+        final PhylogenyNode root = internal( n1, n2 );
+        final Phylogeny phy = treeOf( root );
+        AncestralTaxonomyInference.inferInternalTaxonomies( phy, map, true );
+        if ( !"X".equals( n1.getNodeData().getTaxonomy().getScientificName() ) ) {
+            return fail( "N1's tips share only X; got " + n1.getNodeData().getTaxonomy().getScientificName() );
+        }
+        if ( !"Y".equals( n2.getNodeData().getTaxonomy().getScientificName() ) ) {
+            return fail( "N2's tips share Y; got " + n2.getNodeData().getTaxonomy().getScientificName() );
+        }
+        if ( !"X".equals( root.getNodeData().getTaxonomy().getScientificName() ) ) {
+            return fail( "the root's tips share only X (value-keyed bookkeeping wrote Y); got "
+                    + root.getNodeData().getTaxonomy().getScientificName() );
+        }
+        return true;
     }
 
     /** {@code commonTaxonOf} = the deepest taxon shared by ALL a clade's tips, matched by tax-id/name (NOT by

@@ -85,6 +85,18 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
         if ( cached != null ) {
             return cached;
         }
+        // A tax-id written INTO the label ("... OS=Fusarium phyllophilum OX=47803 ...", the UniProt FASTA header)
+        // is authoritative and free: one exact efetch, no sequence-database call, no name search. Checked before the
+        // accession, which such a header also carries and which would cost a protein lookup per tip.
+        final String embedded = NcbiTaxonomyLineageService.embeddedTaxId( taxon );
+        if ( embedded != null ) {
+            TaxonLineage rl = _delegate.fetch( embedded );
+            if ( rl == null ) {
+                rl = TaxonLineage.EMPTY;
+            }
+            _alias.put( key( taxon ), rl );
+            return rl;
+        }
         // UniProt-priority parsing matches Aptx's own accession handling: a UniProt accession such as
         // P12345 also fits the single-letter+5-digit GenBank shape, and protein trees are UniProt-first.
         final Accession acc = SequenceAccessionTools.parseAccessorFromString_UniProtPriority( taxon );
@@ -116,6 +128,11 @@ public final class AccessionAwareLineageService implements TaxonomicLineageServi
         }
         _alias.put( key( query ), rl );
         return rl;
+    }
+
+    @Override
+    public java.util.List<TaxonLineage> ambiguousCandidates( final String taxon ) {
+        return _delegate.ambiguousCandidates( taxon ); // only a NAME can be ambiguous, and names go to the delegate
     }
 
     private static String key( final String s ) {

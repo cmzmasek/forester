@@ -103,6 +103,31 @@ public final class AccessionAwareLineageServiceTest {
             if ( ( svc.fetch( "" ) != TaxonLineage.EMPTY ) || ( svc.lineageOf( null ) != null ) ) {
                 return fail( "empty/blank queries must be handled without a fetch" );
             }
+
+            // (7) a tax-id carried IN the label (the UniProt header's "OX=") goes straight to the taxonomy delegate --
+            //     no organism lookup, although the header also carries an accession -- and is remembered under the label
+            delegate.know( "47803", "order", "Hypocreales" );
+            final String header = "tr|A0A8H5JZG0|A0A8H5JZG0_9HYPO Radical SAM protein OS=Fusarium phyllophilum OX=47803 GN=F PE=4 SV=1";
+            final int before_ox = seqs.calls();
+            if ( !"Hypocreales".equals( svc.fetch( header ).at( "order" ) ) ) {
+                return fail( "a label carrying OX= must resolve by that tax-id through the delegate" );
+            }
+            if ( seqs.calls() != before_ox ) {
+                return fail( "an embedded tax-id must not cost a sequence-database call" );
+            }
+            if ( ( svc.lineageOf( header ) == null ) || !"Hypocreales".equals( svc.lineageOf( header ).at( "order" ) ) ) {
+                return fail( "the lineage must be cached under the label for the cache-only lineageOf" );
+            }
+
+            // (8) ambiguity is the delegate's to report; an accession is never ambiguous
+            delegate.ambiguous( "Bacillus", new TaxonLineage( "1386", "genus", "Bacillus", null, null ),
+                                new TaxonLineage( "55087", "genus", "Bacillus", null, null ) );
+            if ( svc.ambiguousCandidates( "Bacillus" ).size() != 2 ) {
+                return fail( "ambiguousCandidates must come from the taxonomy delegate" );
+            }
+            if ( !svc.ambiguousCandidates( "P12345" ).isEmpty() || !svc.ambiguousCandidates( null ).isEmpty() ) {
+                return fail( "an accession or a blank query has no candidates" );
+            }
         }
         catch ( final IOException e ) {
             return fail( "fakes must not throw: " + e );
@@ -118,12 +143,24 @@ public final class AccessionAwareLineageServiceTest {
     /** In-memory taxonomy delegate: {@code lineageOf} is cache-only; {@code fetch} copies from the "DB". */
     private static final class FakeDelegate implements TaxonomicLineageService {
 
-        private final Map<String, TaxonLineage> _db    = new HashMap<String, TaxonLineage>();
-        private final Map<String, TaxonLineage> _cache = new HashMap<String, TaxonLineage>();
+        private final Map<String, TaxonLineage>                _db        = new HashMap<String, TaxonLineage>();
+        private final Map<String, TaxonLineage>                _cache     = new HashMap<String, TaxonLineage>();
+        private final Map<String, java.util.List<TaxonLineage>> _ambiguous = new HashMap<String, java.util.List<TaxonLineage>>();
 
         void know( final String key, final String rank, final String name ) {
             // the delegate resolves this taxon as its own rank/name (no ancestors); TaxonLineage.at(rank) -> name
             _db.put( key.toLowerCase( Locale.ROOT ), new TaxonLineage( null, rank, name, null, null ) );
+        }
+
+        void ambiguous( final String name, final TaxonLineage... candidates ) {
+            _ambiguous.put( name.toLowerCase( Locale.ROOT ), java.util.Arrays.asList( candidates ) );
+        }
+
+        @Override
+        public java.util.List<TaxonLineage> ambiguousCandidates( final String taxon ) {
+            final java.util.List<TaxonLineage> c = ( taxon == null ) ? null
+                    : _ambiguous.get( taxon.trim().toLowerCase( Locale.ROOT ) );
+            return ( c == null ) ? java.util.Collections.<TaxonLineage> emptyList() : c;
         }
 
         @Override

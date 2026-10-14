@@ -27,6 +27,7 @@ import java.util.SortedSet;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.tools.RunnableProcess;
+import org.forester.ws.seqdb.TaxonLineage;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 
 /**
@@ -89,7 +90,51 @@ public final class OnlineTaxonResolver extends RunnableProcess {
         finally {
             end( _mf );
         }
-        final String err = error;
+        final String err = withAmbiguities( error, _names, _service );
         SwingUtilities.invokeLater( () -> _completion.finished( err ) );
+    }
+
+    /**
+     * Appends to {@code error} (may be null) one line per name in {@code names} the service found AMBIGUOUS, naming
+     * the candidates so the user can tell WHY the tip stayed unplaced and how to settle it (annotate the tip with its
+     * NCBI id, or the right scientific name). Returns {@code error} unchanged when nothing is ambiguous. Pure.
+     */
+    static String withAmbiguities( final String error, final SortedSet<String> names,
+                                   final TaxonomicLineageService service ) {
+        final StringBuilder sb = new StringBuilder();
+        for( final String name : names ) {
+            final java.util.List<TaxonLineage> candidates = service.ambiguousCandidates( name );
+            if ( candidates.isEmpty() ) {
+                continue;
+            }
+            sb.append( ( sb.length() == 0 ) ? "" : "\n" ).append( '"' ).append( name ).append( "\" names " )
+                    .append( candidates.size() ).append( " taxa, so it was left unplaced: " );
+            for( int i = 0; i < candidates.size(); ++i ) {
+                sb.append( ( i == 0 ) ? "" : "; " ).append( describe( candidates.get( i ) ) );
+            }
+            sb.append( ". Give the tip its NCBI id (or the exact scientific name) to settle it." );
+        }
+        if ( sb.length() == 0 ) {
+            return error;
+        }
+        return ( error == null ) ? sb.toString() : ( error + "\n" + sb );
+    }
+
+    /** "Bacillus [1386, genus, in Bacillota]" -- the candidate's name, id, rank and the broadest ranked group that
+     *  tells the homonyms apart (its phylum, else kingdom, else domain). */
+    private static String describe( final TaxonLineage c ) {
+        final StringBuilder sb = new StringBuilder( String.valueOf( c.getScientificName() ) );
+        sb.append( " [" ).append( c.getTaxId() == null ? "no id" : c.getTaxId() );
+        if ( c.ownRankOrNull() != null ) {
+            sb.append( ", " ).append( c.ownRankOrNull() );
+        }
+        for( final String rank : new String[] { "phylum", "kingdom", "domain" } ) {
+            final String group = c.at( rank );
+            if ( ( group != null ) && !group.equalsIgnoreCase( c.getScientificName() ) ) {
+                sb.append( ", in " ).append( group );
+                break;
+            }
+        }
+        return sb.append( ']' ).toString();
     }
 }
