@@ -102,10 +102,11 @@ public final class CircularFirstPaintTest {
                 mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "first paint" );
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
                 // the state of the first paint: the saved default opened the tab circular, the tab lays out as a
-                // cladogram (the branch the division is in), and nothing has computed the depth. Built on the event
-                // thread, as here, the construction computes it before any paint can run; Archaeopteryx.main builds
-                // OFF that thread and the first paint came first (measured 2026-10-16) -- a race no test can order,
-                // so the never-computed state is put back deliberately (see raceAsStarted for the real path)
+                // cladogram (the branch the division is in), and nothing has computed the depth. The construction
+                // computes it before any paint can run -- since 0.11.183 on every path, the window being built on the
+                // event thread whoever asks (raceAsStarted); until then Archaeopteryx.main built it on its own thread
+                // and the first paint came first (measured 2026-10-16). The never-computed state is put back
+                // deliberately here: the lazy depth is the second line, for any paint that meets it
                 if ( tp.getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) {
                     ok[ 0 ] = fail( "fixture: the saved default must open the tab circular, got " + tp.getPhylogenyGraphicsType() );
                 }
@@ -175,18 +176,22 @@ public final class CircularFirstPaintTest {
         return ok[ 0 ] & raceAsStarted();
     }
 
-    /** The real path: Archaeopteryx.main builds the window on ITS thread, so the event thread's first paint races
-     *  the construction -- and came first on 2026-10-16. Built the same way here; the event thread must be free
-     *  again within seconds (before 0.11.182 that paint ran for minutes), and every node on the canvas. Which of
-     *  the two wins is the machine's to decide, so this holds the integration; firstPaint holds the mechanism. */
+    /** The real path: Archaeopteryx.main asks for the window from ITS thread. Until 0.11.183 the window was built
+     *  there, became visible while its construction was still running, and the event thread's first paint raced the
+     *  layout computation -- and won, on 2026-10-16. Asked from off the event thread here, the window must have been
+     *  CONSTRUCTED on it (the construction then completes before any paint), the event thread must be free again
+     *  within seconds, and every node must be on the canvas. firstPaint holds the lazy depth, the second line. */
     private static boolean raceAsStarted() throws Exception {
         if ( SwingUtilities.isEventDispatchThread() ) {
-            return fail( "fixture: the race needs the window built off the event thread" );
+            return fail( "fixture: the window must be asked for off the event thread" );
         }
         final Phylogeny phy = fixture();
         final MainFrame mf = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "as started" );
         boolean ok = true;
         try {
+            if ( !( (MainFrameApplication) mf ).builtOnEventThreadForTest() ) {
+                ok = fail( "a window asked for off the event thread must be constructed on it" );
+            }
             final Thread waiter = new Thread( () -> {
                 try {
                     SwingUtilities.invokeAndWait( () -> {} );
@@ -199,7 +204,7 @@ public final class CircularFirstPaintTest {
             waiter.start();
             waiter.join( 30_000 );
             if ( waiter.isAlive() ) {
-                return fail( "the first paint of a window built the way Archaeopteryx.main builds it hangs the event thread" );
+                return fail( "the first paint of a window asked for the way Archaeopteryx.main asks hangs the event thread" );
             }
             final TreePanel tp = mf.getMainPanel().getCurrentTreePanel();
             final boolean[] on = { true };
@@ -213,7 +218,7 @@ public final class CircularFirstPaintTest {
                     on[ 0 ] = fail( "after the first paints the depth must be computed, got " + tp.storedCircMaxDepthForTest() );
                 }
             } );
-            ok = on[ 0 ];
+            ok &= on[ 0 ];
         }
         finally {
             dispose( mf );

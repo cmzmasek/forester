@@ -8079,9 +8079,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _circ_max_depth;
     }
 
-    /** For tests: back to the never-computed state a paint can meet. Archaeopteryx.main builds the window OFF the
-     *  event thread, so the first paint races the construction that computes the depth; the race is real (measured
-     *  2026-10-16: the paint came first) but a test cannot order it, so this puts the state back deliberately. */
+    /** For tests: back to the never-computed state a paint could meet. Until 0.11.183 Archaeopteryx.main built the
+     *  window OFF the event thread and the first paint raced the construction that computes the depth (measured
+     *  2026-10-16: the paint came first); a window is now built on the event thread whoever asks, and the lazy
+     *  depth stays as the second line, which a test can only reach by putting the state back deliberately. */
     void forgetCircMaxDepthForTest() {
         _circ_max_depth = 0;
     }

@@ -122,6 +122,9 @@ public final class MainFrameApplication extends MainFrame {
     private boolean _repsel_by_cutoff = true;
     private int _repsel_pick_index = 0;
 
+    /** Recorded by every constructor: see {@link #onEventThread}. */
+    private final boolean _built_on_event_thread = SwingUtilities.isEventDispatchThread();
+
     private MainFrameApplication(final Phylogeny[] phys, final Configuration config) {
         _configuration = config;
         if (_configuration == null) {
@@ -2096,14 +2099,14 @@ public final class MainFrameApplication extends MainFrame {
 
 
     public static MainFrameApplication createInstance(final Phylogeny[] phys, final Configuration config) {
-        return new MainFrameApplication(phys, config);
+        return onEventThread(() -> new MainFrameApplication(phys, config));
     }
 
     public static MainFrame createInstance(final Phylogeny[] phys,
                                            final Configuration config,
                                            final String title,
                                            final File current_dir) {
-        final MainFrameApplication mf = new MainFrameApplication(phys, config, title, current_dir);
+        final MainFrameApplication mf = onEventThread(() -> new MainFrameApplication(phys, config, title, current_dir));
         if (_launched_as_standalone_application) {
             mf.startUpdateCheckIfEnabled(); // the real app only: never from a test or an embedding program
         }
@@ -2111,6 +2114,45 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     static MainFrame createInstance(final Phylogeny[] phys, final Configuration config, final String title) {
-        return new MainFrameApplication(phys, config, title);
+        return onEventThread(() -> new MainFrameApplication(phys, config, title));
+    }
+
+    /**
+     * Builds the window on the event thread, whichever thread asks for it. {@code Archaeopteryx.main} (and an
+     * embedding program, {@code Archaeopteryx.createApplication}) calls from its own thread; built there, the
+     * window became visible while its construction was still running, and the event thread's FIRST PAINT raced the
+     * layout computation -- on 2026-10-16 the paint won, met a depth of 0 and laid a circular tree's internal nodes
+     * out at infinity. On the event thread the construction completes before any event, a paint included, can run.
+     * A failure inside the construction comes back as itself (an {@link Error} or {@link RuntimeException}), so the
+     * callers' handlers see what they always saw.
+     */
+    private static MainFrameApplication onEventThread(final java.util.function.Supplier<MainFrameApplication> make) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return make.get();
+        }
+        final MainFrameApplication[] made = new MainFrameApplication[1];
+        try {
+            SwingUtilities.invokeAndWait(() -> made[0] = make.get());
+        }
+        catch (final java.lang.reflect.InvocationTargetException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof Error) {
+                throw (Error) cause;
+            }
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw new IllegalStateException(cause);
+        }
+        catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("interrupted while building the window", e);
+        }
+        return made[0];
+    }
+
+    /** For tests: whether this window was constructed on the event thread (every constructor records it). */
+    boolean builtOnEventThreadForTest() {
+        return _built_on_event_thread;
     }
 } // MainFrameApplication.
