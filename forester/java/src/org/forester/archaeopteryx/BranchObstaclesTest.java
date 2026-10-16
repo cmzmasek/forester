@@ -266,11 +266,48 @@ public final class BranchObstaclesTest {
         o.add( 1, Float.NaN, 0, 10, 10 );
         o.add( 1, 0, 0, Float.POSITIVE_INFINITY, 10 );
         check( ok, o.segmentCountForTest() == 0, "a line with a NaN or infinite end draws as nothing and registers nothing" );
+        offCanvas( ok );
         o.add( 1, 0, 0, 100, 0 );
         check( ok, o.crosses( 2, 50, 0, 0, 10, -3, 3, 0 ), "precondition: a line is in the way" );
         o.reset( 16 );
         check( ok, !o.crosses( 2, 50, 0, 0, 10, -3, 3, 0 ), "a reset forgets every line" );
         check( ok, o.segmentCountForTest() == 0, "...and the count says so" );
+    }
+
+    /** What is off every canvas registers nothing, and costs nothing: an internal node laid out at infinity
+     *  (2026-10-16, a tree opened straight into the circular layout) handed addArc an infinite radius, whose
+     *  chord count -- the sweep over an arc piece of 0 -- came out as two billion; each chord at infinity, so the
+     *  old bounding-box threading filed each in one far cell until the heap was gone (0.11.180), and the linear
+     *  threading refused each, two billion times per arc, for a hang (0.11.181). The bound is MAX_EXTENT: past it
+     *  a float places no pixel and no canvas reaches. A sweep past a full turn is the same circle. */
+    private static void offCanvas( final boolean[] ok ) {
+        final BranchObstacles o = new BranchObstacles();
+        o.reset( 16 );
+        final long t0 = System.nanoTime();
+        o.addArc( 370, 406, Double.POSITIVE_INFINITY, 4.71, 4.72 ); // the arc of 2026-10-16, as it was called
+        o.addArc( 0, 0, Double.NaN, 0, 1 );
+        o.addArc( 0, 0, 100, Double.NaN, 1 );
+        o.addArc( 0, 0, 100, 0, Double.POSITIVE_INFINITY );
+        o.addArc( Double.POSITIVE_INFINITY, 0, 100, 0, 1 ); // every chord off the canvas: add refuses each
+        o.addArc( 0, 0, 2.0 * BranchObstacles.MAX_EXTENT, 0, 1 );
+        o.addArc( 0, 0, Double.MAX_VALUE, 0, 1 ); // finite, and an arc piece of 0: two billion chords without the bound
+        o.add( 1, 0, 0, 2.0f * BranchObstacles.MAX_EXTENT, 10 );
+        o.add( 1, -2.0f * BranchObstacles.MAX_EXTENT, 0, 10, 10 );
+        final long ms = ( System.nanoTime() - t0 ) / 1_000_000;
+        check( ok, o.segmentCountForTest() == 0, "an arc or line with an infinite, NaN or beyond-MAX_EXTENT part registers nothing" );
+        check( ok, o.cellEntryCountForTest() == 0, "...and threads no cell" );
+        check( ok, ms < 2000, "...and returns at once, not after two billion chords (took " + ms + " ms)" );
+        // the bound is what the canvas can hold, not a round number below it: an arc AT the bound is registered
+        o.addArc( 0, 0, BranchObstacles.MAX_EXTENT, 0, 1e-6 );
+        check( ok, o.segmentCountForTest() > 0, "an arc at MAX_EXTENT is still a drawable arc and registers" );
+        // a sweep past a full turn is the same circle: as many chords as one turn, not as many as the angle says
+        o.reset( 16 );
+        o.addArc( 0, 0, 100, 0, 2 * Math.PI );
+        final int one_turn = o.segmentCountForTest();
+        o.reset( 16 );
+        o.addArc( 0, 0, 100, 0, 200 * Math.PI );
+        check( ok, one_turn > 0, "precondition: a full turn registers chords" );
+        check( ok, o.segmentCountForTest() == one_turn, "a sweep of a hundred turns registers one turn of chords, " + o.segmentCountForTest() + " vs " + one_turn );
     }
 
     private static void check( final boolean[] ok, final boolean condition, final String what ) {

@@ -7744,7 +7744,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double max = breakLongBranchesActiveUnrooted() ? breakCappedRadialMax() : getMaxDistanceToRoot();
             setUrtFactor((float) (d / (2 * max)));
         } else {
-            final int max_depth = _circ_max_depth;
+            final int max_depth = circMaxDepth();
             if (max_depth > 0) {
                 setUrtFactor(d / (2 * max_depth));
             } else {
@@ -8051,10 +8051,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    /** Computes the depth the radial CLADOGRAM layouts divide by (an internal node's ring fraction in circular, the
+     *  unrooted fan's scale): the deepest displayed tip's depth plus one -- the SAME number calcParametersForPainting
+     *  derives (a collapsed clade counts as a tip, so its root stands one step inside the ring). Until 2026-10-16
+     *  this took the uncollapsed depth without the one, so a control-panel change and a resize put the internal
+     *  nodes of a circular cladogram on two different rings. */
     final void calcMaxDepth() {
         if (_phylogeny != null) {
-            _circ_max_depth = PhylogenyMethods.calculateMaxDepth(_phylogeny);
+            _circ_max_depth = PhylogenyMethods.calculateMaxDepthConsiderCollapsed(_phylogeny) + 1;
         }
+    }
+
+    /** The depth the radial cladogram layouts divide by, computed on first use. A tree opened straight into a
+     *  radial layout (the saved default) is painted BEFORE calcParametersForPainting or the control panel ever ran,
+     *  and dividing by the unset 0 put every internal node at infinity -- whose fork arcs the branch-obstacle grid
+     *  then registered chord by chord, two billion per arc (an OutOfMemoryError at 0.11.180, a hang at 0.11.181;
+     *  2026-10-16). At least 1 for any tree with a node (the deepest tip's depth plus one); 0 only without one. */
+    private int circMaxDepth() {
+        if ((_circ_max_depth <= 0) && (_phylogeny != null) && !_phylogeny.isEmpty()) {
+            calcMaxDepth();
+        }
+        return _circ_max_depth;
+    }
+
+    /** For tests: the stored radial depth as it is -- 0 while nothing has computed it. */
+    int storedCircMaxDepthForTest() {
+        return _circ_max_depth;
+    }
+
+    /** For tests: back to the never-computed state a paint can meet. Archaeopteryx.main builds the window OFF the
+     *  event thread, so the first paint races the construction that computes the depth; the race is real (measured
+     *  2026-10-16: the paint came first) but a test cannot order it, so this puts the state back deliberately. */
+    void forgetCircMaxDepthForTest() {
+        _circ_max_depth = 0;
+    }
+
+    /** For tests: a node's ring fraction exactly as the circular paint computes it. */
+    double circularRadiusFractionForTest(final PhylogenyNode node) {
+        return circularRadiusFraction(node);
     }
 
     /**
@@ -17230,12 +17264,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if (node.isCollapse() && !node.isExternal()) {
             // a collapsed clade stands one depth step inside the ring, its wedge ending on it (Archaeopteryx.js)
-            return (_circ_max_depth > 0) ? Math.max(0, 1.0 - (1.0 / _circ_max_depth)) : 1.0;
+            final int max_depth = circMaxDepth();
+            return (max_depth > 0) ? Math.max(0, 1.0 - (1.0 / max_depth)) : 1.0;
         }
         if (node.isExternal()) {
             return 1.0; // cladogram: all tips on the outer ring
         }
-        return 1 - (((double) _circ_max_depth - node.calculateDepth()) / _circ_max_depth);
+        // depth / (the deepest tip's depth + 1): a painted internal node is at least one step inside the ring
+        final int max_depth = circMaxDepth(); // >= 1 for any tree with a node to ask about
+        return 1 - (((double) max_depth - node.calculateDepth()) / max_depth);
     }
 
     /** Assigns each displayed tip its ring angle (advancing {@code angle[0]} by {@code angle_inc}), in tree order:

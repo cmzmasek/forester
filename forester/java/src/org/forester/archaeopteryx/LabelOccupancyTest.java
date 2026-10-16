@@ -199,6 +199,32 @@ public final class LabelOccupancyTest {
         if ( !huge.claim( 0, 0, 10, 10 ) || huge.claim( 0, 0, 10, 10 ) ) {
             fail( ok, "...and the grid works on from the small table" );
         }
+
+        // (12) a box off every canvas -- a NaN, an infinity, or a position or size past BranchObstacles.MAX_EXTENT
+        // -- is granted (nothing visible is drawn) and never recorded; threading it would walk a column per cell
+        // to the int range (an internal node laid out at infinity, 2026-10-16)
+        final LabelOccupancy off = new LabelOccupancy();
+        off.reset( 16 );
+        if ( !off.claim( 50, 50, 20, 7 ) ) {
+            fail( ok, "precondition: a label is placed" );
+        }
+        final long t_off = System.nanoTime();
+        if ( !off.claim( Float.POSITIVE_INFINITY, 50, 20, 7 ) || !off.claim( 50, Float.NaN, 20, 7 )
+                || !off.claim( 50, 50, Float.POSITIVE_INFINITY, 7 ) || !off.claim( 50, 50, 20, Float.NaN )
+                || !off.claim( 2.0f * BranchObstacles.MAX_EXTENT, 50, 20, 7 )
+                || !off.claim( 50, 50, 2.0f * BranchObstacles.MAX_EXTENT, 7 ) ) {
+            fail( ok, "a box with an infinite, NaN or beyond-MAX_EXTENT part is granted" );
+        }
+        final long ms_off = ( System.nanoTime() - t_off ) / 1_000_000;
+        if ( off.claimedCountForTest() != 1 ) {
+            fail( ok, "...and none of them is recorded, got " + off.claimedCountForTest() );
+        }
+        if ( ms_off > 2000 ) {
+            fail( ok, "...and each answers at once, took " + ms_off + " ms" );
+        }
+        if ( off.claim( 50, 50, 20, 7 ) ) {
+            fail( ok, "the placed label still blocks its spot afterwards" );
+        }
         return ok[ 0 ];
     }
 

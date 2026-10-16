@@ -123,6 +123,12 @@ final class LabelOccupancy {
             // LabelOccupancyTest, which asserts the map stays empty.)
             return true;
         }
+        if (!BranchObstacles.onCanvas(x) || !BranchObstacles.onCanvas(y) || !BranchObstacles.onCanvas(w)
+                || !BranchObstacles.onCanvas(h)) {
+            // off every canvas (a NaN, an infinity, or past BranchObstacles.MAX_EXTENT): granted, since nothing
+            // visible is drawn, and not recorded -- threading it would run a column per cell to the int range
+            return true;
+        }
         final int col0 = (int) Math.floor(x / _cell);
         final int col1 = (int) Math.floor((x + w) / _cell);
         final int row0 = (int) Math.floor(y / _cell);

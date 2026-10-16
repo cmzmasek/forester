@@ -110,6 +110,9 @@ final class OrientedOccupancy {
      * {@code hh} across it -- overlaps any box already claimed this pass. A read: nothing is recorded.
      */
     boolean overlaps(final double cx, final double cy, final double hw, final double hh, final double theta) {
+        if (!onCanvas(cx, cy, hw, hh, theta)) {
+            return false; // a box off every canvas is in nobody's way -- and is never recorded (place)
+        }
         return find(cx, cy, hw, hh, theta) >= 0;
     }
 
@@ -119,10 +122,19 @@ final class OrientedOccupancy {
      *  a single ask-and-record {@code claim} existed and nothing in the program used it (a review find,
      *  2026-09-27). A refused mark is simply never placed, so it never blocks a later one. */
     void place(final double cx, final double cy, final double hw, final double hh, final double theta) {
-        if ((hw <= 0) || (hh <= 0)) {
+        if ((hw <= 0) || (hh <= 0) || !onCanvas(cx, cy, hw, hh, theta)) {
             return;
         }
         record(cx, cy, hw, hh, theta);
+    }
+
+    /** Whether the box lies on a canvas at all: a NaN anywhere, an infinite or past-{@link BranchObstacles#MAX_EXTENT}
+     *  centre or half extent is nothing the painter shows, and threading it would run a column per cell to the
+     *  int range (an internal node laid out at infinity, 2026-10-16). */
+    private static boolean onCanvas(final double cx, final double cy, final double hw, final double hh,
+                                    final double theta) {
+        return BranchObstacles.onCanvas(cx) && BranchObstacles.onCanvas(cy) && BranchObstacles.onCanvas(hw)
+                && BranchObstacles.onCanvas(hh) && Double.isFinite(theta);
     }
 
     /** The index of a recorded box overlapping the query, or -1. */

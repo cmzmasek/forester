@@ -232,6 +232,27 @@ public final class OrientedOccupancyTest {
         check( ok, !o.overlaps( 50, 80, 0, 7, 0 ), "...and a zero-width query beside it is clear" );
         o.reset( 16 );
         check( ok, claim( o, 50, 50, 20, 7, 0 ), "a reset forgets every label" );
+        offCanvas( ok );
+    }
+
+    /** A box off every canvas -- a NaN, an infinity or a centre or half extent past BranchObstacles.MAX_EXTENT --
+     *  is granted (nothing visible is drawn) and never recorded; threading it would walk a column per cell to the
+     *  int range (an internal node at infinity, 2026-10-16: the label grids got its clade label's box). */
+    private static void offCanvas( final boolean[] ok ) {
+        final OrientedOccupancy o = new OrientedOccupancy();
+        o.reset( 16 );
+        check( ok, claim( o, 50, 50, 20, 7, 0 ), "precondition: a label is placed" );
+        final long t0 = System.nanoTime();
+        check( ok, claim( o, Double.POSITIVE_INFINITY, 50, 20, 7, 0 ), "a box at an infinite x is granted" );
+        check( ok, claim( o, 50, Double.NaN, 20, 7, 0 ), "a box at a NaN y is granted" );
+        check( ok, claim( o, 50, 50, Double.POSITIVE_INFINITY, 7, 0 ), "a box of infinite half width is granted" );
+        check( ok, claim( o, 50, 50, 20, 7, Double.NaN ), "a box at a NaN angle is granted" );
+        check( ok, claim( o, 2.0 * BranchObstacles.MAX_EXTENT, 50, 20, 7, 0 ), "a box past MAX_EXTENT is granted" );
+        check( ok, claim( o, 50, 50, 2.0 * BranchObstacles.MAX_EXTENT, 7, 0 ), "...so is one reaching past it" );
+        final long ms = ( System.nanoTime() - t0 ) / 1_000_000;
+        check( ok, o.claimedCountForTest() == 1, "...and none of them is recorded (only the precondition's label is)" );
+        check( ok, ms < 2000, "...and each answers at once (took " + ms + " ms)" );
+        check( ok, o.overlaps( 50, 50, 20, 7, 0 ), "the placed label is still found afterwards" );
     }
 
     /** What production does with a mark: ask, and place only if the way is clear (TreePanel asks for a name and

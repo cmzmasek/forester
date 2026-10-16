@@ -62,6 +62,13 @@ final class BranchObstacles {
     private final static double ARC_SAG  = 0.5;
     /** A slot table larger than this after a pass is an abnormal pass's; {@link #reset} gives it back. */
     final static int           SHRINK_ABOVE = 1 << 18;
+    /** A coordinate beyond this many pixels from the origin, either way, is off every canvas: the radial canvas is
+     *  at most 20,000 px across (TreePanel.MAX_RADIAL_DIAMETER), and a float places no pixel past 2^24 anyway. A
+     *  line or arc reaching past it registers nothing, instead of threading a column per cell of a run to nowhere
+     *  (an internal node laid out at infinity, 2026-10-16: its fork arc was registered two billion chords at a
+     *  time, each at infinity). The label grids apply the same bound. */
+    static final float         MAX_EXTENT   = 1 << 24;
+    private static final double TWO_PI      = 2.0 * Math.PI;
     /** The owner of a line that is nobody's own -- an arc. A number sits flush against its own LEG, which is why a
      *  leg is excluded for its owner; the fork arc at that leg's inner end is a line the number may reach past the
      *  node into, and a number lying across it is struck through whoever drew it. */
@@ -117,14 +124,14 @@ final class BranchObstacles {
 
     /**
      * Registers one drawn line of {@code owner}'s branch. A zero-length line is skipped: the painter draws nothing
-     * for it, so there is nothing a number could cross -- and so is a line with a NaN or infinite end, which
-     * Java2D draws as nothing either (and whose cell range would be the whole int range).
+     * for it, so there is nothing a number could cross -- and so is a line with an end that is NaN, infinite or
+     * past {@link #MAX_EXTENT}, which no canvas shows (and whose cell range would run to the int range).
      */
     void add(final long owner, final float x0, final float y0, final float x1, final float y1) {
         if ((x0 == x1) && (y0 == y1)) {
             return;
         }
-        if (!(Float.isFinite(x0) && Float.isFinite(y0) && Float.isFinite(x1) && Float.isFinite(y1))) {
+        if (!onCanvas(x0) || !onCanvas(y0) || !onCanvas(x1) || !onCanvas(y1)) {
             return;
         }
         if (_seg_count == _x0.length) {
@@ -187,10 +194,14 @@ final class BranchObstacles {
      * from an arc, the branch that drew it included.
      */
     void addArc(final double cx, final double cy, final double r, final double a0, final double a1) {
-        if (r <= 0) {
+        // what the CHORD COUNT is derived from must be sane here: a NaN, non-positive or off-canvas radius (an arc
+        // piece of 0, a count of two billion), an angle that is not a number. A centre off the canvas needs no
+        // check: it puts every chord off it, and add refuses each (measured: a mutant without this check survived)
+        if (!(r > 0) || !onCanvas(r) || !Double.isFinite(a0) || !Double.isFinite(a1)) {
             return;
         }
-        final double sweep = a1 - a0;
+        // a sweep past a full turn is the same circle and must not multiply the chords
+        final double sweep = Math.max(-TWO_PI, Math.min(TWO_PI, a1 - a0));
         // sagitta of a chord over angle t is r (1 - cos(t/2)); keep it under ARC_SAG
         final double max_piece = (r > ARC_SAG) ? (2.0 * Math.acos(1.0 - (ARC_SAG / r))) : Math.PI;
         final int pieces = Math.max(1, (int) Math.ceil(Math.abs(sweep) / max_piece));
@@ -204,6 +215,11 @@ final class BranchObstacles {
             px = nx;
             py = ny;
         }
+    }
+
+    /** Whether a coordinate is finite and within {@link #MAX_EXTENT} of the origin (false for NaN). */
+    static boolean onCanvas(final double v) {
+        return (v >= -MAX_EXTENT) && (v <= MAX_EXTENT);
     }
 
     /**
