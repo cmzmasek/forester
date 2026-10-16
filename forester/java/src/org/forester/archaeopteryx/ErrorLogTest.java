@@ -42,7 +42,95 @@ public final class ErrorLogTest {
 
     public static boolean test() {
         return signature() && dedup() && errorVsChatter() && stderrTee() && sizeCap() && location()
-                && tailAndConsole() && badPropertyCannotBlockStartup() && menu() && markerAfterStartupError();
+                && tailAndConsole() && badPropertyCannotBlockStartup() && menu() && markerAfterStartupError()
+                && heapReport() && holders();
+    }
+
+    /** What the application registers as the heap's holders: one line per open tab naming its tree, its undo
+     *  history and the four paint grids -- read off a real window with a real tree. */
+    private static boolean holders() {
+        if ( java.awt.GraphicsEnvironment.isHeadless() ) {
+            return true;
+        }
+        try {
+            final java.io.File file = new java.io.File( System.getProperty( "user.dir" ), "forester/demo/scale-axis.xml" );
+            final org.forester.phylogeny.Phylogeny phy = org.forester.phylogeny.factories.ParserBasedPhylogenyFactory
+                    .getInstance().create( file, org.forester.io.parsers.phyloxml.PhyloXmlParser.createPhyloXmlParser() )[ 0 ];
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            javax.swing.SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new org.forester.phylogeny.Phylogeny[] { phy }, new Configuration(), "holders" ) );
+            final boolean[] ok = { true };
+            javax.swing.SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final String line = tp.memoryFootprint();
+                final String tips = phy.getNumberOfExternalNodes() + " tips";
+                for( final String must : new String[] { "tab \"" + phy.getName() + "\"", tips, "undo history 0 snapshot(s)",
+                        "grids: branches [lines ", "], labels [boxes ", "], numbers [boxes ", "], symbols [boxes ",
+                        " in a table of " } ) {
+                    if ( !line.contains( must ) ) {
+                        ok[ 0 ] = fail( "a tab's footprint must say \"" + must + "\": " + line );
+                    }
+                }
+                final String all = MainFrame.describeHeapForLog();
+                if ( !all.contains( line ) ) {
+                    ok[ 0 ] = fail( "the registered report must carry every open tab's line; got: " + all );
+                }
+                ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Exception e ) {
+            return fail( "exception: " + e );
+        }
+    }
+
+    /** An out-of-memory entry lists the heap's numbers and what the registered reporter says holds it; any other
+     *  failure gets no such block; a reporter that throws is noted, never fatal; unregistering stops the listing. */
+    private static boolean heapReport() {
+        try {
+            final Path f = tmp( "oom.log" );
+            final ErrorLog log = new ErrorLog( f, null );
+            ErrorLog.setHeapReporter( () -> "tab \"big\": 1000 tips; grids: labels [cells 7 in a table of 1024]\nsecond line" );
+            log.logThrowable( "Uncaught in AWT-EventQueue-0", new OutOfMemoryError( "Java heap space" ) );
+            final String text = Files.readString( f, StandardCharsets.UTF_8 );
+            if ( !text.contains( "heap when it ran out: " ) || !text.contains( " MB used of " ) ) {
+                return fail( "an out-of-memory entry must state the heap's numbers: " + text );
+            }
+            if ( !text.contains( "    tab \"big\": 1000 tips" ) || !text.contains( "    second line" ) ) {
+                return fail( "...and list the holders the reporter names, one per indented line: " + text );
+            }
+            final int at = text.indexOf( "OutOfMemoryError" ), heap = text.indexOf( "heap when it ran out" );
+            if ( ( at < 0 ) || ( heap < at ) ) {
+                return fail( "the heap block follows the trace: " + text );
+            }
+            log.logThrowable( "Uncaught in AWT-EventQueue-0", thrown( "not a memory failure" ) );
+            final String text2 = Files.readString( f, StandardCharsets.UTF_8 );
+            if ( text2.indexOf( "heap when it ran out", heap + 1 ) >= 0 ) {
+                return fail( "any other failure gets no heap block" );
+            }
+            ErrorLog.setHeapReporter( () -> {
+                throw new IllegalStateException( "reporter broke" );
+            } );
+            log.logThrowable( "Uncaught in AWT-EventQueue-0", new OutOfMemoryError( "Metaspace" ) );
+            final String text3 = Files.readString( f, StandardCharsets.UTF_8 );
+            if ( !text3.contains( "Metaspace" ) || !text3.contains( "could not be listed" ) ) {
+                return fail( "a reporter that throws is noted and the entry is still written: " + text3 );
+            }
+            ErrorLog.setHeapReporter( null );
+            log.logThrowable( "Uncaught in AWT-EventQueue-0", new OutOfMemoryError( "GC overhead limit exceeded" ) );
+            final String text4 = Files.readString( f, StandardCharsets.UTF_8 );
+            final int last = text4.lastIndexOf( "heap when it ran out" );
+            if ( ( last < 0 ) || text4.substring( last ).contains( "tab \"big\"" ) ) {
+                return fail( "with no reporter the numbers are still written and no holders are: " + text4.substring( Math.max( 0, last ) ) );
+            }
+            return true;
+        }
+        catch ( final Exception e ) {
+            return fail( "exception: " + e );
+        }
+        finally {
+            ErrorLog.setHeapReporter( null );
+        }
     }
 
     private static boolean fail( final String msg ) {

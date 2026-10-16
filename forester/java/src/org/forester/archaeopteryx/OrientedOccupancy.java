@@ -34,13 +34,20 @@ package org.forester.archaeopteryx;
  * label is drawn only if nothing already drawn is in its way, first come, and a found node's label always -- the
  * rule the numbers follow, and the one the manual states.
  * <p>
- * <b>Cost.</b> A uniform cell grid in primitive arrays, one intrusive list node per (box, cell), keyed by each box's
- * axis-aligned bounds; the oriented test runs only against the boxes threaded through the cells a query touches.
+ * <b>Cost.</b> A uniform cell grid in primitive arrays, one intrusive list node per (box, cell); the oriented test
+ * runs only against the boxes threaded through the cells a query touches. A box is threaded through the cells it
+ * COVERS -- column by column, the rows between its lowest and highest point in that column -- not through every
+ * cell of its axis-aligned bounds: a long label along a 45-degree spoke covers about two cells per column, where
+ * its bounds hold a square of them (a 10,000 x 14 px box at 16 px cells: ~1,300 entries against 196,000; until
+ * 0.11.181 the bounds were used, see {@link BranchObstacles} for the paint that ran out of heap). A pass that
+ * needed more than {@link #SHRINK_ABOVE} slots is abnormal; what it took is given back at the next {@link #reset}.
  */
 final class OrientedOccupancy {
 
     private final static float MIN_CELL  = 8.0f;
     private final static long  EMPTY_KEY = Long.MIN_VALUE;
+    /** A slot table larger than this after a pass is an abnormal pass's; {@link #reset} gives it back. */
+    final static int           SHRINK_ABOVE = 1 << 18;
 
     private long[]  _slot_key;
     private int[]   _slot_head;
@@ -56,6 +63,11 @@ final class OrientedOccupancy {
     private int     _box_count;
     private int     _slot_used;
     private float   _cell = 32.0f;
+    // scratch for the box being threaded or looked up: its four corners, and the rows it reaches in one column
+    private final double[] _kx = new double[4];
+    private final double[] _ky = new double[4];
+    private int     _row_lo;
+    private int     _row_hi;
 
     OrientedOccupancy() {
         _slot_key = new long[1 << 10];
@@ -73,6 +85,19 @@ final class OrientedOccupancy {
 
     /** Starts a new pass. {@code cell_size} should be about the height of the marks being placed. */
     void reset(final float cell_size) {
+        if (_slot_key.length > SHRINK_ABOVE) {
+            // an abnormal pass grew the tables; start the next one from the small ones rather than keep that memory
+            _slot_key = new long[1 << 10];
+            _slot_head = new int[1 << 10];
+            _node_box = new int[1024];
+            _node_next = new int[1024];
+            _cx = new float[256];
+            _cy = new float[256];
+            _hw = new float[256];
+            _hh = new float[256];
+            _cos = new float[256];
+            _sin = new float[256];
+        }
         java.util.Arrays.fill(_slot_key, EMPTY_KEY);
         _box_count = 0;
         _node_count = 0;
@@ -103,14 +128,15 @@ final class OrientedOccupancy {
     /** The index of a recorded box overlapping the query, or -1. */
     private int find(final double cx, final double cy, final double hw, final double hh, final double theta) {
         final double cos = Math.cos(theta), sin = Math.sin(theta);
-        final double ex = Math.abs(hw * cos) + Math.abs(hh * sin); // half the axis-aligned bounds
-        final double ey = Math.abs(hw * sin) + Math.abs(hh * cos);
+        final double ex = Math.abs(hw * cos) + Math.abs(hh * sin); // half the axis-aligned bounds, along x
         final int col0 = (int) Math.floor((cx - ex) / _cell);
         final int col1 = (int) Math.floor((cx + ex) / _cell);
-        final int row0 = (int) Math.floor((cy - ey) / _cell);
-        final int row1 = (int) Math.floor((cy + ey) / _cell);
+        corners(cx, cy, hw, hh, cos, sin);
         for (int c = col0; c <= col1; ++c) {
-            for (int r = row0; r <= row1; ++r) {
+            if (!stripRows(Math.max(cx - ex, c * (double) _cell), Math.min(cx + ex, (c + 1) * (double) _cell))) {
+                continue;
+            }
+            for (int r = _row_lo; r <= _row_hi; ++r) {
                 for (int n = head(key(c, r)); n >= 0; n = _node_next[n]) {
                     final int i = _node_box[n];
                     if (overlap(cx, cy, hw, hh, cos, sin, _cx[i], _cy[i], _hw[i], _hh[i], _cos[i], _sin[i])) {
@@ -165,21 +191,94 @@ final class OrientedOccupancy {
         _cos[box] = (float) Math.cos(theta);
         _sin[box] = (float) Math.sin(theta);
         final double ex = Math.abs(hw * _cos[box]) + Math.abs(hh * _sin[box]);
-        final double ey = Math.abs(hw * _sin[box]) + Math.abs(hh * _cos[box]);
         final int col0 = (int) Math.floor((cx - ex) / _cell);
         final int col1 = (int) Math.floor((cx + ex) / _cell);
-        final int row0 = (int) Math.floor((cy - ey) / _cell);
-        final int row1 = (int) Math.floor((cy + ey) / _cell);
+        corners(cx, cy, hw, hh, _cos[box], _sin[box]);
         for (int c = col0; c <= col1; ++c) {
-            for (int r = row0; r <= row1; ++r) {
+            if (!stripRows(Math.max(cx - ex, c * (double) _cell), Math.min(cx + ex, (c + 1) * (double) _cell))) {
+                continue;
+            }
+            for (int r = _row_lo; r <= _row_hi; ++r) {
                 link(key(c, r), box);
             }
         }
     }
 
+    /** The four corners of a box into the scratch arrays: centre +/- hw along (cos, sin), +/- hh along the normal. */
+    private void corners(final double cx, final double cy, final double hw, final double hh, final double cos,
+                         final double sin) {
+        final double ux = hw * cos, uy = hw * sin;   // half the box along its direction
+        final double vx = -hh * sin, vy = hh * cos;  // half the box across it
+        _kx[0] = cx + ux + vx;
+        _ky[0] = cy + uy + vy;
+        _kx[1] = cx - ux + vx;
+        _ky[1] = cy - uy + vy;
+        _kx[2] = cx - ux - vx;
+        _ky[2] = cy - uy - vy;
+        _kx[3] = cx + ux - vx;
+        _ky[3] = cy + uy - vy;
+    }
+
+    /**
+     * The rows the scratch box reaches inside the column strip {@code x in [xa, xb]}, into {@code _row_lo..hi}:
+     * the y-range of its four edges clipped to the strip, which for a convex box is the y-range of the box itself
+     * there (its extreme points in a strip lie on its boundary). False when no edge reaches the strip (a strip
+     * inside the bounds always has one). No slack against rounding, for the reason given at
+     * {@code BranchObstacles.linkAlong}: an extreme is computed inexactly only on a column edge, where it is the
+     * single point of the box in the cell it could be filed out of.
+     */
+    private boolean stripRows(final double xa, final double xb) {
+        double lo = Double.POSITIVE_INFINITY, hi = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < 4; ++i) {
+            final int j = (i + 1) & 3;
+            final double ax = _kx[i], ay = _ky[i], bx = _kx[j], by = _ky[j];
+            final double dx = bx - ax;
+            final double ya, yb;
+            if (dx == 0) {
+                if ((ax < xa) || (ax > xb)) {
+                    continue; // a vertical edge outside the strip
+                }
+                ya = ay;
+                yb = by;
+            } else {
+                final double ta = (xa - ax) / dx, tb = (xb - ax) / dx;
+                final double t0 = Math.max(0, Math.min(ta, tb)), t1 = Math.min(1, Math.max(ta, tb));
+                if (t0 > t1) {
+                    continue; // the edge never enters the strip
+                }
+                ya = ay + (t0 * (by - ay));
+                yb = ay + (t1 * (by - ay));
+            }
+            lo = Math.min(lo, Math.min(ya, yb));
+            hi = Math.max(hi, Math.max(ya, yb));
+        }
+        if (lo > hi) {
+            return false;
+        }
+        _row_lo = (int) Math.floor(lo / _cell);
+        _row_hi = (int) Math.floor(hi / _cell);
+        return true;
+    }
+
     /** For tests: how many marks have been placed this pass. */
     int claimedCountForTest() {
         return _box_count;
+    }
+
+    /** For tests: how many (box, cell) entries this pass holds -- the cost of threading. */
+    int cellEntryCountForTest() {
+        return _node_count;
+    }
+
+    /** For tests: the slot table's size -- what a pass grew it to, or what a reset gave back. */
+    int slotTableSizeForTest() {
+        return _slot_key.length;
+    }
+
+    /** For the error log's out-of-memory entry: the sizes of what this grid holds. */
+    String describeForLog() {
+        return "boxes " + _box_count + ", cell entries " + _node_count + " of " + _node_box.length + ", cells "
+                + _slot_used + " in a table of " + _slot_key.length;
     }
 
     private int head(final long cell_key) {

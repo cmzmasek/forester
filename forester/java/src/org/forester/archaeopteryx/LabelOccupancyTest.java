@@ -176,6 +176,29 @@ public final class LabelOccupancyTest {
         if ( placed < 1 ) {
             fail( ok, "the sweep placed nothing, so it measured nothing" );
         }
+
+        // (11) an abnormal pass's memory is given back: the 20k-claim table above is a normal pass's and is kept
+        // across a reset; a pass past SHRINK_ABOVE slots has its table given back at the next reset
+        final int kept = big.slotTableSizeForTest();
+        big.reset( 16 );
+        if ( big.slotTableSizeForTest() != kept ) {
+            fail( ok, "a normal pass keeps its table across a reset: " + kept + " -> " + big.slotTableSizeForTest() );
+        }
+        final LabelOccupancy huge = new LabelOccupancy();
+        huge.reset( 4 );
+        for( int i = 0; i < 300000; ++i ) {
+            huge.claim( i * 4, 0, 2, 2 ); // 300,000 cells
+        }
+        if ( huge.slotTableSizeForTest() <= LabelOccupancy.SHRINK_ABOVE ) {
+            fail( ok, "precondition: 300,000 cells grew the table past the threshold, got " + huge.slotTableSizeForTest() );
+        }
+        huge.reset( 4 );
+        if ( huge.slotTableSizeForTest() != 1024 ) {
+            fail( ok, "an abnormal pass's table is given back at the next reset, got " + huge.slotTableSizeForTest() );
+        }
+        if ( !huge.claim( 0, 0, 10, 10 ) || huge.claim( 0, 0, 10, 10 ) ) {
+            fail( ok, "...and the grid works on from the small table" );
+        }
         return ok[ 0 ];
     }
 

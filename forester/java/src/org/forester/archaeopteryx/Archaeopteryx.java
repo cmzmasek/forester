@@ -62,6 +62,7 @@ public final class Archaeopteryx {
         // printStackTrace in the code) would simply vanish and a user could only report "it stopped drawing".
         // Installed FIRST, so anything thrown during start-up is caught too.
         ErrorLog.install( MainFrame::showErrorIndicatorOnAllFrames );
+        ErrorLog.setHeapReporter( MainFrame::describeHeapForLog ); // an out-of-memory entry lists what the tabs hold
         // Register the bundled default figure font BEFORE the default font family is chosen (in
         // Configuration); must come after the macOS AWT properties above (this initializes AWT).
         FontResources.registerBundledFonts();

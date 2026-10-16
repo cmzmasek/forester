@@ -43,6 +43,14 @@ package org.forester.archaeopteryx;
  * once per cell: a per-query stamp to test it once instead was built and measured at nothing at all (a 2,339-clade
  * unrooted paint, 18.7 ms best with it and without), because the legs and chords registered here are short and a
  * number's bounds cover a cell or two, so it was removed rather than kept on the strength of a story.
+ * <p>
+ * <b>A line is threaded through the cells it PASSES</b>, column by column -- linear in its length. Until
+ * 0.11.181 it was threaded through every cell of its bounding box, which is quadratic: the 10,000 px diagonal leg
+ * a radial layout draws at its maximum zoom took 390,625 cell entries at 16 px cells where its path holds about
+ * 1,250, and a slot table that doubles whenever it is half full grew to hundreds of megabytes for one paint. The
+ * tables never shrank either; a pass that needed more than {@link #SHRINK_ABOVE} slots is abnormal (the 268-tip
+ * circular tree measured on 2026-10-16 uses 56,154 cells at its maximum zoom), so what it took is given back at
+ * the next {@link #reset} instead of being kept for the life of the panel.
  */
 final class BranchObstacles {
 
@@ -52,6 +60,8 @@ final class BranchObstacles {
     private final static long  EMPTY_KEY = Long.MIN_VALUE;
     /** Largest sagitta a chord of a registered arc may leave, in px. */
     private final static double ARC_SAG  = 0.5;
+    /** A slot table larger than this after a pass is an abnormal pass's; {@link #reset} gives it back. */
+    final static int           SHRINK_ABOVE = 1 << 18;
     /** The owner of a line that is nobody's own -- an arc. A number sits flush against its own LEG, which is why a
      *  leg is excluded for its owner; the fork arc at that leg's inner end is a line the number may reach past the
      *  node into, and a number lying across it is struck through whoever drew it. */
@@ -86,6 +96,18 @@ final class BranchObstacles {
 
     /** Starts a new pass. {@code cell_size} should be about the size of the numbers that will be tested. */
     void reset(final float cell_size) {
+        if (_slot_key.length > SHRINK_ABOVE) {
+            // an abnormal pass grew the tables; start the next one from the small ones rather than keep that memory
+            _slot_key = new long[1 << 10];
+            _slot_head = new int[1 << 10];
+            _node_seg = new int[1024];
+            _node_next = new int[1024];
+            _x0 = new float[256];
+            _y0 = new float[256];
+            _x1 = new float[256];
+            _y1 = new float[256];
+            _owner = new long[256];
+        }
         java.util.Arrays.fill(_slot_key, EMPTY_KEY);
         _seg_count = 0;
         _node_count = 0;
@@ -95,10 +117,14 @@ final class BranchObstacles {
 
     /**
      * Registers one drawn line of {@code owner}'s branch. A zero-length line is skipped: the painter draws nothing
-     * for it, so there is nothing a number could cross.
+     * for it, so there is nothing a number could cross -- and so is a line with a NaN or infinite end, which
+     * Java2D draws as nothing either (and whose cell range would be the whole int range).
      */
     void add(final long owner, final float x0, final float y0, final float x1, final float y1) {
         if ((x0 == x1) && (y0 == y1)) {
+            return;
+        }
+        if (!(Float.isFinite(x0) && Float.isFinite(y0) && Float.isFinite(x1) && Float.isFinite(y1))) {
             return;
         }
         if (_seg_count == _x0.length) {
@@ -115,11 +141,39 @@ final class BranchObstacles {
         _x1[seg] = x1;
         _y1[seg] = y1;
         _owner[seg] = owner;
-        final int col0 = (int) Math.floor(Math.min(x0, x1) / _cell);
-        final int col1 = (int) Math.floor(Math.max(x0, x1) / _cell);
-        final int row0 = (int) Math.floor(Math.min(y0, y1) / _cell);
-        final int row1 = (int) Math.floor(Math.max(y0, y1) / _cell);
+        linkAlong(seg, x0, y0, x1, y1);
+    }
+
+    /**
+     * Threads {@code seg} through every cell the line from {@code (x0, y0)} to {@code (x1, y1)} passes, and no
+     * other: column by column, the rows between the line's lowest and highest point inside that column (plus
+     * Every point of the line lies in some column, and within it between those two ys, so the cell of every
+     * point is threaded -- which is all {@link #crosses} needs, since it looks in the cells under the box and a
+     * line that meets the box has a point in one of them. No slack against rounding: a y is interpolated
+     * inexactly only at an interior column edge, and the one point of the line that could then be filed a row
+     * off is that edge point itself, which is the only point of the line in that cell -- a box meets it there or
+     * not by the same rounding (a slack mutant survived every check and was removed, 2026-10-16).
+     */
+    private void linkAlong(final int seg, final double x0, final double y0, final double x1, final double y1) {
+        final double xmin = Math.min(x0, x1), xmax = Math.max(x0, x1);
+        final int col0 = (int) Math.floor(xmin / _cell);
+        final int col1 = (int) Math.floor(xmax / _cell);
+        final double dx = x1 - x0, dy = y1 - y0;
         for (int c = col0; c <= col1; ++c) {
+            // the piece of the line inside this column: from the column's left edge (or the line's own start) to
+            // its right edge (or the line's end), the ys there by the line's equation; a vertical line is all of it
+            final double xa = Math.max(xmin, c * (double) _cell);
+            final double xb = Math.min(xmax, (c + 1) * (double) _cell);
+            final double ya, yb;
+            if (dx == 0) {
+                ya = y0;
+                yb = y1;
+            } else {
+                ya = y0 + (((xa - x0) / dx) * dy);
+                yb = y0 + (((xb - x0) / dx) * dy);
+            }
+            final int row0 = (int) Math.floor(Math.min(ya, yb) / _cell);
+            final int row1 = (int) Math.floor(Math.max(ya, yb) / _cell);
             for (int r = row0; r <= row1; ++r) {
                 link(key(c, r), seg);
             }
@@ -228,6 +282,22 @@ final class BranchObstacles {
     /** For tests: how many line pieces are registered this pass (an arc counts once per chord). */
     int segmentCountForTest() {
         return _seg_count;
+    }
+
+    /** For tests: how many (line, cell) entries this pass holds -- the cost of threading. */
+    int cellEntryCountForTest() {
+        return _node_count;
+    }
+
+    /** For tests: the slot table's size -- what a pass grew it to, or what a reset gave back. */
+    int slotTableSizeForTest() {
+        return _slot_key.length;
+    }
+
+    /** For the error log's out-of-memory entry: the sizes of what this grid holds. */
+    String describeForLog() {
+        return "lines " + _seg_count + ", cell entries " + _node_count + " of " + _node_seg.length + ", cells "
+                + _slot_used + " in a table of " + _slot_key.length;
     }
 
     private int head(final long cell_key) {

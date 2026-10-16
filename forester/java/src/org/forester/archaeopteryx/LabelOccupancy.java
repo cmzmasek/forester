@@ -77,6 +77,9 @@ final class LabelOccupancy {
 
     /** A key no real cell can produce, so an untouched slot is recognisable without a separate occupancy array. */
     private final static long EMPTY_KEY = Long.MIN_VALUE;
+    /** A slot table larger than this after a pass is an abnormal pass's; {@link #reset} gives it back (a mark's
+     *  cells are those of its own box, so only a pass with a vast number of marks, or vast marks, gets here). */
+    final static int SHRINK_ABOVE = 1 << 18;
 
     LabelOccupancy() {
         allocate(1 << 10, 256);
@@ -96,6 +99,9 @@ final class LabelOccupancy {
 
     /** Starts a new pass. {@code cell_size} should be about the size of the marks being placed. */
     void reset(final float cell_size) {
+        if (_slot_key.length > SHRINK_ABOVE) {
+            allocate(1 << 10, 256); // an abnormal pass grew the tables; do not keep that memory for the panel's life
+        }
         java.util.Arrays.fill(_slot_key, EMPTY_KEY);
         _box_count = 0;
         _node_count = 0;
@@ -211,6 +217,17 @@ final class LabelOccupancy {
     /** For tests: how many marks have been placed this pass (a box spanning several cells still counts once). */
     int claimedCountForTest() {
         return _box_count;
+    }
+
+    /** For tests: the slot table's size -- what a pass grew it to, or what a reset gave back. */
+    int slotTableSizeForTest() {
+        return _slot_key.length;
+    }
+
+    /** For the error log's out-of-memory entry: the sizes of what this grid holds. */
+    String describeForLog() {
+        return "boxes " + _box_count + ", cell entries " + _node_count + " of " + _node_box.length + ", cells "
+                + _slot_used + " in a table of " + _slot_key.length;
     }
 
     private static long key(final int col, final int row) {

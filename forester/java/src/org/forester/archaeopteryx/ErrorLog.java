@@ -59,6 +59,8 @@ final class ErrorLog {
 
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss" );
     private static ErrorLog                INSTANCE;
+    /** Who holds the heap, for an out-of-memory entry (see {@link #setHeapReporter}); null when nobody registered. */
+    private static volatile java.util.function.Supplier<String> HEAP_REPORTER;
 
     private final Path             _file;
     private final Runnable         _on_first_error;
@@ -124,6 +126,43 @@ final class ErrorLog {
         return log;
     }
 
+    /**
+     * Registers what an OUT-OF-MEMORY entry should list after the trace: the application's own big holders (open
+     * trees, undo histories, the paint's occupancy grids), one per line. An {@code OutOfMemoryError} is thrown by
+     * whoever allocates NEXT once the heap is full, so its trace names a bystander as often as the culprit -- on
+     * 2026-10-16 a circular paint's 24 KB table growth was blamed for a 2 GB heap it did not hold, and the log had
+     * nothing to say about who did. The reporter runs inside the handler, after the failed allocation has been
+     * dropped; it must be cheap and must not throw (a throw is caught and noted). Null unregisters.
+     */
+    static void setHeapReporter( final java.util.function.Supplier<String> reporter ) {
+        HEAP_REPORTER = reporter;
+    }
+
+    /** The lines an out-of-memory entry gets after its trace: the heap's numbers, then the registered holders. */
+    static String heapReport() {
+        final StringBuilder sb = new StringBuilder();
+        final Runtime rt = Runtime.getRuntime();
+        final long mb = 1024L * 1024L;
+        sb.append( "    heap when it ran out: " ).append( ( rt.totalMemory() - rt.freeMemory() ) / mb )
+                .append( " MB used of " ).append( rt.maxMemory() / mb ).append( " MB (" )
+                .append( rt.totalMemory() / mb ).append( " MB committed)\n" );
+        final java.util.function.Supplier<String> reporter = HEAP_REPORTER;
+        if ( reporter != null ) {
+            try {
+                final String holders = reporter.get();
+                if ( ( holders != null ) && !holders.isEmpty() ) {
+                    for( final String line : holders.split( "\n" ) ) {
+                        sb.append( "    " ).append( line ).append( '\n' );
+                    }
+                }
+            }
+            catch ( final Throwable t ) {
+                sb.append( "    (the holders could not be listed: " ).append( t ).append( ")\n" );
+            }
+        }
+        return sb.toString();
+    }
+
     /** The installed log, or null when it has not been installed (tests, the CLI). */
     static synchronized ErrorLog instance() {
         return INSTANCE;
@@ -179,7 +218,11 @@ final class ErrorLog {
         sb.append( LocalDateTime.now().format( STAMP ) ).append( "  " ).append( context ).append( '\n' );
         final java.io.StringWriter sw = new java.io.StringWriter();
         t.printStackTrace( new java.io.PrintWriter( sw ) );
-        sb.append( sw ).append( '\n' );
+        sb.append( sw );
+        if ( t instanceof OutOfMemoryError ) {
+            sb.append( heapReport() ); // the trace names who allocated last; this names who holds the heap
+        }
+        sb.append( '\n' );
         write( sb.toString(), true );
         // ...and to the real console, if there is one. Writing to System.err would come straight back through the
         // tee and be logged twice, so this goes to the stream captured before the tee was installed.

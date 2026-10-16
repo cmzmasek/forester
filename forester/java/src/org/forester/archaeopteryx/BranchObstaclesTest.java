@@ -23,8 +23,12 @@ package org.forester.archaeopteryx;
 /**
  * {@link BranchObstacles}: the clip itself, the rotated frame a number is tested in, the owner exclusion, the cell
  * grid (a line far from where it was registered is still found), arcs as chords that hug the circle, and the two
- * deliberate non-behaviours -- a zero-length line registers nothing, and a reset forgets everything. No GUI: this
- * is geometry, and a wrong answer here would be invisible in a rendered figure until the one tree that hits it.
+ * deliberate non-behaviours -- a zero-length line registers nothing, and a reset forgets everything. Since
+ * 0.11.181 also the COST: a line is threaded through the cells it passes, linear in its length (the bounding box
+ * was quadratic and a circular paint ran out of heap in this class's table); that the index then still finds
+ * every line a box meets, checked against testing every line; and that an abnormal pass's memory is given back.
+ * No GUI: this is geometry, and a wrong answer here would be invisible in a rendered figure until the one tree
+ * that hits it.
  */
 public final class BranchObstaclesTest {
 
@@ -41,7 +45,116 @@ public final class BranchObstaclesTest {
         farCells( ok );
         arcs( ok );
         nonBehaviour( ok );
+        linearCost( ok );
+        indexEqualsEveryLine( ok );
+        givesBackMemory( ok );
         return ok[ 0 ];
+    }
+
+    /** A line costs cells in proportion to its LENGTH, not to the area of its bounds: the 10,000 px diagonal leg a
+     *  radial layout draws at its maximum zoom threads about two cells per column at 16 px cells (~1,250 entries),
+     *  where its bounding box holds 390,625 -- and it is still met along its whole length, and not beside it. */
+    private static void linearCost( final boolean[] ok ) {
+        final BranchObstacles o = new BranchObstacles();
+        o.reset( 16 );
+        o.add( 1, 0, 0, 10000, 10000 );
+        final int entries = o.cellEntryCountForTest();
+        check( ok, entries <= 2600, "a 10,000 px diagonal threads at most a few cells per column, got " + entries );
+        check( ok, entries >= 625, "precondition: it was threaded through at least one cell per column, got " + entries );
+        check( ok, o.crosses( 2, 7000, 7000, 0, 10, -3, 3, 0 ), "the diagonal is met on itself, far from its start" );
+        check( ok, !o.crosses( 2, 7000, 3000, 0, 10, -3, 3, 0 ), "...and not inside its bounds, off it" );
+        // a horizontal and a vertical line: one cell per column / per row
+        o.reset( 16 );
+        o.add( 1, 0, 100, 10000, 100 );
+        check( ok, o.cellEntryCountForTest() <= 1300, "a horizontal 10,000 px line threads about one cell per column, got " + o.cellEntryCountForTest() );
+        o.reset( 16 );
+        o.add( 1, 100, 0, 100, 10000 );
+        check( ok, o.cellEntryCountForTest() <= 1300, "a vertical 10,000 px line threads about one cell per row, got " + o.cellEntryCountForTest() );
+        check( ok, o.crosses( 2, 100, 9990, 0, 10, -3, 3, 0 ), "...and is met at its far end" );
+        // a NEAR-vertical line stays in one column: the piece inside the column is the line's own extent, not the
+        // line extrapolated to the column's edges (which for a slope of 20,000 would reach 240,000 px past its end)
+        o.reset( 16 );
+        o.add( 1, 100, 0, 100.5f, 10000 );
+        check( ok, o.cellEntryCountForTest() <= 1300, "a near-vertical 10,000 px line threads its own rows only, got " + o.cellEntryCountForTest() );
+        check( ok, o.crosses( 2, 100.25, 5000, 0, 10, -3, 3, 0 ), "...and is met in the middle" );
+    }
+
+    /** The grid is an index, never a filter: for random lines and random rotated boxes its answer equals the answer
+     *  of testing EVERY line, both ways -- lines ending exactly on cell edges and crossing cell corners included,
+     *  since those are where a threading rule can leave out the cell a line touches. Same arithmetic as crosses,
+     *  so the only thing under test is which lines the index offers. */
+    private static void indexEqualsEveryLine( final boolean[] ok ) {
+        final java.util.Random rnd = new java.util.Random( 20261016 );
+        final BranchObstacles o = new BranchObstacles();
+        o.reset( 16 );
+        final int n = 300;
+        final float[][] lines = new float[ n ][ 4 ];
+        for( int i = 0; i < n; ++i ) {
+            for( int k = 0; k < 4; ++k ) {
+                // one coordinate in four lands exactly on a cell edge
+                lines[ i ][ k ] = ( rnd.nextInt( 4 ) == 0 ) ? ( ( rnd.nextInt( 60 ) - 10 ) * 16f )
+                        : (float) ( ( rnd.nextDouble() * 1000 ) - 150 );
+            }
+            o.add( i, lines[ i ][ 0 ], lines[ i ][ 1 ], lines[ i ][ 2 ], lines[ i ][ 3 ] );
+        }
+        int hits = 0, misses = 0;
+        for( int q = 0; q < 3000; ++q ) {
+            final double mx = ( rnd.nextDouble() * 1000 ) - 150, my = ( rnd.nextDouble() * 1000 ) - 150;
+            final double m = rnd.nextDouble() * 2 * Math.PI;
+            final double hw = 1 + ( rnd.nextDouble() * 60 ), top = -( 1 + ( rnd.nextDouble() * 10 ) );
+            final double bottom = 1 + ( rnd.nextDouble() * 10 ), margin = rnd.nextDouble() * 2;
+            final long owner = rnd.nextInt( n + 5 ) - 2; // sometimes a real line's owner, excused
+            boolean expected = false;
+            final double cos = Math.cos( m ), sin = Math.sin( m );
+            for( int i = 0; ( i < n ) && !expected; ++i ) {
+                final float[] l = lines[ i ];
+                if ( ( i == owner ) || ( ( l[ 0 ] == l[ 2 ] ) && ( l[ 1 ] == l[ 3 ] ) ) ) {
+                    continue; // its own line, or one that registers nothing
+                }
+                final double dx0 = l[ 0 ] - mx, dy0 = l[ 1 ] - my, dx1 = l[ 2 ] - mx, dy1 = l[ 3 ] - my;
+                final double u0 = ( dx0 * cos ) + ( dy0 * sin ), v0 = ( dy0 * cos ) - ( dx0 * sin );
+                final double u1 = ( dx1 * cos ) + ( dy1 * sin ), v1 = ( dy1 * cos ) - ( dx1 * sin );
+                expected = BranchObstacles.segmentMeetsBox( u0, v0, u1, v1, -( hw + margin ), top - margin,
+                                                            hw + margin, bottom + margin );
+            }
+            final boolean got = o.crosses( owner, mx, my, m, hw, top, bottom, margin );
+            if ( got != expected ) {
+                check( ok, false, "query " + q + " at (" + mx + ", " + my + "): the index says " + got
+                        + ", testing every line says " + expected );
+                return;
+            }
+            if ( expected ) {
+                ++hits;
+            }
+            else {
+                ++misses;
+            }
+        }
+        check( ok, ( hits > 200 ) && ( misses > 200 ), "precondition: both answers occur (hits " + hits
+                + ", misses " + misses + ")" );
+    }
+
+    /** A normal pass keeps its tables across resets (no allocation in the steady state); an abnormal one, past
+     *  SHRINK_ABOVE slots, has them given back at the next reset -- and the grid works on from there. */
+    private static void givesBackMemory( final boolean[] ok ) {
+        final BranchObstacles o = new BranchObstacles();
+        o.reset( 8 );
+        for( int i = 0; i < 5000; ++i ) {
+            o.add( i, i * 8, 0, ( i * 8 ) + 4, 0 ); // 5000 cells
+        }
+        final int normal = o.slotTableSizeForTest();
+        check( ok, ( normal >= 8192 ) && ( normal <= BranchObstacles.SHRINK_ABOVE ), "precondition: 5000 cells grew the table past its initial size, got " + normal );
+        o.reset( 8 );
+        check( ok, o.slotTableSizeForTest() == normal, "a normal pass keeps its table across a reset, got " + o.slotTableSizeForTest() );
+        for( int i = 0; i < 300000; ++i ) {
+            o.add( i, i * 8, 0, ( i * 8 ) + 4, 0 ); // 300,000 cells: an abnormal pass
+        }
+        check( ok, o.slotTableSizeForTest() > BranchObstacles.SHRINK_ABOVE, "precondition: 300,000 cells grew the table past the threshold, got " + o.slotTableSizeForTest() );
+        o.reset( 8 );
+        check( ok, o.slotTableSizeForTest() == 1024, "an abnormal pass's table is given back at the next reset, got " + o.slotTableSizeForTest() );
+        check( ok, o.cellEntryCountForTest() == 0, "...and the pass starts empty" );
+        o.add( 1, 0, 0, 100, 0 );
+        check( ok, o.crosses( 2, 50, 0, 0, 10, -3, 3, 0 ), "...and the grid works on from the small table" );
     }
 
     /** Liang-Barsky against [0,10]x[0,10]: every way a segment can relate to a box. */
@@ -150,6 +263,9 @@ public final class BranchObstaclesTest {
         check( ok, !o.crosses( 2, 40, 40, 0, 10, -3, 3, 1 ), "...so a number on top of it is clear" );
         o.addArc( 0, 0, 0, 0, 1 );
         check( ok, o.segmentCountForTest() == 0, "an arc of zero radius registers nothing" );
+        o.add( 1, Float.NaN, 0, 10, 10 );
+        o.add( 1, 0, 0, Float.POSITIVE_INFINITY, 10 );
+        check( ok, o.segmentCountForTest() == 0, "a line with a NaN or infinite end draws as nothing and registers nothing" );
         o.add( 1, 0, 0, 100, 0 );
         check( ok, o.crosses( 2, 50, 0, 0, 10, -3, 3, 0 ), "precondition: a line is in the way" );
         o.reset( 16 );

@@ -1185,6 +1185,22 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     /** Raises the marker on every open frame. This is the callback {@link ErrorLog} runs on the first error --
      *  a named method rather than a lambda at the call site, so the same code is what gets tested. */
+    /** For the error log's out-of-memory entry: what every open tab holds -- its tree, its undo history and the
+     *  paint's four occupancy grids -- one line per tab, so the entry names the holder and not just whoever
+     *  allocated last. Reads sizes only; safe from the handler's thread. */
+    static String describeHeapForLog() {
+        final StringBuilder sb = new StringBuilder();
+        for (final java.awt.Window w : java.awt.Window.getWindows()) {
+            if (!(w instanceof MainFrame) || (((MainFrame) w).getMainPanel() == null)) {
+                continue;
+            }
+            for (final TreePanel tp : ((MainFrame) w).getMainPanel().getTreePanels()) {
+                sb.append((sb.length() == 0) ? "" : "\n").append(tp.memoryFootprint());
+            }
+        }
+        return sb.toString();
+    }
+
     static void showErrorIndicatorOnAllFrames() {
         javax.swing.SwingUtilities.invokeLater(() -> {
             for (final java.awt.Window w : java.awt.Window.getWindows()) {

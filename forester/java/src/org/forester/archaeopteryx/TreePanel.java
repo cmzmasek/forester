@@ -18377,6 +18377,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** The branch lines drawn so far this radial pass, so a number can refuse to lie across a foreign one. */
     private final BranchObstacles _branch_obstacles = new BranchObstacles();
 
+    /** One line for the error log's out-of-memory entry: the tree this tab shows, its undo history and the sizes
+     *  of the paint's occupancy grids (which never shrank before 0.11.181, so a grid that is still large after a
+     *  pass names itself here). */
+    final String memoryFootprint() {
+        final Phylogeny phy = _phylogeny;
+        final StringBuilder sb = new StringBuilder("tab \"").append((phy == null) ? "" : phy.getName()).append("\": ");
+        if (phy != null) {
+            sb.append(phy.getNumberOfExternalNodes()).append(" tips, ").append(phy.getNodeCount()).append(" nodes; ");
+        }
+        sb.append("undo history ").append(_history.undoDepth()).append(" snapshot(s); grids: branches [")
+                .append(_branch_obstacles.describeForLog()).append("], labels [")
+                .append(_label_occupancy.describeForLog()).append("], numbers [")
+                .append(_number_occupancy.describeForLog()).append("], symbols [")
+                .append(_symbol_occupancy.describeForLog()).append(']');
+        return sb.toString();
+    }
+
     /** The tip labels drawn so far this radial pass, as ORIENTED boxes (a label rides its spoke at any angle, and
      *  its axis-aligned bounds would hide neighbours that do not touch). A later label that would lie across one is
      *  not drawn, and the branch numbers keep clear of them all. See OrientedOccupancy for the measurements. */
