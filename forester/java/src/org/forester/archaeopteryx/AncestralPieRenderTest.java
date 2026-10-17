@@ -24,6 +24,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -32,6 +33,7 @@ import javax.swing.SwingUtilities;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
@@ -123,6 +125,10 @@ public final class AncestralPieRenderTest {
                     if ( off >= 100 ) {
                         fail( ok, "no colored pies should appear when no trait is selected, got " + off );
                     }
+                    // at a pie node the pie IS the marker: no Color-by / Size-by dot is drawn under it, so a Size-by dot
+                    // larger than the pie (3x the base at the largest value, against a pie of 2.5x the node size) never
+                    // peeks out around it -- sampled on the breadth axis, clear of the branch line
+                    pieUnderDotOk( ok, tp, phy, o, w, h );
                     // a REAL multi-wedge pie must render: some small (8px) region holds >= 2 distinct state hues
                     // (adjacent wedges of one pie). The window is smaller than the tip/pie spacing and the legend's
                     // row pitch, so it is NOT triggered by two separate discs or two legend swatches -- only by wedges
@@ -288,6 +294,73 @@ public final class AncestralPieRenderTest {
     }
 
     /** Draws the pie legend (draggable, so its bounds are recorded) into {@code img} at (0,0,w,h). */
+    private static void pieUnderDotOk( final boolean[] ok, final TreePanel tp, final Phylogeny phy, final Options o,
+                                       final int w, final int h ) {
+        PhylogenyNode largest = null;
+        int i = 0;
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            addProp( tip, "demo:abundance", String.valueOf( 10 * ( i + 1 ) ), "xsd:decimal" );
+            addProp( tip, "demo:grp", "grp " + ( i % 3 ), "xsd:string" );
+            largest = tip; // the last tip carries the largest value: the 3x dot
+            ++i;
+        }
+        tp.setColorByPropertyRef( "demo:grp" );
+        tp.setSizeByPropertyRef( "demo:abundance" );
+        try {
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage img = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final float dot = tp.getPropertySizeScale().diameterFor( largest, tp.baseDotSize() );
+            final double pie = Math.max( 10.0, 2.5 * o.getDefaultNodeShapeSize() );
+            if ( !( dot > ( pie + 6 ) ) ) {
+                fail( ok, "fixture: the largest tip's Size-by dot (" + dot + " px) must be well larger than its pie (" + pie + " px)" );
+                return;
+            }
+            final Color ink = tp.getPropertyBasedColor( largest );
+            final int cx = Math.round( largest.getXcoord() ), cy = Math.round( largest.getYcoord() );
+            final int ring = (int) Math.ceil( pie / 2 ) + 2; // outside the pie, inside the dot
+            boolean peeks = false;
+            for( final int dy : new int[] { -ring, ring } ) {
+                final int rgb = img.getRGB( cx, cy + dy );
+                final Color c = new Color( rgb );
+                if ( ( Math.abs( c.getRed() - ink.getRed() ) <= 40 ) && ( Math.abs( c.getGreen() - ink.getGreen() ) <= 40 )
+                        && ( Math.abs( c.getBlue() - ink.getBlue() ) <= 40 ) ) {
+                    peeks = true;
+                }
+            }
+            if ( peeks ) {
+                fail( ok, "a Size-by dot must not peek out from behind the pie at " + largest.getName() + " (" + ink + " at " + ring
+                        + " px above/below the centre)" );
+            }
+            // precondition: the dot IS drawn at a tip without a pie -- the same ring shows the ink once pies are off
+            tp.setAncestralPieTrait( null );
+            tp.calcParametersForPainting( w, h );
+            final BufferedImage no_pie = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+            final Color there = new Color( no_pie.getRGB( cx, cy + ring ) );
+            if ( !( ( Math.abs( there.getRed() - ink.getRed() ) <= 40 ) && ( Math.abs( there.getGreen() - ink.getGreen() ) <= 40 )
+                    && ( Math.abs( there.getBlue() - ink.getBlue() ) <= 40 ) ) ) {
+                fail( ok, "precondition: without pies the Size-by dot reaches " + ring + " px from the centre of " + largest.getName()
+                        + ", found " + there + " for " + ink );
+            }
+            tp.setAncestralPieTrait( "location" );
+            tp.getControlPanel().populateAncestralPieBox();
+        }
+        finally {
+            tp.setSizeByPropertyRef( null );
+            tp.setColorByPropertyRef( null );
+            tp.calcParametersForPainting( w, h );
+        }
+    }
+
+    private static void addProp( final PhylogenyNode n, final String ref, final String value, final String type ) {
+        org.forester.phylogeny.data.PropertiesList pl = n.getNodeData().getProperties();
+        if ( pl == null ) {
+            pl = new org.forester.phylogeny.data.PropertiesList();
+            n.getNodeData().setProperties( pl );
+        }
+        pl.addProperty( new org.forester.phylogeny.data.Property( ref, value, "", type,
+                org.forester.phylogeny.data.Property.AppliesTo.NODE ) );
+    }
+
     private static void drawPieLegend( final TreePanel tp, final BufferedImage img, final int w, final int h ) {
         final Graphics2D g = img.createGraphics();
         tp.drawAncestralPieLegendForTest( g, new Rectangle( 0, 0, w, h ), true, false );

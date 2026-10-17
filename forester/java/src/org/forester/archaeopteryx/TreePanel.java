@@ -955,6 +955,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return TreePanelUtil.supportColor(fraction, strong, getTreeColorSet().getBackgroundColor());
     }
 
+    /** For tests: the Auto-hide factor a paint of this panel uses right now (1 = nothing is thinned). */
+    final int dynamicHidingFactorForTest() {
+        return calcDynamicHidingFactor();
+    }
+
     private final int calcDynamicHidingFactor() {
         return (int) (0.5 + (getFontMetricsForLargeDefaultFont().getHeight() / (1.5 * getYdistance())));
     }
@@ -3753,8 +3758,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * per the {@link Options.SUPPORT_VISUALIZATION} mode. Monochrome (branch color) so it does not
      * compete with clade/taxonomy coloring; uses the absolute support scale (1 or 100, detected per
      * paint into {@code _confidence_scale_max}) rather than normalizing to the maximum present, so a
-     * given symbol means the same thing across trees. THRESHOLD_MARKS draws a fixed dot only at or
-     * above the cutoff; SIZE_SCALED draws a dot whose diameter grows with support.
+     * given symbol means the same thing across trees. THRESHOLD_MARKS draws one fixed dot (the default node
+     * size) only at or above the cutoff; SIZE_SCALED draws a dot whose diameter grows with support.
      */
     final private void paintNodeSupportSymbol(final float x,
                                               final float y,
@@ -3780,7 +3785,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getOptions().getSupportThreshold())) {
                 return;
             }
-            diameter = AptxConstants.SUPPORT_SYMBOL_MAX_DIAMETER;
+            diameter = AptxConstants.SUPPORT_THRESHOLD_MARK_DIAMETER;
         } else {
             diameter = TreePanelUtil.supportSymbolSize(conf,
                     _confidence_scale_max,
@@ -4061,15 +4066,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final int half_box_size = effectiveNodeHalfBoxSize(node);
         x += tipImageAdvance(node); // shift this tip's label past its image (0 for a non-imaged/aligned tip)
-        final boolean want_dot = (isColorByProperty() && (node.isExternal() || node.isCollapse()))
-                || (isSizeByProperty() && node.isExternal());
-        // at a pie node the pie IS the marker, so suppress the plain color/size dot (which the later-drawn pie
-        // would otherwise sit on top of -- and a large Size-by dot could peek out from behind the smaller pie).
-        // Reads the per-node distribution CACHE (built in rebuildAncestralPieColors), so this is an O(1) lookup.
-        if (want_dot && !(isShowAncestralPies() && (_ancestral_pie_dist != null)
-                && _ancestral_pie_dist.containsKey(node))) {
-            drawPropertyColorDot(g, node);
-        }
+        // the Color-by / Size-by tip dot is NOT drawn here: paintNodeRectangular draws it for every tip, before the
+        // Auto-hide gate that skips this routine for all but every k-th tip (see paintPropertyDotRectangular)
         if (usesAboveBranchInternalLabel(node)) {
             return paintInternalLabelAboveBranch(g, node, is_in_found_nodes, to_pdf, to_graphics_file, half_box_size);
         }
@@ -4702,6 +4700,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 y2 += (float) (_y_distance * rowWeight(child_node));
             }
             paintNodeBox(node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file);
+        }
+        if (node.isExternal()) {
+            paintPropertyDotRectangular(g, node, to_pdf, to_graphics_file); // every tip, hidden label or not
         }
         if (dynamically_hide && ((node.isExternal() && ((_external_node_index % dynamic_hiding_factor) != 1))
                 || (!node.isExternal() && ((new_x_min < 20)
@@ -14092,8 +14093,32 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.draw(_ellipse);
     }
 
+    /**
+     * The Color-by / Size-by tip dot in the rectangular family, drawn for EVERY tip whether or not Auto-hide draws
+     * its label: the dot is the tip's value, read at one glance over the whole tree, and the radial layouts draw it
+     * for every tip already ({@link #paintRadialPropertyDots}). Until 0.11.184 it rode paintNodeData, which
+     * Auto-hide skips for all but every k-th tip, so a crowded rectangular tree showed a dot only beside a drawn
+     * label (Christian, 2026-10-16: "always show the colored circle even if the label is hidden"). Drawn where the
+     * node box is drawn -- in the geometry frame, so it sits on the tip in every orientation -- and under the same
+     * gates as the radial path: "Show External Data", and a pie node is skipped (the pie IS the marker; a large
+     * Size-by dot could peek out from behind the smaller pie). A tip off the viewport is skipped on screen.
+     */
+    private void paintPropertyDotRectangular(final Graphics2D g, final PhylogenyNode node, final boolean to_pdf,
+                                             final boolean to_graphics_file) {
+        if ((!isColorByProperty() && !isSizeByProperty()) || !isShowExternalDataForThisTab()) {
+            return;
+        }
+        if (isNodeDataInvisible(node) && !to_graphics_file && !to_pdf) {
+            return;
+        }
+        if (isShowAncestralPies() && (_ancestral_pie_dist != null) && _ancestral_pie_dist.containsKey(node)) {
+            return;
+        }
+        drawPropertyColorDot(g, node);
+    }
+
     /** Draws the Color-by / Size-by tip dot at each node in a RADIAL (circular/unrooted) layout -- the rectangular
-     *  path draws it inside paintNodeData, which the radial paths don't use. Mirrors the rectangular gate exactly:
+     *  path draws it in paintNodeRectangular, which the radial paths don't use. Mirrors the rectangular gate exactly:
      *  Color-by covers external + collapsed nodes, Size-by covers external nodes; both require "Show External Data";
      *  and a pie node is skipped (the pie IS the marker there). Dispatched after the radial recursion has set coords. */
     private void paintRadialPropertyDots(final Graphics2D g) {

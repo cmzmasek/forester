@@ -29,7 +29,7 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.183";
+    final static String VERSION = "0.11.184";
     final static String PRG_DATE = "2026-10-16";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
@@ -108,9 +108,11 @@ public final class AptxConstants {
     final static double EXPORT_SIZE_HEIGHT_MM_DEFAULT   = 120;
     // External node names longer than this (e.g. whole UniProt/NCBI FASTA-header descriptions pasted in
     // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that
-    // Diameters (in tree coordinate space, so they scale with zoom like node shapes) of the
-    // internal-node support symbols: the smallest dot drawn for low support in SIZE_SCALED mode,
-    // and the fixed dot for THRESHOLD_MARKS / full support.
-    public final static float SUPPORT_SYMBOL_MIN_DIAMETER = 2.0f;
-    public final static float SUPPORT_SYMBOL_MAX_DIAMETER = 8.0f;
+    // Diameters (px) of the internal-node support symbols drawn on the middle of a branch: in SIZE_SCALED mode
+    // the smallest dot (low support) and the largest (full support) -- the diameter IS the value, so these are the
+    // scale's ends; in THRESHOLD_MARKS mode one fixed dot at or above the cutoff, a yes/no mark, kept at the
+    // default node size (was the 8 px of full support until 0.11.184; Christian, 2026-10-16: "too large").
+    public final static float SUPPORT_SYMBOL_MIN_DIAMETER     = 2.0f;
+    public final static float SUPPORT_SYMBOL_MAX_DIAMETER     = 8.0f;
+    public final static float SUPPORT_THRESHOLD_MARK_DIAMETER = 5.0f;
 }

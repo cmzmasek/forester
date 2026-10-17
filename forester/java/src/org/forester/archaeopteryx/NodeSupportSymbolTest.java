@@ -106,6 +106,34 @@ public final class NodeSupportSymbolTest {
                             && !dotIsMidBranch( renderImage( tp, mp, SUPPORT_VISUALIZATION.SIZE_SCALED ), i90 ) ) {
                         ok[ 0 ] = TestFail.here();
                     }
+                    // the threshold mark is a yes/no mark at the default node size, smaller than the size-scaled
+                    // dot of the same (near-full) support, whose diameter IS the value (8 px until 0.11.184 for both;
+                    // Christian, 2026-10-16: "too large")
+                    PhylogenyNode i99 = null;
+                    for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+                        if ( "A".equals( ext.getName() ) ) {
+                            i99 = ext.getParent();
+                            break;
+                        }
+                    }
+                    if ( i99 != null ) {
+                        final int mark = verticalExtent( renderImage( tp, mp, SUPPORT_VISUALIZATION.THRESHOLD_MARKS ), i99 );
+                        final int scaled = verticalExtent( renderImage( tp, mp, SUPPORT_VISUALIZATION.SIZE_SCALED ), i99 );
+                        // what a disc of the nominal diameter measures when drawn the painter's way at the same
+                        // fractional position (an antialiased disc measures a pixel under its diameter: a +-1 check
+                        // let a 7 px mutant pass, 2026-10-16), so the mark must measure exactly that
+                        final int want = verticalExtent( referenceDisc( AptxConstants.SUPPORT_THRESHOLD_MARK_DIAMETER, i99 ), i99 );
+                        if ( mark != want ) {
+                            ok[ 0 ] = false;
+                            System.out.println( "  the threshold mark must measure as a " + AptxConstants.SUPPORT_THRESHOLD_MARK_DIAMETER
+                                    + " px disc does (" + want + " px), measured " + mark );
+                        }
+                        if ( !( mark < scaled ) ) {
+                            ok[ 0 ] = false;
+                            System.out.println( "  the threshold mark (" + mark + " px) must be smaller than the size-scaled dot of the same support ("
+                                    + scaled + " px)" );
+                        }
+                    }
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
@@ -190,6 +218,45 @@ public final class NodeSupportSymbolTest {
                     + ", parent_x=" + parent_x + ", node_x=" + node_x + ")" );
         }
         return ok;
+    }
+
+    /** A disc of {@code diameter} drawn as the painter draws a support symbol -- an antialiased filled ellipse framed
+     *  at (centre - d/2) -- on the branch centre of {@code internal}, alone on a white image of the panel's size. */
+    private static BufferedImage referenceDisc( final float diameter, final PhylogenyNode internal ) {
+        final PhylogenyNode parent = internal.getParent();
+        final float[] c = TreePanelUtil.supportSymbolCenter( parent.getXcoord(), internal.getXcoord(), parent.getYcoord(),
+                                                            internal.getYcoord(), false );
+        final BufferedImage img = new BufferedImage( Math.round( c[ 0 ] ) + 40, Math.round( c[ 1 ] ) + 40, BufferedImage.TYPE_INT_RGB );
+        final java.awt.Graphics2D g = img.createGraphics();
+        g.setColor( java.awt.Color.WHITE );
+        g.fillRect( 0, 0, img.getWidth(), img.getHeight() );
+        g.setRenderingHint( java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON );
+        g.setColor( java.awt.Color.BLACK );
+        final float half = diameter / 2.0f;
+        g.fill( new java.awt.geom.Ellipse2D.Double( c[ 0 ] - half, c[ 1 ] - half, diameter, diameter ) );
+        g.dispose();
+        return img;
+    }
+
+    /** The height of the dark run through the support symbol's centre on {@code internal}'s branch: the symbol's
+     *  diameter (the branch line under it is horizontal, so it adds nothing to a VERTICAL run). */
+    private static int verticalExtent( final BufferedImage img, final PhylogenyNode internal ) {
+        final PhylogenyNode parent = internal.getParent();
+        final float[] c = TreePanelUtil.supportSymbolCenter( parent.getXcoord(), internal.getXcoord(), parent.getYcoord(),
+                                                            internal.getYcoord(), false );
+        final int cx = Math.round( c[ 0 ] ), cy = Math.round( c[ 1 ] );
+        if ( !isDark( img, cx, cy ) ) {
+            System.out.println( "  no symbol at the branch centre " + cx + "," + cy );
+            return 0;
+        }
+        int top = cy, bottom = cy;
+        while ( isDark( img, cx, top - 1 ) ) {
+            --top;
+        }
+        while ( isDark( img, cx, bottom + 1 ) ) {
+            ++bottom;
+        }
+        return ( bottom - top ) + 1;
     }
 
     /** ((A,(B,C)60)99,(D,E)90)root -- bootstrap support on the internal branches. */
