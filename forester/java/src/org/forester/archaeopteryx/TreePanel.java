@@ -206,12 +206,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int MIN_ROOT_LENGTH = 3;
     private final static int MOVE = 20;
     // In a radial (circular/unrooted) layout the tip labels radiate OUTWARD, so their reach is reserved from the
-    // radius. Cap that reservation at this fraction of the available radius, so a tree whose labels are long relative
-    // to the canvas still draws a real circle/fan (the labels then extend past the canvas edge -- zoom out or use
-    // "Shorten Labels" to see them) instead of collapsing the whole tree onto the centre point.
-    // (Superseded by the "Tree share" setting, which now governs the radius split in circularRadius the way it
-    // governs the width split in the rectangular layouts; kept for the unrooted fan, which reserves separately.)
-    private final static double RADIAL_LABEL_MAX_RATIO = 0.5;
+    // radius, and the "Tree share" setting splits that radius between the ring (or fan) and the labels the way it
+    // splits the width in the rectangular layouts -- see circularRadius, setUpUrtFactor and radialMaxLabelWidth.
+    // (A fixed half of the half-diameter capped the label TEXT until 0.11.185, documented as superseded by the share
+    // while it still governed where a label was cut, so the slider moved the ring but never the cut.)
     // Floor the circular tip-ring at this fraction of the available radius so a wide domain track (reserved fully)
     // can't collapse the ring to nothing; only a pathologically huge domain track then clips.
     private final static double RADIAL_MIN_TREE_RATIO = 0.2;
@@ -8346,11 +8344,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if (shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) && node.getNodeData().isHasSequence()
                     && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
-                // FIXME
-                // TODO this might need some clean up
-                final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
-                final double rendered = (effectiveDomainStructureWidth()
-                        / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth()) * d.getTotalLength();
+                final double rendered = renderedDomainWidth(node);
                 sum += rendered + 10;
                 if (rendered > _longest_rendered_domain) {
                     _longest_rendered_domain = rendered;
@@ -13623,15 +13617,52 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _domain_structure_radial_width;
     }
 
-    /** The maximum pixel reach a tip label may extend outward in a radial (circular/unrooted) layout: a fraction of
-     *  the canvas half-radius, so that tree ring + labels + domains all FIT on fit-to-window (labels longer than this
-     *  are truncated with an ellipsis -- full labels in a circle would run ~twice the radius, off the canvas). No cap
-     *  in a rectangular layout. */
+    /**
+     * The reach a tip label's TEXT may take outward in a radial (circular/unrooted) layout: what the ring's or fan's
+     * own reservation leaves the labels, so the "Tree share" that splits the radius is also what decides where a
+     * label is cut. Circular: the available radius less the tree's share ({@link #circularRadius}). Unrooted: the
+     * half-diameter less the tree's share, less the margin ({@link #setUpUrtFactor} reserves MOVE + labels per side
+     * within that). A label shorter than this is never cut, and the ring takes what it leaves; a longer one is cut
+     * here with an ellipsis and the ring keeps its share -- so ring + labels always fit the canvas, and a lower
+     * share, a zoom or a larger window brings a cut label back. The domain track rides OUTSIDE the labels and is not
+     * taken from them: the labels come first, and on a tree whose labels fill their reach the track runs past the
+     * canvas edge until the share is lowered or the view zoomed (taking the track out of the labels' reach instead
+     * cut Christian's 268 scientific names to 99 px where 182 had been). Until 0.11.185 a fixed half of the
+     * half-diameter cut the text whatever the share (Christian, 2026-10-16: scientific names cut at launch, and
+     * "Shorten Labels" -- node names only -- could not help). No cap in a rectangular layout: there the font
+     * auto-fit and {@link #_tip_label_pixel_cap} do this.
+     */
     private int radialMaxLabelWidth() {
         if (!isRadialLayout()) {
             return Integer.MAX_VALUE;
         }
-        return (int) ((radialDiameter() / 2.0) * RADIAL_LABEL_MAX_RATIO);
+        final double labels_share = 1.0 - treeWidthShare();
+        final double reach;
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) {
+            reach = circularAvailableRadius(radialDiameter()) * labels_share;
+        }
+        else {
+            reach = ((radialDiameter() / 2.0) * labels_share) - MOVE;
+        }
+        return (int) Math.max(0, reach);
+    }
+
+    /** The width a tip's domain architecture is drawn at: the track's zoom scaled by the architecture's length. */
+    private double renderedDomainWidth(final PhylogenyNode node) {
+        final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
+        return (effectiveDomainStructureWidth() / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth())
+                * d.getTotalLength();
+    }
+
+    /** For tests: what the domain track adds outside the labels in the circular layout, as last measured. */
+    final int circularDomainReachForTest() {
+        return (int) circularDomainReach();
+    }
+
+    /** For tests: the radius the circular layout has to divide between ring and labels (half the canvas less the
+     *  fixed margins), for the current zoom diameter. */
+    final int circularAvailableRadiusForTest() {
+        return (int) circularAvailableRadius(radialDiameter());
     }
 
     /** THE cap on a tip label's drawn text width, whatever the layout: the radial reach in a circular/unrooted
@@ -14364,16 +14395,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * The circular tip-ring radius for a canvas of {@code pref_w} x {@code pref_h}: the available half-canvas minus
-     * the fixed margins (MOVE + clade-band + annotation-ring reserves) minus the tip-label reach -- but the label
-     * reach is CAPPED at {@link #RADIAL_LABEL_MAX_RATIO} of the available radius, so a tree whose labels are long
-     * relative to the canvas still draws a real circle (the labels then extend past the canvas edge) instead of the
-     * radius going negative and collapsing every tip onto the centre. Never negative. Shared by the paint + the
-     * ring-click hit-test so they agree.
+     * The circular tip-ring radius for a canvas {@code side} across: the available radius ({@link
+     * #circularAvailableRadius}) minus the tip-label reach -- but the labels may take at most what the "Tree share"
+     * leaves them, so a tree whose labels are long relative to the canvas still draws a real circle (the labels are
+     * then cut at that reach, {@link #radialMaxLabelWidth}) instead of the radius going negative and collapsing every
+     * tip onto the centre. Never negative. Shared by the paint + the ring-click hit-test so they agree.
      */
+    private double circularAvailableRadius(final double side) {
+        return Math.max(0, (side / 2.0) - MOVE - circularCladeBandReserve() - circularAnnotationRingsReserve());
+    }
+
+    /** What the domain track adds outside the labels in the circular layout: the widest architecture, its gap and
+     *  the renderer's lead-in. */
+    private double circularDomainReach() {
+        return _longest_rendered_domain + DOMAIN_RADIAL_GAP + RenderableDomainArchitecture.TRACK_LEFT_PAD;
+    }
+
+    /** The circular tip-ring radius, see {@link #circularAvailableRadius}. */
     private int circularRadius(final double side) {
-        final double avail = Math.max(0, (side / 2.0) - MOVE - circularCladeBandReserve()
-                - circularAnnotationRingsReserve());
+        final double avail = circularAvailableRadius(side);
         if (domainBoxesDrawnInCurrentLayout()) {
             // Domains draw as a CONCENTRIC ring: every architecture starts at radius + _length_of_longest_text_only
             // (+ gap + the renderer's 20px lead-in) and extends by up to _longest_rendered_domain. The worst-case
@@ -14381,8 +14421,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // DIFFERENT tips -- NOT getLongestExtNodeInfo() (a per-tip max of text+domain, which under-reserves and
             // clips when they differ). Reserve the sum so both fit on fit-to-window; floor the ring so it can't
             // collapse (this SHRINKS the ring rather than clipping -- the user wants domains + labels to fit).
-            final double reach = _length_of_longest_text_only + _longest_rendered_domain + DOMAIN_RADIAL_GAP
-                + RenderableDomainArchitecture.TRACK_LEFT_PAD;
+            final double reach = _length_of_longest_text_only + circularDomainReach();
             // The tree's guaranteed share, here measured against the RADIUS -- the same "Tree share" setting the
             // rectangular layouts divide their width by, so the slider means the same thing in every display type
             // instead of being inert in two of them.
@@ -17844,11 +17883,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 paintCircularLite(_phylogeny,
                         x_pos + radius_ov,
                         y_pos + radius_ov,
-                        // cap the (thumbnail-scaled) label reach like the main circle, so a long-label tree's overview
-                        // thumbnail still draws a real circle instead of collapsing
+                        // cap the (thumbnail-scaled) label reach like the main circle -- at the labels' share of the
+                        // radius -- so a long-label tree's overview thumbnail still draws a real circle
                         (int) (radius_ov - Math.min(
                                 getLongestExtNodeInfo() / (getVisibleRect().width / getOvRectangle().getWidth()),
-                                radius_ov * RADIAL_LABEL_MAX_RATIO)),
+                                radius_ov * (1.0 - treeWidthShare()))),
                         g);
                 g.setTransform(_at);
                 paintOvRectangle(g);
