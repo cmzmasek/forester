@@ -634,6 +634,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Rank vocabulary: ");
+        if (org.forester.archaeopteryx.RankVocabularyTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Rank clades (joint rules): ");
+        if (org.forester.archaeopteryx.RankCladesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Radial branch numbers: ");
         if (org.forester.archaeopteryx.RadialBranchNumberRenderTest.test()) {
             System.out.println("OK.");

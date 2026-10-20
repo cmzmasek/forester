@@ -8514,6 +8514,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Per-taxon (visible) tip counts for the rank/clade legend, so its rows show "(N)" and can sort by count
     // like the property legend. Parallel to _rank_legend; may be empty when counts were not computed.
     private Map<String, Integer> _rank_legend_counts = null;
+    /** Tips the rank places at no taxon: the rank legend's "no value" row (the joint rule; 0 = no row). */
+    private int _rank_legend_missing = 0;
     // When SEVERAL ranks are annotated at once the legend is split into a titled block per rank -- otherwise the
     // reader gets one alphabetical heap and cannot tell a family row from a genus row. taxon -> its rank, plus the
     // rank order to print the blocks in (broadest first, the way taxonomy is written). Null for a single level,
@@ -9329,6 +9331,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void clearRankLegend() {
         _rank_legend = null;
         _rank_legend_counts = null;
+        _rank_legend_missing = 0;
         _rank_legend_title = null;
         _rank_legend_sections = null;
         _rank_legend_section_order = null;
@@ -9885,7 +9888,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Map<String, Color> values = orderedLegend(_rank_legend, _rank_legend_counts);
         drawCategoricalLegend(g, bounds, draggable, _rank_legend_title, values, _rank_legend_counts,
-                _rank_legend.size() - values.size(), 0, false);
+                _rank_legend.size() - values.size(), _rank_legend_missing, false);
     }
 
     /**
@@ -10711,6 +10714,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _control_panel.populateColorByPropertyBox();
         _rank_legend = null;
         _rank_legend_counts = null;
+        _rank_legend_missing = 0;
         _rank_legend_title = null;
         _rank_legend_sections = null;
         _rank_legend_section_order = null;
@@ -10747,6 +10751,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!legend.isEmpty()) {
             _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
             _rank_legend_counts = counts;
+            _rank_legend_missing = unplacedForLegend(counts);
             _rank_legend_title = "Taxonomy: " + rank;
             _rank_legend_sections = null; // one rank -> the plain flat legend
             _rank_legend_section_order = null;
@@ -11145,8 +11150,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!legend.isEmpty()) {
             _rank_legend = legend;
             _rank_legend_counts = counts;
+            _rank_legend_missing = (levels.size() == 1) ? unplacedForLegend(counts) : 0;
             _rank_legend_title = "Taxonomy: " + String.join(" / ", cladeLevelRanks());
         }
+    }
+
+    /** The tips a rank legend's counts do not cover: the tree's tips less the placed ones (the "no value" row). */
+    private int unplacedForLegend(final Map<String, Integer> counts) {
+        int placed = 0;
+        for (final Integer c : counts.values()) {
+            placed += c;
+        }
+        return Math.max(0, _phylogeny.getNumberOfExternalNodes() - placed);
+    }
+
+    /** For tests: the rank legend's "no value" count. */
+    int rankLegendMissingForTest() {
+        return _rank_legend_missing;
     }
 
     /**

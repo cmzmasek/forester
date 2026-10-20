@@ -1067,7 +1067,7 @@ public class TreePanelUtil {
         }
 
         /** The equality / grouping key: the tax-id when present, else the lower-cased name. */
-        private String key() {
+        String key() {
             return ( _id != null ) ? ( "id:" + _id ) : ( "nm:" + _name.toLowerCase( Locale.ROOT ) );
         }
 
@@ -1176,6 +1176,13 @@ public class TreePanelUtil {
             final Color c = colors.get( e.getValue().getName() );
             if ( c != null ) {
                 TreePanelUtil.colorizeSubtree( e.getKey(), new BranchColor( c ) );
+                // a tip the tree places at no taxon is swept into the clade but claims nothing: its own terminal
+                // branch stays uncoloured (the joint rule; Archaeopteryx.js leaves it grey)
+                for( final PhylogenyNode tip : e.getKey().getAllExternalDescendants() ) {
+                    if ( !assignment.containsKey( tip ) ) {
+                        tip.getBranchData().setBranchColor( null );
+                    }
+                }
                 ++colorizations;
             }
         }
@@ -1186,8 +1193,8 @@ public class TreePanelUtil {
         return colorizations;
     }
 
-    /** The distinct taxon NAMES for the legend / color domain: every TIP's taxon (so the key shows what is present,
-     *  as before Spine B) PLUS every colored ROOT's taxon (so a gap-filled internal-only clade still gets a color). */
+    /** The distinct taxon NAMES for the legend / color domain: every placed TIP's taxon -- under the joint rule a
+     *  clade is pure for its placed tips' taxon, so every coloured root's taxon is among them. */
     private static SortedSet<String> legendTaxa( final Map<PhylogenyNode, RankTaxon> assignment,
                                                  final Map<PhylogenyNode, RankTaxon> roots ) {
         final SortedSet<String> taxa = new TreeSet<String>();
@@ -1196,10 +1203,29 @@ public class TreePanelUtil {
                 taxa.add( e.getValue().getName() );
             }
         }
-        for( final RankTaxon rt : roots.values() ) {
-            taxa.add( rt.getName() );
-        }
         return taxa;
+    }
+
+    /** The tips {@code assignment} places at no taxon: the legend's "no value" count. */
+    static int unplacedTipCount( final Phylogeny tree, final Map<PhylogenyNode, RankTaxon> assignment ) {
+        int n = 0;
+        for( final PhylogenyNodeIterator it = tree.iteratorExternalForward(); it.hasNext(); ) {
+            if ( !assignment.containsKey( it.next() ) ) {
+                ++n;
+            }
+        }
+        return n;
+    }
+
+    /** The distinct taxa {@code placements} place tips at (the grouping key: tax-id when known, else the name). */
+    static int placedTaxonCount( final Map<PhylogenyNode, TaxonPlacement> placements ) {
+        final Set<RankTaxon> taxa = new HashSet<RankTaxon>();
+        for( final Entry<PhylogenyNode, TaxonPlacement> e : placements.entrySet() ) {
+            if ( e.getKey().isExternal() && e.getValue().isPlaced() ) {
+                taxa.add( e.getValue().getTaxon() );
+            }
+        }
+        return taxa.size();
     }
 
     /** Fills {@code counts_out} (when non-null) with the number of TIPS assigned to each taxon name (internal-node
@@ -1504,6 +1530,11 @@ public class TreePanelUtil {
         if ( self != null ) {
             return new TaxonPlacement( self, TaxonPlacement.Source.OWN_ANNOTATION, null, null );
         }
+        final String field = metadataRankField( node, rank );
+        if ( field != null ) {
+            return new TaxonPlacement( metadataRankTaxon( node, rank ), TaxonPlacement.Source.OWN_METADATA,
+                                       "field " + field, null );
+        }
         if ( ( service != null ) && node.getNodeData().isHasTaxonomy() ) {
             return viaOwnTaxonomy( node.getNodeData().getTaxonomy(), rank, service );
         }
@@ -1523,9 +1554,14 @@ public class TreePanelUtil {
             return new TaxonPlacement( metadataRankTaxon( tip, rank ), TaxonPlacement.Source.OWN_METADATA,
                                        "field " + field, null );
         }
-        final PhylogenyNode anc_node = annotatedAncestor( tip, rank );
-        final RankTaxon ancestor = ( anc_node == null ) ? null : selfRankTaxonRT( anc_node, rank );
-        final String anc_detail = ( ancestor == null ) ? null : ( "from the ancestor annotated \"" + ancestor.getName() + "\"" );
+        // the nearest ancestor that itself names a taxon at the rank: by its own taxonomy or field (every source),
+        // or -- a database source -- by its own cached lineage (the file's word about the clade, resolved)
+        RankTaxon ancestor = null;
+        for( PhylogenyNode n = tip.getParent(); ( n != null ) && ( ancestor == null ); n = n.getParent() ) {
+            final TaxonPlacement own = placeInternal( n, rank, service );
+            ancestor = ( own == null ) ? null : own.getTaxon();
+        }
+        final String anc_detail = ( ancestor == null ) ? null : ( "from the ancestor naming \"" + ancestor.getName() + "\"" );
         if ( source == TaxonSource.TREE ) {
             return ( ancestor != null ) ? new TaxonPlacement( ancestor, TaxonPlacement.Source.ANCESTOR_ANNOTATION, anc_detail, null )
                                         : TaxonPlacement.unplaced( TaxonPlacement.Source.UNPLACED_NO_ANNOTATION, null );
@@ -1640,15 +1676,24 @@ public class TreePanelUtil {
         return null;
     }
 
-    /** The nearest PROPER ancestor of {@code tip} whose own {@code <taxonomy>} is annotated at exactly {@code rank},
-     *  or null. */
+    /** The nearest PROPER ancestor of {@code tip} that itself names a taxon at {@code rank} -- its own
+     *  {@code <taxonomy>} at the rank, or its own per-rank field ({@link #ownNodeTaxonRT}) -- or null. */
     private static PhylogenyNode annotatedAncestor( final PhylogenyNode tip, final String rank ) {
         for( PhylogenyNode n = tip.getParent(); n != null; n = n.getParent() ) {
-            if ( selfRankTaxonRT( n, rank ) != null ) {
+            if ( ownNodeTaxonRT( n, rank ) != null ) {
                 return n;
             }
         }
         return null;
+    }
+
+    /** A node's OWN taxon at {@code rank} as the TREE names it: its own {@code <taxonomy>} at the rank, else its own
+     *  per-rank field in any namespace ({@link #metadataRankField}); null when it names none. The joint rule's
+     *  sources 1 and 2 (Archaeopteryx.js {@code ownRankTaxon}); source 3, the nearest such ancestor, is
+     *  {@link #annotatedAncestor}. */
+    static RankTaxon ownNodeTaxonRT( final PhylogenyNode node, final String rank ) {
+        final RankTaxon self = selfRankTaxonRT( node, rank );
+        return ( self != null ) ? self : metadataRankTaxon( node, rank );
     }
 
     /** The namespace of the per-rank lineage fields the online sources write: {@code ncbi:family} = "Felidae". The
@@ -1656,25 +1701,43 @@ public class TreePanelUtil {
     static final String NCBI_REF_PREFIX = "ncbi:";
 
     /**
-     * The per-rank metadata field that names {@code node}'s taxon at {@code rank} -- {@code ncbi:<rank>} first (what
-     * this program writes), else {@code gtdb:<rank>} (what the GTDB import writes) -- or null when neither is set.
-     * A tip's own lineage field is its OWN identity: it counts like an annotation at the rank, so a tree that
-     * carries them is annotated offline and needs no lookup.
+     * The per-rank metadata field that names {@code node}'s taxon at {@code rank}: the first property, in the
+     * node's order, whose LOCAL name (after the namespace colon) is the rank -- in ANY namespace: {@code vipr:Genus},
+     * {@code BVBRC:species}, {@code repseq:family}, {@code tol:Domain}, and the {@code ncbi:<rank>} /
+     * {@code gtdb:<rank>} fields this program and the GTDB import write ({@link RankVocabulary#propertyRank}) --
+     * with a non-blank value -- {@code ncbi:} first, then {@code gtdb:}, then the first other met; null when there
+     * is none. Until 0.11.186 only {@code ncbi:} and {@code gtdb:} were read, so a BV-BRC tree, whose ranks live
+     * under its own prefixes, placed no tip at all (Christian, 2026-10-19, the joint rule). A node's own field is
+     * its OWN identity: it counts like an annotation at the rank, so a tree that carries them is annotated offline
+     * and needs no lookup.
      */
     static String metadataRankField( final PhylogenyNode node, final String rank ) {
-        if ( ForesterUtil.isEmpty( rank ) || ( node.getNodeData().getProperties() == null ) ) {
+        final String want = RankVocabulary.key( rank );
+        if ( ( want == null ) || ( node.getNodeData().getProperties() == null ) ) {
             return null;
         }
-        for( final String prefix : new String[] { NCBI_REF_PREFIX, GtdbTaxonomy.REF_PREFIX } ) {
-            final String ref = prefix + rank.toLowerCase( Locale.ROOT );
-            for( final Property p : node.getNodeData().getProperties().getProperties() ) {
-                if ( ref.equalsIgnoreCase( p.getRef() ) && !ForesterUtil.isEmpty( p.getValue() )
-                        && !ForesterUtil.isEmpty( p.getValue().trim() ) ) {
-                    return ref;
+        // this program's own ncbi: field first, then the GTDB import's: a tree carrying both (a GTDB import, then
+        // an online run that wrote its lineages) reads the lookup the user just ran, not whichever field was
+        // written first -- a named difference from Archaeopteryx.js, which writes no fields and takes the first
+        // met; among the other namespaces the first met, as there
+        String other = null;
+        String gtdb = null;
+        for( final Property p : node.getNodeData().getProperties().getProperties() ) {
+            if ( want.equals( RankVocabulary.propertyRank( p.getRef() ) ) && !ForesterUtil.isEmpty( p.getValue() )
+                    && !ForesterUtil.isEmpty( p.getValue().trim() ) ) {
+                final String ref = p.getRef().toLowerCase( Locale.ROOT );
+                if ( ref.startsWith( NCBI_REF_PREFIX ) ) {
+                    return p.getRef();
+                }
+                if ( ref.startsWith( GtdbTaxonomy.REF_PREFIX.toLowerCase( Locale.ROOT ) ) ) {
+                    gtdb = ( gtdb == null ) ? p.getRef() : gtdb;
+                }
+                else if ( other == null ) {
+                    other = p.getRef();
                 }
             }
         }
-        return null;
+        return ( gtdb != null ) ? gtdb : other;
     }
 
     /** The taxon the field {@link #metadataRankField} names (no id: the field holds the name), or null. */
@@ -1684,7 +1747,8 @@ public class TreePanelUtil {
             return null;
         }
         for( final Property p : node.getNodeData().getProperties().getProperties() ) {
-            if ( ref.equalsIgnoreCase( p.getRef() ) ) {
+            if ( ref.equals( p.getRef() ) && !ForesterUtil.isEmpty( p.getValue() )
+                    && !ForesterUtil.isEmpty( p.getValue().trim() ) ) {
                 return new RankTaxon( null, p.getValue().trim() );
             }
         }
@@ -1793,12 +1857,38 @@ public class TreePanelUtil {
 
     /** Canonicalizes an assignment so the SAME taxon from mixed sources is one group: when a taxon NAME appears
      *  WITH an NCBI id in some entry and id-less in another, the id-less entries adopt that id. A clean homonym
-     *  (one name, two DIFFERENT ids) is left split -- the whole point of tax-id keying. */
+     *  (one name, two DIFFERENT ids) is left split -- the whole point of tax-id keying. Then one SPELLING per
+     *  taxon: entries that name a taxon the same up to case ("felis", "Felis") take the first spelling met in the
+     *  tree's order, so the legend lists the taxon once (the joint rule: "the first spelling met is shown"). */
     private static void canonicalizeTaxonIds( final Map<PhylogenyNode, RankTaxon> assignment ) {
         final Map<String, String> name_to_id = new HashMap<String, String>();
         for( final RankTaxon rt : assignment.values() ) {
             if ( rt.getId() != null ) {
                 name_to_id.putIfAbsent( rt.getName().toLowerCase( Locale.ROOT ), rt.getId() );
+            }
+        }
+        final Map<String, String> spelling = new HashMap<String, String>(); // grouping key -> the first spelling met
+        PhylogenyNode any = null;
+        for( final PhylogenyNode n : assignment.keySet() ) {
+            any = n;
+            break;
+        }
+        if ( any != null ) {
+            PhylogenyNode root = any;
+            while ( root.getParent() != null ) {
+                root = root.getParent();
+            }
+            for( final PhylogenyNodeIterator it = new org.forester.phylogeny.iterators.PreorderTreeIterator( root ); it.hasNext(); ) {
+                final RankTaxon rt = assignment.get( it.next() );
+                if ( rt != null ) {
+                    spelling.putIfAbsent( rt.key(), rt.getName() );
+                }
+            }
+            for( final Entry<PhylogenyNode, RankTaxon> e : assignment.entrySet() ) {
+                final String first = spelling.get( e.getValue().key() );
+                if ( ( first != null ) && !first.equals( e.getValue().getName() ) ) {
+                    e.setValue( new RankTaxon( e.getValue().getId(), first ) );
+                }
             }
         }
         if ( name_to_id.isEmpty() ) {
@@ -1815,12 +1905,14 @@ public class TreePanelUtil {
         }
     }
 
-    /** The node's OWN {@code <taxonomy>} as a {@link RankTaxon} (name + NCBI id) iff its rank equals {@code rank}
-     *  (case-insensitive) and the label is non-empty, else null. */
+    /** The node's OWN {@code <taxonomy>} as a {@link RankTaxon} (name + NCBI id) iff its rank is {@code rank} --
+     *  by {@link RankVocabulary#key}, so "Sub-Species", "sub_species" and "ssp." are one rank and a refused rank
+     *  (strain, other) never matches -- and the label is non-empty, else null. */
     final static RankTaxon selfRankTaxonRT( final PhylogenyNode node, final String rank ) {
         if ( node.getNodeData().isHasTaxonomy() ) {
             final Taxonomy tax = node.getNodeData().getTaxonomy();
-            if ( !ForesterUtil.isEmpty( tax.getRank() ) && tax.getRank().equalsIgnoreCase( rank ) ) {
+            final String want = RankVocabulary.key( rank );
+            if ( ( want != null ) && want.equals( RankVocabulary.key( tax.getRank() ) ) ) {
                 final String label = taxonomyLabel( tax );
                 if ( !ForesterUtil.isEmpty( label ) ) {
                     return new RankTaxon( ncbiId( tax ), label );
@@ -1841,7 +1933,7 @@ public class TreePanelUtil {
      *  -- the tip fallback in {@link #tipRankTaxon} for a tip that cannot resolve its own identity. */
     private final static RankTaxon ancestorRankTaxonRT( final PhylogenyNode tip, final String rank ) {
         for( PhylogenyNode n = tip.getParent(); n != null; n = n.getParent() ) {
-            final RankTaxon rt = selfRankTaxonRT( n, rank );
+            final RankTaxon rt = ownNodeTaxonRT( n, rank );
             if ( rt != null ) {
                 return rt;
             }
@@ -2020,14 +2112,33 @@ public class TreePanelUtil {
                 break; // one namespace: the ncbi: fields when present, else the gtdb: ones -- never a mix
             }
         }
-        if ( by_rank.isEmpty() ) {
-            return TaxonLineage.EMPTY;
-        }
         final List<TaxonLineage.Ancestor> levels = new ArrayList<TaxonLineage.Ancestor>();
-        for( final String rank : TaxonomyUtil.TAXONOMY_RANKS_LIST ) { // canonical order, domain ... species
-            final String name = by_rank.get( rank );
-            if ( name != null ) {
-                levels.add( new TaxonLineage.Ancestor( name, rank, null ) );
+        if ( !by_rank.isEmpty() ) {
+            for( final String rank : TaxonomyUtil.TAXONOMY_RANKS_LIST ) { // canonical order, domain ... species
+                final String name = by_rank.get( rank );
+                if ( name != null ) {
+                    levels.add( new TaxonLineage.Ancestor( name, rank, null ) );
+                }
+            }
+        }
+        else {
+            // neither namespace: the per-rank fields of any other (vipr:Genus, BVBRC:species, repseq:family), the
+            // first met per rank, in the joint vocabulary's order -- the same fields that place the tip
+            for( final Property p : tip.getNodeData().getProperties().getProperties() ) {
+                final String key = RankVocabulary.propertyRank( p.getRef() );
+                if ( RankVocabulary.isListed( key ) && !ForesterUtil.isEmpty( p.getValue() )
+                        && !ForesterUtil.isEmpty( p.getValue().trim() ) ) {
+                    by_rank.putIfAbsent( key, p.getValue().trim() );
+                }
+            }
+            if ( by_rank.isEmpty() ) {
+                return TaxonLineage.EMPTY;
+            }
+            for( final String rank : RankVocabulary.RANKS ) {
+                final String name = by_rank.get( RankVocabulary.key( rank ) );
+                if ( name != null ) {
+                    levels.add( new TaxonLineage.Ancestor( name, rank, null ) );
+                }
             }
         }
         final Taxonomy tax = tip.getNodeData().isHasTaxonomy() ? tip.getNodeData().getTaxonomy() : null;
@@ -2108,19 +2219,21 @@ public class TreePanelUtil {
     }
 
     /**
-     * Each node that roots a <i>maximal</i> clade resolving to one rank taxon, mapped to that taxon (Spine B:
-     * tax-id-aware, respecting internal annotations as gap-fillers). Per node the subtree taxon is reconciled from
-     * the children and the node's OWN {@code assignment} entry:
-     * <ul>
-     * <li>children genuinely CONFLICT (&ge;2 distinct placed child taxa, or a mixed child) &rarr; mixed (never
-     *     filled; the node's own annotation is ignored here);</li>
-     * <li>the placed children AGREE on a taxon T &rarr; T (so a clade's resolvable tips WIN over a differing
-     *     ancestor annotation -- "tip identity wins"); an UNPLACED sibling is swept into T only when the node's own
-     *     annotation authorizes that same T (else the unplaced tip forces mixed, as before);</li>
-     * <li>ALL children unplaced &rarr; the node's OWN annotation fills the gap (defines the clade), else unplaced.</li>
-     * </ul>
+     * Each node that roots a <i>maximal</i> clade of one rank taxon, mapped to that taxon: the joint rule
+     * (Archaeopteryx.js {@code rankClades}; Christian, 2026-10-19: "external nodes which lack species information do
+     * not get to vote, but I don't think we should be in the business of correcting annotations"). A subtree is PURE
+     * when its PLACED tips -- the tips {@code assignment} maps -- all name one taxon; a tip the tree places at no
+     * taxon does not vote, and is swept into the clade around it. ONE placed tip makes a subtree pure, so a sparsely
+     * annotated tree can be one clade. An internal node's own {@code assignment} entry never decides a clade: the
+     * tips do (the node's own taxon has already reached, as the nearest ancestor's, every tip below that names
+     * nothing itself -- {@link #placeNodes}); a tip that names another taxon keeps it, and the node is reported as
+     * contradicted ({@link CladeAnnotationReport}), never corrected. Until 0.11.186 an unplaced tip kept its clade
+     * MIXED unless the node's own annotation named the taxon, which shattered every genus of a BV-BRC tree (3-10%
+     * of its tips unannotated) into fragments.
+     * <p>
      * Then the maximal (topmost) node of each taxon is returned. Paraphyly yields several same-taxon roots.
-     * Equality is tax-id-aware ({@link RankTaxon}), so homonyms are not merged into one clade.
+     * Equality is tax-id-aware ({@link RankTaxon}), so homonyms are not merged into one clade -- a named difference
+     * from Archaeopteryx.js, which has no ids and matches names trimmed and case-insensitively (as we do without ids).
      * <p>
      * Both maps are keyed by node IDENTITY, never by {@code PhylogenyNode.equals} (which compares name + taxonomy):
      * nested nameless internal nodes annotated with the same taxon -- the shape "write the clade taxa" and "Infer
@@ -2141,44 +2254,23 @@ public class TreePanelUtil {
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             postorder.put( n, postorder.size() );
-            final RankTaxon own = assignment.get( n ); // the node's OWN taxon (null when it has none)
             if ( n.isExternal() ) {
-                subtree.put( n, own ); // a placed tip, or null (unplaced); the leaf never "conflicts"
+                subtree.put( n, assignment.get( n ) ); // a placed tip's taxon, or null: it does not vote
                 continue;
             }
-            RankTaxon consensus = null;   // the single taxon the PLACED children agree on
-            boolean conflict = false;     // >= 2 distinct placed child taxa, or a mixed child
-            boolean any_unplaced = false; // a child whose subtree pins no taxon
+            // the one taxon the placed tips below agree on; MIXED for two or more; null when none is placed
+            RankTaxon consensus = null;
             for( final PhylogenyNode c : n.getDescendants() ) {
                 final RankTaxon cs = subtree.get( c );
-                if ( cs == MIXED ) {
-                    conflict = true;
+                if ( ( cs == MIXED ) || ( ( cs != null ) && ( consensus != null ) && !consensus.equals( cs ) ) ) {
+                    consensus = MIXED;
                     break;
                 }
-                if ( cs == null ) {
-                    any_unplaced = true;
-                }
-                else if ( consensus == null ) {
+                if ( cs != null ) {
                     consensus = cs;
                 }
-                else if ( !consensus.equals( cs ) ) {
-                    conflict = true;
-                    break;
-                }
             }
-            final RankTaxon result;
-            if ( conflict ) {
-                result = MIXED;
-            }
-            else if ( consensus != null ) {
-                // placed children agree on `consensus`; an unplaced sibling is swept in only if the node's own
-                // annotation names that same taxon (authorizing the fill), else the unplaced tip keeps it mixed
-                result = ( !any_unplaced || consensus.equals( own ) ) ? consensus : MIXED;
-            }
-            else {
-                result = own; // all children unplaced -> the node's own annotation fills the gap (may be null)
-            }
-            subtree.put( n, result );
+            subtree.put( n, consensus );
         }
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();

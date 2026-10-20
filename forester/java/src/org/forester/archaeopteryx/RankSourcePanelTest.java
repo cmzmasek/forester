@@ -45,7 +45,9 @@ public final class RankSourcePanelTest {
         return testChoices() && testPanel() && testEntryAndBareRank();
     }
 
-    /** order Carnivora over family Felidae over (cat, lion); order Rodentia over (rat): three species tips. */
+    /** order Carnivora over family Felidae over (cat, lion); order Rodentia over (rat, mouse): four species tips --
+     *  four, so that order's two taxa repeat enough to be offered (the joint rule offers a rank when at most three
+     *  taxa fall on five placed tips; two orders on three tips would not). */
     private static Phylogeny fixture() {
         final PhylogenyNode carnivora = annotated( "order", "Carnivora" );
         final PhylogenyNode felidae = annotated( "family", "Felidae" );
@@ -54,6 +56,7 @@ public final class RankSourcePanelTest {
         carnivora.addAsChild( felidae );
         final PhylogenyNode rodentia = annotated( "order", "Rodentia" );
         rodentia.addAsChild( tip( "rat", "Rattus norvegicus" ) );
+        rodentia.addAsChild( tip( "mouse", "Mus musculus" ) );
         final PhylogenyNode root = new PhylogenyNode();
         root.addAsChild( carnivora );
         root.addAsChild( rodentia );
@@ -68,25 +71,28 @@ public final class RankSourcePanelTest {
         // the cache knows the rat's family (and nothing else), so the family share depends on the source
         final TaxonomicLineageService svc = new RatService();
         final List<String> tree = Arrays.asList( RankSourcePanel.choices( phy, svc, TaxonSource.TREE ) );
-        if ( !tree.contains( "order (2 annotated; 100% placed)" ) || !tree.contains( "family (1 annotated; 67% placed)" )
-                || !tree.contains( "genus (not annotated; 0% placed)" ) || !tree.contains( "species (3 annotated; 100% placed)" ) ) {
-            return fail( "TREE entries state the annotation count and what the tree places; got " + tree );
+        // the joint offer rule (0.11.186): a rank is offered when it places a tip and its taxa repeat (at most three
+        // taxa per five placed tips); species names four taxa on four tips and genus places nothing: neither is
+        // offered, and the tree source never offers a rank nothing carries
+        if ( !tree.equals( Arrays.asList( "order (2 annotated; 100% placed)", "family (1 annotated; 50% placed)" ) ) ) {
+            return fail( "TREE entries: the offered ranks in canonical order, each with its annotation count and what the tree places; got " + tree );
         }
         for( final String e : tree ) {
             if ( e.contains( "look up" ) ) {
                 return fail( "the tree source never looks anything up: " + e );
             }
         }
-        if ( tree.contains( "subfamily (not annotated; 0% placed)" ) || ( tree.indexOf( "order (2 annotated; 100% placed)" ) > tree.indexOf( "family (1 annotated; 67% placed)" ) ) ) {
-            return fail( "only present or major ranks are offered, in canonical order; got " + tree );
-        }
         final List<String> db = Arrays.asList( RankSourcePanel.choices( phy, svc, TaxonSource.DATABASE ) );
-        if ( !db.contains( "family (1 annotated; 100% placed now; 2 to look up)" )
-                || !db.contains( "order (2 annotated; 100% placed now; 2 to look up)" ) ) {
-            return fail( "DATABASE entries count what is placed NOW (the cached rat) and every tip it would look up; got " + db );
+        // placed NOW: cat and lion by their ancestors (the cache cannot place them), the rat by the cache, the mouse
+        // by neither at family (Rodentia names no family) and by its ancestor at order; every uncached tip is to be
+        // looked up; an online source also offers the major ranks nothing carries (genus) for what it would look up
+        if ( !db.contains( "family (1 annotated; 75% placed now; 3 to look up)" )
+                || !db.contains( "order (2 annotated; 100% placed now; 3 to look up)" )
+                || !db.contains( "genus (not annotated; 0% placed now; 3 to look up)" ) ) {
+            return fail( "DATABASE entries count what is placed NOW and every tip it would look up; got " + db );
         }
         final List<String> gaps = Arrays.asList( RankSourcePanel.choices( phy, svc, TaxonSource.TREE_THEN_DATABASE ) );
-        if ( !gaps.contains( "family (1 annotated; 100% placed now; 0 to look up)" )
+        if ( !gaps.contains( "family (1 annotated; 75% placed now; 1 to look up)" )
                 || !gaps.contains( "order (2 annotated; 100% placed now; 0 to look up)" ) ) {
             return fail( "TREE_THEN_DATABASE looks up only the tips the tree leaves unplaced; got " + gaps );
         }

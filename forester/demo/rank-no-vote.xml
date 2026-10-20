@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Clades by rank, the joint rules (demo)</name>
+  <description>Synthetic bunyavirus tree for Tools &gt; Annotate Clades by Rank / Colorize Subtrees via Taxonomic Rank at &apos;genus&apos;, from the tree alone. The genus lives in a vipr:Genus FIELD (as BV-BRC writes it) and is read in any namespace. Andes virus carries nothing and does not vote: it is swept into the Orthohantavirus clade. La Crosse virus carries nothing but sits under a node annotated Orthobunyavirus and takes it. The node annotated Phlebovirus is contradicted by Uukuniemi virus&apos;s own Uukuvirus: reported, never corrected. vipr:Strain is a field, not a rank; repseq:Lineage_L1 is a scheme of the file&apos;s own, offered under its spelling. 4 clades at genus; 11 tips, 10 placed.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.03</branch_length>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <taxonomy>
+          <scientific_name>Orthobunyavirus</scientific_name>
+          <rank>genus</rank>
+        </taxonomy>
+        <clade>
+          <name>Bunyamwera virus</name>
+          <branch_length>0.02</branch_length>
+          <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Orthobunyavirus</property>
+          <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">BUNV</property>
+          <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L1</property>
+        </clade>
+        <clade>
+          <name>Batai virus</name>
+          <branch_length>0.02</branch_length>
+          <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Orthobunyavirus</property>
+          <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">BATV</property>
+          <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L1</property>
+        </clade>
+        <clade>
+          <name>La Crosse virus</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.06</branch_length>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Hantaan virus</name>
+            <branch_length>0.02</branch_length>
+            <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Orthohantavirus</property>
+            <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">HTNV</property>
+            <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L2</property>
+          </clade>
+          <clade>
+            <name>Sin Nombre virus</name>
+            <branch_length>0.02</branch_length>
+            <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Orthohantavirus</property>
+            <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">SNV</property>
+            <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L2</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Andes virus</name>
+            <branch_length>0.02</branch_length>
+          </clade>
+          <clade>
+            <name>Puumala virus</name>
+            <branch_length>0.02</branch_length>
+            <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Orthohantavirus</property>
+            <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">PUUV</property>
+            <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L3</property>
+          </clade>
+        </clade>
+        <clade>
+          <name>Tula virus</name>
+          <branch_length>0.02</branch_length>
+          <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Orthohantavirus</property>
+          <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">TULV</property>
+          <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L3</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.05</branch_length>
+      <taxonomy>
+        <scientific_name>Phlebovirus</scientific_name>
+        <rank>genus</rank>
+      </taxonomy>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>Rift Valley fever virus</name>
+          <branch_length>0.02</branch_length>
+          <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Phlebovirus</property>
+          <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">RVFV</property>
+          <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L1</property>
+        </clade>
+        <clade>
+          <name>Toscana virus</name>
+          <branch_length>0.02</branch_length>
+          <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Phlebovirus</property>
+          <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">TOSV</property>
+          <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L1</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>Uukuniemi virus</name>
+        <branch_length>0.02</branch_length>
+        <property ref="vipr:Genus" datatype="xsd:string" applies_to="node">Uukuvirus</property>
+        <property ref="vipr:Strain" datatype="xsd:string" applies_to="node">UUKV</property>
+        <property ref="repseq:Lineage_L1" datatype="xsd:string" applies_to="node">L3</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

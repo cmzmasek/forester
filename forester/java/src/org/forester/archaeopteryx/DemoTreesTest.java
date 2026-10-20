@@ -120,6 +120,9 @@ public final class DemoTreesTest {
         // the internal-taxa check demo: four annotated internal nodes, three wrong in three different ways, three
         // corrections proposed -- all found OFFLINE from the tips' ncbi: fields
         ok &= internalTaxaCheckFinds( "internal-taxa-check.xml" );
+        // the joint rules: a vipr: field places, an unannotated tip is swept in without a vote, an annotated node's
+        // word reaches its bare tip, a contradicted node is reported, strain is no rank, a scheme of the file's own is
+        ok &= rankNoVoteOk( "rank-no-vote.xml" );
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
         // break long branches: a phylogram with branch lengths AND a genuine outlier branch (> the auto cap), so the
@@ -2792,6 +2795,63 @@ public final class DemoTreesTest {
      *  order) is what the per-tip report exists to show: from the tree's own annotations, at {@code rank}, every tip
      *  is placed, nothing is looked up, and exactly that annotation is reported as ignored -- the count the demo
      *  catalogue quotes. */
+    private static boolean rankNoVoteOk( final String file_name ) {
+        final Phylogeny phy = load( file_name );
+        if ( phy == null ) {
+            return false;
+        }
+        final java.util.Map<PhylogenyNode, TaxonPlacement> p = TreePanelUtil.placeNodes( phy, "genus", null, TaxonSource.TREE );
+        int placed = 0;
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            if ( p.get( tip ).isPlaced() ) {
+                ++placed;
+            }
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 11 ) || ( placed != 10 ) ) {
+            return note( file_name + ": 11 tips, 10 placed at genus; got " + phy.getNumberOfExternalNodes() + " / " + placed );
+        }
+        final TaxonPlacement andes = p.get( phy.getNode( "Andes virus" ) );
+        final TaxonPlacement lacrosse = p.get( phy.getNode( "La Crosse virus" ) );
+        final TaxonPlacement hantaan = p.get( phy.getNode( "Hantaan virus" ) );
+        if ( andes.isPlaced() || !lacrosse.isPlaced() || ( lacrosse.getSource() != TaxonPlacement.Source.ANCESTOR_ANNOTATION )
+                || ( hantaan.getSource() != TaxonPlacement.Source.OWN_METADATA ) || !"field vipr:Genus".equals( hantaan.getDetail() ) ) {
+            return note( file_name + ": Andes unplaced, La Crosse by its ancestor, Hantaan by its vipr:Genus field; got " + andes + " / "
+                    + lacrosse + " / " + hantaan );
+        }
+        final java.util.List<CladeBand> bands = TreePanelUtil.cladeBands( phy, "genus", null, null, null, TaxonSource.TREE );
+        if ( bands.size() != 4 ) {
+            return note( file_name + ": 4 clades at genus, got " + bands.size() );
+        }
+        for( final CladeBand b : bands ) {
+            if ( "Orthohantavirus".equals( b.getTaxon() ) && !b.getRoot().getAllExternalDescendants().contains( phy.getNode( "Andes virus" ) ) ) {
+                return note( file_name + ": the Orthohantavirus clade must sweep Andes virus in" );
+            }
+        }
+        final java.util.List<String> offered = new java.util.ArrayList<String>();
+        for( final RankSourcePanel.Coverage c : RankSourcePanel.coverage( phy, null, TaxonSource.TREE ) ) {
+            offered.add( c.label );
+        }
+        if ( !offered.equals( java.util.Arrays.asList( "genus", "Lineage_L1" ) ) ) {
+            return note( file_name + ": the tree source offers genus and the file's own Lineage_L1, never vipr:Strain; got " + offered );
+        }
+        if ( !"genus".equals( RankSourcePanel.defaultRank( RankSourcePanel.coverage( phy, null, TaxonSource.TREE ), 20 ) ) ) {
+            return note( file_name + ": the chooser opens on genus" );
+        }
+        final CladeAnnotationReport r = CladeAnnotationReport.of( phy, java.util.Collections.singletonList( "genus" ), null, TaxonSource.TREE );
+        if ( ( r.getIgnoredInternalCount() != 1 ) || ( r.getUnplacedCount() != 1 ) || ( r.getConflictCount() != 0 ) ) {
+            return note( file_name + ": one contradicted internal node (Phlebovirus), one unplaced tip, no database conflict; got " + r.getSummary() );
+        }
+        for( final CladeAnnotationReport.Row row : r.getRows() ) {
+            if ( row.isInternal() && !( "Phlebovirus".equals( row.getTaxon() ) && row.getNote().contains( "Uukuvirus" ) ) ) {
+                return note( file_name + ": the contradicted node is Phlebovirus, against Uukuvirus; got " + row.getTaxon() + " / " + row.getNote() );
+            }
+        }
+        if ( !"Phlebovirus".equals( phy.getNode( "Uukuniemi virus" ).getParent().getNodeData().getTaxonomy().getScientificName() ) ) {
+            return note( file_name + ": the contradicted annotation is never corrected" );
+        }
+        return true;
+    }
+
     private static boolean reportsIgnoredAnnotation( final String file_name, final String rank, final String taxon ) {
         final Phylogeny phy = load( file_name );
         if ( phy == null ) {

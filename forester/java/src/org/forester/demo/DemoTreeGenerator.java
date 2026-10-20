@@ -112,6 +112,7 @@ public final class DemoTreeGenerator {
         write( dir, "colorize-by-rank.xml", colorizeByRankTree() );
         write( dir, "ncbi-lineage-metadata.xml", ncbiLineageMetadataTree() );
         write( dir, "internal-taxa-check.xml", internalTaxaCheckTree() );
+        write( dir, "rank-no-vote.xml", rankNoVoteTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -1698,6 +1699,50 @@ public final class DemoTreeGenerator {
                              + "Clades by Rank -- work at 'order' (Carnivora, Rodentia, Primates) with NO online "
                              + "lookup. The Carnivora clade root is deliberately MIS-annotated 'Rodentia' to show "
                              + "that a tip's own identity wins over a wrong/partial internal annotation." );
+    }
+
+    // ----- "Clades by rank, the joint rules" (Christian, 2026-10-19, decided for Archaeopteryx.js and ported here):
+    //       a rank field is read in ANY namespace (vipr:Genus here, as BV-BRC writes it); a tip the tree places at no
+    //       taxon does NOT vote (Andes virus is swept into the Orthohantavirus clade); a tip under an annotated node
+    //       takes the node's word (La Crosse virus); an internal annotation a tip contradicts is REPORTED, never
+    //       corrected (the "Phlebovirus" node against Uukuniemi's own Uukuvirus); strain is no rank (vipr:Strain is a
+    //       field), and a clade / lineage scheme of the file's own (repseq:Lineage_L1) is offered under its spelling.
+    private static Phylogeny rankNoVoteTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode orthobunya = clade( 0.05,
+                                                genusTip( "Bunyamwera virus", "Orthobunyavirus", "BUNV", "L1" ),
+                                                genusTip( "Batai virus", "Orthobunyavirus", "BATV", "L1" ),
+                                                leaf( "La Crosse virus" ) ); // nothing of its own: the node's word
+        taxon( orthobunya, "Orthobunyavirus", "genus" );
+        final PhylogenyNode hanta = clade( 0.06,
+                                           clade( 0.02, genusTip( "Hantaan virus", "Orthohantavirus", "HTNV", "L2" ),
+                                                  genusTip( "Sin Nombre virus", "Orthohantavirus", "SNV", "L2" ) ),
+                                           clade( 0.02, leaf( "Andes virus" ), // nothing, no annotated ancestor: no vote
+                                                  genusTip( "Puumala virus", "Orthohantavirus", "PUUV", "L3" ) ),
+                                           genusTip( "Tula virus", "Orthohantavirus", "TULV", "L3" ) );
+        final PhylogenyNode phlebo = clade( 0.05,
+                                            clade( 0.02, genusTip( "Rift Valley fever virus", "Phlebovirus", "RVFV", "L1" ),
+                                                   genusTip( "Toscana virus", "Phlebovirus", "TOSV", "L1" ) ),
+                                            genusTip( "Uukuniemi virus", "Uukuvirus", "UUKV", "L3" ) ); // contradicts the node
+        taxon( phlebo, "Phlebovirus", "genus" );
+        final PhylogenyNode root = clade( 0, clade( 0.03, orthobunya, hanta ), phlebo );
+        return tree( root, "Clades by rank, the joint rules (demo)",
+                     "Synthetic bunyavirus tree for Tools > Annotate Clades by Rank / Colorize Subtrees via Taxonomic "
+                             + "Rank at 'genus', from the tree alone. The genus lives in a vipr:Genus FIELD (as BV-BRC "
+                             + "writes it) and is read in any namespace. Andes virus carries nothing and does not vote: "
+                             + "it is swept into the Orthohantavirus clade. La Crosse virus carries nothing but sits "
+                             + "under a node annotated Orthobunyavirus and takes it. The node annotated Phlebovirus is "
+                             + "contradicted by Uukuniemi virus's own Uukuvirus: reported, never corrected. vipr:Strain "
+                             + "is a field, not a rank; repseq:Lineage_L1 is a scheme of the file's own, offered under "
+                             + "its spelling. 4 clades at genus; 11 tips, 10 placed." );
+    }
+
+    /** A tip whose genus is a vipr:Genus FIELD, with a strain field (no rank) and a lineage scheme of the file's own. */
+    private static PhylogenyNode genusTip( final String name, final String genus, final String strain, final String lineage ) {
+        final PhylogenyNode n = leaf( name );
+        cat( n, "vipr:Genus", genus );
+        cat( n, "vipr:Strain", strain );
+        cat( n, "repseq:Lineage_L1", lineage );
+        return n;
     }
 
     /** A tip named for its species but carrying its ORDER as an in-tree rank annotation, so it self-resolves the

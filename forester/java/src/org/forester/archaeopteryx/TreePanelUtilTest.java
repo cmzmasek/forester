@@ -2152,7 +2152,8 @@ public final class TreePanelUtilTest {
      * INTERNAL node resolved to the coloring rank -- here a GENUS-annotated node whose ORDER comes from the service,
      * so the tips' ancestor-fallback (which keys on the exact coloring rank) misses it -- (a) colors a clade of
      * otherwise-unresolvable tips, and (c) sweeps an unplaced sibling into its taxon; (b) without such an authorizing
-     * ancestor an unplaced tip still breaks the clade ("unplaced tips aren't silently swept").
+     * ancestor an unplaced tip is swept in all the same (the joint no-vote rule, 0.11.186: a tip the tree places at
+     * no taxon does not vote; until then it broke the clade).
      */
     private static boolean testInternalTaxonGapFill() {
         final FakeLineageService svc = new FakeLineageService();
@@ -2181,8 +2182,10 @@ public final class TreePanelUtilTest {
         final Phylogeny broken = phylogeny( node( plain, orderLeaf( "rat1", "Rodentia", null ) ) );
         final Map<PhylogenyNode, TreePanelUtil.RankTaxon> b_roots = TreePanelUtil
                 .maximalMonochromaticRoots( broken, TreePanelUtil.assignNodesToRankTaxon( broken, "order", svc ) );
-        if ( b_roots.containsKey( plain ) || ( b_roots.get( felis1 ) == null ) ) {
-            return fail( "an unplaced tip with no authorizing ancestor must break the clade (only the placed tip is a root)" );
+        // the joint rule since 0.11.186 (Christian, 2026-10-19: "external nodes which lack species information do
+        // not get to vote"): the unplaced tip u1 is swept into felis1's clade, which grows to the plain node
+        if ( !b_roots.containsKey( plain ) || b_roots.containsKey( felis1 ) || !"Carnivora".equals( b_roots.get( plain ).getName() ) ) {
+            return fail( "an unplaced tip does not vote: it is swept into its sibling's clade, which reaches their parent" );
         }
 
         // (c) the same shape, but the clade IS resolved to Carnivora (genus Felis -> order via service) -> the

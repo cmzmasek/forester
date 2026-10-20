@@ -60,7 +60,7 @@ public final class RankLegendTest {
             return true;
         }
         return testRankColorizeLegend() && testCladeBandLegend() && testLegendHandBack() && testSingleMemberSkip()
-                && testLabelAngle();
+                && testLabelAngle() && testNoValueRow();
     }
 
     /** Clade-bar/bracket label ANGLE (root-left): HORIZONTAL / DIAGONAL labels extend rightward and reserve more
@@ -287,6 +287,45 @@ public final class RankLegendTest {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /** The rank legend's "no value" row counts the tips the rank places at none (the joint no-vote rule, 0.11.186):
+     *  one once a bare tip is added to the fully annotated order tree, and that tip's own branch stays uncoloured. */
+    private static boolean testNoValueRow() {
+        final Phylogeny phy = orderTree();
+        final PhylogenyNode bare = new PhylogenyNode();
+        bare.setName( "unannotated tip" );
+        bare.setDistanceToParent( 0.1 );
+        phy.getRoot().addAsChild( bare );
+        phy.externalNodesHaveChanged();
+        final Configuration conf = new Configuration();
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        final boolean[] ok = { true };
+        try {
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "novalue" ) );
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                if ( tp.colorByRank( "order", TaxonSource.TREE ) < 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  colorByRank(order) must colour the order clades" );
+                }
+                if ( tp.rankLegendMissingForTest() != 1 ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  the legend's no-value count must be the one bare tip, got " + tp.rankLegendMissingForTest() );
+                }
+                if ( bare.getBranchData().getBranchColor() != null ) {
+                    ok[ 0 ] = false;
+                    System.out.println( "  the bare tip's own branch stays uncoloured" );
+                }
+                ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
+            } );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            return false;
+        }
+        return ok[ 0 ];
     }
 
     private static boolean testRankColorizeLegend() {

@@ -33,7 +33,8 @@ final class TaxonPlacement {
     enum Source {
         /** The node's own {@code <taxonomy>} is annotated at exactly this rank. */
         OWN_ANNOTATION( "own annotation", true ),
-        /** The node's own per-rank metadata field ({@code ncbi:family}, {@code gtdb:family}). */
+        /** The node's own per-rank metadata field, in any namespace ({@code vipr:Genus}, {@code ncbi:family},
+         *  {@code gtdb:family}). */
         OWN_METADATA( "own metadata field", true ),
         /** The nearest ancestor annotated at this rank (the clade the tree says it sits in). */
         ANCESTOR_ANNOTATION( "ancestor's annotation", true ),

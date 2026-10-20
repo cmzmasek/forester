@@ -2227,8 +2227,11 @@ public final class AptxUtil {
                 // species (and other low ranks) live on leaves and the colorizer anchors on them too;
                 // skipping leaves here undercounted those ranks (e.g. "species (3)" vs. many colored).
                 if (!n.isRoot() && n.getNodeData().isHasTaxonomy()
-                        && !ForesterUtil.isEmpty(n.getNodeData().getTaxonomy().getRank())) {
-                    final String rank = n.getNodeData().getTaxonomy().getRank().toLowerCase();
+                        && (RankVocabulary.key(n.getNodeData().getTaxonomy().getRank()) != null)) {
+                    // counted by the joint rank KEY ("Sub-Species" and "ssp." are one rank; strain, other and
+                    // unknown are no rank), shown under the canonical spelling where there is one
+                    final String key = RankVocabulary.key(n.getNodeData().getTaxonomy().getRank());
+                    final String rank = (RankVocabulary.label(key) != null) ? RankVocabulary.label(key) : key;
                     if (present_ranks.containsKey(rank)) {
                         present_ranks.put(rank, present_ranks.get(rank) + 1);
                     } else {

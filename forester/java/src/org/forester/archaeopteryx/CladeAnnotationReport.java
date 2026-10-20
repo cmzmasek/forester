@@ -156,8 +156,9 @@ final class CladeAnnotationReport implements TableReport {
             for( final Entry<PhylogenyNode, TaxonPlacement> e : placements.entrySet() ) {
                 final PhylogenyNode node = e.getKey();
                 final TaxonPlacement p = e.getValue();
-                if ( node.isExternal() || ( p.getSource() != TaxonPlacement.Source.OWN_ANNOTATION ) ) {
-                    continue;
+                if ( node.isExternal() || ( ( p.getSource() != TaxonPlacement.Source.OWN_ANNOTATION )
+                        && ( p.getSource() != TaxonPlacement.Source.OWN_METADATA ) ) ) {
+                    continue; // an internal node names a taxon by its own taxonomy or its own field
                 }
                 final Map<String, Integer> elsewhere = new LinkedHashMap<String, Integer>();
                 for( final PhylogenyNode tip : node.getAllExternalDescendants() ) {

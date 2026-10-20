@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,8 +37,10 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.util.ForesterUtil;
-import org.forester.util.TaxonomyUtil;
 import org.forester.ws.seqdb.TaxonomicLineageService;
 
 /**
@@ -94,19 +98,32 @@ final class RankSourcePanel {
                 + " field per rank, so the next annotation, Color by, search and table work offline and survive a save."
                 + " Replaces a tip's earlier ncbi: fields; tips the database could not place are left untouched." );
         _write_lineages.setEnabled( initial.isOnline() );
-        _rank_box = new JComboBox<String>( withFirst( choices( phy, svc, initial ), first_entry ) );
+        final List<Coverage> cov = coverage( phy, svc, initial );
+        final List<String> entries = new ArrayList<String>();
+        for( final Coverage c : cov ) {
+            entries.add( entry( c.label, c.annotated, c.placed, c.tips, c.to_look_up, initial.isOnline() ) );
+        }
+        final String[] choices = entries.toArray( new String[ 0 ] );
+        _rank_box = new JComboBox<String>( withFirst( choices, first_entry ) );
         for( int i = 0; i < extra_levels; ++i ) {
-            final JComboBox<String> box = new JComboBox<String>( withFirst( choices( phy, svc, initial ), NONE ) );
+            final JComboBox<String> box = new JComboBox<String>( withFirst( choices, NONE ) );
             box.setSelectedIndex( 0 );
             _extra_boxes.add( box );
+        }
+        // open on the finest rank naming 2..20 taxa (the joint default); a caller with a remembered rank selects
+        // over it afterwards
+        final String open_on = defaultRank( cov, 20 );
+        if ( open_on != null ) {
+            selectRank( open_on );
         }
     }
 
     private static String tooltipOf( final TaxonSource s ) {
         switch ( s ) {
             case TREE:
-                return "Only what the tree already carries: a tip's own taxonomy at the rank, a per-rank metadata field"
-                        + " (ncbi:family, gtdb:family), else the nearest ancestor annotated at the rank. Nothing is looked up.";
+                return "Only what the tree already carries: a tip's own taxonomy at the rank, a field named for the rank in any"
+                        + " namespace (vipr:Genus, ncbi:family, gtdb:family), else the nearest ancestor naming one. A tip with"
+                        + " none does not vote: it is swept into the clade around it. Nothing is looked up.";
             case DATABASE:
                 return "Every tip is looked up (its NCBI id, else its name, else its label) and its own identity wins;"
                         + " an ancestor's annotation only fills a gap the database cannot. Needs an internet connection.";
@@ -128,33 +145,136 @@ final class RankSourcePanel {
         return out;
     }
 
-    /**
-     * The rank entries for {@code source}, in canonical rank order: every rank some node is annotated at, plus the
-     * major Linnaean ranks ({@link #OFFERABLE_RANKS}) even when none is -- a database can place a tip at a rank no
-     * node literally carries. Each reads {@code "family (19 annotated; 29% placed)"}, and for an online source
-     * {@code "family (19 annotated; 29% placed now; 136 to look up)"}.
-     */
-    static String[] choices( final Phylogeny phy, final TaxonomicLineageService svc, final TaxonSource source ) {
-        final List<String> out = new ArrayList<String>();
-        if ( ( phy == null ) || phy.isEmpty() ) {
-            return new String[ 0 ];
+    /** A rank's coverage on the tree under a source: see {@link #coverage}. */
+    static final class Coverage {
+
+        final String key;        // the rank's key (RankVocabulary)
+        final String label;      // what to show: the canonical spelling, else the file's own
+        final int    annotated;  // nodes whose <taxonomy> is at this rank
+        final int    placed;     // tips the source places now
+        final int    tips;
+        final int    taxa;       // distinct taxa among the placed tips
+        final int    to_look_up; // names an online source would still look up
+
+        Coverage( final String key, final String label, final int annotated, final int placed, final int tips,
+                  final int taxa, final int to_look_up ) {
+            this.key = key;
+            this.label = label;
+            this.annotated = annotated;
+            this.placed = placed;
+            this.tips = tips;
+            this.taxa = taxa;
+            this.to_look_up = to_look_up;
         }
+
+        /** The rank as the placement code takes it: the canonical spelling of a listed rank, else the key. */
+        String rank() {
+            return ( RankVocabulary.label( key ) != null ) ? RankVocabulary.label( key ) : key;
+        }
+    }
+
+    /**
+     * The ranks the tree names anywhere -- in a {@code <taxonomy>}'s rank, or as a property's local name in any
+     * namespace ({@link RankVocabulary#propertyRank}) -- plus, for an online source, the major Linnaean ranks
+     * ({@link #OFFERABLE_RANKS}: a database can place a tip at a rank no node literally carries); in canonical
+     * order, each with what {@code source} places now. The joint offer rule (Archaeopteryx.js {@code rankCoverage}):
+     * a rank is worth offering when it places a tip and its taxa repeat -- at most three taxa per five placed tips,
+     * the Color-by's own near-unique line -- so a strain-like field drops out by itself (its clades would be single
+     * tips, nothing to colour or to mark); an online source's rank with names still to look up is offered too.
+     */
+    static List<Coverage> coverage( final Phylogeny phy, final TaxonomicLineageService svc, final TaxonSource source ) {
+        final List<Coverage> out = new ArrayList<Coverage>();
+        if ( ( phy == null ) || phy.isEmpty() ) {
+            return out;
+        }
+        final Map<String, String> named = new LinkedHashMap<String, String>(); // key -> label, the file's first spelling
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy() ) {
+                final String raw = n.getNodeData().getTaxonomy().getRank();
+                final String key = RankVocabulary.key( raw );
+                if ( key != null ) {
+                    named.putIfAbsent( key, ( RankVocabulary.label( key ) != null ) ? RankVocabulary.label( key ) : raw.trim() );
+                }
+            }
+            if ( n.getNodeData().getProperties() != null ) {
+                for( final Property p : n.getNodeData().getProperties().getProperties() ) {
+                    final String key = RankVocabulary.propertyRank( p.getRef() );
+                    // a scheme of the file's own counts only when a TIP carries it (an internal-only branch label,
+                    // the Auspice reader's nextstrain:clade_label, is no rank); a listed rank counts wherever it is
+                    if ( ( key != null ) && ( RankVocabulary.isListed( key ) || n.isExternal() ) ) {
+                        named.putIfAbsent( key, ( RankVocabulary.label( key ) != null ) ? RankVocabulary.label( key )
+                                : RankVocabulary.localName( p.getRef() ) );
+                    }
+                }
+            }
+        }
+        if ( source.isOnline() ) {
+            for( final String rank : OFFERABLE_RANKS ) {
+                named.putIfAbsent( RankVocabulary.key( rank ), rank );
+            }
+        }
+        final List<String> keys = new ArrayList<String>( named.keySet() );
+        Collections.sort( keys, RankVocabulary::compare );
         final Map<String, Integer> annotated = AptxUtil.getRankCounts( phy );
         final int tips = phy.getNumberOfExternalNodes();
-        for( final String rank : TaxonomyUtil.TAXONOMY_RANKS_LIST ) {
-            if ( rank.equals( TaxonomyUtil.UNKNOWN ) || rank.equals( TaxonomyUtil.OTHER ) ) {
-                continue;
-            }
-            final Integer n = annotated.get( rank );
-            final boolean present = ( n != null ) && ( n > 0 );
-            if ( !present && !OFFERABLE_RANKS.contains( rank ) ) {
-                continue;
-            }
-            final int placed = TreePanelUtil.placedTipCount( TreePanelUtil.placeNodes( phy, rank, svc, source ) );
+        for( final String key : keys ) {
+            final String label = named.get( key );
+            final String rank = ( RankVocabulary.label( key ) != null ) ? RankVocabulary.label( key ) : key;
+            final Map<PhylogenyNode, TaxonPlacement> placements = TreePanelUtil.placeNodes( phy, rank, svc, source );
+            final int placed = TreePanelUtil.placedTipCount( placements );
+            final int taxa = TreePanelUtil.placedTaxonCount( placements );
             final int to_look_up = source.isOnline() ? TreePanelUtil.unresolvedTipTaxa( phy, rank, svc, source ).size() : 0;
-            out.add( entry( rank, present ? n : 0, placed, tips, to_look_up, source.isOnline() ) );
+            final Integer ann = annotated.get( rank );
+            final boolean repeats = ( placed > 0 ) && ( ( taxa * 5 ) <= ( placed * 3 ) );
+            if ( repeats || ( source.isOnline() && ( to_look_up > 0 ) ) ) {
+                out.add( new Coverage( key, label, ( ann == null ) ? 0 : ann, placed, tips, taxa, to_look_up ) );
+            }
+        }
+        return out;
+    }
+
+    /** The rank entries for {@code source} ({@link #coverage}), each reading {@code "family (19 annotated; 29%
+     *  placed)"}, and for an online source {@code "family (19 annotated; 29% placed now; 136 to look up)"}. */
+    static String[] choices( final Phylogeny phy, final TaxonomicLineageService svc, final TaxonSource source ) {
+        final List<String> out = new ArrayList<String>();
+        for( final Coverage c : coverage( phy, svc, source ) ) {
+            out.add( entry( c.label, c.annotated, c.placed, c.tips, c.to_look_up, source.isOnline() ) );
         }
         return out.toArray( new String[ 0 ] );
+    }
+
+    /** The rank to open a chooser on (the joint rule, Archaeopteryx.js {@code defaultRank}): the FINEST listed rank
+     *  naming 2 to {@code max_taxa} taxa (a legend's worth: a genus level on a family tree); else, among the file's
+     *  own clade / lineage schemes, the one naming the most taxa within that cap; else the rank naming the most
+     *  taxa; else null -- always one of the offered ranks. Returns the entry's label. */
+    static String defaultRank( final List<Coverage> coverage, final int max_taxa ) {
+        if ( ( coverage == null ) || coverage.isEmpty() ) {
+            return null;
+        }
+        final int cap = ( max_taxa > 1 ) ? max_taxa : 20;
+        for( int i = coverage.size() - 1; i >= 0; --i ) {
+            final Coverage c = coverage.get( i );
+            if ( RankVocabulary.isListed( c.key ) && ( c.taxa >= 2 ) && ( c.taxa <= cap ) ) {
+                return c.label;
+            }
+        }
+        Coverage scheme = null;
+        for( final Coverage c : coverage ) {
+            if ( !RankVocabulary.isListed( c.key ) && ( c.taxa >= 2 ) && ( c.taxa <= cap ) && ( ( scheme == null ) || ( c.taxa > scheme.taxa ) ) ) {
+                scheme = c;
+            }
+        }
+        if ( scheme != null ) {
+            return scheme.label;
+        }
+        Coverage best = coverage.get( 0 );
+        for( final Coverage c : coverage ) {
+            if ( c.taxa > best.taxa ) {
+                best = c;
+            }
+        }
+        return best.label;
     }
 
     /** One chooser entry; see {@link #choices}. */
