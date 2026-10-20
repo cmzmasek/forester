@@ -269,13 +269,21 @@ public final class RankCladesTest {
             io.add( c.key );
         }
         check( ok, io.equals( Arrays.asList( "family" ) ), "an internal-only scheme is not offered; an internal listed rank is: " + io );
-        // the default: the finest listed rank naming 2..20 taxa, else the most taxa
-        check( ok, "subtype".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "species", 3 ), cv( "subtype", 2 ), cv( "subclade", 30 ) ), 20 ) )
+        // the default (Christian, 2026-10-20: "the most taxa within the cap, listed or not, a tie going to the listed
+        // rank"): among the ranks naming 2..cap taxa the most; ties: listed over a scheme, the finer of two listed, the
+        // first met of two schemes; none within the cap: the most of all
+        check( ok, "species".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "species", 3 ), cv( "subtype", 2 ), cv( "subclade", 30 ) ), 20 ) )
                 && "genus".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "family", 1 ), cv( "genus", 4 ), cv( "species", 234 ) ), 20 ) )
                 && "species".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "class", 1 ), cv( "family", 1 ), cv( "species", 63 ) ), 20 ) )
                 && "family".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "family", 2 ), cv( "genus", 10 ), cv( "species", 66 ) ), 5 ) )
+                && "genus".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "family", 2 ), cv( "genus", 10 ), cv( "species", 66 ) ), 20 ) )
                 && ( RankSourcePanel.defaultRank( new ArrayList<RankSourcePanel.Coverage>(), 20 ) == null ),
-               "the default rank" );
+               "the default rank: the most taxa within the cap" );
+        check( ok, "subtype".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "subtype", 3 ), scheme( "H5Clade", 3 ) ), 20 ) )
+                && "PANGO_Lineage".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "genus", 3 ), scheme( "PANGO_Lineage", 14 ) ), 20 ) )
+                && "genus".equals( RankSourcePanel.defaultRank( Arrays.asList( cv( "family", 4 ), cv( "genus", 4 ) ), 20 ) )
+                && "A_clade".equals( RankSourcePanel.defaultRank( Arrays.asList( scheme( "A_clade", 5 ), scheme( "B_clade", 5 ) ), 20 ) ),
+               "ties: a listed rank over a scheme (influenza: subtype over H5Clade), a scheme naming MORE taxa wins, the finer of two listed, the first met of two schemes" );
     }
 
     // ---- the cross-run tree both programs ship ----
@@ -438,6 +446,11 @@ public final class RankCladesTest {
 
     static RankSourcePanel.Coverage cv( final String rank, final int taxa ) {
         return new RankSourcePanel.Coverage( RankVocabulary.key( rank ), rank, 0, taxa, taxa, taxa, 0 );
+    }
+
+    /** A clade / lineage scheme of the file's own (an unlisted key), under its spelling. */
+    static RankSourcePanel.Coverage scheme( final String label, final int taxa ) {
+        return new RankSourcePanel.Coverage( RankVocabulary.propertyRank( "x:" + label ), label, 0, taxa, taxa, taxa, 0 );
     }
 
     static String describe( final List<RankSourcePanel.Coverage> cov ) {

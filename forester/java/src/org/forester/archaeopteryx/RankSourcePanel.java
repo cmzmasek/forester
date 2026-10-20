@@ -244,37 +244,40 @@ final class RankSourcePanel {
         return out.toArray( new String[ 0 ] );
     }
 
-    /** The rank to open a chooser on (the joint rule, Archaeopteryx.js {@code defaultRank}): the FINEST listed rank
-     *  naming 2 to {@code max_taxa} taxa (a legend's worth: a genus level on a family tree); else, among the file's
-     *  own clade / lineage schemes, the one naming the most taxa within that cap; else the rank naming the most
-     *  taxa; else null -- always one of the offered ranks. Returns the entry's label. */
+    /** The rank to open a chooser on (the joint rule, Archaeopteryx.js {@code defaultRank}; Christian, 2026-10-20:
+     *  "the most taxa within the cap, listed or not, a tie going to the listed rank" -- one principle, the finest
+     *  cut that still fits a legend): among the ranks naming 2 to {@code max_taxa} taxa, the one naming the MOST; a
+     *  tie goes to a listed rank over a scheme of the file's own, to the FINER of two listed ranks (the later in the
+     *  list), to the first met of two schemes; none within the cap: the rank naming the most taxa of all; null on
+     *  an empty list. Always one of the offered ranks; returns the entry's label. {@code coverage} comes in canonical
+     *  order, listed ranks first, so "later" is "finer" and "first met" is the file's own order. */
     static String defaultRank( final List<Coverage> coverage, final int max_taxa ) {
         if ( ( coverage == null ) || coverage.isEmpty() ) {
             return null;
         }
         final int cap = ( max_taxa > 1 ) ? max_taxa : 20;
-        for( int i = coverage.size() - 1; i >= 0; --i ) {
-            final Coverage c = coverage.get( i );
-            if ( RankVocabulary.isListed( c.key ) && ( c.taxa >= 2 ) && ( c.taxa <= cap ) ) {
-                return c.label;
-            }
-        }
-        Coverage scheme = null;
+        Coverage best = null;
         for( final Coverage c : coverage ) {
-            if ( !RankVocabulary.isListed( c.key ) && ( c.taxa >= 2 ) && ( c.taxa <= cap ) && ( ( scheme == null ) || ( c.taxa > scheme.taxa ) ) ) {
-                scheme = c;
+            if ( ( c.taxa < 2 ) || ( c.taxa > cap ) ) {
+                continue;
             }
-        }
-        if ( scheme != null ) {
-            return scheme.label;
-        }
-        Coverage best = coverage.get( 0 );
-        for( final Coverage c : coverage ) {
-            if ( c.taxa > best.taxa ) {
+            if ( ( best == null ) || ( c.taxa > best.taxa ) ) {
                 best = c;
             }
+            else if ( ( c.taxa == best.taxa ) && RankVocabulary.isListed( c.key ) ) {
+                best = c; // a tie: a listed rank over a scheme, and the later (finer) of two listed; two schemes keep the first
+            }
         }
-        return best.label;
+        if ( best != null ) {
+            return best.label;
+        }
+        Coverage most = coverage.get( 0 );
+        for( final Coverage c : coverage ) {
+            if ( c.taxa > most.taxa ) {
+                most = c;
+            }
+        }
+        return most.label;
     }
 
     /** One chooser entry; see {@link #choices}. */
