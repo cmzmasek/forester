@@ -1528,11 +1528,13 @@ public final class PropertyColorSchemeTest {
     /**
      * A date is a measurement or nothing (Christian, 2026-10-20: Collection_Date "should never be offered for
      * visualization" -- its values mix "2016", "Jan-2006" and "14-Jun-2013" and are missing on a third of the tips;
-     * the rule generalised to every date-named field on his choice). forester.js f6c62fb,
-     * testDateIsAMeasurementOrNothing, ported case for case. The word "date" in the MENU name refuses the field as
-     * text however well it repeats, and lets it through as a numeric field when every value is a number: a year, or
-     * the num_date decimal year the Nextstrain and BEAST readers write for Color-by on purpose. Anchored as a word,
-     * so Updated and Candidate survive. A candidacy rule only: the field stays a label field and a search field.
+     * the rule generalised to every date-named field on his choice; then "Year_Month should go too!!", a date at
+     * month resolution). forester.js f6c62fb + f307328, testDateIsAMeasurementOrNothing, ported case for case. The
+     * word "date" or "month" in the MENU name refuses the field as text however well it repeats, and lets it
+     * through as a numeric field when every value is a number: a year, a month 1..12, or the num_date decimal year
+     * the Nextstrain and BEAST readers write for Color-by on purpose. Anchored as words, so Updated, Candidate and
+     * Monthly survive, and Year alone is never a date word. A candidacy rule only: the field stays a label field
+     * and a search field.
      */
     private static boolean testDateIsAMeasurementOrNothing() {
         final V ab = i -> ( ( i % 2 ) == 1 ) ? "Alpha" : "Beta";
@@ -1544,7 +1546,10 @@ public final class PropertyColorSchemeTest {
                 // the Nexus reader's namespace for the same Auspice field: the rule reads the LOCAL name
                 "beast:date_added",
                 // the name alone does not spare it: its NUMBERS do
-                "nextstrain:num_date" };
+                "nextstrain:num_date",
+                // a month is a date too (his "Year_Month should go too!!")
+                "vipr:Year_Month", "x:Year-Month", "x:yearMonth", "x:YEAR_MONTH", "x:Month", "x:Months",
+                "x:Collection_Month", "x:month of sampling" };
         for( final String r : refused_as_text ) {
             final List<PropertyColorScheme.VisCandidate> cs = candidatesFor( r, ab );
             if ( !cs.isEmpty() || !PropertyColorScheme.isDateRef( r ) ) {
@@ -1557,9 +1562,13 @@ public final class PropertyColorSchemeTest {
         if ( !candidatesFor( "vipr:Collection_Date", i -> spellings[ i % 4 ] ).isEmpty() ) {
             return fail( "a well-repeating date as text was offered" );
         }
-        // "date" inside a word is not the word
+        // a well-repeating year-month ("2020_01".."2020_04", evenly) is still a date as text
+        if ( !candidatesFor( "vipr:Year_Month", i -> "2020_0" + ( 1 + ( i % 4 ) ) ).isEmpty() ) {
+            return fail( "a well-repeating year-month as text was offered" );
+        }
+        // "date" or "month" inside a word is not the word; a year or a season is neither
         for( final String r : new String[] { "x:Updated", "x:Dated", "x:Candidate", "x:Datetime", "x:Validated",
-                "x:Year", "BVBRC:collection_year", "x:Host" } ) {
+                "x:Year", "BVBRC:collection_year", "x:Monthly", "x:Years", "ird:FluSeason", "x:Host" } ) {
             if ( ( candidatesFor( r, ab ).size() != 1 ) || PropertyColorScheme.isDateRef( r ) ) {
                 return fail( "wrongly refused as a date: " + r );
             }
@@ -1572,6 +1581,13 @@ public final class PropertyColorSchemeTest {
             return fail( "a date of plain years must be a numeric candidate of 4 values; got "
                     + ( years.isEmpty() ? "refused" : ( years.get( 0 )._numeric + " " + years.get( 0 )._color_mode
                             + " " + years.get( 0 )._values ) ) );
+        }
+        // a month of plain numbers 1..12: a numeric candidate (12 distinct: a RANGE)
+        final List<PropertyColorScheme.VisCandidate> months = candidatesFor( "x:Month",
+                                                                             i -> String.valueOf( 1 + ( i % 12 ) ) );
+        if ( ( months.size() != 1 ) || !months.get( 0 )._numeric || ( months.get( 0 )._values.size() != 12 ) ) {
+            return fail( "a month of plain numbers must be a numeric candidate; got "
+                    + ( months.isEmpty() ? "refused" : ( months.get( 0 )._numeric + " " + months.get( 0 )._values ) ) );
         }
         // 12 distinct decimal years: a numeric RANGE
         final List<PropertyColorScheme.VisCandidate> decimal = candidatesFor( "nextstrain:num_date",
@@ -1615,7 +1631,7 @@ public final class PropertyColorSchemeTest {
     /**
      * THE ACCEPTANCE TEST: both Archaeopteryx.js contract fixtures, run through the desktop's own phyloXML parser and
      * classifier -- the NAMES (vis-contract.tsv: verdict, label, deprioritization) and the DATA (vis-trees.tsv +
-     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at f6c62fb) into
+     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at f307328) into
      * forester/test_data/vis_contract/. When they regenerate, recopy; never edit a row to make this pass. The row
      * counts are pinned so a truncated copy cannot pass.
      */
@@ -1634,7 +1650,7 @@ public final class PropertyColorSchemeTest {
                 final String label = ( f.length > 2 ) ? f[ 2 ] : "";
                 // exactly the JS test (testJointContractFixture): a 30-tip tree, every tip carrying the ref once
                 // with the TEXT "A" or "B", evenly, so a refusal is by NAME alone -- or, since 2026-10-20, by the
-                // word "date" meeting values that are not numbers
+                // word "date" or "month" meeting values that are not numbers
                 final List<PropertyColorScheme.VisCandidate> cs = PropertyColorScheme
                         .visualizationCandidates( fieldTree( 30, refs( ref ), i -> ( ( i % 2 ) == 1 ) ? "A" : "B" ) );
                 final PropertyColorScheme.VisCandidate c = cs.isEmpty() ? null : cs.get( 0 );
@@ -1656,8 +1672,8 @@ public final class PropertyColorSchemeTest {
                             + PropertyColorScheme.displayName( ref ) + "'" );
                 }
             }
-            if ( name_rows != 193 ) {
-                return fail( "name fixture: expected 193 rows, read " + name_rows );
+            if ( name_rows != 197 ) {
+                return fail( "name fixture: expected 197 rows, read " + name_rows );
             }
             final Map<String, List<String[]>> by_tree = new java.util.LinkedHashMap<String, List<String[]>>();
             for( final String line : java.nio.file.Files.readAllLines( new java.io.File( dir, "vis-trees.tsv" ).toPath() ) ) {
@@ -1705,8 +1721,8 @@ public final class PropertyColorSchemeTest {
                     }
                 }
             }
-            if ( data_rows != 45 ) {
-                return fail( "data fixture: expected 45 rows, read " + data_rows );
+            if ( data_rows != 47 ) {
+                return fail( "data fixture: expected 47 rows, read " + data_rows );
             }
         }
         catch ( final Exception e ) {
