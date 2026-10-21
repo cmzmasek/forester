@@ -810,6 +810,29 @@ final class PropertyColorScheme {
             "identifier", "restricted until" };
     private static final Pattern[] VIS_DEPRIORITIZED_WORD_RES = { Pattern.compile( "(^| )(in|out) groups?( |$)" ),
             Pattern.compile( "(^| )(in|out)groups?( |$)" ) };
+    /**
+     * A DATE is a measurement or nothing -- forester.js {@code VIS_DATE_WORD_RE} (f6c62fb). Matched on the displayed
+     * name like the rules above (the word "date", singular or plural: Collection Date, Date Added, Date Submitted,
+     * Sampling Date, Nextstrain's date), but applied only once the VALUES are known, because the verdict depends on
+     * them: a field whose every value is a number -- a year, Nextstrain's num_date decimal year, which the readers
+     * write for Color-by on purpose -- is a measurement like Year and is offered as one; anything else is refused,
+     * however well it repeats. The same shape as the uniqueness rule, which also refuses categories only. Why
+     * refuse the category at all: database dates mix "2016", "Jan-2006", "14-Jun-2013" and "unknown" and are
+     * missing on a third of the tips (BV-BRC's Collection_Date on every family tree), so a colour per spelling says
+     * nothing, and a record date -- the day a sequence entered a build -- repeats well enough to OPEN a tree
+     * (date_added on a Nextstrain enterovirus build, 11 values, 94% covered). The word is anchored, so Updated,
+     * Dated, Candidate and Datetime are untouched. Christian, 2026-10-20: "'Collection_Date' is something which
+     * should never be offered for visualization"; the rule generalised to every date, as text, on his choice. It
+     * decides the CANDIDATES only (Color-by, and Size-by which draws its numbers from them): the field stays a label
+     * field and a search field. JOINT, JS-authoritative: pinned by both contract fixtures; never retune it alone.
+     */
+    private static final Pattern   VIS_DATE_WORD_RE           = Pattern.compile( "(^| )dates?( |$)" );
+
+    /** Whether the DISPLAYED name of a ref carries the word "date" or "dates" -- forester.js {@code visDateRef}.
+     *  The name alone decides nothing: see {@link #VIS_DATE_WORD_RE} for how the values settle it. */
+    static boolean isDateRef( final String ref ) {
+        return !ForesterUtil.isEmpty( ref ) && VIS_DATE_WORD_RE.matcher( visNameWords( ref ) ).find();
+    }
 
     /**
      * Why a property ref is never offered for visualization, or {@code null} when it may be -- forester.js
@@ -959,6 +982,9 @@ final class PropertyColorScheme {
     // The rules, per candidate, in order (external nodes only):
     //   multi-valued  a ref carried more than once by any one tip -> refused: a node cannot be two colours.
     //   numeric       every grouped value matches VIS_NUMERIC_RE -> numeric; spellings of one number fold.
+    //   date          a field whose DISPLAYED name has the word "date" (Collection Date, Date Added, Nextstrain's
+    //                 date) is a measurement or nothing: offered when every value is a number (a year, a num_date
+    //                 decimal year), refused as a category (VIS_DATE_WORD_RE; Christian, 2026-10-20).
     //   repetition    fewer than 2 distinct values -> refused.
     //   coverage      on fewer than 2/3 of the tips -> SPARSE: offered, ranked low, never refused.
     //   categorical   as many distinct values as the tree has TIPS (all tips, not the covered ones) -> refused as
@@ -1388,6 +1414,11 @@ final class PropertyColorScheme {
                     numeric = false;
                     break;
                 }
+            }
+            // a date as text is refused whatever its distribution; as numbers it goes on as a measurement
+            // (VIS_DATE_WORD_RE). An element slot has a fixed name and is never one.
+            if ( !numeric && !s._element_slot && isDateRef( s._ref ) ) {
+                continue;
             }
             if ( numeric ) {
                 // "1", "1.0" and "+1" are one value: group the spellings by the number they denote; the

@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+
+import org.forester.phylogeny.PhylogenyMethods.NDF;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,6 +59,7 @@ public final class PropertyColorSchemeTest {
                 && testPalettes() && testOrderLegendEntriesEdges() && testMissingCount()
                 && testColorIdentityMemory() && testSynonymDictionary() && testElementSlots()
                 && testCandidateOrdering() && testModeBands() && testExcludedRefs()
+                && testDateIsAMeasurementOrNothing()
                 && testUniquenessTiersAndOpening() && testNumericGrammarAndFolding() && testMultiValuedAndAppliesTo()
                 && testViewSummarizesNotReclassifies() && testEditKeepsValuedChoice() && testFoldToEmptyIsNoValue()
                 && testContractFixtures();
@@ -1522,9 +1526,96 @@ public final class PropertyColorSchemeTest {
     }
 
     /**
+     * A date is a measurement or nothing (Christian, 2026-10-20: Collection_Date "should never be offered for
+     * visualization" -- its values mix "2016", "Jan-2006" and "14-Jun-2013" and are missing on a third of the tips;
+     * the rule generalised to every date-named field on his choice). forester.js f6c62fb,
+     * testDateIsAMeasurementOrNothing, ported case for case. The word "date" in the MENU name refuses the field as
+     * text however well it repeats, and lets it through as a numeric field when every value is a number: a year, or
+     * the num_date decimal year the Nextstrain and BEAST readers write for Color-by on purpose. Anchored as a word,
+     * so Updated and Candidate survive. A candidacy rule only: the field stays a label field and a search field.
+     */
+    private static boolean testDateIsAMeasurementOrNothing() {
+        final V ab = i -> ( ( i % 2 ) == 1 ) ? "Alpha" : "Beta";
+        final String[] refused_as_text = { "vipr:Collection_Date", "repseq:collection_date", "x:collectionDate",
+                "x:Collection Date", "x:COLLECTION_DATE", "meta:Collection_Date", "nextstrain:date",
+                "nextstrain:date_added", "nextstrain:date_submitted", "nextstrain:date_released",
+                "nextstrain:date_updated", "x:Date", "x:Dates", "x:Sampling_Date", "x:Release-Date",
+                "x:date of collection",
+                // the Nexus reader's namespace for the same Auspice field: the rule reads the LOCAL name
+                "beast:date_added",
+                // the name alone does not spare it: its NUMBERS do
+                "nextstrain:num_date" };
+        for( final String r : refused_as_text ) {
+            final List<PropertyColorScheme.VisCandidate> cs = candidatesFor( r, ab );
+            if ( !cs.isEmpty() || !PropertyColorScheme.isDateRef( r ) ) {
+                return fail( "a date as text must be refused: " + r + " offered=" + !cs.isEmpty() + " isDateRef="
+                        + PropertyColorScheme.isDateRef( r ) );
+            }
+        }
+        // a date is refused however well it repeats: four spellings, evenly, is the shape of a clean category
+        final String[] spellings = { "2016", "Jan-2006", "14-Jun-2013", "2012-12-2" };
+        if ( !candidatesFor( "vipr:Collection_Date", i -> spellings[ i % 4 ] ).isEmpty() ) {
+            return fail( "a well-repeating date as text was offered" );
+        }
+        // "date" inside a word is not the word
+        for( final String r : new String[] { "x:Updated", "x:Dated", "x:Candidate", "x:Datetime", "x:Validated",
+                "x:Year", "BVBRC:collection_year", "x:Host" } ) {
+            if ( ( candidatesFor( r, ab ).size() != 1 ) || PropertyColorScheme.isDateRef( r ) ) {
+                return fail( "wrongly refused as a date: " + r );
+            }
+        }
+        // every value a number: a measurement, offered as one (4 years: a numeric CATEGORY)
+        final List<PropertyColorScheme.VisCandidate> years = candidatesFor( "vipr:Collection_Date",
+                                                                            i -> String.valueOf( 2010 + ( i % 4 ) ) );
+        if ( ( years.size() != 1 ) || !years.get( 0 )._numeric || !"category".equals( years.get( 0 )._color_mode )
+                || ( years.get( 0 )._values.size() != 4 ) ) {
+            return fail( "a date of plain years must be a numeric candidate of 4 values; got "
+                    + ( years.isEmpty() ? "refused" : ( years.get( 0 )._numeric + " " + years.get( 0 )._color_mode
+                            + " " + years.get( 0 )._values ) ) );
+        }
+        // 12 distinct decimal years: a numeric RANGE
+        final List<PropertyColorScheme.VisCandidate> decimal = candidatesFor( "nextstrain:num_date",
+                                                                              i -> String.format( Locale.ROOT,
+                                                                                                  "%.4f",
+                                                                                                  2020 + ( i / 12.0 ) ) );
+        if ( ( decimal.size() != 1 ) || !decimal.get( 0 )._numeric || ( decimal.get( 0 )._values.size() != 12 )
+                || !"range".equals( decimal.get( 0 )._color_mode ) ) {
+            return fail( "num_date decimal years, 12 distinct, must be a numeric range candidate; got "
+                    + ( decimal.isEmpty() ? "refused" : ( decimal.get( 0 )._numeric + " "
+                            + decimal.get( 0 )._color_mode + " " + decimal.get( 0 )._values.size() ) ) );
+        }
+        // one spelling that is not a number spoils the measurement: refused, not offered as a category of twelve
+        if ( !candidatesFor( "x:Sampling_Date", i -> ( i == 0 ) ? "Jan-2006" : String.valueOf( 2010 + ( i % 4 ) ) )
+                .isEmpty() ) {
+            return fail( "a date with one non-numeric spelling was offered" );
+        }
+        // the rule reads the menu name, so the camelCase ref is seen split
+        if ( !"Collection Date".equals( PropertyColorScheme.displayName( "x:collectionDate" ) ) ) {
+            return fail( "display name no longer splits camelCase: "
+                    + PropertyColorScheme.displayName( "x:collectionDate" ) );
+        }
+        // and it is a candidacy rule only: the field is still a label field (the Metadata Fields chooser's
+        // inventory) and a search field
+        final Phylogeny t = fieldTree( 4, refs( "vipr:Collection_Date" ), i -> spellings[ i ] );
+        if ( !TreePanelUtil.userVisiblePropertyRefs( t ).contains( "vipr:Collection_Date" ) ) {
+            return fail( "Collection_Date must still be a label field; got "
+                    + TreePanelUtil.userVisiblePropertyRefs( t ) );
+        }
+        final List<String> searched = SearchField.ofNdf( NDF.Properties ).stringValues( t.getFirstExternalNode() );
+        if ( !searched.contains( spellings[ 0 ] ) ) {
+            return fail( "Collection_Date must still be searched under Any Metadata Field; got " + searched );
+        }
+        return true;
+    }
+
+    private static List<PropertyColorScheme.VisCandidate> candidatesFor( final String ref, final V values ) {
+        return PropertyColorScheme.visualizationCandidates( fieldTree( 12, refs( ref ), values ) );
+    }
+
+    /**
      * THE ACCEPTANCE TEST: both Archaeopteryx.js contract fixtures, run through the desktop's own phyloXML parser and
      * classifier -- the NAMES (vis-contract.tsv: verdict, label, deprioritization) and the DATA (vis-trees.tsv +
-     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at 635741b) into
+     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at f6c62fb) into
      * forester/test_data/vis_contract/. When they regenerate, recopy; never edit a row to make this pass. The row
      * counts are pinned so a truncated copy cannot pass.
      */
@@ -1541,20 +1632,32 @@ public final class PropertyColorSchemeTest {
                 final String ref = f[ 0 ];
                 final String verdict = f[ 1 ];
                 final String label = ( f.length > 2 ) ? f[ 2 ] : "";
-                final boolean excluded = PropertyColorScheme.isExcludedRef( ref );
-                if ( excluded != "EXCLUDED".equals( verdict ) ) {
-                    return fail( "name fixture: " + ref + " js=" + verdict + " desktop excluded=" + excluded );
+                // exactly the JS test (testJointContractFixture): a 30-tip tree, every tip carrying the ref once
+                // with the TEXT "A" or "B", evenly, so a refusal is by NAME alone -- or, since 2026-10-20, by the
+                // word "date" meeting values that are not numbers
+                final List<PropertyColorScheme.VisCandidate> cs = PropertyColorScheme
+                        .visualizationCandidates( fieldTree( 30, refs( ref ), i -> ( ( i % 2 ) == 1 ) ? "A" : "B" ) );
+                final PropertyColorScheme.VisCandidate c = cs.isEmpty() ? null : cs.get( 0 );
+                final String got = ( c == null ) ? "EXCLUDED" : ( c._deprioritized ? "DEPRIORITIZED" : "offered" );
+                if ( !got.equals( verdict ) ) {
+                    return fail( "name fixture: " + ref + " js=" + verdict + " desktop=" + got );
+                }
+                // a perfect A/B split has exactly two refusers: the record rules (the name alone, isExcludedRef)
+                // and the date rule (the name AND the text values, isDateRef). A refusal by neither, or a survivor
+                // of either, is a third rule the fixture's header does not name.
+                final boolean by_name = PropertyColorScheme.isExcludedRef( ref );
+                final boolean by_date = PropertyColorScheme.isDateRef( ref );
+                if ( ( c == null ) != ( by_name || by_date ) ) {
+                    return fail( "name fixture: " + ref + " refused=" + ( c == null ) + " but by name=" + by_name
+                            + ", by date=" + by_date );
                 }
                 if ( !label.equals( PropertyColorScheme.displayName( ref ) ) ) {
                     return fail( "name fixture label: " + ref + " js='" + label + "' desktop='"
                             + PropertyColorScheme.displayName( ref ) + "'" );
                 }
-                if ( !excluded && ( PropertyColorScheme.isDeprioritizedRef( ref ) != "DEPRIORITIZED".equals( verdict ) ) ) {
-                    return fail( "name fixture deprioritization: " + ref + " js=" + verdict );
-                }
             }
-            if ( name_rows != 182 ) {
-                return fail( "name fixture: expected 182 rows, read " + name_rows );
+            if ( name_rows != 193 ) {
+                return fail( "name fixture: expected 193 rows, read " + name_rows );
             }
             final Map<String, List<String[]>> by_tree = new java.util.LinkedHashMap<String, List<String[]>>();
             for( final String line : java.nio.file.Files.readAllLines( new java.io.File( dir, "vis-trees.tsv" ).toPath() ) ) {
@@ -1602,8 +1705,8 @@ public final class PropertyColorSchemeTest {
                     }
                 }
             }
-            if ( data_rows != 39 ) {
-                return fail( "data fixture: expected 39 rows, read " + data_rows );
+            if ( data_rows != 45 ) {
+                return fail( "data fixture: expected 45 rows, read " + data_rows );
             }
         }
         catch ( final Exception e ) {
