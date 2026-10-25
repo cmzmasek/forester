@@ -415,7 +415,9 @@ public final class AptxUtil {
      *  {@link #isHasSampledTipWithDateUncertainty} -- and auto-enabling a geologic overlay for it is what both
      *  Nextstrain readers used to avoid by throwing those intervals away. */
     final static boolean isHasFossilRanges(final Phylogeny phy) {
-        if (deriveTimeAxisType(phy) == Options.TIME_AXIS_TYPE.CALENDAR) {
+        // the dates' MEANING (their unit), not the axis: a divergence tree whose tips carry sampling dates in years
+        // draws no axis, and its tip intervals are still sampling-date uncertainty, never fossil ranges
+        if (dateUnitAxisType(phy) == Options.TIME_AXIS_TYPE.CALENDAR) {
             return false;
         }
         // a RANGE has a width: TreeAnnotator writes height_95%_HPD={0.0,0.0} on a tip it did not sample, which is no
@@ -431,7 +433,7 @@ public final class AptxUtil {
     /** True when a tree on CALENDAR time has at least one tip whose sampling date is uncertain (a date interval with
      *  a width): the Node Age Bars draw it. */
     final static boolean isHasSampledTipWithDateUncertainty(final Phylogeny phy) {
-        if (deriveTimeAxisType(phy) != Options.TIME_AXIS_TYPE.CALENDAR) {
+        if (dateUnitAxisType(phy) != Options.TIME_AXIS_TYPE.CALENDAR) {
             return false;
         }
         for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
@@ -796,8 +798,9 @@ public final class AptxUtil {
 
     /** How strongly a tree looks like a time tree (see {@link #detectTimeTree}). */
     public enum TIME_TREE_KIND {
-        DATED,       // node <date> elements present -> definitive, auto-label
-        ULTRAMETRIC, // no dates, but branch lengths + all tips equidistant from the root -> only suggestive, OFFER
+        DATED,       // most INTERNAL nodes carry a <date> value (isTimeTree) -> definitive, auto-label
+        ULTRAMETRIC, // not DATED, branch lengths + all tips equidistant from the root, and no two dated tips disagree
+                     // (equidistant tips sampled in different years are no time tree) -> only suggestive, OFFER
         NONE
     }
 
@@ -805,49 +808,52 @@ public final class AptxUtil {
     private final static double ULTRAMETRIC_TOLERANCE_FRACTION = 0.01;
 
     /**
-     * Detects whether a phylogeny is a <em>time tree</em>. {@link TIME_TREE_KIND#DATED} -- a majority of INTERNAL
-     * nodes carry a {@code <date>} value (a chronogram / BEAST-style dated tree) OR a majority of the TIPS do (a
-     * tip-dated tree: BEAST tip dates, or dates extracted from the labels) -- is definitive and can be auto-labeled.
-     * {@link TIME_TREE_KIND#ULTRAMETRIC} -- no dates, but branch lengths are present and every tip is (within
+     * Detects whether a phylogeny is a <em>time tree</em>. {@link TIME_TREE_KIND#DATED} -- a time tree by
+     * {@link #isTimeTree}: a strict majority, and at least two, of its INTERNAL nodes (the root included) carry a
+     * {@code <date>} value (a chronogram, a BEAST MCC tree, a Nextstrain tree) -- is definitive and is auto-labeled.
+     * Tip dates alone never make one (until 0.11.190 a majority of dated TIPS did): a divergence tree in substitutions
+     * per site whose tips carry their sampling dates is not a time tree, and wore the "Time tree · year" badge over
+     * lengths that are not years; a tree whose lengths ARE years and whose tip labels date it is dated on every node
+     * at load ({@link BranchLengthDateConverter}, {@link HeightDateConverter}) and so is a time tree here.
+     * {@link TIME_TREE_KIND#ULTRAMETRIC} -- not DATED, but branch lengths are present and every tip is (within
      * tolerance) the same distance from the root -- is only <em>suggestive</em> (a UPGMA distance tree is ultrametric
-     * too), so it should be OFFERED to the user, not asserted. Pure/headless.
+     * too), so it should be OFFERED to the user, not asserted; and never when two dated tips disagree, since tips at
+     * one distance from the root sampled in different years cannot be a time tree (a UPGMA tree carrying sampling
+     * dates). Pure/headless.
      */
     public final static TIME_TREE_KIND detectTimeTree(final Phylogeny phy) {
         if ((phy == null) || phy.isEmpty() || (phy.getNumberOfExternalNodes() < 2)) {
             return TIME_TREE_KIND.NONE;
         }
-        int internal = 0, dated_internal = 0;
-        int external = 0, dated_external = 0;
-        for (final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            final boolean dated = n.getNodeData().isHasDate() && (n.getNodeData().getDate().getValue() != null);
-            if (n.isInternal()) {
-                internal++;
-                if (dated) {
-                    dated_internal++;
-                }
-            }
-            else {
-                external++;
-                if (dated) {
-                    dated_external++;
-                }
-            }
-        }
         // a STRICT majority of INTERNAL nodes dated (and at least two): a chronogram (all internal nodes dated) is
         // DATED, but a genetic-distance tree carrying one or two fossil-calibration ages is not auto-asserted
-        if ((dated_internal >= 2) && ((dated_internal * 2) > internal)) {
+        if (isTimeTree(phy)) {
             return TIME_TREE_KIND.DATED;
         }
-        // OR a strict majority of the TIPS dated: a tip-dated tree (BEAST tip dates / dates extracted from labels),
-        // whose internal nodes carry no date but which is still a genuine time tree
-        if ((dated_external >= 2) && ((dated_external * 2) > external)) {
-            return TIME_TREE_KIND.DATED;
-        }
-        if (isUltrametric(phy)) {
+        if (isUltrametric(phy) && datedTipsAgree(phy)) {
             return TIME_TREE_KIND.ULTRAMETRIC;
         }
         return TIME_TREE_KIND.NONE;
+    }
+
+    /** True when the tips that carry a {@code <date>} value all carry the SAME one (or none does): equidistant tips
+     *  can only be a time tree's if they were sampled at one time. Compared as numbers (BigDecimal's compareTo). */
+    static boolean datedTipsAgree(final Phylogeny phy) {
+        java.math.BigDecimal first = null;
+        for (final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if (!n.getNodeData().isHasDate() || (n.getNodeData().getDate().getValue() == null)) {
+                continue;
+            }
+            final java.math.BigDecimal v = n.getNodeData().getDate().getValue();
+            if (first == null) {
+                first = v;
+            }
+            else if (first.compareTo(v) != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -918,12 +924,28 @@ public final class AptxUtil {
     private final static java.util.Set<String> CALENDAR_DATE_UNITS = new java.util.HashSet<>(java.util.Arrays.asList(
             "year", "years", "yr", "yrs", "cal", "ce", "ad", "calendar", "calendar year", "calendar years"));
 
-    /** Auto-derive the appropriate Time-Axis type from a tree's OWN {@code <date>} data -- the baseline the per-tree
-     *  Time Axis follows unless the user overrides. Uses the {@code <date unit>} when recognized ("mya"/"Ma"/"Ga"/... =
-     *  geologic ages before present; "year"/"yr"/"CE"/... = calendar years); else a magnitude fallback (values
-     *  clustered near the present ~[1500,2200] read as calendar years; large values decreasing toward ~0 read as
-     *  geologic ages); else {@code NONE}. Pure. */
+    /** Auto-derive the per-tree Time-Axis type -- the baseline the Time Axis follows unless the user overrides: the
+     *  kind of time the tree's {@code <date>} unit states ({@link #dateUnitAxisType}), but ONLY on a time tree
+     *  ({@link #isTimeTree}: most internal nodes dated, the root included). A time axis maps distance from the root to
+     *  time, so it needs branch lengths that ARE time, and tip dates alone are no evidence of that: a divergence tree
+     *  in substitutions per site whose tips carry their sampling dates (127 of 130 vfam_trees family trees, a BV-BRC
+     *  tree, our own root-to-tip demo) was drawn under a calendar ruler, years read off substitutions (Christian,
+     *  2026-10-24: "all these trees open with a year scale by default"). Such a tree derives {@code NONE}; the user who
+     *  knows its lengths are years picks Calendar per tree, and the most-recent tip still calibrates it. Pure. */
     public final static Options.TIME_AXIS_TYPE deriveTimeAxisType(final Phylogeny phy) {
+        if (!isTimeTree(phy)) {
+            return Options.TIME_AXIS_TYPE.NONE;
+        }
+        return dateUnitAxisType(phy);
+    }
+
+    /** What kind of time the tree's {@code <date>} unit states: {@code GEOLOGIC} for ages before present
+     *  ("mya"/"Ma"/"Ga"/...), {@code CALENDAR} for calendar years ("year"/"yr"/"CE"/...), else {@code NONE} -- no unit,
+     *  or one we do not recognise (never a guess from the size of the numbers). This is what the dates MEAN, read off
+     *  the first stated unit, on any tree: it decides what a tip's date interval is (a fossil range or a sampling-date
+     *  uncertainty), which way a node-age bar runs and the clock plot's calendar. Whether the tree's BRANCH LENGTHS are
+     *  that time is {@link #isTimeTree}; the axis asks both ({@link #deriveTimeAxisType}). Pure. */
+    public final static Options.TIME_AXIS_TYPE dateUnitAxisType(final Phylogeny phy) {
         if ((phy == null) || phy.isEmpty()) {
             return Options.TIME_AXIS_TYPE.NONE;
         }

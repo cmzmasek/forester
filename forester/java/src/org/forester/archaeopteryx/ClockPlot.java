@@ -419,8 +419,9 @@ final class ClockPlot {
             }
         }
         // a root-to-tip tree has no dated pair to read the direction off: its dates are calendar dates unless their
-        // unit says ages (the first stated unit here; a majority of them in Archaeopteryx.js)
-        final Options.TIME_AXIS_TYPE axis = AptxUtil.deriveTimeAxisType( whole );
+        // unit says ages (the first stated unit here; a majority of them in Archaeopteryx.js). The UNIT, not the
+        // derived axis: a root-to-tip tree is never a time tree, so it derives no axis, and its dates are still years
+        final Options.TIME_AXIS_TYPE axis = AptxUtil.dateUnitAxisType( whole );
         final boolean forward = root_to_tip ? ( axis != Options.TIME_AXIS_TYPE.GEOLOGIC )
                 : BranchLengthLayout.datesIncreaseTowardTips( whole );
         // calendar years: the dates' unit says so, or they were read off the tips' names, which carry no other kind

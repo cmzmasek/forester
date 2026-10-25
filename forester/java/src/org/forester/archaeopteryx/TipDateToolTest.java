@@ -36,7 +36,8 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 /**
  * The "Extract Dates from Labels" tool (Increment 1). Dogfoods the {@code date-in-labels.xml} demo: the preview dialog
  * reports 10 matched ISO-dominant tips; applying writes a {@code <date>} (year) + a numeric {@code data:date} property
- * to each tip, so the Calendar axis auto-derives and {@code data:date} is offered as a numeric Color-by ref; a
+ * to each tip, {@code data:date} is offered as a numeric Color-by ref while the axis and the "Time tree" badge stay off
+ * (tip dates alone are no time tree -- the demo's lengths are not years; an explicit Calendar still draws); a
  * provenance sentence is appended; and Undo restores the undated tree. Headful; a green no-op when headless.
  */
 public final class TipDateToolTest {
@@ -99,16 +100,27 @@ public final class TipDateToolTest {
                             || !PropertyColorScheme.numericRefs( p ).contains( TipDateExtractor.DATE_PROPERTY_REF ) ) {
                         fail( ok, "data:date must be a numeric Color-by ref (date gradient)" );
                     }
-                    // the Calendar axis auto-derives from the new "year" dates
-                    if ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) {
-                        fail( ok, "extracted year dates must auto-derive the CALENDAR axis, got "
+                    // tip dates alone derive NO axis and no badge (Christian, 2026-10-24): the demo's lengths are not
+                    // years (the load-time dating by labels did not take, which is why its tips start undated), and a
+                    // calendar ruler over them would read years off substitutions. The dates still MEAN years
+                    if ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.NONE ) {
+                        fail( ok, "extracted tip dates alone must derive NO axis (the ancestors are undated), got "
                                 + tp.effectiveTimeAxisType() );
                     }
-                    // the tip-dated tree is now detected DATED -> the "Time tree" badge shows (Inc 2)
-                    if ( AptxUtil.detectTimeTree( p ) != AptxUtil.TIME_TREE_KIND.DATED ) {
-                        fail( ok, "a tip-dated tree must be detected DATED (time-tree badge), got "
-                                + AptxUtil.detectTimeTree( p ) );
+                    if ( AptxUtil.dateUnitAxisType( p ) != TIME_AXIS_TYPE.CALENDAR ) {
+                        fail( ok, "the extracted dates' unit must still mean CALENDAR, got " + AptxUtil.dateUnitAxisType( p ) );
                     }
+                    if ( ( AptxUtil.detectTimeTree( p ) == AptxUtil.TIME_TREE_KIND.DATED ) || ( tp.timeTreeBadgeLabel() != null ) ) {
+                        fail( ok, "a tree whose tips alone are dated is no time tree: no badge, got "
+                                + AptxUtil.detectTimeTree( p ) + " / " + tp.timeTreeBadgeLabel() );
+                    }
+                    // the user who knows the lengths are years still gets the axis, calibrated by the youngest tip
+                    tp.setTimeAxisType( TIME_AXIS_TYPE.CALENDAR );
+                    if ( ( tp.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) || ( tp.timeAxisPresentDate() < 2022 ) ) {
+                        fail( ok, "an explicit Calendar choice must take, calibrated by the most recent tip (2022-02-14), got "
+                                + tp.effectiveTimeAxisType() + " / " + tp.timeAxisPresentDate() );
+                    }
+                    tp.resetTimeAxisToAutoDerive();
                     // provenance appended
                     if ( ( p.getDescription() == null ) || !p.getDescription().contains( "Extracted sampling dates" ) ) {
                         fail( ok, "a provenance sentence must be appended, got: " + p.getDescription() );
@@ -134,12 +146,71 @@ public final class TipDateToolTest {
                     frame.dispose();
                 }
             } );
-            return ok[ 0 ];
+            return ok[ 0 ] && timeDivOfferReasked( conf );
         }
         catch ( final Throwable t ) {
             t.printStackTrace();
             return fail( "exception: " + t );
         }
+    }
+
+    /** The extraction re-asks every cache that reads dates. A tree recording its divergence on every node with its
+     *  ancestors dated and its tips dated only in their names is NOT offered Time | Div (no date on every node); once
+     *  the tips are dated by the tool it is -- and the panel's cached answer must say so at once, not after some
+     *  unrelated edit (the node editor already re-asks; the tool did not, code review 2026-10-24). */
+    private static boolean timeDivOfferReasked( final Configuration conf ) throws Exception {
+        final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance().create(
+                "((A|2020-01-01:1.0,B|2020-07-01:1.5)x:1.0,(C|2021-01-01:1.0,D|2021-07-01:1.5)y:1.0)r;",
+                new org.forester.io.parsers.nhx.NHXParser() )[ 0 ];
+        final String[] years = { "2019", "2020", "2020" }; // r, x, y in preorder
+        final double[] divs = { 0, 0.01, 0.02, 0.015, 0.02, 0.03, 0.035 };
+        int i = 0;
+        int d = 0;
+        for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.isInternal() ) {
+                n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", new java.math.BigDecimal( years[ i++ ] ),
+                                                                              null, null, "year" ) );
+            }
+            if ( n.getNodeData().getProperties() == null ) {
+                n.getNodeData().setProperties( new org.forester.phylogeny.data.PropertiesList() );
+            }
+            n.getNodeData().getProperties().addProperty( new org.forester.phylogeny.data.Property(
+                    BranchLengthLayout.DIV_PROPERTY_REF, String.valueOf( divs[ d++ ] ), "", "xsd:decimal",
+                    org.forester.phylogeny.data.Property.AppliesTo.NODE ) );
+        }
+        final MainFrame[] mf = new MainFrame[ 1 ];
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "td2" ) );
+        final boolean[] ok = { true };
+        SwingUtilities.invokeAndWait( () -> {
+            final MainFrame frame = mf[ 0 ];
+            try {
+                final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                final Phylogeny p = tp.getPhylogeny();
+                // the precondition: not offered while the tips are undated, pure answer and cached answer alike
+                if ( BranchLengthLayout.isApplicable( p, BranchLengthLayout.TimeLengths.onScreen( p ) )
+                        || tp.isBranchLengthToggleApplicable() ) {
+                    fail( ok, "the fixture must NOT be offered Time | Div before its tips are dated" );
+                }
+                if ( frame.applyTipDatesAndRefit( tp, DayMonthOrder.DAY_FIRST, true ) != 4 ) {
+                    fail( ok, "the tool must date all four tips from their names" );
+                }
+                if ( !BranchLengthLayout.isApplicable( p, BranchLengthLayout.TimeLengths.onScreen( p ) ) ) {
+                    fail( ok, "with every node dated and recording its divergence the tree IS offered Time | Div (pure answer)" );
+                }
+                if ( !tp.isBranchLengthToggleApplicable() ) {
+                    fail( ok, "the panel's cached Time | Div answer must be asked again by the extraction, not stay 'no'" );
+                }
+            }
+            catch ( final Throwable t ) {
+                t.printStackTrace();
+                fail( ok, "exception: " + t );
+            }
+            finally {
+                frame.dispose();
+            }
+        } );
+        return ok[ 0 ];
     }
 
     private static boolean anyTipDated( final Phylogeny phy ) {

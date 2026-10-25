@@ -2020,7 +2020,7 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add(_extract_dates_jmi = new JMenuItem("Extract Dates from Labels…"));
         customizeJMenuItem(_extract_dates_jmi);
         _extract_dates_jmi.setToolTipText(
-                "Parse a sampling date out of each tip label (ISO / numeric / month-name / decimal-year / bare-year) into a <date> + a Color-by-able data:date metadata field, so a tip-dated tree gets the Calendar axis; shows a preview first");
+                "Parse a sampling date out of each tip label (ISO / numeric / month-name / decimal-year / bare-year) into a <date> + a Color-by-able data:date metadata field; shows a preview first. Tip dates alone put no tree on the Calendar axis (its lengths may be substitutions): choose the axis under Settings > Overlays when they are years");
         _jmenubar.add(_tools_menu);
     }
 

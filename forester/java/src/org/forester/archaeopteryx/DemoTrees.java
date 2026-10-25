@@ -265,7 +265,7 @@ final class DemoTrees {
                                  breakLongBranches( mf );
                              } ) );
         demos.add( new Demo( "SARS-CoV-2 Time Tree (Calendar Axis)",
-                             "A tip-dated viral tree read against a labelled calendar-year axis -- molecular epidemiology.",
+                             "A dated viral time tree -- tips sampled across three years, ancestors dated -- read against a labelled calendar-year axis: molecular epidemiology.",
                              mf -> {
                                  final TreePanel tp = openTree( mf, "sars-cov-2-time-tree.xml" );
                                  timeAxis( mf, tp, Options.TIME_AXIS_TYPE.CALENDAR );

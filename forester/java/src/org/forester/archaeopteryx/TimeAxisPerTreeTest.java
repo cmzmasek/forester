@@ -34,9 +34,11 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 
 /**
  * The Time Axis is PER-TREE: the Dinosaur demo (geologic) and the SARS-CoV-2 demo (calendar) auto-derive DIFFERENT
- * axes in two tabs at once, an override on one tab does not affect the other, a deviating config round-trips through a
- * phyloXML save/reload (the {@code aptx:time_axis} property), and a non-deviating (auto-derive) config writes NO
- * property. Headful; a green no-op when headless. Dogfoods the two demos.
+ * axes in two tabs at once, a third tab -- the root-to-tip demo, a divergence tree whose TIPS alone are dated -- derives
+ * no axis and wears no "Time tree" badge until the user picks Calendar (Christian, 2026-10-24), an override on one tab
+ * does not affect the other, a deviating config round-trips through a phyloXML save/reload (the {@code aptx:time_axis}
+ * property), and a non-deviating (auto-derive) config writes NO property. Headful; a green no-op when headless.
+ * Dogfoods three demos.
  */
 public final class TimeAxisPerTreeTest {
 
@@ -53,24 +55,26 @@ public final class TimeAxisPerTreeTest {
         try {
             final Phylogeny dino = parse( "dinosaur-time-tree.xml" );
             final Phylogeny sars = parse( "sars-cov-2-time-tree.xml" );
-            if ( ( dino == null ) || ( sars == null ) ) {
+            final Phylogeny tips = parse( "root-to-tip.xml" );
+            if ( ( dino == null ) || ( sars == null ) || ( tips == null ) ) {
                 return fail( "demo trees missing" );
             }
             final Configuration conf = new Configuration();
             final MainFrame[] mf = new MainFrame[ 1 ];
             SwingUtilities.invokeAndWait(
-                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { dino, sars }, conf, "ta" ) );
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { dino, sars, tips }, conf, "ta" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 try {
                     final java.util.List<TreePanel> panels = frame.getMainPanel().getTreePanels();
-                    if ( panels.size() != 2 ) {
-                        fail( ok, "expected two tabs, got " + panels.size() );
+                    if ( panels.size() != 3 ) {
+                        fail( ok, "expected three tabs, got " + panels.size() );
                         return;
                     }
                     final TreePanel tp_dino = panels.get( 0 );
                     final TreePanel tp_sars = panels.get( 1 );
+                    final TreePanel tp_tips = panels.get( 2 );
 
                     // 1) auto-derive is per-tree and INDEPENDENT: geologic vs calendar at the same time
                     if ( tp_dino.effectiveTimeAxisType() != TIME_AXIS_TYPE.GEOLOGIC ) {
@@ -78,6 +82,66 @@ public final class TimeAxisPerTreeTest {
                     }
                     if ( tp_sars.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR ) {
                         fail( ok, "the SARS-CoV-2 tab must auto-derive CALENDAR, got " + tp_sars.effectiveTimeAxisType() );
+                    }
+
+                    // 1a) a divergence tree whose TIPS alone are dated (sampling dates in years over substitutions/site)
+                    //     derives NO axis and wears no badge (Christian, 2026-10-24: "all these trees open with a year
+                    //     scale by default"); the dates still mean years; an explicit Calendar draws, calibrated by the
+                    //     youngest tip (2022.0+), on a phylogram
+                    frame.getMainPanel().getTabbedPane().setSelectedIndex( 2 ); // the phylogram state is per tab
+                    if ( ( tp_tips.effectiveTimeAxisType() != TIME_AXIS_TYPE.NONE ) || ( tp_tips.timeTreeBadgeLabel() != null )
+                            || !tp_tips.isOnCalendarTime() ) {
+                        fail( ok, "the root-to-tip tab (tips dated, ancestors not) must derive NONE, show no badge and still be on "
+                                + "calendar time, got " + tp_tips.effectiveTimeAxisType() + " / " + tp_tips.timeTreeBadgeLabel()
+                                + " / " + tp_tips.isOnCalendarTime() );
+                    }
+                    if ( tp_tips.calendarAxisApplies() || tp_tips.calendarRingsApplyCircular() ) {
+                        fail( ok, "no calendar axis may be drawn on the root-to-tip tab by default" );
+                    }
+                    final javax.swing.JToggleButton phylogram = tp_tips.getControlPanel().getDisplayAsAlignedPhylogramRb();
+                    if ( ( phylogram != null ) && !phylogram.isSelected() ) {
+                        phylogram.doClick();
+                    }
+                    tp_tips.setTimeAxisType( TIME_AXIS_TYPE.CALENDAR );
+                    if ( !tp_tips.getControlPanel().isDrawPhylogram() || !tp_tips.calendarAxisApplies()
+                            || ( tp_tips.timeAxisPresentDate() < 2022 ) ) {
+                        fail( ok, "an explicit Calendar on the root-to-tip tab must draw, calibrated by its youngest tip: phylogram="
+                                + tp_tips.getControlPanel().isDrawPhylogram() + " applies=" + tp_tips.calendarAxisApplies()
+                                + " present=" + tp_tips.timeAxisPresentDate() );
+                    }
+                    tp_tips.resetTimeAxisToAutoDerive();
+                    if ( tp_tips.effectiveTimeAxisType() != TIME_AXIS_TYPE.NONE ) {
+                        fail( ok, "back on Auto the root-to-tip tab derives NONE again, got " + tp_tips.effectiveTimeAxisType() );
+                    }
+                    // the other direction: its ancestors dated IN PLACE (the node editor's way), the same tree object
+                    // is a time tree -- the axis and the badge appear once the identity-keyed caches are told
+                    for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tp_tips.getPhylogeny()
+                            .iteratorPreorder(); it.hasNext(); ) {
+                        final org.forester.phylogeny.PhylogenyNode n = it.next();
+                        if ( n.isInternal() ) {
+                            n.getNodeData().setDate( new org.forester.phylogeny.data.Date( "", new java.math.BigDecimal( "2015" ),
+                                                                                           null, null, "year" ) );
+                        }
+                    }
+                    tp_tips.invalidateTimeAxisDerivation();
+                    if ( ( tp_tips.effectiveTimeAxisType() != TIME_AXIS_TYPE.CALENDAR )
+                            || !"Time tree \u00b7 year".equals( tp_tips.timeTreeBadgeLabel() ) ) {
+                        fail( ok, "with its ancestors dated in place the root-to-tip tree is a time tree: CALENDAR + badge, got "
+                                + tp_tips.effectiveTimeAxisType() + " / " + tp_tips.timeTreeBadgeLabel() );
+                    }
+                    // and back: the ancestors undated again, the fixture is what its name says for the rest of the run
+                    for( final org.forester.phylogeny.iterators.PhylogenyNodeIterator it = tp_tips.getPhylogeny()
+                            .iteratorPreorder(); it.hasNext(); ) {
+                        final org.forester.phylogeny.PhylogenyNode n = it.next();
+                        if ( n.isInternal() ) {
+                            n.getNodeData().setDate( null );
+                        }
+                    }
+                    tp_tips.invalidateTimeAxisDerivation();
+                    if ( ( tp_tips.effectiveTimeAxisType() != TIME_AXIS_TYPE.NONE ) || ( tp_tips.timeTreeBadgeLabel() != null )
+                            || AptxUtil.isTimeTree( tp_tips.getPhylogeny() ) ) {
+                        fail( ok, "ancestors undated again: NONE and no badge, got " + tp_tips.effectiveTimeAxisType() + " / "
+                                + tp_tips.timeTreeBadgeLabel() );
                     }
 
                     // 1b) the "Auto" entry + LIVE REFRESH. Give the Dinosaur tab an EXPLICIT Geologic override (so the

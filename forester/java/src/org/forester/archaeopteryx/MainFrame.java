@@ -2537,10 +2537,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (dlg.isApplied()) {
             final int n = applyTipDatesAndRefit(tp, dlg.getOrder(), dlg.isSkipExisting());
             if (n > 0) {
+                // the axis follows the TREE, not the tips (Christian, 2026-10-24): a time tree (its ancestors dated)
+                // keeps whatever axis it has -- derived, or chosen per tab, so no claim about it here; a tree whose
+                // tips alone are dated says nothing about what its branch lengths are
+                final String axis = AptxUtil.isTimeTree(phy)
+                        ? "The tree is a time tree (its ancestors are dated), its time axis is as before, and "
+                        : "The tree stays on its distance scale (tip dates alone do not say its branch lengths are "
+                                + "years; Settings > Overlays > Time Axis > Calendar if they are), and ";
                 JOptionPane.showMessageDialog(this,
-                        "Wrote sampling dates to " + n + " tip" + ((n == 1) ? "" : "s")
-                                + ".\nThe tree is now on the Calendar axis, and \"Color by\" → data:date shows the "
-                                + "date gradient.",
+                        "Wrote sampling dates to " + n + " tip" + ((n == 1) ? "" : "s") + ".\n" + axis
+                                + "\"Color by\" → data:date shows the date gradient.",
                         "Extract Dates from Labels", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(this,
@@ -2553,9 +2559,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     /**
      * The dialog-free core of {@link #extractTipDates()} (so it is unit-testable): writes the parsed date onto each
-     * matched tip (skipping already-dated tips when requested), appends a provenance sentence, and re-fits so the
-     * auto-derived Calendar axis + the {@code data:date} Color-by option appear. Undoable (a checkpoint is pushed
-     * before mutating). Returns the number of tips dated.
+     * matched tip (skipping already-dated tips when requested), appends a provenance sentence, re-asks every cache
+     * that reads dates (the time axis and badge, the Time | Div offer, the clock plot) and re-fits so the
+     * {@code data:date} Color-by option appears. The time axis follows the TREE, not the tips: a time tree keeps its
+     * axis, a divergence tree gets none from tip dates. Undoable (a checkpoint is pushed before mutating). Returns
+     * the number of tips dated.
      */
     int applyTipDatesAndRefit(final TreePanel tp, final DayMonthOrder order, final boolean skip_existing) {
         final Phylogeny phy = tp.getPhylogeny();
@@ -2586,8 +2594,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         phy.setDescription(ForesterUtil.isEmpty(existing) ? prov : existing + " " + prov);
         tp.setEdited(true);
         phy.externalNodesHaveChanged();
-        tp.invalidateTimeAxisDerivation(); // dates were added in place on the same tree -> re-derive the Calendar axis
-        // reveal the data:date Color-by option + let the Calendar axis auto-derive from the new "year" dates; re-fit
+        tp.invalidateTimeAxisDerivation(); // dates were added in place on the same tree -> re-derive the axis + badge
+        tp.invalidateBranchLengthToggle(); // and ask the Time | Div offer + the clock plot again (a date on every node now?)
+        // reveal the data:date Color-by option; the axis re-derives (Calendar only on a time tree -- tip dates alone
+        // derive none); re-fit
         // (null-guarded: a minimal/embedded TreePanel may have no control panel -- the tree is still validly dated)
         if (tp.getControlPanel() != null) {
             tp.getControlPanel().updateDataCheckboxVisibility(true);

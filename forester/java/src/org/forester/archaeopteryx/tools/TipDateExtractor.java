@@ -41,8 +41,11 @@ import org.forester.util.ForesterUtil;
  * Pulls a sampling DATE out of each external-node LABEL and (via the caller) writes it into the tip's phyloXML
  * {@code <date>} (value = decimal year, unit "year") plus a numeric {@code data:date} property -- so a tip-dated
  * Newick / phyloXML / Nexus tree (the common way molecular-epidemiology trees are shared: BEAST / TreeTime / augur /
- * GISAID Newick, where the date is baked into the strain name) lights up the same Calendar axis, Color-by-date and
- * time-tree machinery an Auspice dataset gets for free. This is the date sibling of {@link LabelDataExtractor}.
+ * GISAID Newick, where the date is baked into the strain name) gets the Color-by-date gradient, the date search and
+ * the root-to-tip clock plot by its file rather than its names. Not the Calendar axis or the "Time tree" badge: tip
+ * dates alone say nothing about what the branch lengths are (Christian, 2026-10-24); a tree whose lengths ARE years
+ * and whose labels date it is dated on every node as it opens ({@code BranchLengthDateConverter}), and that one is a
+ * time tree. This is the date sibling of {@link LabelDataExtractor}.
  *
  * <p>Recognised formats, tried most-specific first (the rightmost match within a format wins, since the date usually
  * trails the label):

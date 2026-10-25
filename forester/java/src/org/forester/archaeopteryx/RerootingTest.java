@@ -86,8 +86,8 @@ public final class RerootingTest {
         for( final PhylogenyNode t : tips.getExternalNodes() ) {
             date( t );
         }
-        if ( AptxUtil.isTimeTree( tips ) || ( AptxUtil.detectTimeTree( tips ) != AptxUtil.TIME_TREE_KIND.DATED ) ) {
-            return TestFail.here( "tip dates alone are not a time tree for re-rooting (detectTimeTree still says DATED)" );
+        if ( AptxUtil.isTimeTree( tips ) || ( AptxUtil.detectTimeTree( tips ) == AptxUtil.TIME_TREE_KIND.DATED ) ) {
+            return TestFail.here( "tip dates alone are not a time tree, for re-rooting or the badge (since 0.11.190 detectTimeTree agrees)" );
         }
         final Phylogeny one = nhx( nh );
         date( one.getRoot() );

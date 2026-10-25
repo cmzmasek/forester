@@ -76,8 +76,9 @@ public final class AptxUtilTest {
     }
 
     /** Auto-derive of the per-tree Time-Axis type from the tree's own {@code <date>} data: the {@code <date unit>}
-     *  when recognized (case-insensitive tokens), else a magnitude fallback (ages decreasing to ~0 -> geologic; values
-     *  clustered near the present -> calendar), else NONE. */
+     *  when recognized (case-insensitive tokens), else NONE (never a guess from the size of the numbers) -- and only on
+     *  a TIME TREE (most internal nodes dated): tip dates alone derive nothing, while {@code dateUnitAxisType} still
+     *  reads what they mean. */
     private static boolean testDeriveTimeAxisType() {
         if ( AptxUtil.deriveTimeAxisType( balancedFourTip( 1, 1, 1 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
             return fail( "a tree with no dates must derive NONE" );
@@ -114,7 +115,63 @@ public final class AptxUtilTest {
         if ( AptxUtil.deriveTimeAxisType( datedTree( "bogus", 5, 4, 3 ) ) != Options.TIME_AXIS_TYPE.NONE ) {
             return fail( "ambiguous small magnitudes must derive NONE" );
         }
+        // THE AXIS NEEDS A TIME TREE (Christian, 2026-10-24: "all these trees open with a year scale by default").
+        // datedTree() dates the root and one clade -- two of three internal nodes -- so every case above is a time
+        // tree. Tip dates alone derive NOTHING: a divergence tree in substitutions per site whose tips carry their
+        // sampling dates ("year") was drawn under a calendar ruler, years read off substitutions
+        final Phylogeny tips_year = tipDatedTree( "year", 4, 2019, 2020, 2021, 2022.5 );
+        if ( AptxUtil.deriveTimeAxisType( tips_year ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "tip dates alone (unit 'year', no ancestor dated) must derive NONE, got "
+                    + AptxUtil.deriveTimeAxisType( tips_year ) );
+        }
+        // ...while the dates still MEAN calendar years (a tip interval is sampling uncertainty, not a fossil range;
+        // the clock plot's calendar)
+        if ( AptxUtil.dateUnitAxisType( tips_year ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
+            return fail( "the unit 'year' on the tips still means CALENDAR, got " + AptxUtil.dateUnitAxisType( tips_year ) );
+        }
+        final Phylogeny tips_mya = tipDatedTree( "mya", 4, 50, 40, 30, 20 );
+        if ( ( AptxUtil.deriveTimeAxisType( tips_mya ) != Options.TIME_AXIS_TYPE.NONE )
+                || ( AptxUtil.dateUnitAxisType( tips_mya ) != Options.TIME_AXIS_TYPE.GEOLOGIC ) ) {
+            return fail( "tip ages alone (unit 'mya') must derive NONE and still mean GEOLOGIC, got "
+                    + AptxUtil.deriveTimeAxisType( tips_mya ) + " / " + AptxUtil.dateUnitAxisType( tips_mya ) );
+        }
+        // one dated internal node of three (a calibration age) is not a time tree either
+        final Phylogeny one_internal = balancedFourTip( 1, 1, 1 );
+        setDate( one_internal.getRoot(), 2015, "year" );
+        if ( AptxUtil.deriveTimeAxisType( one_internal ) != Options.TIME_AXIS_TYPE.NONE ) {
+            return fail( "one dated internal node of three is not a time tree: NONE, got "
+                    + AptxUtil.deriveTimeAxisType( one_internal ) );
+        }
+        // the control, differing by exactly one dated ancestor: the root AND one clade dated, no tip at all, IS a
+        // time tree and derives from its unit
+        final Phylogeny ancestors = balancedFourTip( 1, 1, 1 );
+        setDate( ancestors.getRoot(), 2015, "year" );
+        setDate( ancestors.getRoot().getChildNode( 0 ), 2018, "year" );
+        if ( AptxUtil.deriveTimeAxisType( ancestors ) != Options.TIME_AXIS_TYPE.CALENDAR ) {
+            return fail( "two of three internal nodes dated in years is a time tree: CALENDAR, got "
+                    + AptxUtil.deriveTimeAxisType( ancestors ) );
+        }
+        // on a time tree the axis is exactly what the unit says
+        final Phylogeny geo = datedTree( "mya", 250, 66, 0 );
+        if ( AptxUtil.dateUnitAxisType( geo ) != AptxUtil.deriveTimeAxisType( geo ) ) {
+            return fail( "on a time tree the derived axis is what the unit says" );
+        }
         return true;
+    }
+
+    /** A 4-tip tree ((A,B),(C,D)), lengths 1, whose first {@code n} TIPS carry a {@code <date unit=...>} with the given
+     *  values (cycled) -- a divergence tree carrying sampling dates; no internal node dated. */
+    private static Phylogeny tipDatedTree( final String unit, final int n, final double... values ) {
+        final Phylogeny phy = balancedFourTip( 1, 1, 1 );
+        int i = 0;
+        for( final PhylogenyNode ext : phy.getExternalNodes() ) {
+            if ( i >= n ) {
+                break;
+            }
+            setDate( ext, values[ i % values.length ], unit );
+            ++i;
+        }
+        return phy;
     }
 
     /** A 4-tip tree with a {@code <date unit=...>} (unit null = no unit) on the root + one mid clade + one tip. */
@@ -160,17 +217,40 @@ public final class AptxUtilTest {
         if ( AptxUtil.detectTimeTree( ultra ) != AptxUtil.TIME_TREE_KIND.ULTRAMETRIC ) {
             return fail( "an ultrametric, undated tree must be ULTRAMETRIC (offer, not assert)" );
         }
-        // TIP-DATED: a strict majority of the TIPS dated (internal nodes undated) -> still a DATED time tree (a
-        // tip-dated tree, e.g. BEAST tip dates or dates extracted from labels) -> the time-tree badge shows
+        // TIP-DATED: every tip dated, no internal node -> NOT a time tree, no badge (Christian, 2026-10-24: a
+        // divergence tree whose tips carry sampling dates wore "Time tree · year" over substitutions; until 0.11.190 a
+        // strict majority of dated TIPS was DATED). With equal lengths the tree is ultrametric, and that is all it is
         final Phylogeny tip_dated = balancedFourTip( 1, 1, 1 );
-        int i = 0;
         for ( final PhylogenyNode ext : tip_dated.getExternalNodes() ) {
-            if ( i++ < 3 ) { // 3 of 4 tips (strict majority)
-                ext.getNodeData().setDate( new Date( "", new BigDecimal( "2020" ), null, null, "year" ) );
-            }
+            ext.getNodeData().setDate( new Date( "", new BigDecimal( "2020" ), null, null, "year" ) );
         }
-        if ( AptxUtil.detectTimeTree( tip_dated ) != AptxUtil.TIME_TREE_KIND.DATED ) {
-            return fail( "a tip-dated tree (majority of TIPS dated, internal undated) must be DATED" );
+        if ( AptxUtil.detectTimeTree( tip_dated ) == AptxUtil.TIME_TREE_KIND.DATED ) {
+            return fail( "tip dates alone (every tip dated, no ancestor) must NOT be DATED" );
+        }
+        if ( AptxUtil.detectTimeTree( tip_dated ) != AptxUtil.TIME_TREE_KIND.ULTRAMETRIC ) {
+            return fail( "a tip-dated equal-length tree, every tip on ONE date, is just ULTRAMETRIC (offered, not asserted), got "
+                    + AptxUtil.detectTimeTree( tip_dated ) );
+        }
+        // ...but equidistant tips sampled in DIFFERENT years cannot be a time tree (a UPGMA tree carrying sampling
+        // dates): not offered either. Differs from the case above by one tip's date
+        tip_dated.getFirstExternalNode().getNodeData().setDate( new Date( "", new BigDecimal( "2022" ), null, null, "year" ) );
+        if ( AptxUtil.datedTipsAgree( tip_dated ) || ( AptxUtil.detectTimeTree( tip_dated ) != AptxUtil.TIME_TREE_KIND.NONE ) ) {
+            return fail( "equidistant tips dated 2020 and 2022: no time tree to offer, got " + AptxUtil.detectTimeTree( tip_dated ) );
+        }
+        // a dated ROOT (a minority calibration) does not contradict equidistant tips
+        final Phylogeny root_dated = balancedFourTip( 1, 1, 1 );
+        root_dated.getRoot().getNodeData().setDate( new Date( "", new BigDecimal( "90" ), null, null, "mya" ) );
+        if ( AptxUtil.detectTimeTree( root_dated ) != AptxUtil.TIME_TREE_KIND.ULTRAMETRIC ) {
+            return fail( "an ultrametric tree with one dated ancestor is still offered, got " + AptxUtil.detectTimeTree( root_dated ) );
+        }
+        // a RAGGED tree with dated tips -- the real shape of a divergence tree with sampling dates -- is NONE
+        final Phylogeny tip_dated_ragged = balancedFourTip( 1, 1, 1 );
+        tip_dated_ragged.getFirstExternalNode().setDistanceToParent( 5 );
+        for ( final PhylogenyNode ext : tip_dated_ragged.getExternalNodes() ) {
+            ext.getNodeData().setDate( new Date( "", new BigDecimal( "2020" ), null, null, "year" ) );
+        }
+        if ( AptxUtil.detectTimeTree( tip_dated_ragged ) != AptxUtil.TIME_TREE_KIND.NONE ) {
+            return fail( "a ragged tree with dated tips is NONE, got " + AptxUtil.detectTimeTree( tip_dated_ragged ) );
         }
         // RAGGED phylogram: branch lengths but one tip much deeper -> NONE
         final Phylogeny ragged = balancedFourTip( 1, 1, 1 );
@@ -543,6 +623,30 @@ public final class AptxUtilTest {
         if ( AptxUtil.isHasSampledTipWithDateUncertainty( geo ) || !AptxUtil.isHasFossilRanges( geo )
                 || !AptxUtil.isHasFossilRanges( unitless ) ) {
             return fail( "off calendar time a tip interval WITH a width is a fossil range, as it always was (unit-less trees too)" );
+        }
+        // the MEANING is the unit's, not the axis's: a divergence tree whose TIPS alone are dated in years derives no
+        // time axis (it is no time tree), and a tip sampled "2021" is still a sampling-date uncertainty, never a fossil
+        // range -- read by dateUnitAxisType, which deriveTimeAxisType no longer answers for such a tree
+        final Phylogeny tips_only = tipDatedTree( "year", 4, 2019, 2020, 2021, 2022.5 );
+        final org.forester.phylogeny.data.Date sampled = tips_only.getFirstExternalNode().getNodeData().getDate();
+        sampled.setMin( new java.math.BigDecimal( "2019" ) );
+        sampled.setMax( new java.math.BigDecimal( "2020" ) ); // dated to the year
+        if ( ( AptxUtil.deriveTimeAxisType( tips_only ) != Options.TIME_AXIS_TYPE.NONE )
+                || ( AptxUtil.dateUnitAxisType( tips_only ) != Options.TIME_AXIS_TYPE.CALENDAR ) ) {
+            return fail( "the fixture: tips alone dated in years -- no axis, calendar meaning" );
+        }
+        if ( AptxUtil.isHasFossilRanges( tips_only ) || !AptxUtil.isHasSampledTipWithDateUncertainty( tips_only ) ) {
+            return fail( "tips alone dated in years, one to the year: sampling uncertainty, never a fossil range -- got fossil="
+                    + AptxUtil.isHasFossilRanges( tips_only ) + " sampled=" + AptxUtil.isHasSampledTipWithDateUncertainty( tips_only ) );
+        }
+        // its geologic twin: tip ages in Ma with a range, no ancestor dated -- a fossil range, no axis
+        final Phylogeny fossils = tipDatedTree( "mya", 4, 50, 40, 30, 20 );
+        final org.forester.phylogeny.data.Date fad_lad = fossils.getFirstExternalNode().getNodeData().getDate();
+        fad_lad.setMin( new java.math.BigDecimal( "45" ) );
+        fad_lad.setMax( new java.math.BigDecimal( "55" ) );
+        if ( ( AptxUtil.deriveTimeAxisType( fossils ) != Options.TIME_AXIS_TYPE.NONE ) || !AptxUtil.isHasFossilRanges( fossils )
+                || AptxUtil.isHasSampledTipWithDateUncertainty( fossils ) ) {
+            return fail( "tips alone dated in Ma with a range: a fossil range, no sampling uncertainty, no axis" );
         }
         return true;
     }

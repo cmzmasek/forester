@@ -443,6 +443,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean   _time_axis_grid           = false;
     private boolean   _time_axis_ages           = false;
     private Options.TIME_AXIS_TYPE _derived_time_axis_type = Options.TIME_AXIS_TYPE.NONE;
+    // what the dates MEAN by their unit (AptxUtil.dateUnitAxisType) -- NOT the axis: a divergence tree whose tips carry
+    // sampling dates means calendar years and draws no axis. Cached with the axis type, under the same key.
+    private Options.TIME_AXIS_TYPE _derived_date_unit_type = Options.TIME_AXIS_TYPE.NONE;
     private Phylogeny _derived_time_axis_for    = null;   // identity key for the derived-type cache
     // time-AXIS calibration: an explicit user root-age (Ma) override wins; else derive from the oldest <date>, cached
     private double    _time_axis_root_age       = 0;
@@ -6100,8 +6103,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (_derived_time_axis_for != _phylogeny) {
             _derived_time_axis_for = _phylogeny;
             _derived_time_axis_type = AptxUtil.deriveTimeAxisType(_phylogeny);
+            _derived_date_unit_type = AptxUtil.dateUnitAxisType(_phylogeny);
         }
         return _derived_time_axis_type;
+    }
+
+    /** What the current tree's {@code <date>} unit says its dates MEAN ({@link AptxUtil#dateUnitAxisType}: ages before
+     *  present or calendar years), cached with {@link #derivedTimeAxisType()}. Not the axis: a divergence tree whose
+     *  tips carry sampling dates in years derives no axis, and its dates still mean calendar years -- its tip intervals
+     *  are sampling-date uncertainty, not fossil ranges, and its bars run toward the tips. */
+    private Options.TIME_AXIS_TYPE derivedDateUnitType() {
+        derivedTimeAxisType();
+        return _derived_date_unit_type;
     }
 
     /** Sets an explicit per-tab Time-Axis type override (Off / Geologic / Calendar); wins over auto-derive and survives
@@ -6658,6 +6671,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void invalidateTimeAxisDerivation() {
         _derived_time_axis_for = null;
         _time_axis_age_cached_for = null;
+        _time_tree_cached_for = null; // the "Time tree" badge reads the same dates, under the same identity key
     }
 
     /** Whether the two-band geologic time axis is ON and drawable in a RECTANGULAR-family layout: mode GEOLOGIC, a
@@ -13913,22 +13927,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /** Whether this tree's {@code <date>} values INCREASE toward the tips (calendar years) rather than decrease
-     *  (ages before present) -- which way a node-age bar runs from its node. A unit the tree states decides, NOT the
-     *  Time Axis the user shows: switching a calendar tree's axis Off or to Geologic is a display choice and used to
-     *  mirror every bar. Only for unit-less dates, where the derived type is NONE, is the user's explicit Calendar
-     *  choice the one statement of what the numbers mean. */
+     *  (ages before present) -- which way a node-age bar runs from its node. A unit the tree states decides
+     *  ({@link #derivedDateUnitType()}), NOT the Time Axis the user shows or whether one is derived at all: switching a
+     *  calendar tree's axis Off or to Geologic is a display choice and used to mirror every bar, and a divergence
+     *  tree whose tips carry sampling dates derives no axis but its dates are still years. Only for unit-less dates,
+     *  where the unit says NONE, is the user's explicit Calendar choice the one statement of what the numbers mean. */
     final boolean datesIncreaseTowardTips() {
-        final Options.TIME_AXIS_TYPE derived = derivedTimeAxisType();
-        return (derived != Options.TIME_AXIS_TYPE.NONE) ? (derived == Options.TIME_AXIS_TYPE.CALENDAR)
+        final Options.TIME_AXIS_TYPE meaning = derivedDateUnitType();
+        return (meaning != Options.TIME_AXIS_TYPE.NONE) ? (meaning == Options.TIME_AXIS_TYPE.CALENDAR)
                 : (effectiveTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR);
     }
 
-    /** A tree on CALENDAR time: its tips are dated SAMPLES, not fossils. Decided by the tree's own date units (the
-     *  derived type, as AptxUtil.isHasFossilRanges decides the overlay's auto-enable) -- NOT by the Time Axis the user
-     *  shows: turning the axis Off or to Geologic is a display choice and must not turn a sampling-date uncertainty
-     *  into a fossil first/last-appearance range. */
+    /** A tree on CALENDAR time: its tips are dated SAMPLES, not fossils. Decided by the tree's own date unit
+     *  ({@link #derivedDateUnitType()}, as AptxUtil.isHasFossilRanges decides the overlay's auto-enable) -- NOT by the
+     *  Time Axis the user shows, nor by whether one is derived: turning the axis Off or to Geologic is a display
+     *  choice, and a divergence tree with dated tips draws no axis; neither must turn a sampling-date uncertainty into
+     *  a fossil first/last-appearance range. */
     final boolean isOnCalendarTime() {
-        return derivedTimeAxisType() == Options.TIME_AXIS_TYPE.CALENDAR;
+        return derivedDateUnitType() == Options.TIME_AXIS_TYPE.CALENDAR;
     }
 
     /**

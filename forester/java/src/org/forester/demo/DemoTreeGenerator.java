@@ -2379,7 +2379,8 @@ public final class DemoTreeGenerator {
                 "Synthetic SARS-CoV-2-like tree whose tips carry the SAMPLING DATE in the label (mixed formats: ISO "
                         + "2020-02-20, ISO year-month 2020-01, bare year 2019, month-name 01-Dec-2021) but NO "
                         + "structured <date>. Run Tools > Extract Dates from Labels... to pull each date into a <date> "
-                        + "+ a Color-by-able data:date metadata field; the tree then gets the Calendar axis." );
+                        + "+ a Color-by-able data:date metadata field. The tree stays on its distance scale: tip dates "
+                        + "alone do not make its branch lengths years (Settings > Overlays > Time Axis > Calendar if they are)." );
     }
 
     // ----- "Node Age Bars (HPD)": a dated (ultrametric) mammal phylogram, branch lengths = time (My). Each internal

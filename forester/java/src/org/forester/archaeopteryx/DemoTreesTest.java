@@ -2430,6 +2430,19 @@ public final class DemoTreesTest {
             note( file_name + ": no Time | Div, and not a time tree" );
             return false;
         }
+        // and so NO time axis and no "Time tree" badge (Christian, 2026-10-24): the tips' sampling dates mean calendar
+        // years, but the lengths are substitutions, and a calendar ruler over them read years off substitutions until
+        // 0.11.190. The twin, 15 of 16 tips dated, the same
+        for( final Phylogeny p : new Phylogeny[] { phy, twin } ) {
+            if ( ( AptxUtil.deriveTimeAxisType( p ) != Options.TIME_AXIS_TYPE.NONE )
+                    || ( AptxUtil.detectTimeTree( p ) == AptxUtil.TIME_TREE_KIND.DATED )
+                    || ( AptxUtil.dateUnitAxisType( p ) != Options.TIME_AXIS_TYPE.CALENDAR ) ) {
+                note( p.getName() + ": tip dates alone -- no time axis, no Time tree badge, and the dates still mean years; got "
+                        + AptxUtil.deriveTimeAxisType( p ) + " / " + AptxUtil.detectTimeTree( p ) + " / "
+                        + AptxUtil.dateUnitAxisType( p ) );
+                return false;
+            }
+        }
         if ( ClockPlot.kind( phy, time ) != ClockPlot.Kind.ROOT_TO_TIP ) {
             note( file_name + ": the root-to-tip clock plot, got " + ClockPlot.kind( phy, time ) );
             return false;
