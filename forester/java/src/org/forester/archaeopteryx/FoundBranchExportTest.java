@@ -87,7 +87,7 @@ public final class FoundBranchExportTest {
                     t.printStackTrace();
                     ok[ 0 ] = TestFail.here();
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

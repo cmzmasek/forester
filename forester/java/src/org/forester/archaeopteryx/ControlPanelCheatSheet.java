@@ -279,7 +279,7 @@ final class ControlPanelCheatSheet {
         if (cp == null) {
             return;
         }
-        buildDialog(mf, cp).setVisible(true);
+        buildDialog(javax.swing.SwingUtilities.getWindowAncestor(mf), cp).setVisible(true);
     }
 
     private ControlPanelCheatSheet() {

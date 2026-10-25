@@ -250,7 +250,7 @@ public final class UpdateCheckTest {
                 okk[ 0 ] = false;
                 System.out.println( "  [UpdateCheckTest] Options -> checkbox must re-seed the control" );
             }
-            ( (JFrame) f ).dispose();
+            f.dispose();
         } );
         return okk[ 0 ];
     }

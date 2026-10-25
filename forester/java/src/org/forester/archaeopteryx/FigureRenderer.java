@@ -268,8 +268,8 @@ public final class FigureRenderer {
             // (TreePanel.calculateLongestExtNodeInfo), and Swing hands one out only for a SHOWING component --
             // being merely displayable (pack()) is not enough. So realize it far off-screen: the measurement is
             // exactly the GUI's, and nothing appears in front of anyone. Under xvfb there is no screen anyway.
-            mf.setLocation( -32000, -32000 );
-            mf.setVisible( true );
+            mf._window.setLocation( -32000, -32000 );
+            mf._window.setVisible( true );
             final MainPanel mp = mf.getMainPanel();
             final TreePanel tp = mp.getCurrentTreePanel();
             applyStyle( tp, mp.getControlPanel(), spec );

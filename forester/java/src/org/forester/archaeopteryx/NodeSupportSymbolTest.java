@@ -69,7 +69,7 @@ public final class NodeSupportSymbolTest {
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "support test" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame f = (JFrame) mf[ 0 ];
+                final JFrame f = mf[ 0 ]._window;
                 try {
                     f.setSize( 900, 600 );
                     f.validate();

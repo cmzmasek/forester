@@ -67,7 +67,7 @@ public final class PropertyDotAutoHideTest {
             SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
                     .createInstance( new Phylogeny[] { phy }, new Configuration(), "dots under auto-hide" ) );
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame f = (JFrame) mf[ 0 ];
+                final JFrame f = mf[ 0 ]._window;
                 f.setSize( 1300, 900 ); // room for the whole panel in every orientation: a tip off the viewport is culled
                 f.validate();
                 final MainPanel mp = mf[ 0 ].getMainPanel();
@@ -163,7 +163,7 @@ public final class PropertyDotAutoHideTest {
         finally {
             try {
                 if ( mf[ 0 ] != null ) {
-                    SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+                    SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
                 }
             }
             catch ( final Exception e ) {

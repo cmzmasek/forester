@@ -114,7 +114,7 @@ public final class UndoRedoToolTest {
                             + tp.undoLabel() + "'" );
                 }
 
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
             } );
             return ok[ 0 ];
         }
@@ -149,7 +149,7 @@ public final class UndoRedoToolTest {
                 final JTextField sf = frame.getMainPanel().getControlPanel().getSearchTextField0();
                 if ( sf == null ) {
                     fail( ok, "search field 0 not found" );
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                     return;
                 }
                 // the text-undo/redo actions and the Cmd/Ctrl-Z WHEN_FOCUSED binding are installed
@@ -175,7 +175,7 @@ public final class UndoRedoToolTest {
                 if ( ( tp.getPhylogeny().getNumberOfExternalNodes() != tips ) || ( tp.isEdited() != edited_before ) ) {
                     fail( ok, "text-undo in the search box must not change the tree" );
                 }
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
             } );
             return ok[ 0 ];
         }
@@ -282,7 +282,7 @@ public final class UndoRedoToolTest {
                     fail( ok, "frame.redo() should re-apply the edit" );
                 }
 
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
             } );
             return ok[ 0 ];
         }
@@ -327,7 +327,7 @@ public final class UndoRedoToolTest {
                 if ( !frame.getMainPanel().getControlPanel().isShowDomainArchitectures() ) {
                     System.out.println( "  [UndoRedoToolTest] note: domain-architecture display not available; "
                             + "skipping the domain-undo assertion" );
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                     return;
                 }
                 final Phylogeny phy = tp.getPhylogeny();
@@ -349,7 +349,7 @@ public final class UndoRedoToolTest {
                     System.out.println( "  [UndoRedoToolTest] undo did not restore the domain-bearing tree" );
                     ok[ 0 ] = false;
                 }
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
             } );
             return ok[ 0 ];
         }
@@ -442,7 +442,7 @@ public final class UndoRedoToolTest {
                     fail( ok, "undoing an uncollapse-all must bring the collapsed clade back" );
                 }
             } );
-            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {
@@ -584,7 +584,7 @@ public final class UndoRedoToolTest {
             } );
             SwingUtilities.invokeAndWait( () -> {
                 nf[ 0 ].dispose();
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

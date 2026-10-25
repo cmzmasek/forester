@@ -258,7 +258,7 @@ public final class TreePropertiesEditTest {
                     ok[ 0 ] = TestFail.here();
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose(); // never leak the frame into the shared suite JVM
+                    mf[ 0 ].dispose(); // never leak the frame into the shared suite JVM
                 }
             } );
             return ok[ 0 ];
@@ -327,7 +327,7 @@ public final class TreePropertiesEditTest {
                     ok[ 0 ] = TestFail.here();
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];
@@ -474,7 +474,7 @@ public final class TreePropertiesEditTest {
                     t.printStackTrace();
                 }
                 finally {
-                    ( ( javax.swing.JFrame ) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];

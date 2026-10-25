@@ -75,7 +75,7 @@ public final class ErrorLogTest {
                 if ( !all.contains( line ) ) {
                     ok[ 0 ] = fail( "the registered report must carry every open tab's line; got: " + all );
                 }
-                ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }
@@ -376,7 +376,7 @@ public final class ErrorLogTest {
                     ok[ 0 ] = fail( "dismissing the marker should remove it" );
                 }
             } );
-            javax.swing.SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            javax.swing.SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {
@@ -502,7 +502,7 @@ public final class ErrorLogTest {
                         ok[ 0 ] = fail( "after dismissing, a LATER error must be able to raise the marker again" );
                     }
                 } );
-                javax.swing.SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+                javax.swing.SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             }
             finally {
                 ErrorLog.resetForTest();

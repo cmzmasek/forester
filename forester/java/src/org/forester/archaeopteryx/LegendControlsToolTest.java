@@ -209,7 +209,7 @@ public final class LegendControlsToolTest {
                     fail( ok, "a partially-covered GRADIENT legend must add the 'no value' row: delta " + gdelta );
                 }
 
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
             } );
             return ok[ 0 ] && identityMemoryOk() && elementSlotUiOk() && modeChipOk() && autoColorOk();
         }
@@ -275,7 +275,7 @@ public final class LegendControlsToolTest {
                 fail( ok, "after Reset the memory must be forgotten (fresh frequency assignment), k1 got "
                         + k1_fresh + " expected " + c0 );
             }
-            ( (JFrame) frame ).dispose();
+            frame.dispose();
         } );
         return ok[ 0 ];
     }
@@ -338,7 +338,7 @@ public final class LegendControlsToolTest {
                 fail( ok, "coloring by tax:code should build a 2-group verbatim scheme, got "
                         + ( ( s == null ) ? "null" : s.getValueColors().keySet().toString() ) );
             }
-            ( (JFrame) frame ).dispose();
+            frame.dispose();
         } );
         return ok[ 0 ];
     }
@@ -387,7 +387,7 @@ public final class LegendControlsToolTest {
             final Rectangle chip = tp.legendModeToggleBoundsForTest();
             if ( chip == null ) {
                 fail( ok, "the [gradient] chip should be drawn on a switchable colors-mode legend" );
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
                 return;
             }
             // clicking the chip through the REAL legend-click handler flips to a gradient
@@ -415,7 +415,7 @@ public final class LegendControlsToolTest {
             if ( tp.legendModeToggleBoundsForTest() != null ) {
                 fail( ok, "no mode chip on a non-switchable field" );
             }
-            ( (JFrame) frame ).dispose();
+            frame.dispose();
         } );
         return ok[ 0 ];
     }
@@ -463,7 +463,7 @@ public final class LegendControlsToolTest {
                 fail( ok, "with auto-color OFF the hook must not color, got " + tp.getColorByPropertyRef() );
             }
             frame.getOptions().setAutoColorNewTrees( true );
-            ( (JFrame) frame ).dispose();
+            frame.dispose();
         } );
         return ok[ 0 ];
     }

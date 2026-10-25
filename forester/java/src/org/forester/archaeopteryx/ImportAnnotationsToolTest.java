@@ -158,7 +158,7 @@ public final class ImportAnnotationsToolTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];
@@ -207,7 +207,7 @@ public final class ImportAnnotationsToolTest {
                     }
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];

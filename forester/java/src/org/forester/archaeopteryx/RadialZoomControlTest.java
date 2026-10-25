@@ -274,7 +274,7 @@ public final class RadialZoomControlTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
         }

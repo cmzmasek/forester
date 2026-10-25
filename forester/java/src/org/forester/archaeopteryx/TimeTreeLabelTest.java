@@ -85,7 +85,7 @@ public final class TimeTreeLabelTest {
                 check.run( mf[ 0 ].getMainPanel().getCurrentTreePanel() );
             }
             finally {
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             }
         } );
     }

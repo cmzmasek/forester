@@ -83,7 +83,7 @@ public final class CladeLevelsRenderTest {
                     exercise( mf[ 0 ], ok );
                 }
                 finally {
-                    ( ( JFrame ) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];
@@ -95,8 +95,8 @@ public final class CladeLevelsRenderTest {
     }
 
     private static void exercise( final MainFrame frame, final boolean[] ok ) {
-        frame.setSize( 1200, 900 );
-        ( ( JFrame ) frame ).validate();
+        frame._window.setSize( 1200, 900 );
+        frame._window.validate();
         final TreePanel tp = frame.getCurrentTreePanel();
         frame.getCurrentTreePanel().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );

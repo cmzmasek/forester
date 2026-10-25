@@ -211,7 +211,7 @@ public final class VectorGraphicsExporterTest {
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
                 try {
-                    final JFrame f = (JFrame) mf[ 0 ];
+                    final JFrame f = mf[ 0 ]._window;
                     f.setSize( 1100, 800 );
                     f.validate();
                     final MainPanel mp = mf[ 0 ].getMainPanel();

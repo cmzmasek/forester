@@ -71,7 +71,7 @@ public final class ItalicScientificNamesTest {
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "italic test" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame f = (JFrame) mf[ 0 ];
+                final JFrame f = mf[ 0 ]._window;
                 try {
                     f.setSize( 760, 460 );
                     f.validate();

@@ -69,8 +69,8 @@ public final class DomainRadialWidthTest {
         final boolean[] ok = { true };
         SwingUtilities.invokeAndWait( () -> {
             mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "radialwidth" );
-            mf[ 0 ].setSize( 1200, 800 );
-            mf[ 0 ].validate();
+            mf[ 0 ]._window.setSize( 1200, 800 );
+            mf[ 0 ]._window.validate();
         } );
         try {
             SwingUtilities.invokeAndWait( () -> {
@@ -137,7 +137,7 @@ public final class DomainRadialWidthTest {
             } );
         }
         finally {
-            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
         }
         return ok[ 0 ];
     }

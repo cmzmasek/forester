@@ -57,6 +57,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JMenu;
@@ -130,7 +131,6 @@ public final class MainFrameApplication extends MainFrame {
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        setVisible(false);
         setOptions(optionsWithSavedPreferences());
         registerMacOsQuitHandler();
         _mainpanel = new MainPanel(_configuration, this);
@@ -146,11 +146,13 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane = getContentPane();
         _contentpane.setLayout(new BorderLayout());
         _contentpane.add(_mainpanel, BorderLayout.CENTER);
+        _window = new JFrame();
+        _window.setContentPane(this);
         // App is this big
-        setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
+        _window.setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
         // The window listener
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
+        _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        _window.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(final WindowEvent e) {
@@ -192,6 +194,9 @@ public final class MainFrameApplication extends MainFrame {
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
+        // built before FlatLaf is installed, as the frame itself was: a frame built after it gets FlatLaf's own
+        // title bar, with the menu bar inside it, on Windows
+        _window = new JFrame();
         installLookAndFeel(_configuration.getUi());
         // the export/save choosers were created in the super-constructor, before the
         // look-and-feel above was installed; refresh them, so they are not left with the
@@ -203,12 +208,8 @@ public final class MainFrameApplication extends MainFrame {
         // restore each dialog's last-used directory from the previous session (a saved dir that no longer exists is
         // ignored later, lazily, by getCurrentDir -- which then falls back to the startup dir / home).
         new DirectoryPreferences().applyTo(_current_dirs);
-        // hide until everything is ready
-        setVisible(false);
         setOptions(optionsWithSavedPreferences());
         registerMacOsQuitHandler();
-        // set title
-        setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
         _mainpanel = new MainPanel(_configuration, this);
         installTabContextMenu();
         // The file dialogs
@@ -246,7 +247,6 @@ public final class MainFrameApplication extends MainFrame {
         buildTypeMenu();
         buildSettingsMenu();
         buildHelpMenu();
-        setJMenuBar(_jmenubar);
         _jmenubar.add(_help_jmenu);
         // right-aligned "Found / Selected: N" counter (a glue pushes it to the far right); hidden until there are hits
         _found_selected_counter = new FoundSelectedCounter();
@@ -255,8 +255,52 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane = getContentPane();
         _contentpane.setLayout(new BorderLayout());
         _contentpane.add(_mainpanel, BorderLayout.CENTER);
+        setUpWindow();
+        // The component listener
+        addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentResized(final ComponentEvent e) {
+                if (_mainpanel.getCurrentTreePanel() != null) {
+                    _mainpanel.getCurrentTreePanel()
+                            .calcParametersForPainting(_mainpanel.getCurrentTreePanel().getWidth(),
+                                    _mainpanel.getCurrentTreePanel().getHeight());
+                }
+            }
+        });
+        requestFocusInWindow();
+        // addKeyListener( this );
+        _window.setVisible(true);
+        if ((phys != null) && (phys.length > 0)) {
+            AptxUtil.addPhylogeniesToTabs(phys, title, null, _configuration, _mainpanel);
+            validate();
+            getMainPanel().getControlPanel().showWholeAll();
+            getMainPanel().getControlPanel().showWhole();
+        }
+        // align the tree canvas with the resolved (light/dark) theme at startup
+        updateTreeCanvasColors(getConfiguration().getUi());
+        activateSaveAllIfNeeded();
+        // ...and its children
+        _contentpane.repaint();
+        System.gc();
+        // warm the persistent taxonomy cache off the EDT now, so the first colorize/fetch is snappy
+        NcbiTaxonomyLineageService.getShared().primeAsync();
+        // warm the Swing color chooser off the EDT too: building its default panels + loading the classes is a
+        // one-time cost, so the first "Node Style" / subtree-colorize colour pick isn't slow to appear
+        warmColorChooserAsync();
+        // The error log is installed BEFORE any frame exists, so a failure during start-up fires its one-shot
+        // callback while there is no menu bar to mark. Pick that up here, now that there is one.
+        showErrorIndicatorIfAnyLogged();
+    }
+
+    /** Sets up the window a standalone viewer runs in, showing this viewer and its menu bar. */
+    private void setUpWindow() {
+        // set title
+        _window.setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
+        _window.setJMenuBar(_jmenubar);
+        _window.setContentPane(this);
         // App is this big
-        setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
+        _window.setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
         //        addWindowFocusListener( new WindowAdapter() {
         //
         //            @Override
@@ -265,8 +309,8 @@ public final class MainFrameApplication extends MainFrame {
         //            }
         //        } );
         // The window listener
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
+        _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        _window.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(final WindowEvent e) {
@@ -288,41 +332,6 @@ public final class MainFrameApplication extends MainFrame {
                 exit();
             }
         });
-        // The component listener
-        addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(final ComponentEvent e) {
-                if (_mainpanel.getCurrentTreePanel() != null) {
-                    _mainpanel.getCurrentTreePanel()
-                            .calcParametersForPainting(_mainpanel.getCurrentTreePanel().getWidth(),
-                                    _mainpanel.getCurrentTreePanel().getHeight());
-                }
-            }
-        });
-        requestFocusInWindow();
-        // addKeyListener( this );
-        setVisible(true);
-        if ((phys != null) && (phys.length > 0)) {
-            AptxUtil.addPhylogeniesToTabs(phys, title, null, _configuration, _mainpanel);
-            validate();
-            getMainPanel().getControlPanel().showWholeAll();
-            getMainPanel().getControlPanel().showWhole();
-        }
-        // align the tree canvas with the resolved (light/dark) theme at startup
-        updateTreeCanvasColors(getConfiguration().getUi());
-        activateSaveAllIfNeeded();
-        // ...and its children
-        _contentpane.repaint();
-        System.gc();
-        // warm the persistent taxonomy cache off the EDT now, so the first colorize/fetch is snappy
-        NcbiTaxonomyLineageService.getShared().primeAsync();
-        // warm the Swing color chooser off the EDT too: building its default panels + loading the classes is a
-        // one-time cost, so the first "Node Style" / subtree-colorize colour pick isn't slow to appear
-        warmColorChooserAsync();
-        // The error log is installed BEFORE any frame exists, so a failure during start-up fires its one-shot
-        // callback while there is no menu bar to mark. Pick that up here, now that there is one.
-        showErrorIndicatorIfAnyLogged();
     }
 
     /** Best-effort background warmup of {@link javax.swing.JColorChooser}: constructing one builds all of its default

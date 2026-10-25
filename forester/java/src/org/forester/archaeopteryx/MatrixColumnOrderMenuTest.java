@@ -89,7 +89,7 @@ public final class MatrixColumnOrderMenuTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 try {
-                    ( ( JFrame ) frame ).setSize( 1000, 700 );
+                    frame._window.setSize( 1000, 700 );
                     checkMenu( ok, frame );
                     final TreePanel tp0 = frame.getMainPanel().getCurrentTreePanel();
                     final Phylogeny phy = tp0.getPhylogeny();
@@ -170,7 +170,7 @@ public final class MatrixColumnOrderMenuTest {
                     t.printStackTrace();
                 }
                 finally {
-                    ( ( JFrame ) frame ).dispose();
+                    frame.dispose();
                 }
             } );
         }

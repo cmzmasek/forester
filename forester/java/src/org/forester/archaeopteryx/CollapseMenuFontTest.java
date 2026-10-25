@@ -69,7 +69,7 @@ public final class CollapseMenuFontTest {
                     }
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];

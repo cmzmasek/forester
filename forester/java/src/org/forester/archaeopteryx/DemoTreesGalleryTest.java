@@ -149,7 +149,7 @@ public final class DemoTreesGalleryTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrameApplication frame = (MainFrameApplication) mf[ 0 ];
                 try {
-                    ( (JFrame) frame ).setSize( 1000, 640 ); // give showWhole a viewport to fit into
+                    frame._window.setSize( 1000, 640 ); // give showWhole a viewport to fit into
                     assertSubmenu( ok, frame ); // the File -> Demo Trees submenu is built with one item per catalog entry
                     for ( final DemoTrees.Demo demo : DemoTrees.catalog() ) {
                         try {

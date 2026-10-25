@@ -66,7 +66,7 @@ public final class LegendDragTest {
                 final Rectangle vp = tp.getVisibleRect();
                 if ( ( vp.width < 300 ) || ( vp.height < 300 ) ) {
                     ok[ 0 ] = true; // no usable viewport in this environment; nothing to assert
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                     return;
                 }
                 paint( tp, vp );
@@ -133,7 +133,7 @@ public final class LegendDragTest {
                         }
                     }
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

@@ -90,9 +90,9 @@ public final class LegendColumnTest {
             SwingUtilities.invokeAndWait( () -> {
                 mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(),
                                                                "legend column" );
-                ( ( JFrame ) mf[ 0 ] ).setLocation( -32000, -32000 );
-                ( ( JFrame ) mf[ 0 ] ).setSize( 1200, 800 );
-                ( ( JFrame ) mf[ 0 ] ).setVisible( true );
+                mf[ 0 ]._window.setLocation( -32000, -32000 );
+                mf[ 0 ]._window.setSize( 1200, 800 );
+                mf[ 0 ]._window.setVisible( true );
             } );
             SwingUtilities.invokeAndWait( () -> {
                 try {
@@ -189,7 +189,7 @@ public final class LegendColumnTest {
         finally {
             if ( mf[ 0 ] != null ) {
                 try {
-                    SwingUtilities.invokeAndWait( () -> ( ( JFrame ) mf[ 0 ] ).dispose() );
+                    SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
                 }
                 catch ( final Exception ignored ) {
                     // disposing a frame that never came up is not a test failure

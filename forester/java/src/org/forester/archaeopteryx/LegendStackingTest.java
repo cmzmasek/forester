@@ -160,7 +160,7 @@ public final class LegendStackingTest {
                 // inside the view; and in a view too small for that too, it keeps its plain corner (overlap beats
                 // out of sight)
                 set( tp, "beast:location", "data:sz", null );
-                final java.awt.Dimension frame_size = ( (JFrame) mf[ 0 ] ).getSize();
+                final java.awt.Dimension frame_size = mf[ 0 ]._window.getSize();
                 for ( final Object[] layout : LAYOUTS ) {
                     final String name = (String) layout[ 0 ];
                     paint( mf[ 0 ], tp, layout );
@@ -176,8 +176,8 @@ public final class LegendStackingTest {
                             || ( view.height < ( Math.max( color_h, size_h ) + INSET + INSET ) ) ) {
                         ok[ 0 ] = fail( name + ": precondition: a view where the two corners meet but one key fits, got "
                                 + view );
-                        ( (JFrame) mf[ 0 ] ).setSize( frame_size );
-                        ( (JFrame) mf[ 0 ] ).validate();
+                        mf[ 0 ]._window.setSize( frame_size );
+                        mf[ 0 ]._window.validate();
                         continue;
                     }
                     if ( !view.contains( size ) || !view.contains( color ) ) {
@@ -195,8 +195,8 @@ public final class LegendStackingTest {
                     }
                     // too small for either way: the plain bottom-right corner
                     shrinkViewTo( mf[ 0 ], tp, size_h + INSET + INSET + 2, frame_size );
-                    ( (JFrame) mf[ 0 ] ).setSize( 260, ( (JFrame) mf[ 0 ] ).getHeight() );
-                    ( (JFrame) mf[ 0 ] ).validate();
+                    mf[ 0 ]._window.setSize( 260, mf[ 0 ]._window.getHeight() );
+                    mf[ 0 ]._window.validate();
                     paint( mf[ 0 ], tp, layout );
                     final Rectangle tiny = tp.getVisibleRect();
                     final Rectangle size2 = tp.getSizeLegendBounds();
@@ -209,8 +209,8 @@ public final class LegendStackingTest {
                         ok[ 0 ] = fail( name + ": with no room either way a key keeps its plain corner, got " + size2
                                 + " in " + tiny );
                     }
-                    ( (JFrame) mf[ 0 ] ).setSize( frame_size );
-                    ( (JFrame) mf[ 0 ] ).validate();
+                    mf[ 0 ]._window.setSize( frame_size );
+                    mf[ 0 ]._window.validate();
                 }
                 set( tp, null, null, null );
                 // (5) outside a paint pass nothing is claimed: a legend drawn on its own lands on its plain corner
@@ -347,7 +347,7 @@ public final class LegendStackingTest {
      *  the frame's size moves the viewport). */
     private static void shrinkViewTo( final MainFrame frame, final TreePanel tp, final int h,
                                       final java.awt.Dimension frame_size ) {
-        final JFrame f = (JFrame) frame;
+        final JFrame f = frame._window;
         f.setSize( frame_size );
         f.validate();
         final int chrome = f.getHeight() - tp.getVisibleRect().height;
@@ -358,7 +358,7 @@ public final class LegendStackingTest {
     private static void dispose( final MainFrame[] mf ) throws Exception {
         SwingUtilities.invokeAndWait( () -> {
             if ( mf[ 0 ] != null ) {
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             }
         } );
     }

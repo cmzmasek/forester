@@ -81,7 +81,7 @@ public final class ExternalDataFitTest {
                         "with external data OFF the depth scale must grow (branches use the freed width): off "
                                 + corr_off + " vs on " + corr_on );
 
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();

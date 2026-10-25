@@ -76,7 +76,7 @@ public final class CladeLegendSectionsTest {
                     exercise( mf[ 0 ], ok );
                 }
                 finally {
-                    ( ( JFrame ) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             reachabilityOnAnimalTree( ok );
@@ -89,8 +89,8 @@ public final class CladeLegendSectionsTest {
     }
 
     private static void exercise( final MainFrame frame, final boolean[] ok ) {
-        frame.setSize( 1200, 900 );
-        ( ( JFrame ) frame ).validate();
+        frame._window.setSize( 1200, 900 );
+        frame._window.validate();
         final TreePanel tp = frame.getCurrentTreePanel();
         frame.getCurrentTreePanel().setTreeOrientation( Options.TREE_ORIENTATION.ROOT_LEFT );
         tp.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
@@ -251,12 +251,12 @@ public final class CladeLegendSectionsTest {
                     .createInstance( phys, new Configuration(), "clade-legend-reach" ) );
             SwingUtilities.invokeAndWait( () -> {
                 try {
-                    ( ( JFrame ) mf[ 0 ] ).setSize( 1000, 800 );
-                    ( ( JFrame ) mf[ 0 ] ).validate();
+                    mf[ 0 ]._window.setSize( 1000, 800 );
+                    mf[ 0 ]._window.validate();
                     expandControlStaysReachable( mf[ 0 ].getCurrentTreePanel(), ok );
                 }
                 finally {
-                    ( ( JFrame ) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
         }

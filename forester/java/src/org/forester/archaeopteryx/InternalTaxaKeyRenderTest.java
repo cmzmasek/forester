@@ -75,7 +75,7 @@ public final class InternalTaxaKeyRenderTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
         }

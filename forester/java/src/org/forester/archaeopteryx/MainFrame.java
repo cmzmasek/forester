@@ -119,7 +119,7 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.WindowsUtils;
 
-public abstract class MainFrame extends JFrame implements ActionListener {
+public abstract class MainFrame extends JPanel implements ActionListener {
 
     /**
      * Installs the FlatLaf look-and-feel (light or dark) -- the only look-and-feel Archaeopteryx uses. It is
@@ -403,6 +403,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     private Timer         _process_anim_timer;
     MainPanel _mainpanel;
     Container _contentpane;
+    /** The window a standalone viewer runs in, created by {@link MainFrameApplication}; null when another program
+     *  hosts the viewer in a window of its own. */
+    JFrame _window;
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
@@ -825,6 +828,24 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _mainpanel.getControlPanel().showWhole();
     }
 
+    /** The viewer's menu bar: a standalone viewer installs it in its own window, a host program in the host's. */
+    public JMenuBar getJMenuBar() {
+        return _jmenubar;
+    }
+
+    /** Disposes the viewer's own window, if it has one. A viewer another program hosts has none: the host ends it
+     *  with {@link MainFrameApplication#end()}. */
+    public void dispose() {
+        if (_window != null) {
+            _window.dispose();
+        }
+    }
+
+    /** The panel itself, so the calls written when MainFrame was a JFrame stay as they were. */
+    Container getContentPane() {
+        return this;
+    }
+
     public void updateProcessMenu() {
         // In general Swing is not thread safe.
         // See "Swing's Threading Policy".
@@ -1191,10 +1212,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static String describeHeapForLog() {
         final StringBuilder sb = new StringBuilder();
         for (final java.awt.Window w : java.awt.Window.getWindows()) {
-            if (!(w instanceof MainFrame) || (((MainFrame) w).getMainPanel() == null)) {
+            final MainFrame mf = viewerOf(w);
+            if ((mf == null) || (mf.getMainPanel() == null)) {
                 continue;
             }
-            for (final TreePanel tp : ((MainFrame) w).getMainPanel().getTreePanels()) {
+            for (final TreePanel tp : mf.getMainPanel().getTreePanels()) {
                 sb.append((sb.length() == 0) ? "" : "\n").append(tp.memoryFootprint());
             }
         }
@@ -1204,11 +1226,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void showErrorIndicatorOnAllFrames() {
         javax.swing.SwingUtilities.invokeLater(() -> {
             for (final java.awt.Window w : java.awt.Window.getWindows()) {
-                if (w instanceof MainFrame) {
-                    ((MainFrame) w).showErrorIndicator();
+                final MainFrame mf = viewerOf(w);
+                if (mf != null) {
+                    mf.showErrorIndicator();
                 }
             }
         });
+    }
+
+    /** The standalone viewer that is {@code w}'s content pane, or null. */
+    private static MainFrame viewerOf(final Window w) {
+        final Container content = (w instanceof javax.swing.RootPaneContainer)
+                ? ((javax.swing.RootPaneContainer) w).getContentPane() : null;
+        return (content instanceof MainFrame) ? (MainFrame) content : null;
     }
 
     void showErrorIndicator() {
@@ -4457,7 +4487,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * or {@code null} on cancel.
      */
     private ImportChoice showImportChoice(final Phylogeny phy, final String text) {
-        final javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Import Metadata", true);
+        final javax.swing.JDialog dialog = new javax.swing.JDialog(SwingUtilities.getWindowAncestor(this),
+                "Import Metadata", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE); // 'X' disposes (not just hides)
         final ImportChoice[] result = { null };
         final NodeDataImporter.Table[] cur_table = { null };

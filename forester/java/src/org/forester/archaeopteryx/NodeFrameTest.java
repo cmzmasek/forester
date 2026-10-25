@@ -141,7 +141,7 @@ public final class NodeFrameTest {
             check( ok, "none left", tp.openNodeFrameCountForTest() == 0 );
             frames.get( 2 ).close(); // closing twice is harmless
             check( ok, "still none", tp.openNodeFrameCountForTest() == 0 );
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }

@@ -149,7 +149,7 @@ public final class ControlPanelCheatSheetTest {
                     fail( ok, "the exported sheet is blank (" + ink + " non-white samples)" );
                 }
             }
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
 
             // (5b) EVERY control on the panel must carry a tooltip. This is the rule that keeps the cheat sheet
             // useful: the sheet is generated, so a new button needs no edit here -- but a button with no tooltip
@@ -167,7 +167,7 @@ public final class ControlPanelCheatSheetTest {
                 fail( ok, untipped.size() + " control-panel control(s) carry no tooltip, so the cheat sheet cannot "
                         + "describe them: " + untipped );
             }
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mfr[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mfr[ 0 ].dispose() );
 
             // (6) THE point: the sheet follows the panel. A data-gated row is on the sheet only when the tree
             // carries that data -- so the sheet describes what is on screen, not a fixed list written by hand.
@@ -185,7 +185,7 @@ public final class ControlPanelCheatSheetTest {
             if ( !domain_has_domains ) {
                 fail( ok, "a tree WITH domains must get one -- the sheet is supposed to follow the panel" );
             }
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf2[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf2[ 0 ].dispose() );
         }
         catch ( final Throwable e ) {
             e.printStackTrace();

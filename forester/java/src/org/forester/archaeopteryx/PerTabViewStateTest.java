@@ -62,7 +62,7 @@ public final class PerTabViewStateTest {
                     exercise( mf[ 0 ], ok );
                 }
                 finally {
-                    ( ( JFrame ) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];
@@ -74,8 +74,8 @@ public final class PerTabViewStateTest {
     }
 
     private static void exercise( final MainFrame frame, final boolean[] ok ) {
-        frame.setSize( 1000, 700 );
-        ( ( JFrame ) frame ).validate();
+        frame._window.setSize( 1000, 700 );
+        frame._window.validate();
         final ControlPanel cp = frame.getMainPanel().getControlPanel();
         final JTabbedPane tabs = frame.getMainPanel().getTabbedPane();
         if ( tabs.getTabCount() != 2 ) {

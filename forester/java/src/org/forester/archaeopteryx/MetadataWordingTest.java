@@ -161,7 +161,7 @@ public final class MetadataWordingTest {
                     }
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
         }

@@ -164,7 +164,7 @@ public final class AnnotationColumnDragTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 try {
-                    ( ( JFrame ) frame ).setSize( W, H );
+                    frame._window.setSize( W, H );
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     moveModel( ok, tp );
                     for( final String layout : new String[] { "root-left", "clustergram", "circular" } ) {
@@ -196,7 +196,7 @@ public final class AnnotationColumnDragTest {
                     t.printStackTrace();
                 }
                 finally {
-                    ( ( JFrame ) frame ).dispose();
+                    frame.dispose();
                 }
             } );
         }

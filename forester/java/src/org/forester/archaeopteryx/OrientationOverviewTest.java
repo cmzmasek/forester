@@ -80,8 +80,8 @@ public final class OrientationOverviewTest {
                     tp.getControlPanel().setTreeDisplayType( Options.PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM );
                     o.setShowOverview( true );
                     tp.setTreeOrientation( Options.TREE_ORIENTATION.ROOT_TOP );
-                    ( (JFrame) frame ).setSize( 520, 420 );
-                    ( (JFrame) frame ).setVisible( true );
+                    frame._window.setSize( 520, 420 );
+                    frame._window.setVisible( true );
                     frame.showWhole();
                     // zoom both axes so the tree exceeds the viewport -> the overview turns on
                     for ( int i = 0; i < 5; ++i ) {
@@ -178,7 +178,7 @@ public final class OrientationOverviewTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];

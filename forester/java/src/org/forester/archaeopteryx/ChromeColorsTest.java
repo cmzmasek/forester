@@ -144,7 +144,7 @@ public final class ChromeColorsTest {
                     ok[ 0 ] = fail( "no search-hit colour may appear when nothing is found: " + found_px + " pixels" );
                 }
             } );
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {

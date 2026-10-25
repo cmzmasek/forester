@@ -135,8 +135,8 @@ public final class OrientationZoomControlTest {
                     }
 
                     // realize the frame so the scroll bars / viewport are live (needed for re-center + fitHeight)
-                    ( (JFrame) frame ).setSize( 500, 400 );
-                    ( (JFrame) frame ).setVisible( true );
+                    frame._window.setSize( 500, 400 );
+                    frame._window.setVisible( true );
 
                     // fitHeight ("H") must be IDEMPOTENT: repeated presses fit the depth to the window height and keep
                     // the breadth (tip-spread) zoom -- they must not drift the y-distance (they did when the padded
@@ -317,7 +317,7 @@ public final class OrientationZoomControlTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];

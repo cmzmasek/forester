@@ -213,7 +213,7 @@ public final class MsaToggleTest {
         if ( cp.isShowMsa() ) {
             fail( ok, "Reset to Defaults must re-seed the checkbox, not just the per-tab flags" );
         }
-        SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
     }
 
     /** Whether the control panel would OFFER the alignment checkbox for this tree. */

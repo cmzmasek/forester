@@ -68,7 +68,8 @@ final class TipDateExtractionDialog extends JDialog {
     };
 
     TipDateExtractionDialog( final MainFrame parent, final Phylogeny phylogeny ) {
-        super( parent, "Extract Dates from Labels", true );
+        super( javax.swing.SwingUtilities.getWindowAncestor( parent ), "Extract Dates from Labels",
+               java.awt.Dialog.ModalityType.APPLICATION_MODAL );
         _phylogeny = phylogeny;
         buildUi();
         refreshPreview();

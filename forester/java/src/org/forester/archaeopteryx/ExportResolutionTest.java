@@ -70,7 +70,7 @@ public final class ExportResolutionTest {
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "export test" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame f = (JFrame) mf[ 0 ];
+                final JFrame f = mf[ 0 ]._window;
                 try {
                     f.setSize( 600, 360 );
                     f.validate();

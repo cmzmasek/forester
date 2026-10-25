@@ -170,7 +170,7 @@ public final class SubSuperTreeButtonsTest {
                 if ( ( leaves( tp ) != 4 ) || tp.isCurrentTreeIsSubtree() ) {
                     ok[ 0 ] = TestFail.here();
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

@@ -71,7 +71,7 @@ public final class MinConfidenceFractionRenderTest {
                     if ( mp.getControlPanel().getWriteConfidenceCb() == null ) {
                         System.out.println( "  [MinConfidenceFractionRenderTest] no confidence control -- cannot test" );
                         ok[ 0 ] = false;
-                        ( (JFrame) mf[ 0 ] ).dispose();
+                        mf[ 0 ].dispose();
                         return;
                     }
                     // default "min. confidence shown" fraction (0.5), NOT overridden -> cutoff = 0.5 * 100 = 50
@@ -107,7 +107,7 @@ public final class MinConfidenceFractionRenderTest {
                                 + "HIDDEN by the fraction-of-scale default (magenta px = " + branchMagenta( img, low ) + ")" );
                         ok[ 0 ] = false;
                     }
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();

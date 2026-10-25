@@ -75,7 +75,7 @@ public final class NodeSelectionToolTest {
                     exercise( frame, ok );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose(); // never leak the window, even on an assertion throw
+                    frame.dispose(); // never leak the window, even on an assertion throw
                 }
             } );
             return ok[ 0 ];

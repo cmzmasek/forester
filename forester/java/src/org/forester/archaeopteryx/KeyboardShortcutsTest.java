@@ -110,7 +110,7 @@ public final class KeyboardShortcutsTest {
             SwingUtilities.invokeAndWait(
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { tree() }, conf, "ks" ) );
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame frame = (JFrame) mf[ 0 ];
+                final JFrame frame = mf[ 0 ]._window;
                 try {
                     final JMenuItem item = findMenuItem( frame.getJMenuBar(), "Help", "Keyboard Shortcuts" );
                     if ( item == null ) {

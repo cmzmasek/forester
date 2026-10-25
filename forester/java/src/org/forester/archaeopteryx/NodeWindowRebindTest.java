@@ -107,7 +107,7 @@ public final class NodeWindowRebindTest {
             check( ok, "that write is an undo step", "Edit Node Data".equals( tp.undoLabel() ) );
             check( ok, "clean after write", !fr.isDirty() );
             fr.close();
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }
@@ -143,7 +143,7 @@ public final class NodeWindowRebindTest {
             check( ok, "its annotation survived", ( after.getAnnotations() != null )
                     && ( after.getAnnotations().size() == 1 ) && "GO:0005634".equals( after.getAnnotation( 0 ).getRef() ) );
             fr.close();
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }
@@ -187,7 +187,7 @@ public final class NodeWindowRebindTest {
             check( ok, "writes into the live tree", fr.writeNow()
                     && "D9".equals( tp.getPhylogeny().getNode( id_d ).getName() ) );
             fr.close();
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }
@@ -234,7 +234,7 @@ public final class NodeWindowRebindTest {
             check( ok, "no events section on a tip", !edit.getForm().hasSectionForTest( NodeDataDraft.SEC_EVENTS ) );
             check( ok, "writes", edit.writeNow() && "B3".equals( tp.getPhylogeny().getNode( id_b ).getName() ) );
             edit.close();
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }

@@ -129,8 +129,8 @@ public final class NodePopupLifecycleTest {
                 // whenever the frame is not the OS's actual active window (always, in a test run) -- so invoke
                 // the registered window listeners directly, exactly as processWindowEvent would on the real event.
                 show( tp, nx, ny );
-                final WindowEvent deact = new WindowEvent( mf[ 0 ], WindowEvent.WINDOW_DEACTIVATED );
-                for( final java.awt.event.WindowListener wl : mf[ 0 ].getWindowListeners() ) {
+                final WindowEvent deact = new WindowEvent( mf[ 0 ]._window, WindowEvent.WINDOW_DEACTIVATED );
+                for( final java.awt.event.WindowListener wl : mf[ 0 ]._window.getWindowListeners() ) {
                     wl.windowDeactivated( deact );
                 }
                 if ( tp.isNodeDescPopupShowingForTest() ) {
@@ -139,14 +139,14 @@ public final class NodePopupLifecycleTest {
 
                 // (5b) minimizing the window (WINDOW_ICONIFIED passes dispatchEvent uninspected by the KFM)
                 show( tp, nx, ny );
-                mf[ 0 ].dispatchEvent( new WindowEvent( mf[ 0 ], WindowEvent.WINDOW_ICONIFIED ) );
+                mf[ 0 ]._window.dispatchEvent( new WindowEvent( mf[ 0 ]._window, WindowEvent.WINDOW_ICONIFIED ) );
                 if ( tp.isNodeDescPopupShowingForTest() ) {
                     ok[ 0 ] = fail( "iconifying the window must hide the rollover popup" );
                 }
 
                 // (6) dragging the window: the popup must not stay behind at the old spot
                 show( tp, nx, ny );
-                mf[ 0 ].dispatchEvent( new ComponentEvent( mf[ 0 ], ComponentEvent.COMPONENT_MOVED ) );
+                mf[ 0 ]._window.dispatchEvent( new ComponentEvent( mf[ 0 ]._window, ComponentEvent.COMPONENT_MOVED ) );
                 if ( tp.isNodeDescPopupShowingForTest() ) {
                     ok[ 0 ] = fail( "moving the window must hide the rollover popup" );
                 }

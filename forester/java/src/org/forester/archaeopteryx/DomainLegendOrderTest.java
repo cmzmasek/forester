@@ -99,7 +99,7 @@ public final class DomainLegendOrderTest {
         finally {
             SwingUtilities.invokeAndWait( () -> {
                 if ( mf[ 0 ] != null ) {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
         }
