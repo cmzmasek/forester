@@ -480,7 +480,7 @@ final class DemoTrees {
         if ( colorset != null ) {
             frame.getTanglegramPanel().applyThemeColors( colorset.getBackgroundColor(), colorset.getBranchColor() );
         }
-        frame.setVisible( true );
+        mf.showViewerWindow( frame );
     }
 
     private DemoTrees() {

@@ -70,6 +70,9 @@ public final class SequenceAndTaxonomyDataObtainer extends RunnableProcess {
         }
         // Swing is not thread-safe: commit the enriched tree and show the report on the EDT.
         SwingUtilities.invokeLater( () -> {
+            if ( _mf.isClosed() ) {
+                return;
+            }
             commit( result );
             final int type = hasIssues( result ) ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
             try {
