@@ -25,7 +25,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -34,8 +33,8 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 /**
  * The FOCUS GLOW: a halo marking the node under the pointer.
  * <p>
- * The point of the feature is that it appears in EVERY click-to mode. Before it, on-canvas hover feedback existed
- * only in Select-Node(s) mode, so in the DEFAULT mode -- and in the destructive ones (Reroot, Delete, Cut) -- the
+ * The point of the feature is that it appears with or without Shift held. Before it, on-canvas hover feedback existed
+ * only in the old Select-Node(s) click mode, so in the then-default mode -- and in the destructive ones (Reroot, Delete, Cut) -- the
  * hand cursor said "clickable" without ever saying WHICH node. So the load-bearing assertion here is the one for a
  * NON-select mode; the rest guard the colour semantics that let one indicator serve every mode.
  * <p>
@@ -200,8 +199,8 @@ public final class FocusGlowRenderTest {
             if ( diff != 0 ) {
                 return fail( "the focus glow must not appear in an export, " + diff + " px differ" );
             }
-            // ---- (2) THE POINT OF THE FEATURE: a non-select mode glows at all ----------------------------
-            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            // ---- (2) THE POINT OF THE FEATURE: without Shift the node glows at all ----------------------------
+            tp.setSelectionPreviewForTest( false );
             tp.setHoverForTest( null, false );
             final BufferedImage off = shot( tp );
             // read the coordinates HERE, not earlier: an export re-lays the tree out at the export size, so a
@@ -211,12 +210,12 @@ public final class FocusGlowRenderTest {
             final BufferedImage plain = shot( tp );
             final int[] accent = glowInk( off, plain, cx, cy );
             if ( changed( off, plain, cx, cy ) < 60 ) {
-                return fail( "hovering a node in a NON-select mode must draw a focus glow, changed only "
+                return fail( "hovering a node without Shift must draw a focus glow, changed only "
                         + changed( off, plain, cx, cy ) + " px" );
             }
             // ... in the neutral accent, NOT the found colour -- a focus ring must not read as a selection state
             if ( accent[ 0 ] <= accent[ 1 ] ) {
-                return fail( "the glow outside Select mode must be the accent colour, got bluish " + accent[ 0 ]
+                return fail( "the glow without Shift must be the accent colour, got bluish " + accent[ 0 ]
                         + " vs reddish " + accent[ 1 ] );
             }
             // ... and it must reach BEYOND the old flat preview disc (max(6, node size)) -- it is a halo
@@ -224,22 +223,22 @@ public final class FocusGlowRenderTest {
                 return fail( "the glow must extend well past the node, like a halo" );
             }
 
-            // ---- (3) in Select mode the SAME glow carries the selection meaning --------------------------
-            cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
+            // ---- (3) with Shift held the SAME glow carries the selection meaning --------------------------
+            tp.setSelectionPreviewForTest( true );
             tp.setHoverForTest( null, false );
             final BufferedImage sel_off = shot( tp );
             tp.setHoverForTest( target, false );
             final int[] add = ringInk( sel_off, shot( tp ), cx, cy );
             if ( add[ 1 ] <= ( add[ 0 ] + add[ 2 ] ) ) {
-                return fail( "in Select mode a click that ADDS must glow in the found colour, got reddish "
+                return fail( "with Shift held a click that ADDS must glow in the found colour, got reddish "
                         + add[ 1 ] + " vs bluish " + add[ 0 ] + " / neutral " + add[ 2 ] );
             }
 
-            // ---- (3b) a shift-click outside Select mode must NOT blank the focus ring ---------------------
-            // shift-click arms the just-clicked suppression in EVERY mode, but that exists only to stop a
-            // selection preview flipping to grey under a stationary pointer; a neutral focus mark has nothing to
-            // flip, so blanking it there would just make the ring vanish under the pointer.
-            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            // ---- (3b) a shift-click followed by a pointer move WITHOUT Shift must NOT blank the focus ring --
+            // the shift-click arms the just-clicked suppression, but that exists only to stop a selection preview
+            // flipping to grey under a stationary pointer; a neutral focus mark has nothing to flip, so blanking
+            // it there would just make the ring vanish under the pointer.
+            tp.setSelectionPreviewForTest( false );
             tp.setHoverForTest( null, false );
             tp.mouseClicked( new java.awt.event.MouseEvent( tp, java.awt.event.MouseEvent.MOUSE_CLICKED, 0,
                                                             java.awt.event.InputEvent.SHIFT_DOWN_MASK, cx, cy, 1,
@@ -247,12 +246,12 @@ public final class FocusGlowRenderTest {
             tp.mouseMoved( new java.awt.event.MouseEvent( tp, java.awt.event.MouseEvent.MOUSE_MOVED, 0, 0, cx, cy, 0,
                                                           false ) );
             if ( tp.hoverNodeForTest() != target ) {
-                return fail( "a shift-click outside Select mode must leave the focus glow on the node" );
+                return fail( "after a shift-click, a pointer move without Shift must leave the focus glow on the node" );
             }
             tp.setFoundNodes0( null );
 
             // ---- (4) hovering an ALREADY-SELECTED node glows grey ("a click removes it") -----------------
-            cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES ); // (3b) left the panel in SHOW_DATA
+            tp.setSelectionPreviewForTest( true ); // (3b) left the panel without Shift
             tp.setHoverForTest( null, false );
             final java.util.Set<Long> picked_set = new java.util.HashSet<Long>();
             picked_set.add( target.getId() );
@@ -266,8 +265,8 @@ public final class FocusGlowRenderTest {
             }
             tp.setFoundNodes0( null );
 
-            // ---- (4) a COLLAPSED clade glows too (it is clickable in every mode) -------------------------
-            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            // ---- (4) a COLLAPSED clade glows too (it is clickable like any node) -------------------------
+            tp.setSelectionPreviewForTest( false );
             final PhylogenyNode n2 = phy.getNode( "N2" );
             n2.setCollapse( true );
             cp.displayedPhylogenyMightHaveChanged( true );
@@ -283,7 +282,7 @@ public final class FocusGlowRenderTest {
             // ... and its glow must read the CLADE's state, not the clade root's own id: a selection click on a
             // triangle routes to selectSubtreeTips, so a fully-selected collapsed clade is about to be CLEARED.
             // Reading the root (whose id is never in the found set) would show "a click adds" and invert the cue.
-            cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
+            tp.setSelectionPreviewForTest( true );
             tp.setFoundNodes0( null );
             tp.selectSubtreeTips( n2 );
             tp.setHoverForTest( null, false );
@@ -299,9 +298,9 @@ public final class FocusGlowRenderTest {
             tp.calcParametersForPainting( W, H );
 
             // ---- (6) a node with a colour of its own lends the halo its hue -------------------------------
-            // Outside Select mode the glow is chrome, so it follows the node: a tip the figure already draws in
+            // Without Shift the glow is chrome, so it follows the node: a tip the figure already draws in
             // green must not be marked with an unrelated blue cloud.
-            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            tp.setSelectionPreviewForTest( false );
             final org.forester.phylogeny.data.NodeVisualData vis = new org.forester.phylogeny.data.NodeVisualData();
             vis.setNodeColor( new java.awt.Color( 0, 150, 0 ) );
             target.getNodeData().setNodeVisualData( vis );
@@ -324,8 +323,8 @@ public final class FocusGlowRenderTest {
                 return fail( "the halo followed the accent, not the node: bluish " + hue_ink[ 0 ] + " vs greenish "
                         + green );
             }
-            // ... but in Select mode the colour still MEANS something, so the node's hue must not override it
-            cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
+            // ... but with Shift held the colour still MEANS something, so the node's hue must not override it
+            tp.setSelectionPreviewForTest( true );
             tp.setFoundNodes0( null );
             tp.setHoverForTest( null, false );
             final BufferedImage s_off = shot( tp );
@@ -333,10 +332,10 @@ public final class FocusGlowRenderTest {
             final BufferedImage s_on = shot( tp );
             final int[] sel_ink = glowInk( s_off, s_on, gx, gy );
             if ( sel_ink[ 1 ] <= greenish( s_off, s_on, gx, gy ) ) {
-                return fail( "in Select mode a coloured node must still glow in the FOUND colour, got reddish "
+                return fail( "with Shift held a coloured node must still glow in the FOUND colour, got reddish "
                         + sel_ink[ 1 ] + " vs greenish " + greenish( s_off, s_on, gx, gy ) );
             }
-            cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
+            tp.setSelectionPreviewForTest( false );
             tp.setHoverForTest( null, false );
             target.getNodeData().setNodeVisualData( null );
             cp.setCheckbox( DisplayOption.USE_STYLE, false );

@@ -421,8 +421,8 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        System.out.print("Click-to order: ");
-        if (org.forester.archaeopteryx.ClickToOrderTest.test()) {
+        System.out.print("Node menu (a click opens it, nothing sticky): ");
+        if (org.forester.archaeopteryx.NodeMenuTest.test()) {
             System.out.println("OK.");
             succeeded++;
         } else {
@@ -1667,7 +1667,7 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
-        System.out.print("Focus glow on the hovered node (all click-to modes): ");
+        System.out.print("Focus glow on the hovered node (with and without Shift): ");
         if (org.forester.archaeopteryx.FocusGlowRenderTest.test()) {
             System.out.println("OK.");
             succeeded++;

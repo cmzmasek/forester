@@ -38,7 +38,7 @@ import org.forester.phylogeny.data.Taxonomy;
  * {@code getAllExternalDescendants()}, which climbs parent links -- off a detached subtree those run out and it
  * threw. In the EDT paint loop that repeats forever, so the window fills with NPEs and stops drawing.
  * <p>
- * Both delete paths are covered: the click-to "Delete Node / Delete Subtree" on the panel, and Tools' prune of the
+ * Both delete paths are covered: the node menu's "Delete Node / Delete Subtree", and Tools' prune of the
  * selected external nodes. The subtree / return-to-whole-tree paths already rebuilt the bands; the deletes did not.
  */
 public final class CladeBandStaleNodeTest {

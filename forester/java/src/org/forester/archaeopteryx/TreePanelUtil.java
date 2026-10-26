@@ -2847,4 +2847,28 @@ public class TreePanelUtil {
             collectLadderizeState( n.getChildNode( i ), flags );
         }
     }
+    /**
+     * The node menu's title: what the clicked node is called -- its name, else its taxonomy's scientific name or
+     * code, else its sequence's name ({@link NodeDataForm#nodeDataLabel}); "Internal node" or "Node" when it has
+     * none. Cut to 34 characters with an ellipsis, as Archaeopteryx.js cuts its menu title.
+     */
+    static String nodeMenuTitle( final PhylogenyNode node ) {
+        String name = NodeDataForm.nodeDataLabel( node );
+        if ( ForesterUtil.isEmpty( name ) ) {
+            return node.isExternal() ? "Node" : "Internal node";
+        }
+        return ellipsize( name.trim(), 34 );
+    }
+
+    /**
+     * {@code text} cut to {@code max} code points, the last one an ellipsis, when it is longer; the text itself
+     * otherwise (null stays null). Counts CODE POINTS, so a name ending in an emoji is never cut through its
+     * surrogate pair.
+     */
+    static String ellipsize( final String text, final int max ) {
+        if ( ( text == null ) || ( text.codePointCount( 0, text.length() ) <= max ) ) {
+            return text;
+        }
+        return text.substring( 0, text.offsetByCodePoints( 0, max - 1 ) ) + "\u2026";
+    }
 }

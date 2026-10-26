@@ -82,27 +82,6 @@ import org.forester.util.ForesterUtil;
 
 final class ControlPanel extends JPanel implements ActionListener {
 
-    enum NodeClickAction {
-        ADD_NEW_NODE,
-        COLLAPSE,
-        COLOR_SUBTREE,
-        COPY_SUBTREE,
-        CUT_SUBTREE,
-        DELETE_NODE_OR_SUBTREE,
-        EDIT_NODE_DATA,
-        OPEN_SEQ_WEB,
-        OPEN_TAX_WEB,
-        PASTE_SUBTREE,
-        REROOT,
-        SELECT_NODES,
-        SHOW_DATA,
-        SUBTREE,
-        SWAP,
-        NODE_STYLE,
-        UNCOLLAPSE_ALL,
-        ORDER_SUBTREE;
-    }
-
     final static Font jcb_bold_font = new Font(Configuration
             .getDefaultFontFamilyName(), Font.BOLD, Configuration.getGuiFontSize());
     final static Font jcb_font = new Font(Configuration
@@ -131,14 +110,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     static final String CLADOGRAM_TIP = "cladogram: topology only -- branch lengths ignored, all tips flush";
     private static final String SEARCH_TIP_TEXT = "Enter text to search for. Use ',' for logical OR and '+' for logical AND (not used in this manner for regular expression searches).";
     private static final long serialVersionUID = -8463483932821545633L;
-    private NodeClickAction _action_when_node_clicked;
-    private int _add_new_node_item;
-    private JComboBox<String> _click_to_combobox;
-    private JLabel _click_to_label;
-    private List<String> _click_to_names;
-    private int _collapse_cb_item;
-    private int _uncollapse_all_cb_item;
-    private int _order_subtree_cb_item;
     private JComboBox<String> _color_by_property_cb;
     private JComboBox<String> _size_by_property_cb;
     // "Ancestral pie:" -- shown adaptively (label + combo hidden together) only when the tree carries BEAST
@@ -171,13 +142,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     private static final String COLOR_BY_PROPERTY_NONE = "None";
     private boolean _color_branches;
     private JCheckBox _use_visual_styles_cb;
-    private int _color_subtree_cb_item;
     // The settings from the conf file
     private final Configuration _configuration;
-    private int _copy_subtree_item;
-    private int _cut_subtree_item;
     private JButton _decr_domain_structure_evalue_thr;
-    private int _delete_node_or_subtree_item;
     private JToggleButton _display_as_unaligned_phylogram_rb;
     private JToggleButton _display_as_aligned_phylogram_rb;
     private JToggleButton _display_as_cladogram_rb;
@@ -198,13 +165,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JTextField _domain_structure_evalue_thr_tf;
     private List<Options.PHYLOGENY_DISPLAY_TYPE> _tree_display_types;
     private JCheckBox _dynamically_hide_data;
-    private int _edit_node_data_item;
     private JButton _incr_domain_structure_evalue_thr;
     private final MainPanel _mainpanel;
     private JCheckBox _node_desc_popup_cb;
-    private int _open_seq_web_item;
-    private int _open_tax_web_item;
-    private int _node_style_item;
     private JButton _order;
     // The "order all" (ladderize) button toggles between the two ladderize directions (larger vs smaller clades
     // drawn first) and shows the current one on its icon. _order_ascending == true means the LARGER clade is
@@ -214,10 +177,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private static final Icon LADDERIZE_ICON_ASCENDING  = new LadderizeIcon(true, LADDERIZE_ICON_SIZE);
     private static final Icon LADDERIZE_ICON_DESCENDING = new LadderizeIcon(false, LADDERIZE_ICON_SIZE);
     private boolean           _order_ascending          = false;
-    private int _paste_subtree_item;
-    private int _reroot_cb_item;
-    private String _reroot_refusal = null; // why the current tree must not be re-rooted, or null (MainFrame keeps it current)
-    private int _last_allowed_click_to_index = 0;
     private boolean _search_fields_root_free = false;
     private JButton _return_to_whole_tree;
     private JButton _return_to_super_tree;
@@ -232,9 +191,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _search_next_button;
     private JLabel _search_nav_label;    // "k / N"
     private JPanel _search_nav_panel;    // whole row; hidden while there are no hits
-    private int _select_nodes_item;
-    // Indices for the click-to options in the combo box
-    private int _show_data_item;
     private JCheckBox _show_domain_architectures;
     private JCheckBox _write_branch_length_values;
     private JCheckBox _show_events;
@@ -254,8 +210,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton _expand_y;
     private JButton _fit_width;
     private Map<String, Color> _species_colors;
-    private int _subtree_cb_item;
-    private int _swap_cb_item;
     private JButton _uncollapse_all;
     private JCheckBox _width_branches;
     private JCheckBox _write_confidence;
@@ -383,15 +337,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 tp.setBranchLengthMode(( e.getSource() == _branch_length_div_tb )
                         ? BranchLengthLayout.MODE.DIVERGENCE
                         : BranchLengthLayout.MODE.TIME);
-            } else if (e.getSource() == _click_to_combobox) {
-                if ((_click_to_combobox.getSelectedIndex() == _reroot_cb_item) && (_reroot_refusal != null)) {
-                    // "Root/Reroot" is greyed out for this tree: fall back to the previous choice (which fires again)
-                    _click_to_combobox.setSelectedIndex(_last_allowed_click_to_index);
-                } else {
-                    _last_allowed_click_to_index = _click_to_combobox.getSelectedIndex();
-                    setClickToAction(_click_to_combobox.getSelectedIndex());
-                    getCurrentTreePanel().repaint();
-                }
             } else if (e.getSource() == _show_domain_architectures) {
                 reRunSearches();
                 // When the user switches domains ON, re-fit the (now wider) tree horizontally so the
@@ -621,13 +566,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ((_show_properties_cb != null) && _show_properties_cb.isSelected());
     }
 
-    /** Adds {@code option} to the click-to dropdown (at combo position {@code cb_index}) and returns {@code cb_index}. */
-    private int addClickToOption(final int cb_index, final ClickToOption option) {
-        _click_to_combobox.addItem(option.title());
-        _click_to_names.add(option.title());
-        return cb_index;
-    }
-
     private List<Options.PHYLOGENY_DISPLAY_TYPE> getTreeDisplayTypes() {
         return _tree_display_types;
     }
@@ -845,64 +783,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private void setTreeDisplayType(final int index, final Options.PHYLOGENY_DISPLAY_TYPE t) {
         getTreeDisplayTypes().set(index, t);
-    }
-
-    private void setupClickToOptions() {
-        // Every click-to action is always offered; the tree-editing subset (Edit Node Data, Delete, Add,
-        // Cut/Copy/Paste) is gated per-item by Options.isEditable(), so on a non-editable tree those rows
-        // are simply skipped and the surrounding always-shown actions close up around them.
-        final ClickToOption default_option = _configuration.getDefaultDisplayClicktoOption();
-        int selected_index = 0;
-        int cb_index = 0;
-        final boolean editable = getOptions().isEditable();
-        _show_data_item = addClickToOption(cb_index++, ClickToOption.DISPLAY_NODE_DATA);
-        selected_index = clickToSelectedIndex(selected_index, _show_data_item, default_option, ClickToOption.DISPLAY_NODE_DATA);
-        _subtree_cb_item = addClickToOption(cb_index++, ClickToOption.SUBTREE);
-        selected_index = clickToSelectedIndex(selected_index, _subtree_cb_item, default_option, ClickToOption.SUBTREE);
-        _select_nodes_item = addClickToOption(cb_index++, ClickToOption.SELECT_NODES);
-        selected_index = clickToSelectedIndex(selected_index, _select_nodes_item, default_option, ClickToOption.SELECT_NODES);
-        _collapse_cb_item = addClickToOption(cb_index++, ClickToOption.COLLAPSE_UNCOLLAPSE);
-        selected_index = clickToSelectedIndex(selected_index, _collapse_cb_item, default_option, ClickToOption.COLLAPSE_UNCOLLAPSE);
-        _uncollapse_all_cb_item = addClickToOption(cb_index++, ClickToOption.UNCOLLAPSE_ALL);
-        selected_index = clickToSelectedIndex(selected_index, _uncollapse_all_cb_item, default_option, ClickToOption.UNCOLLAPSE_ALL);
-        _swap_cb_item = addClickToOption(cb_index++, ClickToOption.SWAP);
-        selected_index = clickToSelectedIndex(selected_index, _swap_cb_item, default_option, ClickToOption.SWAP);
-        _order_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.ORDER_SUBTREE);
-        selected_index = clickToSelectedIndex(selected_index, _order_subtree_cb_item, default_option, ClickToOption.ORDER_SUBTREE);
-        _open_tax_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_TAX_WEB);
-        selected_index = clickToSelectedIndex(selected_index, _open_tax_web_item, default_option, ClickToOption.OPEN_TAX_WEB);
-        _open_seq_web_item = addClickToOption(cb_index++, ClickToOption.OPEN_SEQ_WEB);
-        selected_index = clickToSelectedIndex(selected_index, _open_seq_web_item, default_option, ClickToOption.OPEN_SEQ_WEB);
-        _node_style_item = addClickToOption(cb_index++, ClickToOption.NODE_STYLE);
-        selected_index = clickToSelectedIndex(selected_index, _node_style_item, default_option, ClickToOption.NODE_STYLE);
-        _color_subtree_cb_item = addClickToOption(cb_index++, ClickToOption.COLOR_SUBTREE);
-        selected_index = clickToSelectedIndex(selected_index, _color_subtree_cb_item, default_option, ClickToOption.COLOR_SUBTREE);
-        _reroot_cb_item = addClickToOption(cb_index++, ClickToOption.REROOT);
-        selected_index = clickToSelectedIndex(selected_index, _reroot_cb_item, default_option, ClickToOption.REROOT);
-        if (editable) {
-            _edit_node_data_item = addClickToOption(cb_index++, ClickToOption.EDIT_NODE_DATA);
-            selected_index = clickToSelectedIndex(selected_index, _edit_node_data_item, default_option, ClickToOption.EDIT_NODE_DATA);
-            _delete_node_or_subtree_item = addClickToOption(cb_index++, ClickToOption.DELETE_SUBTREE_OR_NODE);
-            selected_index = clickToSelectedIndex(selected_index, _delete_node_or_subtree_item, default_option, ClickToOption.DELETE_SUBTREE_OR_NODE);
-            _add_new_node_item = addClickToOption(cb_index++, ClickToOption.ADD_NEW_NODE);
-            selected_index = clickToSelectedIndex(selected_index, _add_new_node_item, default_option, ClickToOption.ADD_NEW_NODE);
-            _cut_subtree_item = addClickToOption(cb_index++, ClickToOption.CUT_SUBTREE);
-            selected_index = clickToSelectedIndex(selected_index, _cut_subtree_item, default_option, ClickToOption.CUT_SUBTREE);
-            _copy_subtree_item = addClickToOption(cb_index++, ClickToOption.COPY_SUBTREE);
-            selected_index = clickToSelectedIndex(selected_index, _copy_subtree_item, default_option, ClickToOption.COPY_SUBTREE);
-            _paste_subtree_item = addClickToOption(cb_index++, ClickToOption.PASTE_SUBTREE);
-            selected_index = clickToSelectedIndex(selected_index, _paste_subtree_item, default_option, ClickToOption.PASTE_SUBTREE);
-        }
-        // Set default selection and its action
-        _click_to_combobox.setSelectedIndex(selected_index);
-        _last_allowed_click_to_index = selected_index;
-        setClickToAction(selected_index);
-    }
-
-    /** Returns {@code candidate_index} when {@code option} is the default click-to action, else keeps {@code current}. */
-    private static int clickToSelectedIndex(final int current, final int candidate_index, final ClickToOption default_option,
-                                            final ClickToOption option) {
-        return (default_option == option) ? candidate_index : current;
     }
 
     private void setupDisplayCheckboxes() {
@@ -1677,19 +1557,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    void endClickToOptions() {
-        _click_to_combobox.addActionListener(this);
-    }
-
-    /**
-     * Indicates what action should be execute when a node is clicked
-     *
-     * @return the click-on action
-     */
-    NodeClickAction getActionWhenNodeClicked() {
-        return _action_when_node_clicked;
-    }
-
     Configuration getConfiguration() {
         return _configuration;
     }
@@ -1728,10 +1595,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     JTextField getSearchTextField1() {
         return _search_tf_1;
-    }
-
-    List<String> getSingleClickToNames() {
-        return _click_to_names;
     }
 
     Map<String, Color> getSpeciesColors() {
@@ -2248,10 +2111,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    void setActionWhenNodeClicked(final NodeClickAction action) {
-        _action_when_node_clicked = action;
-    }
-
     /**
      * The widget behind a {@link DisplayOption} -- THE mapping, so reading an option and writing it can never drift
      * apart (they used to be two switches waiting to disagree). Null when the option has no checkbox: only
@@ -2352,74 +2211,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (cb != null) {
             cb.setSelected(state);
         }
-    }
-
-    /** Greys out the "Root/Reroot" click option (tooltip: {@code why}), or re-enables it when {@code why} is null. */
-    void setRerootRefusal(final String why) {
-        _reroot_refusal = why;
-        if (_click_to_combobox != null) {
-            _click_to_combobox.repaint();
-        }
-    }
-
-    /** The click-to dropdown entry at {@code index} as its renderer draws it -- for tests of the greyed-out entry. */
-    java.awt.Component clickToEntryForTest(final int index) {
-        return _click_to_combobox.getRenderer().getListCellRendererComponent(new javax.swing.JList<String>(),
-                _click_to_combobox.getItemAt(index), index, false, false);
-    }
-
-    int rerootClickToIndexForTest() {
-        return _reroot_cb_item;
-    }
-
-    javax.swing.JComboBox<String> clickToComboForTest() {
-        return _click_to_combobox;
-    }
-
-    void setClickToAction(final int action) {
-        // Set click-to action
-        if (action == _show_data_item) {
-            setActionWhenNodeClicked(NodeClickAction.SHOW_DATA);
-        } else if (action == _collapse_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.COLLAPSE);
-        } else if (action == _reroot_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.REROOT);
-        } else if (action == _subtree_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.SUBTREE);
-        } else if (action == _swap_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.SWAP);
-        } else if (action == _color_subtree_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.COLOR_SUBTREE);
-        } else if (action == _open_seq_web_item) {
-            setActionWhenNodeClicked(NodeClickAction.OPEN_SEQ_WEB);
-        } else if (action == _open_tax_web_item) {
-            setActionWhenNodeClicked(NodeClickAction.OPEN_TAX_WEB);
-        } else if (action == _cut_subtree_item) {
-            setActionWhenNodeClicked(NodeClickAction.CUT_SUBTREE);
-        } else if (action == _copy_subtree_item) {
-            setActionWhenNodeClicked(NodeClickAction.COPY_SUBTREE);
-        } else if (action == _delete_node_or_subtree_item) {
-            setActionWhenNodeClicked(NodeClickAction.DELETE_NODE_OR_SUBTREE);
-        } else if (action == _paste_subtree_item) {
-            setActionWhenNodeClicked(NodeClickAction.PASTE_SUBTREE);
-        } else if (action == _add_new_node_item) {
-            setActionWhenNodeClicked(NodeClickAction.ADD_NEW_NODE);
-        } else if (action == _edit_node_data_item) {
-            setActionWhenNodeClicked(NodeClickAction.EDIT_NODE_DATA);
-        } else if (action == _select_nodes_item) {
-            setActionWhenNodeClicked(NodeClickAction.SELECT_NODES);
-        } else if (action == _node_style_item) {
-            setActionWhenNodeClicked(NodeClickAction.NODE_STYLE);
-        } else if (action == _uncollapse_all_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.UNCOLLAPSE_ALL);
-        } else if (action == _order_subtree_cb_item) {
-            setActionWhenNodeClicked(NodeClickAction.ORDER_SUBTREE);
-        } else {
-            throw new RuntimeException("unknown action: " + action);
-        }
-        // make sure drop down is displaying the correct action
-        // in case this was called from outside the class
-        _click_to_combobox.setSelectedIndex(action);
     }
 
     void setColorBranches(final boolean color_branches) {
@@ -2874,12 +2665,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         setupSizeByProperty();
         setupAncestralPieProperty();
         setupDisplayCheckboxes();
-        // Click-to options
-        nextRowGap(SECTION_GAP);
-        startClickToOptions();
-        setupClickToOptions();
-        endClickToOptions();
         // Zoom and quick edit buttons
+        nextRowGap(SECTION_GAP);
         addButtons();
         nextRowGap(SECTION_GAP);
         setupSearchOptions();
@@ -4347,38 +4134,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 tree_panel.repaint();
             }
         }
-    }
-
-    // Create header for click-to combo box.
-    void startClickToOptions() {
-        final JLabel spacer = new JLabel("");
-        spacer.setFont(ControlPanel.jcb_font);
-        add(spacer);
-        _click_to_label = new JLabel("Click on Node to:");
-        add(customizeLabel(_click_to_label, getConfiguration()));
-        _click_to_combobox = new JComboBox<String>();
-        _click_to_combobox.setToolTipText(
-                "What a LEFT-CLICK on a node does -- show its data, collapse it, re-root there, and so on. The entry is greyed out when it does not apply to this tree");
-        _click_to_combobox.setFocusable(false);
-        _click_to_combobox.setMaximumRowCount(14);
-        _click_to_combobox.setFont(ControlPanel.js_font);
-        // "Root/Reroot" is drawn greyed out, with the reason as its tooltip, when the tree must not be re-rooted
-        final javax.swing.ListCellRenderer<? super String> click_to_renderer = _click_to_combobox.getRenderer();
-        _click_to_combobox.setRenderer((list, value, index, selected, focused) -> {
-            final java.awt.Component c = click_to_renderer.getListCellRendererComponent(list, value, index, selected,
-                    focused);
-            final boolean refused = (_reroot_refusal != null) && ClickToOption.REROOT.title().equals(value);
-            c.setEnabled(!refused);
-            if (c instanceof javax.swing.JComponent) {
-                ((javax.swing.JComponent) c).setToolTipText(refused ? _reroot_refusal : null);
-            }
-            return c;
-        });
-        // don't add listener until all items are set (or each one will trigger
-        // an event)
-        // click_to_list.addActionListener(this);
-        add(_click_to_combobox);
-        _click_to_names = new ArrayList<String>();
     }
 
     void tabChanged() {

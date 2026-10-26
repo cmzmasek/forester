@@ -409,7 +409,6 @@ public final class RadialInteractionTest {
             o.setGraphicsExportWhiteBackground( true );
             frame.showWhole();
             tp.setSize( w, h );
-            tp.getControlPanel().setActionWhenNodeClicked( ControlPanel.NodeClickAction.SELECT_NODES );
             final PhylogenyNode leaf = firstMatch( tp.getPhylogeny(), true );
             final PhylogenyNode clade = firstMatch( tp.getPhylogeny(), false );
             if ( ( leaf == null ) || ( clade == null ) ) {
@@ -442,14 +441,14 @@ public final class RadialInteractionTest {
                             + clade_hit + ")" );
                     continue;
                 }
-                // hovering that branch (Select-Node(s) mode) sets the hover-preview target -- the source of the
+                // hovering that branch with Shift held sets the hover-preview target -- the source of the
                 // translucent on-screen preview, which is now dispatched in the radial branches (was dead before).
                 // Assert it resolves to THAT clade as a subtree (not just any node) -- proving the radial findBranch
                 // branch-hover path, not the node-hover fallthrough (mouseMoved tries findNode first).
                 tp.clearHoverPreview();
                 tp.mouseMoved( new java.awt.event.MouseEvent( tp, java.awt.event.MouseEvent.MOUSE_MOVED,
-                        System.currentTimeMillis(), 0, (int) Math.round( cp[ 0 ] ), (int) Math.round( cp[ 1 ] ), 0,
-                        false ) );
+                        System.currentTimeMillis(), java.awt.event.InputEvent.SHIFT_DOWN_MASK,
+                        (int) Math.round( cp[ 0 ] ), (int) Math.round( cp[ 1 ] ), 0, false ) );
                 if ( ( tp.hoverNodeForTest() != clade ) || !tp.hoverIsSubtreeForTest() ) {
                     fail( ok, "hovering a radial branch must set that clade as the subtree hover-preview target in "
                             + gt + " (got " + tp.hoverNodeForTest() + ", subtree=" + tp.hoverIsSubtreeForTest() + ")" );

@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComboBox;
+import javax.swing.JMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -78,16 +78,11 @@ public final class RootingGuardsTest {
             if ( !greyedWith( mf, Rerooting.NOT_REROOTABLE ) ) {
                 ok[ 0 ] = TestFail.here( "the re-rooting menu items must be greyed out with the reason" );
             }
-            final ControlPanel cp = tp.getControlPanel();
-            final int reroot_index = cp.rerootClickToIndexForTest();
-            if ( cp.clickToEntryForTest( reroot_index ).isEnabled() ) {
-                ok[ 0 ] = TestFail.here( "the Root/Reroot click option must be drawn greyed out" );
-            }
-            final JComboBox<String> combo = cp.clickToComboForTest();
-            final int chosen = combo.getSelectedIndex();
-            combo.setSelectedIndex( reroot_index );
-            if ( combo.getSelectedIndex() != chosen ) {
-                ok[ 0 ] = TestFail.here( "choosing the greyed-out Root/Reroot option must fall back to the previous one" );
+            // the node menu greys Root/Reroot out, with the reason as its tooltip
+            final JMenuItem reroot = NodeMenuTest.item( tp.buildNodeMenu( tp.getPhylogeny().getNode( "C" ) ),
+                                                       NodeMenuEntry.REROOT.title() );
+            if ( ( reroot == null ) || reroot.isEnabled() || !Rerooting.NOT_REROOTABLE.equals( reroot.getToolTipText() ) ) {
+                ok[ 0 ] = TestFail.here( "the node menu's Root/Reroot must be greyed out with the reason as its tooltip" );
             }
             // every re-root path refuses, leaves the tree as it was, and records no undo step
             final List<String> said = new ArrayList<>();
@@ -145,8 +140,8 @@ public final class RootingGuardsTest {
             if ( ( tip_tp.getPhylogeny() != tip_dated ) || !mf[ 0 ]._mad_root_item.isEnabled()
                     || !mf[ 0 ]._midpoint_root_item.isEnabled()
                     || Rerooting.TIME_TREE.equals( mf[ 0 ]._mad_root_item.getToolTipText() )
-                    || !tip_tp.getControlPanel().clickToEntryForTest( tip_tp.getControlPanel().rerootClickToIndexForTest() )
-                            .isEnabled() ) {
+                    || !NodeMenuTest.item( tip_tp.buildNodeMenu( tip_tp.getPhylogeny().getNode( "C" ) ),
+                                           NodeMenuEntry.REROOT.title() ).isEnabled() ) {
                 ok[ 0 ] = TestFail.here( "tip dates alone keep the tree re-rootable, and the controls follow the tab" );
             }
             ( (JFrame) mf[ 0 ] ).dispose();

@@ -893,7 +893,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             case NO_SELECTION:
                 JOptionPane.showMessageDialog(this,
-                        "Select one or more external nodes first — click them in the tree, or use the \"Search\" "
+                        "Select one or more external nodes first — shift-click them in the tree, or use the \"Search\" "
                                 + "field to find and highlight them — then choose \"" + function
                                 + " Selected Nodes\" again.",
                         "No external nodes selected to " + function.toLowerCase(),
@@ -1424,7 +1424,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final List<PhylogenyNode> selected = tp.getFoundNodesAsListOfPhylogenyNodes();
         if ((selected == null) || selected.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "No nodes are selected. Click nodes in the tree, or use the Search field(s), then choose this again.",
+                    "No nodes are selected. Shift-click nodes in the tree, or use the Search field(s), then choose this again.",
                     "No Selection", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1618,9 +1618,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private final Map<JMenuItem, String> _rooting_item_tooltips = new HashMap<>();
 
-    /** Greys out what re-roots the current tree -- MAD-Root, Midpoint-Root, GSDIR and its NCBI-taxonomy variant, and
-     *  the "Root/Reroot" click option -- when it must not be re-rooted ({@link Rerooting#refusal}), with the reason as
-     *  the tooltip. Runs with every Edit-menu sync: tab switch, edit, undo/redo. */
+    /** Greys out what re-roots the current tree -- MAD-Root, Midpoint-Root, GSDIR and its NCBI-taxonomy variant --
+     *  when it must not be re-rooted ({@link Rerooting#refusal}), with the reason as the tooltip. (The node menu's
+     *  Root/Reroot reads the refusal itself as it is built.) Runs with every Edit-menu sync: tab switch, edit,
+     *  undo/redo. */
     void updateRootingControls(final TreePanel tp) {
         final String why = (tp != null) ? tp.rerootRefusal() : null;
         for (final JMenuItem item : new JMenuItem[] { _mad_root_item, _midpoint_root_item, _gsdir_item,
@@ -1632,9 +1633,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 item.setEnabled(why == null);
                 item.setToolTipText((why == null) ? _rooting_item_tooltips.get(item) : why);
             }
-        }
-        if ((tp != null) && (tp.getControlPanel() != null)) {
-            tp.getControlPanel().setRerootRefusal(why);
         }
     }
 

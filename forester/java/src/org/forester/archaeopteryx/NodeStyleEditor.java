@@ -33,7 +33,7 @@ import org.forester.util.ForesterUtil;
  * Pure, Swing-free applier for per-node visual style ({@link NodeVisualData}: font style/size/colour + node
  * shape/fill/size/colour). A {@link Spec} carries ONLY the attributes the user chose to change -- each null field
  * means "leave this attribute unchanged" -- so a bulk edit over many nodes writes just the ticked attributes and
- * never clobbers the rest. Reached from the "Node Style" click-to action (one node) and the Tools "Node Style for
+ * never clobbers the rest. Reached from the node menu's "Edit Node Style" entry (one node) and the Tools "Node Style for
  * Selected Nodes" action (the found/selected set). Rendering + phyloXML round-trip already exist; this is the editor
  * side. Headless-testable.
  */

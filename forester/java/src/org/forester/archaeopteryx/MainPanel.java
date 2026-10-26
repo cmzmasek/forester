@@ -57,6 +57,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     private TreeFontSet _fontset;
     private Phylogeny _cut_or_copied_tree;
     private Set<Long> _copied_and_pasted_nodes;
+    private TreePanel _clipboard_highlight_owner;
 
     public MainPanel(final Configuration configuration, final MainFrame parent) {
         if (configuration == null) {
@@ -216,6 +217,15 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     public void setCopiedAndPastedNodes(final Set<Long> node_ids) {
         _copied_and_pasted_nodes = node_ids;
+    }
+
+    /** The tab whose tree holds the clipboard highlight's nodes (null when none): its edits fade the highlight. */
+    TreePanel getClipboardHighlightOwner() {
+        return _clipboard_highlight_owner;
+    }
+
+    void setClipboardHighlightOwner(final TreePanel owner) {
+        _clipboard_highlight_owner = owner;
     }
 
     public void setWaitCursor() {

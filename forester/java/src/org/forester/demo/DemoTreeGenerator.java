@@ -1310,7 +1310,7 @@ public final class DemoTreeGenerator {
     // ----- "Node data editor": a small gene-family tree whose nodes carry one of EVERYTHING the editor handles --
     //       taxonomy (with id / code / rank / synonym / URI), TWO sequences on one tip (protein + mRNA), branch
     //       confidences, a dated internal node with duplication/speciation events, a distribution with a point,
-    //       a literature reference, and typed properties. Click on Node -> "Edit Node Data" on the human tip.
+    //       a literature reference, and typed properties. The node menu's "Edit Node Data" on the human tip.
     private static Phylogeny nodeDataEditorTree() throws PhyloXmlDataFormatException {
         final PhylogenyNode human = geneTip( "BRCA1_HUMAN", "Homo sapiens", "HUMAN", "9606", "human", "species",
                                              "P38398", "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQ" );
@@ -1368,8 +1368,8 @@ public final class DemoTreeGenerator {
         return tree( root, "Node Data Editor (demo)",
                      "Every kind of node data the editor handles, on a small BRCA1 ortholog tree: taxonomy, two "
                              + "sequences on the human tip, confidences, a dated node with a speciation event, a "
-                             + "distribution, a reference, and typed metadata fields. Set \"Click on Node to: Edit Node "
-                             + "Data\" and click a node. Schematic sequences (truncated), not real data." );
+                             + "distribution, a reference, and typed metadata fields. Click a node and choose \"Edit "
+                             + "Node Data\". Schematic sequences (truncated), not real data." );
     }
 
     // ---- tree properties (View > Tree Properties, Cmd-I): every section of the window has something to show ----

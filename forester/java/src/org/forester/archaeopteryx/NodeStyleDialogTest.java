@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -118,8 +117,8 @@ public final class NodeStyleDialogTest {
                     // ---- entry-point wiring (the methods open modal dialogs, untestable headlessly) ----
                     ck( ok, toolsItem( mf[ 0 ].getJMenuBar(), "Node Style for Selected Nodes" ) != null,
                         "Tools menu has the 'Node Style for Selected Nodes' item" );
-                    ck( ok, comboHasItem( tp.getControlPanel(), "Edit Node Style" ),
-                        "the 'Click on Node to:' dropdown offers 'Edit Node Style'" );
+                    ck( ok, NodeMenuTest.item( tp.buildNodeMenu( leaves[ 1 ] ), "Edit Node Style" ) != null,
+                        "the node menu offers 'Edit Node Style'" );
 
                     // ---- the label offset uses the ACTUAL per-node mark size so a big mark doesn't overlap ----
                     // (a prior edit already turned "Use Visual Styles" on, so the per-node size applies)
@@ -174,20 +173,6 @@ public final class NodeStyleDialogTest {
             }
         }
         return null;
-    }
-
-    /** Whether some JComboBox under {@code root} carries an item equal to {@code label} (the click-to dropdown). */
-    private static boolean comboHasItem( final Container root, final String label ) {
-        final List<JComboBox> combos = new ArrayList<>();
-        collect( root, JComboBox.class, combos );
-        for ( final JComboBox<?> cb : combos ) {
-            for ( int i = 0; i < cb.getItemCount(); ++i ) {
-                if ( label.equals( String.valueOf( cb.getItemAt( i ) ) ) ) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     @SuppressWarnings( "unchecked" )

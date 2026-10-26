@@ -340,7 +340,7 @@ final class TreePropertiesForm extends JPanel implements EditorFrame.Form {
             rerootable.setToolTipText( "<html>phyloXML's <code>rerootable</code> attribute. Clear it to declare that "
                     + "this tree's root is fixed -- a published or curated rooting.<br>Tools that have to choose a new "
                     + "root are then greyed out: <i>MAD-Root</i>, <i>Midpoint-Root</i>, both <i>GSDIR</i> "
-                    + "reconciliations, and the <i>Root/Reroot</i> click option.</html>" );
+                    + "reconciliations, and the node menu's <i>Root/Reroot</i>.</html>" );
             rerootable.addActionListener( e -> fireChanged() );
             register( TreePropertiesDraft.REROOTABLE, rerootable );
             g.row( "Rooting", rerootable, false );

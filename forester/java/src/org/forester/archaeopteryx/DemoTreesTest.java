@@ -232,7 +232,7 @@ public final class DemoTreesTest {
         ok &= hasInternalConfidence( "search-emphasis.xml" );
 
         // node style: several tips carry a per-node NodeVisualData (font + node mark), for "Use Visual Styles" and
-        // the Node Style editor (click-to / Tools)
+        // the Node Style editor (node menu / Tools)
         ok &= hasAtLeastTips( "node-visual-styles.xml", 5 );
         ok &= hasNodeVisualStyle( "node-visual-styles.xml", 3 );
         ok &= hasNodeShape( "node-visual-styles.xml", NodeVisualData.NodeShape.DIAMOND ); // round-trips the diamond

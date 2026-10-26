@@ -36,7 +36,7 @@ import org.forester.util.ForesterUtil;
  *
  * <p>Archaeopteryx no longer reads configuration files. The <em>default</em> display settings that used to be
  * copied from here into {@link Options} now live solely in {@code Options.init()} (backed by
- * {@link AptxConstants}) and in the {@link DisplayOption} / {@link ClickToOption} enums, so this class is no
+ * {@link AptxConstants}) and in the {@link DisplayOption} / {@link NodeMenuEntry} enums, so this class is no
  * longer a defaults-carrier for {@code Options} -- it retains only what is genuinely consumed at runtime.
  */
 public final class Configuration {
@@ -50,15 +50,13 @@ public final class Configuration {
     private static final String PREFS_NODE = "org/forester/archaeopteryx";
     private static final String PREFS_KEY_UI = "ui";
 
-    // The click-to actions and the "Display Data" options are the type-safe enums {@link ClickToOption}
+    // The node-menu entries and the "Display Data" options are the type-safe enums {@link NodeMenuEntry}
     // and {@link DisplayOption} (they replaced the old positional String[][] clickto_options /
     // display_options arrays and their parallel int index constants).
 
     private static Hashtable<String, Color> _species_colors;
     private static String DEFAULT_FONT_FAMILY = "";
 
-    // The click-to action selected by default in the dropdown.
-    private final ClickToOption _default_clickto = ClickToOption.DISPLAY_NODE_DATA;
 
     private SortedMap<String, Color> _display_colors = null;
 
@@ -103,9 +101,6 @@ public final class Configuration {
     }
 
 
-    ClickToOption getDefaultDisplayClicktoOption() {
-        return _default_clickto;
-    }
 
     SortedMap<String, Color> getDisplayColors() {
         return _display_colors;

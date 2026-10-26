@@ -631,6 +631,12 @@ final public class Options {
         return _editable;
     }
 
+    /** Test hook: whether the tree may be edited (the node menu's editing entries exist only then). Not a user
+     *  setting -- it comes from the Configuration -- so Reset to Defaults does not touch it (N/A, checked). */
+    final void setEditableForTest(final boolean editable) {
+        _editable = editable;
+    }
+
     final boolean isGraphicsExportVisibleOnly() {
         return _graphics_export_visible_only;
     }
@@ -1107,7 +1113,7 @@ final public class Options {
 
     /**
      * Returns a fresh {@code Options} at the built-in defaults ({@link #init()}, backed by
-     * {@link AptxConstants} and the {@link DisplayOption} / {@link ClickToOption} enums). Configuration files
+     * {@link AptxConstants} and the {@link DisplayOption} / {@link NodeMenuEntry} enums). Configuration files
      * were removed, so there is nothing to overlay -- {@link Configuration} no longer seeds {@code Options}.
      */
     public final static Options createInstance() {

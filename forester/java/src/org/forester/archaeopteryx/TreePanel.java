@@ -79,6 +79,8 @@ import java.util.Set;
 
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -89,7 +91,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.forester.analysis.InternalTaxonomyAudit;
-import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -116,7 +117,7 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceAccessionTools;
 
-public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener {
+public final class TreePanel extends JPanel implements MouseWheelListener {
 
     final private class SubtreeColorizationActionListener implements ActionListener {
 
@@ -139,8 +140,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final static Cursor ARROW_CURSOR = Cursor
             .getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-    final static Cursor CUT_CURSOR = Cursor
-            .getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
     final static Cursor HAND_CURSOR = Cursor
             .getPredefinedCursor(Cursor.HAND_CURSOR);
     final static Cursor MOVE_CURSOR = Cursor
@@ -216,7 +215,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     // Cap the domain track at this fraction of the canvas HALF-radius in a radial layout: the rectangular default
     // (~0.25*viewport) is ~half the circular radius, far too thick -- this keeps it a legible ring that fits.
     private final static double RADIAL_DOMAIN_MAX_FRACTION = 0.2;
-    private final static String NODE_POPMENU_NODE_CLIENT_PROPERTY = "node";
     private static final float ONEHALF_PI = (float) (1.5
             * Math.PI);
     private static final short OV_BORDER = 10;
@@ -347,7 +345,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private int _external_node_index = 0;
     private Set<Long> _found_nodes_0 = null;
     private Set<Long> _found_nodes_1 = null;
-    // The target currently previewed on hover in Select-Node(s) mode (or null): a single node (_hover_subtree
+    // The target currently previewed on hover, with Shift held (or null): a single node (_hover_subtree
     // false -> one marker on the node) or a branch (_hover_subtree true -> markers on the subtree's tips), drawn
     // translucent as "will be added / will be removed" so a click's effect is visible before committing.
     private PhylogenyNode _hover_node = null;
@@ -408,8 +406,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private TreePropertiesFrame _tree_properties_frame;
     /** The per-tab "Tree as Text" window, or null while closed (see openTreeTextFrame). */
     private TreeTextFrame _tree_text_frame;
+    /** The node menu last opened by a click (see {@link #showNodeMenu}); null until the first click. */
     private JPopupMenu _node_popup_menu = null;
-    private JMenuItem _node_popup_menu_items[] = null;
+    /**
+     * Whether Shift is held as the pointer moves: then the focus glow PREVIEWS the selection (a shift-click adds
+     * the node, or removes it, and over a branch takes its clade); otherwise it is a neutral focus mark. This
+     * replaced the "Select Node(s)" click mode in 0.11.191: there are no click modes any more.
+     */
+    private boolean _hover_select_preview = false;
     private PhylogenyNode[] _nodes_in_preorder = null;
     private Options _options = null;
     private float _ov_max_height = 0;
@@ -617,6 +621,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 keyPressedCalls(key_event);
                 requestFocusInWindow();
             }
+
+            @Override
+            public void keyReleased(final KeyEvent key_event) {
+                if (key_event.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    shiftChanged(false); // the selection preview ends with the key, not with the next pointer move
+                }
+            }
         });
         addFocusListener(new FocusAdapter() {
 
@@ -663,26 +674,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         FORMATTER_CONFIDENCE.setMaximumFractionDigits(configuration.getNumberOfDigitsAfterCommaForConfidenceValues());
         FORMATTER_BRANCH_LENGTH
                 .setMaximumFractionDigits(configuration.getNumberOfDigitsAfterCommaForBranchLengthValues());
-    }
-
-    @Override
-    final public void actionPerformed(final ActionEvent e) {
-        boolean done = false;
-        final JMenuItem node_popup_menu_item = (JMenuItem) e.getSource();
-        for (int index = 0; (index < _node_popup_menu_items.length) && !done; index++) {
-            // NOTE: index corresponds to the indices of click-to options
-            // in the control panel.
-            if (node_popup_menu_item == _node_popup_menu_items[index]) {
-                // Set this as the new default click-to action
-                _main_panel.getControlPanel().setClickToAction(index);
-                final PhylogenyNode node = (PhylogenyNode) _node_popup_menu
-                        .getClientProperty(NODE_POPMENU_NODE_CLIENT_PROPERTY);
-                handleClickToAction(_control_panel.getActionWhenNodeClicked(), node);
-                done = true;
-            }
-        }
-        repaint();
-        requestFocusInWindow();
     }
 
     private static BasicStroke makeStroke(final float width) {
@@ -921,15 +912,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                                        final Graphics g,
                                                                        final boolean to_pdf,
                                                                        final boolean to_graphics_file) {
-        final NodeClickAction action = _control_panel.getActionWhenNodeClicked();
         if ((to_pdf || to_graphics_file) && getOptions().isExportBlackAndWhite()) {
             g.setColor(Color.BLACK);
-        } else if (((action == NodeClickAction.COPY_SUBTREE) || (action == NodeClickAction.CUT_SUBTREE)
-                || (action == NodeClickAction.DELETE_NODE_OR_SUBTREE) || (action == NodeClickAction.PASTE_SUBTREE)
-                || (action == NodeClickAction.ADD_NEW_NODE)) && (getCutOrCopiedTree() != null)
-                && (getCopiedAndPastedNodes() != null) && !to_pdf && !to_graphics_file
-                && getCopiedAndPastedNodes().contains(node.getId())) {
-            g.setColor(CLIPBOARD_HIGHLIGHT); // held by Cut/Copy -- an editing state, not a search hit
+        } else if ((getCutOrCopiedTree() != null) && (getCopiedAndPastedNodes() != null) && !to_pdf
+                && !to_graphics_file && getCopiedAndPastedNodes().contains(node.getId())) {
+            // held by Cut/Copy (or just pasted) -- an editing state, not a search hit; shown until the next edit
+            // (fadeClipboardHighlight), there being no cut/copy "mode" to be in or out of any more
+            g.setColor(CLIPBOARD_HIGHLIGHT);
         } else if ((getOptions().getSupportVisualization() == Options.SUPPORT_VISUALIZATION.COLOR_BRANCHES)
                 && !node.isExternal() && node.getBranchData().isHasConfidences()
                 && (PhylogenyMethods.getConfidenceValue(node) >= 0.0)) {
@@ -1321,7 +1310,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    /** The "Node Style" click-to action: opens the {@link NodeStyleDialog} for the single clicked node so the user
+    /** The node menu's "Edit Node Style" entry: opens the {@link NodeStyleDialog} for the single clicked node so the user
      *  can change its font (style/size/colour) and node mark (shape/fill/size/colour). */
     private void editNodeStyle(final PhylogenyNode node) {
         final List<PhylogenyNode> targets = new ArrayList<>();
@@ -1466,7 +1455,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * <p>
      * Centralised because it was duplicated across the delete paths and drifted apart: the subtree /
      * return-to-whole-tree paths rebuilt the clade bands, the Tools prune rebuilt the property displays and the
-     * annotation columns but not the bands, and the click-to delete rebuilt nothing at all. A band keeps the node
+     * annotation columns but not the bands, and the node menu's delete rebuilt nothing at all. A band keeps the node
      * its mark spans, so a deleted band root was still painted -- and walking a detached node's external
      * descendants threw, over and over, inside the EDT paint loop.
      */
@@ -1515,28 +1504,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         final String label = createASimpleTextRepresentationOfANode(node);
-        final Object[] options = {"Node only", "Entire subtree", "Cancel"};
+        final String[] options = deleteOptionsFor(node);
         final int r = JOptionPane.showOptionDialog(this,
                 "Delete" + label + "?",
-                "Delete Node/Subtree",
+                node.isExternal() ? "Delete Node" : "Delete Node/Subtree",
                 JOptionPane.CLOSED_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 options,
-                options[2]);
-        setNodeInPreorderToNull();
-        boolean node_only = true;
-        if (r == 1) {
-            node_only = false;
-        } else if (r != 0) {
-            return;
+                options[options.length - 1]);
+        if ((r < 0) || (r == (options.length - 1))) {
+            return; // closed, or Cancel
         }
-        deleteNodeOrSubtreeConfirmed(node, node_only);
+        setNodeInPreorderToNull();
+        deleteNodeOrSubtreeConfirmed(node, !DELETE_ENTIRE_SUBTREE.equals(options[r]));
     }
 
-    final private void displayNodePopupMenu(final PhylogenyNode node, final int x, final int y) {
-        makePopupMenus(node);
-        _node_popup_menu.putClientProperty(NODE_POPMENU_NODE_CLIENT_PROPERTY, node);
+    private static final String DELETE_ENTIRE_SUBTREE = "Entire subtree";
+
+    /**
+     * The delete dialog's choices for {@code node}, Cancel last: a tip is deleted or not (it has no subtree to
+     * ask about); a root with one child can only go itself, the child becoming the root (its "subtree" is the
+     * whole tree, which is never deleted); an internal node asks node only or its entire subtree.
+     */
+    static String[] deleteOptionsFor(final PhylogenyNode node) {
+        if (node.isExternal()) {
+            return new String[] { "Delete", "Cancel" };
+        }
+        if (node.isRoot()) {
+            return new String[] { "Node only", "Cancel" };
+        }
+        return new String[] { "Node only", DELETE_ENTIRE_SUBTREE, "Cancel" };
+    }
+
+    /**
+     * Opens the node menu for {@code node} at ({@code x}, {@code y}): what every click on a node does -- left,
+     * right or ctrl-click alike (a shift-click selects instead, see {@link #mouseClicked}). The menu is built
+     * fresh for the node ({@link #buildNodeMenu}), each entry acts once, and nothing is remembered afterwards.
+     */
+    final private void showNodeMenu(final PhylogenyNode node, final int x, final int y) {
+        _node_popup_menu = buildNodeMenu(node);
         _node_popup_menu.show(this, x, y);
     }
 
@@ -1774,28 +1781,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _urt_factor_ov;
     }
 
-    final private void handleClickToAction(final NodeClickAction action, final PhylogenyNode node) {
-        switch (action) {
-            case SHOW_DATA:
+    /** Runs one node-menu entry on {@code node} -- once; no mode is entered (see {@link NodeMenuEntry}). */
+    final void runNodeMenuEntry(final NodeMenuEntry entry, final PhylogenyNode node) {
+        switch (entry) {
+            case DISPLAY_NODE_DATA:
                 showNodeFrame(node);
                 break;
-            case COLLAPSE:
-                collapse(node);
+            case EDIT_NODE_DATA:
+                showNodeEditFrame(node);
                 break;
-            case REROOT:
-                reRoot(node);
+            case NODE_STYLE:
+                editNodeStyle(node);
                 break;
             case SUBTREE:
                 subTree(node);
                 break;
+            case COLLAPSE_UNCOLLAPSE:
+                collapse(node);
+                break;
+            case UNCOLLAPSE_ALL:
+                uncollapseAll(node);
+                break;
             case SWAP:
                 swap(node);
+                break;
+            case ORDER_SUBTREE:
+                orderSubtree(node);
                 break;
             case COLOR_SUBTREE:
                 colorSubtree(node);
                 break;
-            case NODE_STYLE:
-                editNodeStyle(node);
+            case REROOT:
+                reRoot(node);
+                break;
+            case SELECT_NODE:
+                selectNode(node);
+                suppressHoverAfterClick(node); // just selected: don't flip its preview to "remove" under the pointer
+                break;
+            case SELECT_TIPS:
+                selectSubtreeTips(node);
+                suppressHoverAfterClick(node);
                 break;
             case OPEN_SEQ_WEB:
                 openSeqWeb(node);
@@ -1812,27 +1837,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case PASTE_SUBTREE:
                 pasteSubtree(node);
                 break;
-            case DELETE_NODE_OR_SUBTREE:
-                deleteNodeOrSubtree(node);
-                break;
             case ADD_NEW_NODE:
                 addEmptyNode(node);
                 break;
-            case EDIT_NODE_DATA:
-                showNodeEditFrame(node);
-                break;
-            case SELECT_NODES:
-                selectNode(node);
-                break;
-            case UNCOLLAPSE_ALL:
-                uncollapseAll(node);
-                break;
-            case ORDER_SUBTREE:
-                orderSubtree(node);
+            case DELETE:
+                deleteNodeOrSubtree(node);
                 break;
             default:
-                throw new IllegalArgumentException("unknown action: " + action);
+                throw new IllegalArgumentException("unknown entry: " + entry);
         }
+        repaint();
+        requestFocusInWindow();
     }
 
     final private void increaseOvSize() {
@@ -2104,7 +2119,41 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getOptions().getCladogramType() == CLADOGRAM_TYPE.NON_LINED_UP;
     }
 
+    /**
+     * Shift went down or up while the pointer rests on the tree: re-run the hover at the pointer's position with
+     * the new modifier state, so the focus glow turns into the selection preview (and back) without a pointer
+     * move. A held key's auto-repeat arrives here too and changes nothing; over a legend nothing changes either.
+     */
+    private void shiftChanged(final boolean down) {
+        if (_hover_select_preview == down) {
+            return;
+        }
+        final Point p = getMousePosition();
+        if (p == null) {
+            _hover_select_preview = down;
+            repaint();
+            return;
+        }
+        final MouseEvent at = new MouseEvent(this, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(),
+                down ? InputEvent.SHIFT_DOWN_MASK : 0, p.x, p.y, 0, false);
+        if (!isOnAnyLegend(at)) {
+            mouseMoved(at);
+        }
+    }
+
+    /** A shift-click that is not a ctrl-click or a right-click: the selection gesture (those open the node menu). */
+    private static boolean isShiftClick(final MouseEvent e) {
+        return ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0)
+                && ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == 0) && !SwingUtilities.isRightMouseButton(e);
+    }
+
     final private void keyPressedCalls(final KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+            // Shift alone: the glow turns into the selection preview. BEFORE the hide below: the hover card
+            // stays up while Shift is held, and a held key's auto-repeat changes nothing (see shiftChanged).
+            shiftChanged(true);
+            return;
+        }
         // keyboard scrolling/zooming moves the tree under a stationary pointer (and Esc should dismiss):
         // any key press takes the rollover popup down
         hideNodeDataPopup();
@@ -2287,96 +2336,184 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void makePopupMenus(final PhylogenyNode node) {
-        _node_popup_menu = new JPopupMenu();
-        final List<String> clickto_names = _main_panel.getControlPanel().getSingleClickToNames();
-        _node_popup_menu_items = new JMenuItem[clickto_names.size()];
-        for (int i = 0; i < clickto_names.size(); i++) {
-            final String title = clickto_names.get(i);
-            _node_popup_menu_items[i] = new JMenuItem(title);
-            if (title.equals(ClickToOption.OPEN_SEQ_WEB.title())) {
-                final List<Sequence> seqs = node.getNodeData().getSequences();
-                boolean addedPerSeqItems = false;
-                if (seqs != null) {
-                    for (final Sequence seq : seqs) {
-                        final Accession acc = SequenceAccessionTools.obtainAccessorFromSequence(seq);
-                        if (acc != null) {
-                            final String seqName = seq.getName();
-                            final String trimmedName = (!ForesterUtil.isEmpty(seqName) && seqName.length() > 20)
-                                    ? seqName.substring(0, 20) + "..."
-                                    : seqName;
-                            final String label = ForesterUtil.isEmpty(trimmedName)
-                                    ? acc.getValue()
-                                    : trimmedName + " [" + acc.getValue() + "]";
-                            final JMenuItem seqItem = new JMenuItem(title + " [" + label + "]");
-                            final Sequence capturedSeq = seq;
-                            seqItem.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(final ActionEvent e) {
-                                    openSeqWebForSequence(node, capturedSeq);
-                                }
-                            });
-                            _node_popup_menu.add(seqItem);
-                            addedPerSeqItems = true;
-                        }
-                    }
-                }
-                if (addedPerSeqItems) {
-                    continue;
-                }
-                final String id = isCanOpenSeqWeb(node);
-                if (!ForesterUtil.isEmpty(id)) {
-                    _node_popup_menu_items[i].setText(_node_popup_menu_items[i].getText() + " [" + id + "]");
-                    _node_popup_menu_items[i].setEnabled(true);
-                } else {
-                    _node_popup_menu_items[i].setEnabled(false);
-                }
-            } else if (title.equals(ClickToOption.OPEN_TAX_WEB.title())) {
-                _node_popup_menu_items[i].setEnabled(isCanOpenTaxWeb(node));
-            } else if (title.equals(ClickToOption.DELETE_SUBTREE_OR_NODE.title())) {
-                if (!getOptions().isEditable()) {
-                    continue;
-                }
-                _node_popup_menu_items[i].setEnabled(isCanDelete());
-            } else if (title.equals(ClickToOption.CUT_SUBTREE.title())) {
-                if (!getOptions().isEditable()) {
-                    continue;
-                }
-                _node_popup_menu_items[i].setEnabled(isCanCut(node));
-            } else if (title.equals(ClickToOption.COPY_SUBTREE.title())) {
-                if (!getOptions().isEditable()) {
-                    continue;
-                }
-                _node_popup_menu_items[i].setEnabled(isCanCopy());
-            } else if (title.equals(ClickToOption.PASTE_SUBTREE.title())) {
-                if (!getOptions().isEditable()) {
-                    continue;
-                }
-                _node_popup_menu_items[i].setEnabled(isCanPaste());
-            } else if (title.equals(ClickToOption.EDIT_NODE_DATA.title())) {
-                if (!getOptions().isEditable()) {
-                    continue;
-                }
-            } else if (title.equals(ClickToOption.ADD_NEW_NODE.title())) {
-                if (!getOptions().isEditable()) {
-                    continue;
-                }
-            } else if (title.equals(ClickToOption.REROOT.title())) {
-                _node_popup_menu_items[i].setEnabled(isCanReroot());
-            } else if (title.equals(ClickToOption.COLLAPSE_UNCOLLAPSE.title())) {
-                _node_popup_menu_items[i].setEnabled((isCanCollapse() && !node.isExternal()));
-            } else if (title.equals(ClickToOption.COLOR_SUBTREE.title())) {
-                _node_popup_menu_items[i].setEnabled(isCanColorSubtree());
-            } else if (title.equals(ClickToOption.SUBTREE.title())) {
-                _node_popup_menu_items[i].setEnabled(isCanSubtree(node));
-            } else if (title.equals(ClickToOption.SWAP.title())) {
-                _node_popup_menu_items[i].setEnabled(node.getNumberOfDescendants() == 2);
-            } else if (title.equals(ClickToOption.UNCOLLAPSE_ALL.title())) {
-                _node_popup_menu_items[i].setEnabled(isCanUncollapseAll(node));
+    /**
+     * Builds the node menu for {@code node} (see {@link #showNodeMenu}): a title naming the node, then the
+     * {@link NodeMenuEntry} entries in their order with a separator between groups. An entry that does not apply
+     * to this node, this tree or this layout is GREYED, never hidden, with the reason as its tooltip where there
+     * is one ({@link #nodeMenuReason}); the editing entries exist only on an editable tree. "Open Sequence DB" is
+     * one entry per sequence with an accession, named by it. The delete entry comes last, in the warning colour.
+     */
+    final JPopupMenu buildNodeMenu(final PhylogenyNode node) {
+        final JPopupMenu menu = new JPopupMenu();
+        final JLabel title = new JLabel(TreePanelUtil.nodeMenuTitle(node));
+        title.setFont(title.getFont().deriveFont(Font.BOLD));
+        title.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
+        menu.add(title);
+        final String refusal = rerootRefusal(); // one tree walk per menu, not one per entry and per reason
+        NodeMenuEntry.Group last = null;
+        for (final NodeMenuEntry entry : NodeMenuEntry.values()) {
+            if (entry.editableOnly() && !getOptions().isEditable()) {
+                continue;
             }
-            _node_popup_menu_items[i].addActionListener(this);
-            _node_popup_menu.add(_node_popup_menu_items[i]);
+            if (entry.group() != last) {
+                menu.addSeparator();
+                last = entry.group();
+            }
+            if ((entry == NodeMenuEntry.OPEN_SEQ_WEB) && addPerSequenceDbItems(menu, node)) {
+                continue;
+            }
+            final JMenuItem item = new JMenuItem(nodeMenuLabel(entry, node));
+            final boolean applies = nodeMenuEntryApplies(entry, node, refusal);
+            item.setEnabled(applies);
+            item.setToolTipText(nodeMenuReason(entry, node, applies, refusal));
+            if ((entry == NodeMenuEntry.DELETE) && item.isEnabled()) {
+                item.setForeground(dangerColor());
+            }
+            item.addActionListener(e -> runNodeMenuEntry(entry, node));
+            menu.add(item);
         }
+        return menu;
+    }
+
+    /** "Open Sequence DB": one item per sequence carrying an accession, named by the sequence; false when none. */
+    private boolean addPerSequenceDbItems(final JPopupMenu menu, final PhylogenyNode node) {
+        final List<Sequence> seqs = node.getNodeData().getSequences();
+        boolean added = false;
+        if (seqs != null) {
+            for (final Sequence seq : seqs) {
+                final Accession acc = SequenceAccessionTools.obtainAccessorFromSequence(seq);
+                if (acc != null) {
+                    final String trimmedName = TreePanelUtil.ellipsize(seq.getName(), 20);
+                    // the accession alone when the sequence has no name, or is named by its accession
+                    final String label = (ForesterUtil.isEmpty(trimmedName) || trimmedName.equals(acc.getValue()))
+                            ? acc.getValue() : trimmedName + " [" + acc.getValue() + "]";
+                    final JMenuItem item = new JMenuItem(NodeMenuEntry.OPEN_SEQ_WEB.title() + " [" + label + "]");
+                    item.addActionListener(e -> openSeqWebForSequence(node, seq));
+                    menu.add(item);
+                    added = true;
+                }
+            }
+        }
+        return added;
+    }
+
+    /**
+     * The wording of {@code entry} for {@code node}: most entries read as their title; a few say what they will do
+     * HERE -- the subtree entry on a subtree view's root climbs back out, the delete entry on a tip deletes a node
+     * (an internal node is asked "node only or its subtree?", hence the ellipsis on both), and the sequence link
+     * names the accession it opens.
+     */
+    final String nodeMenuLabel(final NodeMenuEntry entry, final PhylogenyNode node) {
+        switch (entry) {
+            case SUBTREE:
+                return (node.isRoot() && isCurrentTreeIsSubtree()) ? "Return to Supertree" : entry.title();
+            case OPEN_SEQ_WEB: {
+                final String id = isCanOpenSeqWeb(node);
+                return ForesterUtil.isEmpty(id) ? entry.title() : entry.title() + " [" + id + "]";
+            }
+            case DELETE:
+                return node.isExternal() ? "Delete Node\u2026" : "Delete Node/Subtree\u2026";
+            default:
+                return entry.title();
+        }
+    }
+
+    /**
+     * Whether {@code entry} applies to {@code node} in this tree and layout -- greyed in the menu when not.
+     * {@code refusal} is {@link #rerootRefusal()}, computed once by the caller. Each rule mirrors the guard of
+     * the action it stands for (collapse skips the root, add/cut/copy/paste/delete refuse the unrooted layout,
+     * subTree redirects a tip and stops at its cap), so that no entry is offered black that would then do nothing.
+     */
+    final boolean nodeMenuEntryApplies(final NodeMenuEntry entry, final PhylogenyNode node, final String refusal) {
+        switch (entry) {
+            case SUBTREE:
+                return isCanSubtree(node);
+            case COLLAPSE_UNCOLLAPSE:
+                return isCanCollapse() && !node.isExternal() && !node.isRoot(); // collapse() skips the root
+            case UNCOLLAPSE_ALL:
+                return isCanUncollapseAll(node);
+            case SWAP:
+                return node.getNumberOfDescendants() == 2;
+            case ORDER_SUBTREE:
+                return !node.isExternal();
+            case COLOR_SUBTREE:
+                return isCanColorSubtree();
+            case REROOT:
+                return isCanReroot() && !node.isRoot() && (refusal == null);
+            case SELECT_TIPS:
+                return !node.isExternal();
+            case OPEN_SEQ_WEB:
+                return !ForesterUtil.isEmpty(isCanOpenSeqWeb(node));
+            case OPEN_TAX_WEB:
+                return isCanOpenTaxWeb(node);
+            case CUT_SUBTREE:
+                return isCanCut(node);
+            case COPY_SUBTREE:
+                return isCanCopy();
+            case PASTE_SUBTREE:
+                return isCanPaste();
+            case DELETE:
+                return isCanDelete() && !(node.isRoot() && (node.getNumberOfDescendants() != 1));
+            case ADD_NEW_NODE:
+                return getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED; // as addEmptyNode refuses
+            default:
+                return true; // display / edit node data, node style, select node: always
+        }
+    }
+
+    /**
+     * Why {@code entry} is greyed for {@code node}, as the entry's tooltip -- or null when it applies, or when the
+     * greying explains itself (a tip has no clade to collapse). Re-rooting says why the TREE refuses
+     * ({@link Rerooting#refusal}), and the entries the unrooted layout cannot offer say so.
+     */
+    final String nodeMenuReason(final NodeMenuEntry entry, final PhylogenyNode node, final boolean applies,
+                                final String refusal) {
+        if (applies) {
+            return null;
+        }
+        final boolean unrooted = getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED;
+        switch (entry) {
+            case REROOT:
+                if (refusal != null) {
+                    return refusal;
+                }
+                if (unrooted) {
+                    return NOT_IN_UNROOTED;
+                }
+                if (isCurrentTreeIsSubtree()) {
+                    return "not in a subtree view: return to the whole tree first";
+                }
+                return node.isRoot() ? "this node is the root already" : null;
+            case COLLAPSE_UNCOLLAPSE:
+                if (unrooted) {
+                    return NOT_IN_UNROOTED;
+                }
+                return node.isRoot() ? "the root cannot be collapsed" : null;
+            case SUBTREE:
+                if (unrooted) {
+                    return NOT_IN_UNROOTED;
+                }
+                return atSubtreeCap() ? NO_DEEPER_SUBTREE : null;
+            case UNCOLLAPSE_ALL:
+            case COLOR_SUBTREE:
+            case CUT_SUBTREE:
+            case COPY_SUBTREE:
+            case PASTE_SUBTREE:
+            case ADD_NEW_NODE:
+            case DELETE:
+                return unrooted ? NOT_IN_UNROOTED : null;
+            default:
+                return null;
+        }
+    }
+
+    private static final String NOT_IN_UNROOTED = "not in the unrooted layout";
+    private static final String NO_DEEPER_SUBTREE = "no deeper subtree view: return to a supertree first";
+
+    /** The warning colour for the delete entry: the look and feel's, else a plain red. */
+    private static Color dangerColor() {
+        final Color c = UIManager.getColor("Actions.Red");
+        return (c != null) ? c : new Color(0xC0, 0x39, 0x2B);
     }
 
     /** The tree's boring shared tip-name prefix (see {@link AptxUtil#commonNamePrefix}), cached per tree. */
@@ -6594,7 +6731,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return isInFoundNodes0(node) || isInFoundNodes1(node);
     }
 
-    /** The selection is found set 0, as Select Node(s) makes it. */
+    /** The selection is found set 0, as a shift-click makes it. */
     boolean isClockPlotSelected(final PhylogenyNode node) {
         return isInFoundNodes0(node);
     }
@@ -7554,9 +7691,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 buffer_phy.addAsChild(node);
             }
         }
-        if (getCopiedAndPastedNodes() == null) {
-            setCopiedAndPastedNodes(new HashSet<Long>());
-        }
+        setCopiedAndPastedNodes(new HashSet<Long>()); // the latest clipboard action's nodes, this tab's
         final List<PhylogenyNode> nodes = PhylogenyMethods.obtainAllNodesAsList(buffer_phy);
         final Set<Long> node_ids = new HashSet<>(nodes.size());
         for (final PhylogenyNode n : nodes) {
@@ -7628,8 +7763,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return (to_pdf || (to_graphics_file && getOptions().isExportBlackAndWhite())) ? Color.BLACK : default_color;
     }
 
+    /** The clipboard highlight's node ids -- shared by the tabs like the clipboard, but owned by THIS tab. */
     final private void setCopiedAndPastedNodes(final Set<Long> nodeIds) {
         getMainPanel().setCopiedAndPastedNodes(nodeIds);
+        getMainPanel().setClipboardHighlightOwner((nodeIds == null) ? null : this);
     }
 
     final private void setCutOrCopiedTree(final Phylogeny cut_or_copied_tree) {
@@ -11320,7 +11457,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             rememberTimeLengthsBeforeAChange();
             _history.checkpoint(_phylogeny, label, isEdited(), branchLengthMode(), timeLengths());
+            fadeClipboardHighlight(); // an edit follows: what was copied or pasted is no longer "the latest"
             notifyEditMenu();
+        }
+    }
+
+    /**
+     * Forgets which nodes the clipboard highlight marks (the clade last copied, or the nodes last pasted), keeping
+     * the clipboard itself, so Paste stays possible. Called at every edit (each undo checkpoint, and undo/redo)
+     * of the tab that owns the highlight: with no cut/copy "mode" to leave any more, the highlight fades at the
+     * next edit of its tree (Christian, 2026-10-26).
+     */
+    private void fadeClipboardHighlight() {
+        if (getMainPanel().getClipboardHighlightOwner() == this) { // an edit in another tab is not an edit HERE
+            setCopiedAndPastedNodes(null);
         }
     }
 
@@ -11332,6 +11482,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void pushUndoSnapshot(final Phylogeny pre_state, final boolean was_edited, final String label) {
         if ((pre_state != null) && !pre_state.isEmpty()) {
             _history.checkpoint(pre_state, label, was_edited, branchLengthMode(), timeLengths());
+            fadeClipboardHighlight();
             notifyEditMenu();
         }
     }
@@ -11379,6 +11530,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             setTree(phy); // also nulls the preorder cache
             setFoundNodes0(null); // the restored copy's search/selection hits from the mutated tree no longer apply
             setFoundNodes1(null);
+            fadeClipboardHighlight(); // ... nor does the clipboard highlight (an undo/redo is an edit)
             phy.externalNodesHaveChanged();
             phy.clearHashIdToNodeMap();
             phy.recalculateNumberOfExternalDescendants(true);
@@ -16213,7 +16365,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /** A subtree currently held by Cut/Copy. Its own muted amber: it is neither a search hit (red) nor navigation
      *  chrome (the accent), and a deliberately different amber from the Okabe-Ito duplication-or-speciation event
      *  colour, so a held subtree cannot be misread as an event box. Readable on both grounds. */
-    private static final Color   CLIPBOARD_HIGHLIGHT        = new Color(0xC8, 0x7A, 0x1E);
+    static final Color           CLIPBOARD_HIGHLIGHT        = new Color(0xC8, 0x7A, 0x1E); // package-private: NodeMenuTest counts it
 
     /** Sets the hover-preview target -- a single node ({@code subtree}=false, drawn as one marker on the node)
      *  or a branch ({@code subtree}=true, drawn on the subtree's tips) -- repainting only on an actual change
@@ -16237,11 +16389,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *  until the pointer moves off it (so it doesn't instantly flip to the "will be removed" grey). */
     private void applyHover(final PhylogenyNode node, final boolean subtree) {
         // The suppression exists ONLY to stop a just-selected node flipping to the grey "will be removed" under a
-        // stationary pointer -- a selection-semantics problem. Outside Select-Node(s) mode the glow is a neutral
-        // focus mark with nothing to flip, so honouring the suppression there would just blank the focus ring for
-        // no reason (shift-click arms it in EVERY mode, not only Select).
-        if ((node == _click_suppressed)
-                && (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES)) {
+        // stationary pointer -- a selection-semantics problem. Without Shift held the glow is a neutral focus
+        // mark with nothing to flip, so honouring the suppression there would just blank the focus ring for no
+        // reason (a shift-click arms it, and Shift may well have been released since).
+        if ((node == _click_suppressed) && _hover_select_preview) {
             setHover(null, false);
         } else {
             _click_suppressed = null;
@@ -16265,13 +16416,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * The FOCUS GLOW: a soft halo around the node under the pointer, drawn in EVERY click-to mode.
+     * The FOCUS GLOW: a soft halo around the node under the pointer, drawn whether or not Shift is held.
      * <p>
      * The hand cursor says "something here is clickable"; it never says WHICH node, which on a dense tree is the
-     * thing you actually need -- most of all in the modes that reroot or delete. Before this, on-canvas hover
-     * feedback existed in Select-Node(s) mode alone.
+     * thing you actually need -- most of all before a re-root or a delete. Before this, on-canvas hover
+     * feedback existed in the old Select-Node(s) click mode alone.
      * <p>
-     * There is exactly ONE circle on the hovered node in every mode. In Select-Node(s) the glow CARRIES the
+     * There is exactly ONE circle on the hovered node, Shift held or not. With Shift held the glow CARRIES the
      * meaning the old flat preview disc used to (found colour = a click adds, grey = a click removes) instead of
      * drawing a second disc inside it; elsewhere it is a neutral accent, so a focus ring can never be mistaken for
      * a selection state. Hovering a BRANCH additionally keeps the flat per-tip marks, because one glow cannot say
@@ -16290,7 +16441,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if (!to_screen || (_hover_node == null)) {
             return;
         }
-        final boolean select_mode = getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES;
+        final boolean select_mode = _hover_select_preview; // Shift held: the glow says what a shift-click will do
         final Set<Long> found = getFoundNodes0();
         boolean deselect = false;                // whether a click here would DESELECT rather than add
         java.util.List<PhylogenyNode> marks = null;
@@ -16337,8 +16488,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * The colour the focus glow takes -- see {@link #paintHoverPreview}. In Select mode the glow carries MEANING
-     * (it says what a click will do), so it is the found colour or the grey remove colour and nothing else.
+     * The colour the focus glow takes -- see {@link #paintHoverPreview}. With Shift held the glow carries MEANING
+     * (it says what a shift-click will do), so it is the found colour or the grey remove colour and nothing else.
      * Everywhere else it is chrome, and there it follows the node: a node the figure already draws in a colour of
      * its own (Color-by, a node style, an event, a colorized clade) gets a halo of that hue, so the mark reads as
      * belonging to THAT node rather than as a second, unrelated colour landing on it. A node with no colour of its
@@ -16493,6 +16644,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Set<Long> found = getFoundNodes0();
         return (found != null) && found.contains(_hover_node.getId());
+    }
+
+    /** Test hook: the selection-preview state ({@code true} = Shift held as the pointer last moved). */
+    boolean hoverIsSelectPreviewForTest() {
+        return _hover_select_preview;
+    }
+
+    /** Test hook: sets the selection-preview state directly (what a pointer move with Shift held sets). */
+    void setSelectionPreviewForTest(final boolean on) {
+        _hover_select_preview = on;
+    }
+
+    /** Test hook: the node menu last opened by a click, or null; it is on screen while {@code isVisible()}. */
+    JPopupMenu nodeMenuForTest() {
+        return _node_popup_menu;
     }
 
     /** Test hook: the node currently suppressed from re-previewing after a click (or null). Only released when
@@ -16725,9 +16891,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && (_subtree_index < 1));
     }
 
+    /**
+     * Whether {@link #subTree} would show anything for {@code node}: a clade below the displayed root (a tip
+     * stands for its parent's clade, the smallest one enclosing it, as subTree redirects), or the displayed root
+     * of a subtree view (which climbs one level back out); never in the unrooted layout.
+     */
     final boolean isCanSubtree(final PhylogenyNode node) {
-        return ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED) && !node.isExternal()
-                && (!node.isRoot() || (_subtree_index > 0)));
+        if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
+            return false;
+        }
+        if (node.isRoot()) {
+            return isCurrentTreeIsSubtree();
+        }
+        final PhylogenyNode target = node.isExternal() ? node.getParent() : node;
+        return (target != null) && !target.isRoot() && !atSubtreeCap();
+    }
+
+    /** Whether the subtree views are nested as deep as {@link #subTree} allows ({@code MAX_SUBTREES}). */
+    private boolean atSubtreeCap() {
+        return _subtree_index > (MAX_SUBTREES - 1);
     }
 
     final boolean isCurrentTreeIsSubtree() {
@@ -16793,7 +16975,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     // Tells the user why the tree cannot be re-rooted (the controls are greyed out, so this is the backstop for a
-    // re-root reached another way, e.g. a "Root/Reroot" click mode chosen on another tab). True when refused.
+    // re-root reached another way, e.g. the node menu built before the refusal changed). True when refused.
     private boolean refuseReroot() {
         final String why = rerootRefusal();
         if (why == null) {
@@ -16886,8 +17068,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final PhylogenyNode node = findNode(e.getX(), e.getY());
             if ((node == null) && isPlainSingleLeftClick(e) && shows(DisplayOption.NODE_DATA_POPUP)) {
                 // Out past the labels: a domain box opens its Pfam entry (or an InterPro lookup). Deliberately
-                // narrow. A PLAIN SINGLE LEFT click only: a right or ctrl click belongs to the context menu, a
-                // shift click to selection, and a double click delivers two MOUSE_CLICKED events, which would
+                // narrow. A PLAIN SINGLE LEFT click only: a shift click belongs to selection, and a double click
+                // delivers two MOUSE_CLICKED events, which would
                 // open two browser tabs. Gated on the Rollover option as well, because that is what draws the
                 // card and the hand cursor -- without them the click would have no affordance at all.
                 final DomainHit hit = domainAt(e.getX(), e.getY());
@@ -16899,52 +17081,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if (!node.isRoot() && node.getParent().isCollapse()) {
                     return;
                 }
-                // A collapsed clade is one unit: a selection-gesture click (shift, or plain in Select-Node(s)
-                // mode) toggles its WHOLE subtree's tips -- like a branch click -- so the triangle's fill updates
-                // and the count reflects the clade. Ctrl/right-click still opens the node popup on the triangle.
-                if (node.isCollapse() && ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == 0)
-                        && !SwingUtilities.isRightMouseButton(e)
-                        && (((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0)
-                        || (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES))) {
-                    selectSubtreeTips(node);
-                    suppressHoverAfterClick(node);
-                    repaint();
-                    return;
-                }
-                // Check if shift key is down
-                if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-                    // Yes, so toggle this node in the selection (found set 0), keeping the count label in sync
-                    selectNode(node);
-                    suppressHoverAfterClick(node); // don't flip the node's preview to "remove" until pointer moves off
-                } else if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
-                    // Check if control key is down
-                    // Yes, so pop-up menu
-                    displayNodePopupMenu(node, e.getX(), e.getY());
-                } else {
-                    // Handle unadorned click
-                    // Check for right mouse button
-                    if (SwingUtilities.isRightMouseButton(e)) {
-                        displayNodePopupMenu(node, e.getX(), e.getY());
+                if (isShiftClick(e)) {
+                    // Shift-click: the selection. A collapsed clade is one unit, so on its wedge the click toggles
+                    // its WHOLE subtree's tips -- like a branch click -- and the wedge's fill and the count follow.
+                    if (node.isCollapse()) {
+                        selectSubtreeTips(node);
                     } else {
-                        // if not in _found_nodes, clear _found_nodes
-                        handleClickToAction(_control_panel.getActionWhenNodeClicked(), node);
-                        if (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES) {
-                            suppressHoverAfterClick(node); // just selected this node -> suppress its preview
-                        }
+                        selectNode(node);
                     }
+                    suppressHoverAfterClick(node); // don't flip its preview to "remove" until the pointer moves off
+                } else {
+                    // Every other click -- left, right, ctrl -- opens the node menu. There is no click mode: each
+                    // entry acts once on this node, as in Archaeopteryx.js (Christian, 2026-10-26).
+                    showNodeMenu(node, e.getX(), e.getY());
                 }
-            } else {
-                // no node under the cursor: a click on a branch selects/deselects that subtree's external tips
-                // (extends "Select Node(s)"; also works via shift-click regardless of the click-to mode)
-                final boolean shift = (e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0;
-                final boolean plain_left = SwingUtilities.isLeftMouseButton(e) && !shift
-                        && ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) == 0);
-                if (shift || (plain_left
-                        && (_control_panel.getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES))) {
-                    final PhylogenyNode branch = findBranch(e.getX(), e.getY());
-                    selectSubtreeTips(branch);
-                    suppressHoverAfterClick(branch); // don't flip to the grey "remove" until the pointer moves off
-                }
+            } else if (isShiftClick(e)) {
+                // no node under the cursor: a shift-click on a branch selects/deselects that subtree's tips
+                final PhylogenyNode branch = findBranch(e.getX(), e.getY());
+                selectSubtreeTips(branch);
+                suppressHoverAfterClick(branch); // don't flip to the grey "remove" until the pointer moves off
             }
         }
         repaint();
@@ -17041,26 +17196,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if (isInOv()) {
                 setInOv(false);
             }
-            final boolean select_mode = getControlPanel().getActionWhenNodeClicked() == NodeClickAction.SELECT_NODES;
+            // Shift held: the focus glow previews the selection (what a shift-click will do), and a branch is a
+            // target too (its clade). Otherwise the glow is a neutral focus mark and branches are not targets.
+            _hover_select_preview = e.isShiftDown();
+            final boolean select_mode = _hover_select_preview;
             final PhylogenyNode node = findNode(e.getX(), e.getY());
             if ((node != null) && (node.isRoot() || !node.getParent().isCollapse())) {
-                if ((getControlPanel().getActionWhenNodeClicked() == NodeClickAction.CUT_SUBTREE)
-                        || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.COPY_SUBTREE)
-                        || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.PASTE_SUBTREE)
-                        || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.DELETE_NODE_OR_SUBTREE)
-                        || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.REROOT)
-                        || (getControlPanel().getActionWhenNodeClicked() == NodeClickAction.ADD_NEW_NODE)) {
-                    setCursor(CUT_CURSOR);
-                } else {
-                    setCursor(HAND_CURSOR);
-                    if (shows(DisplayOption.NODE_DATA_POPUP)) {
-                        showNodeDataPopup(e, node);
-                        card_wanted = true;
-                    }
+                setCursor(HAND_CURSOR); // every node is clickable: a click opens its menu
+                if (shows(DisplayOption.NODE_DATA_POPUP)) {
+                    showNodeDataPopup(e, node);
+                    card_wanted = true;
                 }
-                // The focus glow marks the node under the pointer in EVERY mode -- the cursor says "clickable",
-                // the glow says WHICH. Collapsed clades included: they are clickable everywhere too, and a soft
-                // halo behind the triangle reads cleanly where the old flat disc over it did not.
+                // The focus glow marks the node under the pointer -- the cursor says "clickable", the glow says
+                // WHICH. Collapsed clades included: they are clickable too, and a soft halo behind the triangle
+                // reads cleanly where the old flat disc over it did not.
                 applyHover(node, false);
             } else {
                 // not over a node. An annotation-column CELL reads out what it holds -- under the same Rollover
@@ -17083,7 +17232,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     applyHover(null, false);
                     setCursor(NodeHoverText.hasLink(domain.domain()) ? HAND_CURSOR : ARROW_CURSOR);
                 } else {
-                    // over a branch (Select-Node(s) mode) -> hand cursor + preview the subtree
+                    // over a branch with Shift held -> hand cursor + preview the clade a shift-click takes
                     final PhylogenyNode branch = select_mode ? findBranch(e.getX(), e.getY()) : null;
                     applyHover(branch, true);
                     setCursor((branch != null) ? HAND_CURSOR : ARROW_CURSOR);
@@ -19028,8 +19177,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
-     * Adds or removes an entire subtree's external tips from the manual selection (found set 0), reusing the
-     * "Select Node(s)" machinery -- for branch-click clade selection. All-or-nothing toggle: if every tip of
+     * Adds or removes an entire subtree's external tips from the manual selection (found set 0), as a shift-click
+     * on a branch or a collapsed wedge does. All-or-nothing toggle: if every tip of
      * {@code node}'s subtree is already selected, deselect them all; otherwise select the ones still missing.
      */
     final void selectSubtreeTips(final PhylogenyNode node) {
@@ -19311,13 +19460,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void superTree() {
         setNodeInPreorderToNull();
-        final PhylogenyNode temp_root = _sub_phylogenies_temp_roots[_subtree_index - 1];
+        final int top = _subtree_index - 1; // the slot subTree() filled on the way down
+        final PhylogenyNode temp_root = _sub_phylogenies_temp_roots[top];
         for (final PhylogenyNode n : temp_root.getDescendants()) {
             n.setParent(temp_root);
         }
-        _sub_phylogenies[_subtree_index] = null;
-        _sub_phylogenies_temp_roots[_subtree_index] = null;
-        _phylogeny = _sub_phylogenies[--_subtree_index];
+        _phylogeny = _sub_phylogenies[top];
+        // clear THAT slot: clearing the one above it (as this did until 0.11.191) left the parent tree referenced
+        // and, at the cap of MAX_SUBTREES nested views, indexed past the arrays' end
+        _sub_phylogenies[top] = null;
+        _sub_phylogenies_temp_roots[top] = null;
+        _subtree_index = top;
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants(true);

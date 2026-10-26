@@ -52,7 +52,7 @@ import org.forester.phylogeny.data.NodeVisualData.NodeShape;
  * A small modal editor for the per-node visual style ({@link NodeVisualData}): font style/size/colour and node
  * mark shape/fill/size/colour. Each attribute has an "Apply" checkbox -- only ticked attributes are written -- so
  * a bulk edit over the selected/found set changes just the chosen attributes and leaves the rest of each node's
- * style untouched. Opened for ONE node from the "Node Style" click-to action (pre-filled from that node), or for
+ * style untouched. Opened for ONE node from the node menu's "Edit Node Style" entry (pre-filled from that node), or for
  * the whole selected/found set from Tools -> "Node Style for Selected Nodes" (all attributes start un-ticked). The
  * spec it builds is applied via {@link TreePanel#applyNodeStyleEdit(List, NodeStyleEditor.Spec)} (undoable).
  */

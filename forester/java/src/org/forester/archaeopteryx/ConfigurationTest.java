@@ -40,19 +40,19 @@ public final class ConfigurationTest {
     }
 
     /**
-     * The click-to actions and "Display Data" options are now the type-safe enums {@link ClickToOption} /
+     * The node-menu entries and "Display Data" options are the type-safe enums {@link NodeMenuEntry} /
      * {@link DisplayOption} (they replaced the old fragile positional {@code String[][]} arrays + parallel
      * int index constants, so the previous alignment guard is obsolete). Spot-check that each enum carries a
      * title and that a couple of representative default states are correct, and that the removed actions/
      * options ("Launch BLAST", "Open PDB", "Binary Characters", "Vector Data", ...) are gone.
      */
     private static boolean testOptionEnums() {
-        if ( !"Display Node Data".equals( ClickToOption.DISPLAY_NODE_DATA.title() )
-                || !"Ladderize Subtree".equals( ClickToOption.ORDER_SUBTREE.title() )
-                || !"Open Taxonomy DB".equals( ClickToOption.OPEN_TAX_WEB.title() ) ) {
+        if ( !"Display Node Data".equals( NodeMenuEntry.DISPLAY_NODE_DATA.title() )
+                || !"Ladderize Subtree".equals( NodeMenuEntry.ORDER_SUBTREE.title() )
+                || !"Open Taxonomy DB".equals( NodeMenuEntry.OPEN_TAX_WEB.title() ) ) {
             return false;
         }
-        for ( final ClickToOption o : ClickToOption.values() ) {
+        for ( final NodeMenuEntry o : NodeMenuEntry.values() ) {
             if ( ( o.title() == null ) || o.title().isEmpty() ) {
                 return false;
             }
@@ -86,7 +86,7 @@ public final class ConfigurationTest {
      * The no-arg constructor yields the built-in defaults (no file is read). Configuration no longer seeds
      * {@link Options} (those display defaults now live solely in {@code Options.init()} / the enums), so this
      * only exercises the surface Configuration still owns: XSD validation, the tip-color map, the parse-time
-     * taxonomy-extraction knob, the default click-to action, and the editable / draw-as-phylogram convenience.
+     * taxonomy-extraction knob, and the editable / draw-as-phylogram convenience.
      */
     private static boolean testDefaults() {
         final Configuration c = new Configuration();
@@ -101,10 +101,6 @@ public final class ConfigurationTest {
             return false;
         }
         if ( c.getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) {
-            return false;
-        }
-        // the click-to dropdown defaults to "Display Node Data"
-        if ( c.getDefaultDisplayClicktoOption() != ClickToOption.DISPLAY_NODE_DATA ) {
             return false;
         }
         // trees are editable by default; the default display type is a cladogram (phylogram is only GUESSed)

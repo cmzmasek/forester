@@ -219,7 +219,7 @@ public final class NodeWindowRebindTest {
             view.close();
             // -- kind change: B (a tip) gets a child, so it is internal; the editor is dirty; undo makes it a tip --
             edit.getForm().setTextForTest( NodeDataDraft.NAME, "B3" );
-            tp.pushUndoCheckpoint( "Add Node" ); // what the click-to Add Node does, minus its dialog
+            tp.pushUndoCheckpoint( "Add Node" ); // what the node menu's Add New Node does, minus its dialog
             final PhylogenyNode child = new PhylogenyNode();
             child.setName( "B_child" );
             tp.getPhylogeny().getNode( id_b ).addAsChild( child );

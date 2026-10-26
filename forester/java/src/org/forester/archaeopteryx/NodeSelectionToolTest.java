@@ -34,13 +34,12 @@ import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
 /**
  * Integration test for node/branch selection on a real {@link MainFrame}/{@link TreePanel}, all in
- * "Select Node(s)" mode over found set 0. Covers: findBranch resolution (horizontal leg, vertical fork
+ * shift-click selection over found set 0. Covers: findBranch resolution (horizontal leg, vertical fork
  * connector, and the ROOT via its connector), the all-or-nothing subtree toggle, the deselect-to-empty count
  * label, the mouseClicked/shift-click wiring, the collapsed-clade skip, and the hand/arrow hover cursor. Also
  * the select/deselect HOVER PREVIEW: the direction (add vs remove) for a hovered branch (subtree) and a hovered
@@ -156,13 +155,12 @@ public final class NodeSelectionToolTest {
         }
         tp.selectSubtreeTips( a );
 
-        // mouseClicked on B's branch in Select-Node(s) mode selects B's tips
-        cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
+        // a shift-click on B's branch selects B's tips
         final Point b_mid = branchMid( b );
         if ( tp.findNode( b_mid.x, b_mid.y ) != null ) {
             fail( ok, "test setup: B's branch midpoint must be clear of node boxes" );
         }
-        tp.mouseClicked( click( tp, b_mid, 0 ) );
+        tp.mouseClicked( click( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) );
         if ( ( count( tp ) != 2 ) || !allSelected( tp, b.getAllExternalDescendants() ) ) {
             fail( ok, "a branch click should select B's 2 tips, got " + count( tp ) );
         }
@@ -171,31 +169,29 @@ public final class NodeSelectionToolTest {
         if ( tp.hoverNodeForTest() != null ) {
             fail( ok, "a branch click should suppress the hover preview on the just-clicked branch" );
         }
-        tp.mouseMoved( move( tp, b_mid ) ); // still on B -> stays suppressed
+        tp.mouseMoved( move( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) ); // still on B -> stays suppressed
         if ( tp.hoverNodeForTest() != null ) {
             fail( ok, "the preview should stay suppressed while the pointer remains on the just-clicked branch" );
         }
         tp.mouseMoved( move( tp, new Point( 3, 3 ) ) ); // off any branch -> clears the suppression
-        tp.mouseMoved( move( tp, b_mid ) ); // back onto B -> preview resumes (B is selected -> a remove)
+        tp.mouseMoved( move( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) ); // back onto B -> preview resumes (B is selected -> a remove)
         if ( ( tp.hoverNodeForTest() != b ) || !tp.hoverWouldDeselectForTest() ) {
             fail( ok, "moving off and back onto the branch should resume the (remove) preview" );
         }
 
-        // shift-click on a branch selects the subtree in ANY click-to mode (not just Select-Node(s))
+        // a shift-click on another branch selects that subtree too
         tp.setFoundNodes0( null );
-        cp.setActionWhenNodeClicked( NodeClickAction.SHOW_DATA );
         tp.mouseClicked( click( tp, a_mid, InputEvent.SHIFT_DOWN_MASK ) );
         if ( ( count( tp ) != 2 ) || !allSelected( tp, a.getAllExternalDescendants() ) ) {
-            fail( ok, "shift-click on a branch should select its subtree regardless of the click-to mode" );
+            fail( ok, "shift-click on a branch should select its subtree" );
         }
 
-        // hover preview: over B's branch (Select-Node(s) mode) -> hand cursor, B is the preview node, and since
+        // hover preview: over B's branch with Shift held -> hand cursor, B is the preview node, and since
         // B is not yet selected the preview is an "add" (not a deselect)
         tp.setFoundNodes0( null );
-        cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
-        tp.mouseMoved( move( tp, b_mid ) );
+        tp.mouseMoved( move( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) );
         if ( tp.getCursor().getType() != Cursor.HAND_CURSOR ) {
-            fail( ok, "hovering a branch in Select-Node(s) mode should show the hand cursor" );
+            fail( ok, "hovering a branch with Shift held should show the hand cursor" );
         }
         if ( tp.hoverNodeForTest() != b ) {
             fail( ok, "hovering B's branch should set B as the hover-preview node" );
@@ -207,7 +203,7 @@ public final class NodeSelectionToolTest {
 
         // once B's subtree is fully selected, hovering it previews a REMOVE (direction-aware)
         tp.selectSubtreeTips( b );
-        tp.mouseMoved( move( tp, b_mid ) );
+        tp.mouseMoved( move( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) );
         if ( !tp.hoverWouldDeselectForTest() ) {
             fail( ok, "hovering a fully-selected clade should preview a remove" );
         }
@@ -221,7 +217,7 @@ public final class NodeSelectionToolTest {
         if ( tp.hoverNodeForTest() != null ) {
             fail( ok, "moving off a branch should clear the hover preview" );
         }
-        tp.mouseMoved( move( tp, b_mid ) );
+        tp.mouseMoved( move( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) );
         tp.dispatchEvent( new MouseEvent( tp, MouseEvent.MOUSE_EXITED, System.currentTimeMillis(), 0, -1, -1, 0,
                                           false ) ); // routes through the registered MouseListener.mouseExited
         if ( tp.hoverNodeForTest() != null ) {
@@ -229,7 +225,7 @@ public final class NodeSelectionToolTest {
         }
 
         // replacing the tree clears any lingering hover preview (navigation swaps the tree)
-        tp.mouseMoved( move( tp, b_mid ) );
+        tp.mouseMoved( move( tp, b_mid, InputEvent.SHIFT_DOWN_MASK ) );
         if ( tp.hoverNodeForTest() == null ) {
             fail( ok, "test setup: hover should be set before the tree swap" );
         }
@@ -242,7 +238,7 @@ public final class NodeSelectionToolTest {
         tp.setFoundNodes0( null );
         final PhylogenyNode t0 = a.getChildNode( 0 );
         final Point t0_pt = new Point( Math.round( t0.getXcoord() ), Math.round( t0.getYcoord() ) );
-        tp.mouseMoved( move( tp, t0_pt ) );
+        tp.mouseMoved( move( tp, t0_pt, InputEvent.SHIFT_DOWN_MASK ) );
         if ( ( tp.hoverNodeForTest() != t0 ) || tp.hoverIsSubtreeForTest() ) {
             fail( ok, "hovering a leaf should preview that single node (not a subtree)" );
         }
@@ -250,13 +246,13 @@ public final class NodeSelectionToolTest {
             fail( ok, "hovering an unselected leaf should preview an add" );
         }
         tp.selectNode( t0 );
-        tp.mouseMoved( move( tp, t0_pt ) );
+        tp.mouseMoved( move( tp, t0_pt, InputEvent.SHIFT_DOWN_MASK ) );
         if ( !tp.hoverWouldDeselectForTest() ) {
             fail( ok, "hovering a selected leaf should preview a remove" );
         }
         // an internal node is also previewed as a single node (its own marker, not its tips)
         final Point a_pt = new Point( Math.round( a.getXcoord() ), Math.round( a.getYcoord() ) );
-        tp.mouseMoved( move( tp, a_pt ) );
+        tp.mouseMoved( move( tp, a_pt, InputEvent.SHIFT_DOWN_MASK ) );
         if ( ( tp.hoverNodeForTest() != a ) || tp.hoverIsSubtreeForTest() ) {
             fail( ok, "hovering an internal node should preview that single node" );
         }
@@ -264,19 +260,19 @@ public final class NodeSelectionToolTest {
 
         // clicking a node suppresses its preview until the pointer moves off it (like a branch click)
         tp.setFoundNodes0( null );
-        tp.mouseClicked( click( tp, t0_pt, 0 ) ); // node path -> selects t0
+        tp.mouseClicked( click( tp, t0_pt, InputEvent.SHIFT_DOWN_MASK ) ); // node path -> selects t0
         if ( count( tp ) != 1 ) {
             fail( ok, "clicking a leaf should select it, got " + count( tp ) );
         }
         if ( tp.hoverNodeForTest() != null ) {
             fail( ok, "a node click should suppress its hover preview" );
         }
-        tp.mouseMoved( move( tp, t0_pt ) ); // still on t0 -> suppressed
+        tp.mouseMoved( move( tp, t0_pt, InputEvent.SHIFT_DOWN_MASK ) ); // still on t0 -> suppressed
         if ( tp.hoverNodeForTest() != null ) {
             fail( ok, "the preview should stay suppressed while the pointer remains on the just-clicked node" );
         }
         tp.mouseMoved( move( tp, new Point( 3, 3 ) ) ); // off -> clears the suppression
-        tp.mouseMoved( move( tp, t0_pt ) ); // back onto t0 -> preview resumes
+        tp.mouseMoved( move( tp, t0_pt, InputEvent.SHIFT_DOWN_MASK ) ); // back onto t0 -> preview resumes
         if ( tp.hoverNodeForTest() != t0 ) {
             fail( ok, "moving off and back onto the node should resume the preview" );
         }
@@ -298,10 +294,9 @@ public final class NodeSelectionToolTest {
         // mouse-exit and the legend branch call) must NOT release it -- otherwise a spurious exit would let the
         // just-selected node instantly flip to the grey "remove" preview -- but a tree change MUST clear it.
         tp.setFoundNodes0( null );
-        cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
         final PhylogenyNode leaf = a.getChildNode( 0 );
         final Point leaf_pt = new Point( Math.round( leaf.getXcoord() ), Math.round( leaf.getYcoord() ) );
-        tp.mouseClicked( click( tp, leaf_pt, 0 ) );
+        tp.mouseClicked( click( tp, leaf_pt, InputEvent.SHIFT_DOWN_MASK ) );
         if ( tp.clickSuppressedForTest() != leaf ) {
             fail( ok, "a node click should arm hover-suppression on the clicked node" );
         }
@@ -318,7 +313,6 @@ public final class NodeSelectionToolTest {
         // fill/outline shows selection). So a collapsed sub-clade inside a hovered subtree contributes NO mark...
         render( tp );
         tp.setFoundNodes0( null );
-        cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
         a.setCollapse( true ); // collapse only A; hovering the root's branch previews the whole tree
         render( tp );
         final Point root_conn2 = new Point( Math.round( root.getXcoord() ),
@@ -326,7 +320,7 @@ public final class NodeSelectionToolTest {
         if ( tp.findNode( root_conn2.x, root_conn2.y ) != null ) {
             fail( ok, "test setup: the root connector must be clear of node boxes" );
         }
-        tp.mouseMoved( move( tp, root_conn2 ) );
+        tp.mouseMoved( move( tp, root_conn2, InputEvent.SHIFT_DOWN_MASK ) );
         if ( ( tp.hoverNodeForTest() != root ) || !tp.hoverIsSubtreeForTest() ) {
             fail( ok, "hovering the root's branch should preview the whole subtree" );
         }
@@ -346,7 +340,7 @@ public final class NodeSelectionToolTest {
         if ( tp.findNode( a_tri.x, a_tri.y ) != a ) {
             fail( ok, "test setup: the collapsed clade-root should be findable at its own coords" );
         }
-        tp.mouseMoved( move( tp, a_tri ) );
+        tp.mouseMoved( move( tp, a_tri, InputEvent.SHIFT_DOWN_MASK ) );
         if ( tp.hoverNodeForTest() != a ) {
             fail( ok, "hovering a collapsed triangle must set the focus glow on it" );
         }
@@ -356,7 +350,7 @@ public final class NodeSelectionToolTest {
         render( tp );
         // clicking the collapsed triangle toggles its WHOLE clade's tips (like a branch click), so the fill responds
         tp.setFoundNodes0( null );
-        tp.mouseClicked( click( tp, a_tri, 0 ) );
+        tp.mouseClicked( click( tp, a_tri, InputEvent.SHIFT_DOWN_MASK ) );
         if ( ( count( tp ) != 2 ) || !allSelected( tp, a.getAllExternalDescendants() ) ) {
             fail( ok, "clicking a collapsed triangle should select its clade's 2 tips, got " + count( tp ) );
         }
@@ -365,7 +359,7 @@ public final class NodeSelectionToolTest {
             fail( ok, "clicking a collapsed triangle should fill it (all tips found), got " + clicked[ 2 ] + "/"
                     + clicked[ 3 ] );
         }
-        tp.mouseClicked( click( tp, a_tri, 0 ) ); // click again -> deselect the whole clade
+        tp.mouseClicked( click( tp, a_tri, InputEvent.SHIFT_DOWN_MASK ) ); // click again -> deselect the whole clade
         if ( count( tp ) != 0 ) {
             fail( ok, "clicking a fully-selected collapsed triangle should deselect its tips, got " + count( tp ) );
         }
@@ -412,8 +406,7 @@ public final class NodeSelectionToolTest {
             fail( ok, "a node hidden under a collapsed ancestor must not be found at its stale coords" );
         }
         tp.setFoundNodes0( null );
-        cp.setActionWhenNodeClicked( NodeClickAction.SELECT_NODES );
-        tp.mouseClicked( click( tp, gchild_pt, 0 ) );
+        tp.mouseClicked( click( tp, gchild_pt, InputEvent.SHIFT_DOWN_MASK ) );
         if ( count( tp ) != 0 ) {
             fail( ok, "clicking at a hidden node's stale coords must not select it, got " + count( tp ) );
         }
@@ -434,7 +427,12 @@ public final class NodeSelectionToolTest {
     }
 
     private static MouseEvent move( final TreePanel tp, final Point p ) {
-        return new MouseEvent( tp, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, p.x, p.y, 0, false );
+        return move( tp, p, 0 );
+    }
+
+    /** A pointer move with {@code modifiers} held -- {@code InputEvent.SHIFT_DOWN_MASK} for the selection preview. */
+    private static MouseEvent move( final TreePanel tp, final Point p, final int modifiers ) {
+        return new MouseEvent( tp, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), modifiers, p.x, p.y, 0, false );
     }
 
     /** The midpoint of {@code n}'s incoming horizontal branch (from its parent's x to its x, at its y). */
