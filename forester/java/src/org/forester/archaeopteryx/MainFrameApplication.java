@@ -2077,6 +2077,12 @@ public final class MainFrameApplication extends MainFrame {
         _launched_as_standalone_application = true;
     }
 
+    /** True when {@code Archaeopteryx.main} launched this JVM: then exit() and AptxUtil's fatal-error handlers
+     *  end it. */
+    static boolean isLaunchedAsStandaloneApplication() {
+        return _launched_as_standalone_application;
+    }
+
     private void registerMacOsQuitHandler() {
         try {
             if (Desktop.isDesktopSupported()
