@@ -62,6 +62,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.JList;
@@ -793,7 +794,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         addDisplayCheckbox(DisplayOption.USE_STYLE);
         addDisplayCheckbox(DisplayOption.WIDTH_BRANCHES);
         final JLabel label = new JLabel("Display Data:");
-        label.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(label);
         add(label);
         addDisplayCheckbox(DisplayOption.SHOW_NODE_NAMES);
         addDisplayCheckbox(DisplayOption.SHORTEN_LABELS);
@@ -1358,14 +1359,14 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void addJButton(final JButton jb, final JPanel p) {
         jb.setFocusPainted(false);
-        jb.setFont(ControlPanel.jcb_font);
+        applyFont(jb, ControlPanel.jcb_font);
         p.add(jb);
         jb.addActionListener(this);
     }
 
     void addJCheckBox(final JCheckBox jcb, final JPanel p) {
         jcb.setFocusPainted(false);
-        jcb.setFont(ControlPanel.jcb_font);
+        applyFont(jcb, ControlPanel.jcb_font);
         jcb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
         p.add(jcb, "Center");
         jcb.addActionListener(this);
@@ -2064,12 +2065,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         _search_combine_panel = new JPanel(new BorderLayout(4, 0));
         _search_combine_panel.setBackground(getBackground());
         final JLabel lbl = new JLabel("Combine:");
-        lbl.setFont(ControlPanel.jcb_font);
+        applyFont(lbl, ControlPanel.jcb_font);
         _search_combine_combo = new JComboBox<>(new String[] { "independent", "A AND B", "A OR B" });
         _search_combine_combo.setSelectedIndex(0);
         _search_combine_combo.setToolTipText("How to combine the two search boxes: independent A/B highlights, or one "
                 + "result set -- A AND B (in both) / A OR B (in either)");
-        _search_combine_combo.setFont(ControlPanel.jcb_font);
+        applyFont(_search_combine_combo, ControlPanel.jcb_font);
         _search_combine_combo.setPreferredSize(new Dimension(10, _search_combine_combo.getPreferredSize().height));
         _search_combine_combo.addActionListener(e -> {
             if (!_search_controls_adjusting) {
@@ -2294,9 +2295,9 @@ final class ControlPanel extends JPanel implements ActionListener {
      */
     void setupColorByProperty() {
         final JLabel label = new JLabel("Color by:");
-        label.setFont(ControlPanel.jcb_font);
+        applyFont(label, ControlPanel.jcb_font);
         _color_by_property_cb = new JComboBox<String>();
-        _color_by_property_cb.setFont(ControlPanel.js_font);
+        applyFont(_color_by_property_cb, ControlPanel.js_font);
         _color_by_property_cb.setToolTipText("color leaves by the value of a metadata field");
         _color_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
         // show a friendly property name (no namespace prefix, underscores as spaces,
@@ -2324,9 +2325,9 @@ final class ControlPanel extends JPanel implements ActionListener {
      *  counterpart of "Color by:"). Only numeric refs appear -- see {@link #populateSizeByPropertyBox()}. */
     void setupSizeByProperty() {
         final JLabel label = new JLabel("Size by:");
-        label.setFont(ControlPanel.jcb_font);
+        applyFont(label, ControlPanel.jcb_font);
         _size_by_property_cb = new JComboBox<String>();
-        _size_by_property_cb.setFont(ControlPanel.js_font);
+        applyFont(_size_by_property_cb, ControlPanel.js_font);
         _size_by_property_cb.setToolTipText("scale the tip symbols by the value of a numeric metadata field");
         _size_by_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
         _size_by_property_cb.setRenderer(new DefaultListCellRenderer() {
@@ -2381,11 +2382,11 @@ final class ControlPanel extends JPanel implements ActionListener {
      *  geographic trait. Only appears for trees that carry such traits -- see {@link #populateAncestralPieBox()}. */
     void setupAncestralPieProperty() {
         _ancestral_pie_label = new JLabel("Ancestral pie:");
-        _ancestral_pie_label.setFont(ControlPanel.jcb_font);
+        applyFont(_ancestral_pie_label, ControlPanel.jcb_font);
         _ancestral_pie_property_cb = new JComboBox<String>();
         _ancestral_pie_property_cb.setToolTipText(
                 "Draw an ancestral-state pie on each internal node for the chosen trait: the slices are that clade's states and their proportions");
-        _ancestral_pie_property_cb.setFont(ControlPanel.js_font);
+        applyFont(_ancestral_pie_property_cb, ControlPanel.js_font);
         _ancestral_pie_property_cb
                 .setToolTipText("show an ancestral-state pie chart at each node for a discrete/geographic trait");
         _ancestral_pie_property_cb.addItem(COLOR_BY_PROPERTY_NONE);
@@ -2472,7 +2473,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         g.add(_branch_length_time_tb);
         g.add(_branch_length_div_tb);
         for (final JToggleButton b : new JToggleButton[] { _branch_length_time_tb, _branch_length_div_tb }) {
-            b.setFont(ControlPanel.jcb_font);
+            applyFont(b, ControlPanel.jcb_font);
             // the documented FlatLaf trap: buttons in a narrow column fall below the L&F minimum width and clip
             // their text to "..." unless the margins are trimmed
             b.setMargin(new Insets(2, 1, 2, 1));
@@ -2480,7 +2481,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         _branch_length_time_tb.setSelected(true);
         _branch_lengths_panel = new JPanel(new GridLayout(1, 2, 0, 0));
-        _branch_lengths_panel.setFont(ControlPanel.jcb_font);
+        applyFont(_branch_lengths_panel, ControlPanel.jcb_font);
         _branch_lengths_panel.add(_branch_length_time_tb);
         _branch_lengths_panel.add(_branch_length_div_tb);
         add(_branch_lengths_panel);
@@ -2489,7 +2490,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         // the switch would be, on a divergence tree whose tips alone are dated: the root-to-tip kind); a button of
         // its own because it opens a window and leaves the layout alone (as in Archaeopteryx.js)
         _clock_plot_tb = new JToggleButton(ClockPlotWindow.TITLE);
-        _clock_plot_tb.setFont(ControlPanel.jcb_font);
+        applyFont(_clock_plot_tb, ControlPanel.jcb_font);
         _clock_plot_tb.setMargin(new Insets(2, 1, 2, 1));
         describe(_clock_plot_tb, CLOCK_PLOT_TIP);
         _clock_plot_tb.addActionListener(e -> {
@@ -2653,8 +2654,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setupControls() {
-        setupThemeToggle();
-        nextRowGap(SECTION_GAP); // more space between the theme toggle and the layout row
+        if (!getMainFrame()._embedded) {
+            setupThemeToggle();
+            nextRowGap(SECTION_GAP); // more space between the theme toggle and the layout row
+        }
         setupLayoutButtons();
         nextRowGap(TIGHT_GAP); // layout and P/A/C are both "how the tree is drawn" -- keep them as one block
         setupTreeDisplayTypeOptions();
@@ -2719,7 +2722,7 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setupSearchOptions() {
         final JLabel header = new JLabel("Search Options:");
-        header.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(header);
         add(header);
         _search_case_sensitive_cb = new JCheckBox(MainFrame.SEARCH_CASE_SENSITIVE_LABEL);
         _search_inverse_cb = new JCheckBox(MainFrame.INVERSE_SEARCH_RESULT_LABEL);
@@ -2738,7 +2741,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         };
         for (final JCheckBox cb : new JCheckBox[] { _search_case_sensitive_cb, _search_inverse_cb }) {
             cb.setFocusPainted(false);
-            cb.setFont(ControlPanel.jcb_font);
+            applyFont(cb, ControlPanel.jcb_font);
             cb.setMargin(new Insets(0, 0, 0, 0)); // trim vertical padding so the checkboxes pack tightly
             cb.addActionListener(l);
         }
@@ -2958,7 +2961,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     /** The range upper-bound text field for a box; typing in it re-runs that box's (numeric range) search. */
     private JTextField makeRangeField(final boolean box_a) {
         final JTextField tf = new JTextField(3);
-        tf.setFont(ControlPanel.jcb_font);
+        applyFont(tf, ControlPanel.jcb_font);
         tf.setToolTipText("range upper bound");
         installTextUndo(tf);
         tf.addKeyListener(new KeyAdapter() {
@@ -2984,7 +2987,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         final JPanel p = new JPanel(new BorderLayout(2, 0));
         p.setBackground(getBackground());
         final JLabel to = new JLabel("to ");
-        to.setFont(ControlPanel.jcb_font);
+        applyFont(to, ControlPanel.jcb_font);
         p.add(to, BorderLayout.WEST);
         p.add(range_tf, BorderLayout.CENTER);
         p.setVisible(false);
@@ -2995,7 +2998,7 @@ final class ControlPanel extends JPanel implements ActionListener {
      *  combo shows each field's/mode's friendly label), and a tiny preferred width so the full-width GridBag row
      *  stretches them without the widest item forcing the whole panel wider. */
     private void styleSearchCombo(final JComboBox<?> combo) {
-        combo.setFont(ControlPanel.jcb_font);
+        applyFont(combo, ControlPanel.jcb_font);
         combo.setRenderer(SEARCH_LABEL_RENDERER);
         combo.setPreferredSize(new Dimension(10, combo.getPreferredSize().height));
     }
@@ -3186,7 +3189,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setupThemeToggle() {
         _theme_toggle_b = new JButton();
         _theme_toggle_b.setFocusPainted(false);
-        _theme_toggle_b.setFont(ControlPanel.jcb_font);
+        applyFont(_theme_toggle_b, ControlPanel.jcb_font);
         // borderless, so a lone icon at the top of the panel reads as a switch rather than a stray button
         _theme_toggle_b.putClientProperty(FlatClientProperties.BUTTON_TYPE,
                 FlatClientProperties.BUTTON_TYPE_TOOLBAR_BUTTON);
@@ -3259,7 +3262,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         getDisplayAsAlignedPhylogramRb().addActionListener(this);
         getDisplayAsCladogramRb().addActionListener(this);
         final JPanel p = new JPanel(new GridLayout(1, 3, 0, 0));
-        p.setFont(ControlPanel.jcb_font);
+        applyFont(p, ControlPanel.jcb_font);
         p.add(_display_as_unaligned_phylogram_rb);
         p.add(_display_as_aligned_phylogram_rb);
         p.add(_display_as_cladogram_rb);
@@ -3298,7 +3301,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     /** Icon-only toggles in a narrow panel: no focus ring, and margins trimmed so five of them fit a row. */
     private void setupGlyphToggle(final JToggleButton b) {
         b.setFocusPainted(false);
-        b.setFont(ControlPanel.jcb_font);
+        applyFont(b, ControlPanel.jcb_font);
         b.setMargin(new Insets(3, 1, 3, 1));
     }
 
@@ -3570,7 +3573,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_out_domain_structure.setToolTipText(
                 "Narrow the protein-domain track, handing the width it gives up back to the alignment");
         _domain_structure_evalue_thr_tf = new JTextField(3);
-        _domain_structure_evalue_thr_tf.setFont(ControlPanel.jcb_font);
+        applyFont(_domain_structure_evalue_thr_tf, ControlPanel.jcb_font);
         _domain_structure_evalue_thr_tf.setEditable(false);
         final JPanel d1_panel = new JPanel(new GridLayout(1, 2, 0, 0));
         final JPanel d2_panel = new JPanel(new GridLayout(1, 3, 0, 0));
@@ -3586,7 +3589,7 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setupSearchTools0() {
         final JLabel search_label = new JLabel("Search (A):");
-        search_label.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(search_label);
         add(search_label);
         search_label.setToolTipText(SEARCH_TIP_TEXT);
         _search_field_0 = makeSearchFieldCombo(true);
@@ -3595,9 +3598,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         add(_search_mode_0);
         _search_found_label_0 = new JLabel();
         getSearchFoundCountsLabel0().setVisible(false);
-        _search_found_label_0.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(_search_found_label_0);
         _search_tf_0 = new JTextField(3);
-        _search_tf_0.setFont(ControlPanel.jcb_font);
+        applyFont(_search_tf_0, ControlPanel.jcb_font);
         _search_tf_0.setToolTipText(SEARCH_TIP_TEXT);
         installTextUndo(_search_tf_0);
         _search_tf_0.setEditable(true);
@@ -3647,7 +3650,7 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setupSearchTools1() {
         final JLabel search_label = new JLabel("Search (B):");
-        search_label.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(search_label);
         add(search_label);
         search_label.setToolTipText(SEARCH_TIP_TEXT);
         _search_field_1 = makeSearchFieldCombo(false);
@@ -3656,9 +3659,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         add(_search_mode_1);
         _search_found_label_1 = new JLabel();
         getSearchFoundCountsLabel1().setVisible(false);
-        _search_found_label_1.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(_search_found_label_1);
         _search_tf_1 = new JTextField(3);
-        _search_tf_1.setFont(ControlPanel.jcb_font);
+        applyFont(_search_tf_1, ControlPanel.jcb_font);
         _search_tf_1.setToolTipText(SEARCH_TIP_TEXT);
         installTextUndo(_search_tf_1);
         _search_tf_1.setEditable(true);
@@ -3713,7 +3716,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 -1);
         _search_next_button = makeSearchNavButton("▶", "Center the next search hit in the view (⌘G)", 1);
         _search_nav_label = new JLabel("", javax.swing.SwingConstants.CENTER);
-        _search_nav_label.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(_search_nav_label);
         _search_nav_label.setToolTipText("Position among the search hits");
         _search_nav_panel = new JPanel(new BorderLayout());
         _search_nav_panel.setBackground(getBackground());
@@ -3727,7 +3730,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton makeSearchNavButton(final String glyph, final String tip, final int dir) {
         final JButton b = new JButton(glyph);
         b.setFocusPainted(false);
-        b.setFont(ControlPanel.jcb_bold_font);
+        applyBoldFont(b);
         b.setMargin(new Insets(2, 10, 2, 10)); // roomy enough to match the sibling zoom buttons' height
         b.setToolTipText(tip);
         b.addActionListener(new ActionListener() {
@@ -4418,9 +4421,20 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    final static JLabel customizeLabel(final JLabel label, final Configuration configuration) {
-        label.setFont(ControlPanel.jcb_bold_font);
+    final JLabel customizeLabel(final JLabel label, final Configuration configuration) {
+        applyBoldFont(label);
         return label;
+    }
+
+    // the static fonts are JVM-wide; an embedded viewer keeps the fonts the host's look and feel installed
+    private void applyFont(final JComponent c, final Font font) {
+        if (!getMainFrame()._embedded) {
+            c.setFont(font);
+        }
+    }
+
+    private void applyBoldFont(final JComponent c) {
+        c.setFont(getMainFrame()._embedded ? c.getFont().deriveFont(Font.BOLD) : jcb_bold_font);
     }
 
     final public JCheckBox getUseBranchWidthsCb() {

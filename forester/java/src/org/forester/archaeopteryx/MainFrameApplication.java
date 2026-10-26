@@ -185,22 +185,30 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     private MainFrameApplication(final Phylogeny[] phys, final Configuration config, final String title) {
-        this(phys, config, title, null);
+        this(phys, config, title, null, false);
     }
 
     private MainFrameApplication(final Phylogeny[] phys,
                                  final Configuration config,
                                  final String title,
-                                 final File current_dir) {
+                                 final File current_dir,
+                                 final boolean embedded) {
         super();
         _configuration = config;
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        // built before FlatLaf is installed, as the frame itself was: a frame built after it gets FlatLaf's own
-        // title bar, with the menu bar inside it, on Windows
-        _window = new JFrame();
-        installLookAndFeel(_configuration.getUi());
+        _embedded = embedded;
+        if (embedded) {
+            // the host owns the look and feel; the canvas takes the built-in light theme, not the one a standalone
+            // user saved (Configuration.getUi() would read it from java.util.prefs)
+            _configuration.setUi(Configuration.UI.FLAT_LIGHT);
+        } else {
+            // built before FlatLaf is installed: a frame built after it gets FlatLaf's own title bar, with the menu
+            // bar inside it, on Windows
+            _window = new JFrame();
+            installLookAndFeel(_configuration.getUi());
+        }
         // the export/save choosers were created in the super-constructor, before the
         // look-and-feel above was installed; refresh them, so they are not left with the
         // platform default (e.g. the native macOS file dialog instead of FlatLaf).
@@ -210,9 +218,13 @@ public final class MainFrameApplication extends MainFrame {
         }
         // restore each dialog's last-used directory from the previous session (a saved dir that no longer exists is
         // ignored later, lazily, by getCurrentDir -- which then falls back to the startup dir / home).
-        new DirectoryPreferences().applyTo(_current_dirs);
-        setOptions(optionsWithSavedPreferences());
-        registerMacOsQuitHandler();
+        if (!embedded) {
+            new DirectoryPreferences().applyTo(_current_dirs);
+        }
+        setOptions(embedded ? Options.createInstance() : optionsWithSavedPreferences());
+        if (!embedded) {
+            registerMacOsQuitHandler();
+        }
         _mainpanel = new MainPanel(_configuration, this);
         installTabContextMenu();
         // The file dialogs
@@ -258,7 +270,9 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane = getContentPane();
         _contentpane.setLayout(new BorderLayout());
         _contentpane.add(_mainpanel, BorderLayout.CENTER);
-        setUpWindow();
+        if (!embedded) {
+            setUpWindow();
+        }
         // The component listener
         addComponentListener(new ComponentAdapter() {
 
@@ -273,7 +287,9 @@ public final class MainFrameApplication extends MainFrame {
         });
         requestFocusInWindow();
         // addKeyListener( this );
-        _window.setVisible(true);
+        if (!embedded) {
+            _window.setVisible(true);
+        }
         if ((phys != null) && (phys.length > 0)) {
             AptxUtil.addPhylogeniesToTabs(phys, title, null, _configuration, _mainpanel);
             validate();
@@ -1290,7 +1306,9 @@ public final class MainFrameApplication extends MainFrame {
                 getMainPanel());
         _mainpanel.getControlPanel().showWhole();
         // remember it only now: a file that could not be parsed is not somewhere the user wants to return to
-        _recent_files.add(file);
+        if (!_embedded) {
+            _recent_files.add(file);
+        }
         rebuildOpenRecentMenu();
         if (nhx_or_nexus && one_desc) {
             JOptionPane.showMessageDialog(this,
@@ -1638,13 +1656,13 @@ public final class MainFrameApplication extends MainFrame {
     private JMenu buildDemoTreesSubmenu() {
         final JMenu demo_menu = MainFrame.createMenu("Demo Trees", getConfiguration());
         demo_menu.setToolTipText("Open a pre-configured example tree that showcases a capability of Archaeopteryx.");
-        demo_menu.setFont(MainFrame.menu_font); // a submenu needs the item font set explicitly when custom colours are off
+        applyMenuFont(demo_menu); // a submenu needs the item font set explicitly when custom colours are off
         for (final DemoTrees.Demo demo : DemoTrees.catalog()) {
             final JMenuItem item = new JMenuItem(demo.label());
             item.setToolTipText(demo.tooltip());
             // style the item like the others, but do NOT route it through customizeJMenuItem: that also adds the global
             // MainFrame action dispatcher (this) as a listener, which would double-fire alongside the demo lambda
-            item.setFont(MainFrame.menu_font);
+            applyMenuFont(item);
             item.addActionListener(e -> openDemo(demo));
             demo_menu.add(item);
         }
@@ -1667,8 +1685,10 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.setToolTipText("Read, save, and export trees; close tabs or exit");
         _file_jmenu.add(_open_item = new JMenuItem("Open..."));
         _open_item.setToolTipText("Open a tree file (phyloXML, Newick/NHX, Nexus, Auspice JSON, ToL)");
-        _file_jmenu.add(_open_recent_menu = new JMenu("Open Recent"));
-        _open_recent_menu.setFont(MainFrame.menu_font); // a submenu does not inherit the item font (see CollapseMenuFontTest)
+        if (!_embedded) {
+            _file_jmenu.add(_open_recent_menu = new JMenu("Open Recent"));
+            _open_recent_menu.setFont(MainFrame.menu_font); // a submenu does not inherit the item font (see CollapseMenuFontTest)
+        }
         rebuildOpenRecentMenu();
         _file_jmenu.addSeparator();
         _file_jmenu.add(buildDemoTreesSubmenu()); // pre-configured example trees, bundled in the jar (like Cytoscape)
@@ -1734,8 +1754,10 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
         _close_item.setEnabled(true);
-        _file_jmenu.addSeparator();
-        _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
+        if (!_embedded) {
+            _file_jmenu.addSeparator();
+            _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
+        }
         customizeJMenuItem(_open_item);
           customizeJMenuItem(_save_item);
         if (getConfiguration().isEditable()) {
@@ -1937,7 +1959,7 @@ public final class MainFrameApplication extends MainFrame {
                     // Time Axis); refreshOpenSettingsDialog() guards on isShowing(), so a closed/hidden one is inert
                     final SettingsDialog d = new SettingsDialog(MainFrameApplication.this);
                     setOpenSettingsDialog(d);
-                    d.setVisible(true);
+                    showViewerWindow(d);
                 });
             }
 
@@ -2008,7 +2030,7 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.addSeparator();
         // Collapsing
         final JMenu collapse_menu = createMenu("Collapse Branches", getConfiguration());
-        collapse_menu.setFont(MainFrame.menu_font); // match the sibling items (createMenu sets the font only in custom-colors mode)
+        applyMenuFont(collapse_menu); // match the sibling items (createMenu sets the font only in custom-colors mode)
         collapse_menu.setToolTipText("Permanently collapse weakly-supported or very short branches into polytomies");
         collapse_menu.add(_collapse_below_threshold = new JMenuItem("Collapse Weakly-Supported Branches…"));
         customizeJMenuItem(_collapse_below_threshold);
@@ -2122,7 +2144,7 @@ public final class MainFrameApplication extends MainFrame {
                                            final Configuration config,
                                            final String title,
                                            final File current_dir) {
-        final MainFrameApplication mf = onEventThread(() -> new MainFrameApplication(phys, config, title, current_dir));
+        final MainFrameApplication mf = onEventThread(() -> new MainFrameApplication(phys, config, title, current_dir, false));
         if (_launched_as_standalone_application) {
             mf.startUpdateCheckIfEnabled(); // the real app only: never from a test or an embedding program
         }
@@ -2131,6 +2153,23 @@ public final class MainFrameApplication extends MainFrame {
 
     static MainFrame createInstance(final Phylogeny[] phys, final Configuration config, final String title) {
         return onEventThread(() -> new MainFrameApplication(phys, config, title));
+    }
+
+    /**
+     * Builds a viewer for another Swing program to host. It has no window of its own: the host adds this panel to
+     * one of its windows, installs {@link #getJMenuBar()} there, and calls {@link #end()} when it closes the viewer,
+     * since the viewer's File menu has no Exit. After {@link #end()} the host removes the panel and the menu bar, or
+     * disposes their window. The viewer leaves the look and feel and {@code UIManager}'s defaults alone, never ends
+     * the JVM, and neither reads nor writes the user's saved display settings, directories, recent files or theme.
+     *
+     * @param phys   the trees, one tab each; may be empty
+     * @param config the viewer's configuration, not null; its theme is set to the light one
+     * @param title  the default tab name, for a tree with neither a name nor an identifier
+     */
+    public static MainFrameApplication createEmbeddedInstance(final Phylogeny[] phys,
+                                                              final Configuration config,
+                                                              final String title) {
+        return onEventThread(() -> new MainFrameApplication(phys, config, title, null, true));
     }
 
     /**

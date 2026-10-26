@@ -1459,6 +1459,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Embedding host: ");
+        if (org.forester.test.EmbeddingHostTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Keyboard shortcuts reference: ");
         if (org.forester.archaeopteryx.KeyboardShortcutsTest.test()) {
             System.out.println("OK.");

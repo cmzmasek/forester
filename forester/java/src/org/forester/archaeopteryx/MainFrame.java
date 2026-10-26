@@ -49,6 +49,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -408,6 +409,9 @@ public abstract class MainFrame extends JPanel implements ActionListener {
     /** The window a standalone viewer runs in, created by {@link MainFrameApplication}; null when another program
      *  hosts the viewer in a window of its own. */
     JFrame _window;
+    /** True for a viewer from {@link MainFrameApplication#createEmbeddedInstance}: it leaves the look and feel alone
+     *  and keeps no saved settings. */
+    boolean _embedded;
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
@@ -1442,7 +1446,7 @@ public abstract class MainFrame extends JPanel implements ActionListener {
                 + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>Import "
                 + "Metadata (CSV/TSV) first if the tree has no per-tip data yet.</i></html>");
         final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
-        order_menu.setFont(MainFrame.menu_font); // createMenu sets the font only in custom-colors mode
+        applyMenuFont(order_menu); // createMenu sets the font only in custom-colors mode
         order_menu.setToolTipText("How this tab's heat-map matrix orders its columns (the other columns keep their "
                 + "place)");
         final ButtonGroup order_group = new ButtonGroup();
@@ -2682,9 +2686,17 @@ public abstract class MainFrame extends JPanel implements ActionListener {
     }
 
 
+    /** Gives {@code c} {@link #menu_font}, which is JVM-wide; an embedded viewer's menus keep the host's
+     *  look-and-feel fonts. */
+    void applyMenuFont(final JComponent c) {
+        if (!_embedded) {
+            c.setFont(menu_font);
+        }
+    }
+
     void customizeCheckBoxMenuItem(final JCheckBoxMenuItem item, final boolean is_selected) {
         if (item != null) {
-            item.setFont(MainFrame.menu_font);
+            applyMenuFont(item);
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -2692,7 +2704,7 @@ public abstract class MainFrame extends JPanel implements ActionListener {
 
     JMenuItem customizeJMenuItem(final JMenuItem jmi) {
         if (jmi != null) {
-            jmi.setFont(MainFrame.menu_font);
+            applyMenuFont(jmi);
             jmi.addActionListener(this);
         }
         return jmi;
@@ -2700,7 +2712,7 @@ public abstract class MainFrame extends JPanel implements ActionListener {
 
     void customizeRadioButtonMenuItem(final JRadioButtonMenuItem item, final boolean is_selected) {
         if (item != null) {
-            item.setFont(MainFrame.menu_font);
+            applyMenuFont(item);
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -3417,6 +3429,9 @@ public abstract class MainFrame extends JPanel implements ActionListener {
     }
 
     void setDarkMode(final boolean dark) {
+        if (_embedded) {
+            return; // the look and feel, and every window it restyles, belong to the host
+        }
         final Configuration.UI ui = dark ? Configuration.UI.FLAT_DARK : Configuration.UI.FLAT_LIGHT;
         getConfiguration().setUi(ui);
         Configuration.saveUiPreference(ui);
@@ -3771,7 +3786,9 @@ public abstract class MainFrame extends JPanel implements ActionListener {
         // 2. push the defaults out to the menu controls, so a later updateOptions() reads defaults, not stale state
         applyOptionsToMenuStates(getOptions());
         // 3. forget the persisted settings so the reset survives the next launch
-        new GuiPreferences().deleteSettingsFile();
+        if (!_embedded) {
+            new GuiPreferences().deleteSettingsFile();
+        }
         // 4. theme -> shipped default (FlatLaf light); re-inits the L&F and restyles every open window live
         setDarkMode(false);
         if (getMainPanel() != null) {
@@ -5039,7 +5056,9 @@ public abstract class MainFrame extends JPanel implements ActionListener {
         // picker a left-to-right reading order (Selected, Not-selected, All, Cancel) is clearer, so force
         // forward button order for just this dialog and restore the previous setting afterwards.
         final Object prev_yes_last = UIManager.get("OptionPane.isYesLast");
-        UIManager.put("OptionPane.isYesLast", Boolean.FALSE);
+        if (!_embedded) { // JVM-wide: a host dialog opened meanwhile would see it
+            UIManager.put("OptionPane.isYesLast", Boolean.FALSE);
+        }
         final int choice;
         try {
             choice = JOptionPane.showOptionDialog(this,
@@ -5048,7 +5067,9 @@ public abstract class MainFrame extends JPanel implements ActionListener {
                     options[0]);
         }
         finally {
-            UIManager.put("OptionPane.isYesLast", prev_yes_last);
+            if (!_embedded) {
+                UIManager.put("OptionPane.isYesLast", prev_yes_last);
+            }
         }
         switch (choice) {
             case 0:
