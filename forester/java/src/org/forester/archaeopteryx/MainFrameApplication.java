@@ -2161,6 +2161,7 @@ public final class MainFrameApplication extends MainFrame {
      * since the viewer's File menu has no Exit. After {@link #end()} the host removes the panel and the menu bar, or
      * disposes their window. The viewer leaves the look and feel and {@code UIManager}'s defaults alone, never ends
      * the JVM, and neither reads nor writes the user's saved display settings, directories, recent files or theme.
+     * The trees are fitted once the host has laid the panel out.
      *
      * @param phys   the trees, one tab each; may be empty
      * @param config the viewer's configuration, not null; its theme is set to the light one

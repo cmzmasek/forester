@@ -20,6 +20,8 @@
 
 package org.forester.test;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Window;
 import java.io.IOException;
@@ -35,6 +37,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Configuration;
@@ -102,6 +106,21 @@ public final class EmbeddingHostTest {
                 final JMenu file = menu( viewer.getJMenuBar(), "File" );
                 if ( ( file == null ) || hasItem( file, "Exit" ) ) {
                     ok[ 0 ] = fail( "an embedded viewer's File menu must have no Exit: the host closes the viewer" );
+                }
+                final JTabbedPane tabs = viewer.getMainPanel().getTabbedPane();
+                if ( tabs.getTabCount() != 2 ) {
+                    ok[ 0 ] = fail( "each tree must get a tab, found " + tabs.getTabCount() + " tabs for 2 trees" );
+                }
+                for( int i = 0; i < tabs.getTabCount(); ++i ) {
+                    tabs.setSelectedIndex( i );
+                    final Component tree = viewer.getMainPanel().getCurrentTreePanel();
+                    final JViewport vp = (JViewport) SwingUtilities.getAncestorOfClass( JViewport.class, tree );
+                    final Dimension pref = tree.getPreferredSize();
+                    final Dimension extent = vp.getExtentSize();
+                    if ( ( pref.width > ( extent.width + 8 ) ) || ( pref.height < ( extent.height * 0.7 ) ) ) {
+                        ok[ 0 ] = fail( "tab " + i + " must fill its viewport with no fit call from the host "
+                                + "(preferred " + pref + ", viewport " + extent + ")" );
+                    }
                 }
                 viewer.end();
             } );

@@ -3810,6 +3810,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         _mainpanel.getCurrentTreePanel().updateOvSettings();
         _mainpanel.getCurrentTreePanel().validate();
         _mainpanel.validate();
+        if (_mainpanel.deferFitUntilSized()) {
+            return;
+        }
         _mainpanel.getCurrentTreePanel().calcParametersForPainting(_mainpanel.getSizeOfViewport().width,
                 _mainpanel.getSizeOfViewport().height);
         // radial "fit to window": re-fit the square radial canvas to the viewport (zoom back to whole)
@@ -4128,9 +4131,16 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void showWholeAll() {
+        if (_mainpanel.deferFitUntilSized()) {
+            return;
+        }
         for (final TreePanel tree_panel : _mainpanel.getTreePanels()) {
             if (tree_panel != null) {
                 tree_panel.validate();
+                if (tree_panel.isRadialLayout()) {
+                    // showWhole refits only the current tab; a radial tab laid out unsized keeps the fallback diameter
+                    tree_panel.fitRadialTo(_mainpanel.getSizeOfViewport().width, _mainpanel.getSizeOfViewport().height);
+                }
                 tree_panel.calcParametersForPainting(_mainpanel.getSizeOfViewport().width,
                         _mainpanel.getSizeOfViewport().height);
                 tree_panel.resetPreferredSize();
