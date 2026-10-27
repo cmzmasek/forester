@@ -126,10 +126,23 @@ public final class ControlButtonIconTest {
         if ( total_diff < ( ( SIZE * SIZE ) / 24 ) ) {
             return fail( "the two rotate directions must be visibly different, only " + total_diff + " px apart" );
         }
-        if ( bottomHalfDiff( cw, ccw ) < ( ( total_diff * 3 ) / 4 ) ) {
+        // WHERE it sits is measured on CORE ink against NONE (alpha > 128 on one side, <= 40 on the other), never
+        // on the fringe: the two arcs are flattened from different start angles, so their antialiasing differs
+        // by a few units all round the ring, and a fringe pixel near the 40 threshold flips with the size -- at
+        // 18 px (the glyph size the 12-point GUI font gives, 2026-10-27) 18 of 52 fringe pixels sat in the top
+        // half, at 17 only 7, with the heads in the same place. The core difference sits at the heads at every
+        // size from 13 to 26 (measured: top half 0-4 px); a wrong-way sweep moves it to the top.
+        final int core_diff = coreDiff( cw, ccw );
+        // precondition for the ratio below: there IS a core difference to place (a pair differing only in its
+        // fringe would pass "0 of 0" vacuously); a 48th of the area: 3 px at 13, 6 at 18, 12 at 24 (measured
+        // 6 / 16 / 33)
+        if ( core_diff < ( ( SIZE * SIZE ) / 48 ) ) {
+            return fail( "the two rotate directions must differ in core ink, only " + core_diff + " px" );
+        }
+        if ( bottomHalfCoreDiff( cw, ccw ) < ( ( core_diff * 3 ) / 4 ) ) {
             return fail( "the difference between the rotate directions must sit at the heads by the gap, not "
-                    + "elsewhere on the ring (" + bottomHalfDiff( cw, ccw ) + " of " + total_diff
-                    + " px in the bottom half)" );
+                    + "elsewhere on the ring (" + bottomHalfCoreDiff( cw, ccw ) + " of " + core_diff
+                    + " core px in the bottom half)" );
         }
         // ---- and not confusable with the round glyphs elsewhere on the panel --------------------------
         final BufferedImage circular_layout = render( new LayoutIcon( LayoutIcon.Kind.CIRCULAR, SIZE ) );
@@ -215,6 +228,35 @@ public final class ControlButtonIconTest {
             }
         }
         return n;
+    }
+
+    /** Pixels where one image has CORE ink (alpha > 128) and the other NONE (alpha <= 40): the fringe is ignored. */
+    private static int coreDiff( final BufferedImage a, final BufferedImage b ) {
+        return coreDiff( a, b, 0 );
+    }
+
+    private static int bottomHalfCoreDiff( final BufferedImage a, final BufferedImage b ) {
+        return coreDiff( a, b, a.getHeight() / 2 );
+    }
+
+    private static int coreDiff( final BufferedImage a, final BufferedImage b, final int from_y ) {
+        int n = 0;
+        for ( int y = from_y; y < a.getHeight(); y++ ) {
+            for ( int x = 0; x < a.getWidth(); x++ ) {
+                if ( ( core( a, x, y ) && none( b, x, y ) ) || ( core( b, x, y ) && none( a, x, y ) ) ) {
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
+    private static boolean core( final BufferedImage img, final int x, final int y ) {
+        return ( ( img.getRGB( x, y ) >> 24 ) & 0xff ) > 128;
+    }
+
+    private static boolean none( final BufferedImage img, final int x, final int y ) {
+        return ( ( img.getRGB( x, y ) >> 24 ) & 0xff ) <= 40;
     }
 
     /** Width over height of the glyph's ink bounding box. */

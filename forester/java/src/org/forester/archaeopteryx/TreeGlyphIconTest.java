@@ -41,9 +41,9 @@ import javax.swing.JLabel;
  */
 public final class TreeGlyphIconTest {
 
-    // large enough that a 3-tip glyph has separable tips at 1 px of antialiasing slack; the control panel draws
-    // these at ~17 px, and the structural assertions below hold across that range
-    private static final int SIZE = 24;
+    // 24: large enough that a 3-tip glyph has separable tips at 1 px of antialiasing slack; and the sizes that
+    // SHIP on the control panel (at the 12-point GUI font: the layout row 18 px, the P/A/C row 22 px)
+    private static final int DESIGN_SIZE = 24;
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -52,13 +52,25 @@ public final class TreeGlyphIconTest {
     }
 
     public static boolean test() {
-        return layoutIcons() && displayTypeIcons() && disabledFades();
+        for ( final int size : new int[] { DESIGN_SIZE, ControlPanel.glyphIconSize() } ) {
+            if ( !layoutIcons( size ) || !disabledFades( size ) ) {
+                System.out.println( "   (at layout glyph size " + size + " px)" );
+                return false;
+            }
+        }
+        for ( final int size : new int[] { DESIGN_SIZE, ControlPanel.displayTypeIconSize() } ) {
+            if ( !displayTypeIcons( size ) ) {
+                System.out.println( "   (at display-type glyph size " + size + " px)" );
+                return false;
+            }
+        }
+        return true;
     }
 
     /** A DISABLED layout / P-A-C button must fade its glyph (Swing/FlatLaf will not do it for a custom Icon);
      *  these buttons really are disabled in practice -- all of P/A/C for a tree without branch lengths, "A" in
      *  unrooted -- and a full-strength glyph on a dead button looks clickable. */
-    private static boolean disabledFades() {
+    private static boolean disabledFades( final int SIZE ) {
         final JLabel disabled = new JLabel();
         disabled.setForeground( java.awt.Color.BLACK );
         disabled.setBackground( java.awt.Color.WHITE );
@@ -98,7 +110,7 @@ public final class TreeGlyphIconTest {
 
     // ---- LayoutIcon ------------------------------------------------------------------------------------
 
-    private static boolean layoutIcons() {
+    private static boolean layoutIcons( final int SIZE ) {
         final LayoutIcon.Kind[] kinds = LayoutIcon.Kind.values();
         if ( kinds.length != 5 ) {
             return fail( "there must be exactly five primary display types, got " + kinds.length );
@@ -191,7 +203,7 @@ public final class TreeGlyphIconTest {
      * lost. This reads the rendered pixels row by row: in each tip row the last ink run is the label tick and
      * the one before it is the branch.
      */
-    private static boolean displayTypeIcons() {
+    private static boolean displayTypeIcons( final int SIZE ) {
         final DisplayTypeIcon.Kind[] kinds = DisplayTypeIcon.Kind.values();
         final BufferedImage[] imgs = new BufferedImage[ kinds.length ];
         for ( int i = 0; i < kinds.length; i++ ) {

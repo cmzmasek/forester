@@ -26,8 +26,11 @@ package org.forester.archaeopteryx;
  * nothing is remembered: there is no "click-to" mode any more (Christian, 2026-10-26: "No more old-skool 'Click
  * on Node to:' menu, no more 'status' of click behavior"), as in Archaeopteryx.js, whose node menu this mirrors.
  * <p>
- * Entries are grouped ({@link Group}; a separator between groups), and an entry that does not apply to the
- * clicked node is GREYED, never hidden -- with the reason as its tooltip where there is one (Root/Reroot). The
+ * Entries are grouped ({@link Group}; a separator between groups): everything that only LOOKS at the tree comes
+ * first (show the data, the shape entries, the selection, the database links), everything that WRITES to it
+ * below one separator, delete last (Christian, 2026-10-27: "Edit Node Data" and "Edit Node Style" sit "above
+ * 'Cut Subtree' and below 'Open Taxonomy DB'", the first two entries of the editing group). An entry that does
+ * not apply to the clicked node is GREYED, never hidden -- with the reason as its tooltip where there is one (Root/Reroot). The
  * exception is {@link #editableOnly()}: the editing entries exist only when the tree is editable
  * ({@code Options.isEditable()}), as they always did. The {@link #title()} is the entry's wording; a few entries
  * read differently by node ("Return to Supertree" on a subtree view's root, "Delete Node…" on a tip), see
@@ -36,8 +39,6 @@ package org.forester.archaeopteryx;
 public enum NodeMenuEntry {
 
     DISPLAY_NODE_DATA( "Display Node Data", Group.DATA, false ),
-    EDIT_NODE_DATA( "Edit Node Data", Group.DATA, true ),
-    NODE_STYLE( "Edit Node Style", Group.DATA, false ),
     SUBTREE( "Switch to Subtree", Group.SHAPE, false ),
     COLLAPSE_UNCOLLAPSE( "Collapse/Uncollapse", Group.SHAPE, false ),
     UNCOLLAPSE_ALL( "Uncollapse Subtree", Group.SHAPE, false ),
@@ -49,6 +50,11 @@ public enum NodeMenuEntry {
     SELECT_TIPS( "Select/Deselect Tips", Group.SELECTION, false ),
     OPEN_SEQ_WEB( "Open Sequence DB", Group.LINKS, false ),
     OPEN_TAX_WEB( "Open Taxonomy DB", Group.LINKS, false ),
+    EDIT_NODE_DATA( "Edit Node Data", Group.EDITING, true ),
+    /** Not editable-only, like Tools > Node Style for Selected Nodes: a style edit was never gated by the
+     *  editable flag (which {@code Configuration.isEditable()} answers with a constant true today; only the
+     *  test hook turns it off). On such a tree this is the editing group's one entry. */
+    NODE_STYLE( "Edit Node Style", Group.EDITING, false ),
     CUT_SUBTREE( "Cut Subtree", Group.EDITING, true ),
     COPY_SUBTREE( "Copy Subtree", Group.EDITING, true ),
     PASTE_SUBTREE( "Paste Subtree", Group.EDITING, true ),
@@ -57,7 +63,7 @@ public enum NodeMenuEntry {
 
     /** The menu's groups, in menu order; a separator is drawn between two groups that both have an entry. */
     public enum Group {
-        /** the node's data: show, edit, style */
+        /** the node's data, shown */
         DATA,
         /** the tree's shape around the node: subtree view, collapse, swap, ladderize, colorize, re-root */
         SHAPE,
@@ -65,7 +71,7 @@ public enum NodeMenuEntry {
         SELECTION,
         /** web links for the node's accession / taxonomy */
         LINKS,
-        /** tree editing: cut, copy, paste, add */
+        /** editing, node and tree: edit data, edit style, cut, copy, paste, add */
         EDITING,
         /** deletion -- last, and drawn in the warning colour */
         DELETE

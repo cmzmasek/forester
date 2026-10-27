@@ -31,10 +31,9 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
 /**
- * Guards that the Tools "Collapse Branches" submenu uses the same font as the regular menu items
- * ({@link MainFrame#menu_font}). A submenu built via {@code createMenu} only gets that font in the
- * custom-colors path, so under FlatLaf it would otherwise fall back to a larger default and look more
- * prominent than its siblings. Needs FlatLaf + a display, so it is a no-op when headless and runs
+ * Guards that the Tools "Collapse Branches" submenu uses the same font as the regular menu items -- the
+ * look-and-feel's menu-item font, the one GUI font since 2026-10-27 ({@code MainFrame.applyGuiFont}); a font
+ * set on the submenu by hand would make it look more prominent than its siblings. Needs FlatLaf + a display, so it is a no-op when headless and runs
  * standalone (the established pattern for the GUI tests here).
  */
 public final class CollapseMenuFontTest {
@@ -62,10 +61,10 @@ public final class CollapseMenuFontTest {
                         ok[ 0 ] = false;
                         System.out.println( "  'Collapse Branches' submenu not found in Tools" );
                     }
-                    else if ( !MainFrame.menu_font.equals( collapse.getFont() ) ) {
+                    else if ( !javax.swing.UIManager.getFont( "MenuItem.font" ).equals( collapse.getFont() ) ) {
                         ok[ 0 ] = false;
                         System.out.println( "  submenu font " + collapse.getFont() + " != menu-item font "
-                                + MainFrame.menu_font );
+                                + javax.swing.UIManager.getFont( "MenuItem.font" ) );
                     }
                 }
                 finally {

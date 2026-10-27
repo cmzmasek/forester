@@ -34,7 +34,8 @@ import javax.swing.JLabel;
  */
 public final class ThemeToggleIconTest {
 
-    private static final int SIZE = 16;
+    /** 16 as designed, and the size that SHIPS on the control panel (19 at the 12-point GUI font). */
+    private static final int[] SIZES = { 16, ControlPanel.themeToggleIconSize() };
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -43,6 +44,16 @@ public final class ThemeToggleIconTest {
     }
 
     public static boolean test() {
+        for ( final int size : SIZES ) {
+            if ( !testAtSize( size ) ) {
+                System.out.println( "   (at glyph size " + size + " px)" );
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean testAtSize( final int SIZE ) {
         final ThemeToggleIcon sun = new ThemeToggleIcon( true, SIZE );
         final ThemeToggleIcon moon = new ThemeToggleIcon( false, SIZE );
         // the two flavors must identify themselves consistently (ControlPanel reads isMoon() to know what the

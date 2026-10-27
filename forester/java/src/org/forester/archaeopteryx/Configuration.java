@@ -106,8 +106,17 @@ public final class Configuration {
         return _display_colors;
     }
 
+    /**
+     * The one GUI font size, in points, before FlatLaf's user scale factor. FlatLaf's default font is set to it
+     * ({@code MainFrame.applyGuiFont}) and every menu, menu item, control-panel widget, dialog and the node menu
+     * take their font from there -- the look-and-feel's own face, never a family named here (Christian,
+     * 2026-10-27: "the same font for all menus and control panels", "12"). Measured against the 11-point Arial
+     * Unicode MS it replaced, on the node-data-editor demo on his Mac: the same 15 px line height, the control
+     * panel 168 -> 176 px wide and 1045 -> 1050 px tall, the menu bar 24 -> 22 px. The control panel's glyph
+     * icons scale with it (layout 17 -> 18, theme toggle 18 -> 19, P/A/C 20 -> 22 px).
+     */
     static int getGuiFontSize() {
-        return 11;
+        return 12;
     }
 
     int getMinBaseFontSize() {

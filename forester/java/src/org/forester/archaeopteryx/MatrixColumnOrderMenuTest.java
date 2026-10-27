@@ -193,7 +193,7 @@ public final class MatrixColumnOrderMenuTest {
             if ( !m.label().equals( item.getText() ) ) {
                 fail( ok, "radio for " + m + " must read \"" + m.label() + "\", reads \"" + item.getText() + "\"" );
             }
-            if ( !MainFrame.menu_font.equals( item.getFont() ) ) {
+            if ( !javax.swing.UIManager.getFont( "MenuItem.font" ).equals( item.getFont() ) ) {
                 fail( ok, "radio \"" + item.getText() + "\" must use the menu font" );
             }
             if ( item.isSelected() != ( m == MatrixColumnOrder.DEFAULT ) ) {
@@ -208,8 +208,8 @@ public final class MatrixColumnOrderMenuTest {
             fail( ok, "the radios must sit in an \"Order Matrix Columns\" submenu" );
             return;
         }
-        if ( !MainFrame.menu_font.equals( submenu.getFont() ) ) {
-            fail( ok, "the submenu must use the menu font (createMenu only sets it in custom-colors mode)" );
+        if ( !javax.swing.UIManager.getFont( "MenuItem.font" ).equals( submenu.getFont() ) ) {
+            fail( ok, "the submenu must use the menu-item font (the one GUI font)" );
         }
         boolean in_view = false;
         for( final Component c : frame._view_jmenu.getMenuComponents() ) {

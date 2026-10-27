@@ -204,19 +204,21 @@ public final class NodeMenuTest {
         render( tp );
 
         // ---- (1) the entries, their groups and their order, pinned by their words --------------------------
-        final List<String> expected_editable = Arrays.asList( "|", "Display Node Data", "Edit Node Data",
-                "Edit Node Style", "|", "Switch to Subtree", "Collapse/Uncollapse", "Uncollapse Subtree",
-                "Swap Descendants", "Ladderize Subtree", "Colorize Subtree", "Root/Reroot", "|",
-                "Select/Deselect Node", "Select/Deselect Tips", "|", "Open Sequence DB", "Open Taxonomy DB", "|",
-                "Cut Subtree", "Copy Subtree", "Paste Subtree", "Add New Node", "|", "Delete Node/Subtree…" );
+        // looking first, writing below one separator (Christian, 2026-10-27: the two edit entries "above 'Cut
+        // Subtree' and below 'Open Taxonomy DB'"), delete last
+        final List<String> expected_editable = Arrays.asList( "|", "Display Node Data", "|", "Switch to Subtree",
+                "Collapse/Uncollapse", "Uncollapse Subtree", "Swap Descendants", "Ladderize Subtree",
+                "Colorize Subtree", "Root/Reroot", "|", "Select/Deselect Node", "Select/Deselect Tips", "|",
+                "Open Sequence DB", "Open Taxonomy DB", "|", "Edit Node Data", "Edit Node Style", "Cut Subtree",
+                "Copy Subtree", "Paste Subtree", "Add New Node", "|", "Delete Node/Subtree…" );
         ok &= ck( tp.getOptions().isEditable(), "precondition: the tree is editable by default" );
         ok &= ck( expected_editable.equals( words( tp.buildNodeMenu( ab ) ) ),
                   "the menu for an internal node, editable tree: " + words( tp.buildNodeMenu( ab ) ) );
         tp.getOptions().setEditableForTest( false );
-        final List<String> expected_read_only = Arrays.asList( "|", "Display Node Data", "Edit Node Style", "|",
-                "Switch to Subtree", "Collapse/Uncollapse", "Uncollapse Subtree", "Swap Descendants",
-                "Ladderize Subtree", "Colorize Subtree", "Root/Reroot", "|", "Select/Deselect Node",
-                "Select/Deselect Tips", "|", "Open Sequence DB", "Open Taxonomy DB" );
+        final List<String> expected_read_only = Arrays.asList( "|", "Display Node Data", "|", "Switch to Subtree",
+                "Collapse/Uncollapse", "Uncollapse Subtree", "Swap Descendants", "Ladderize Subtree",
+                "Colorize Subtree", "Root/Reroot", "|", "Select/Deselect Node", "Select/Deselect Tips", "|",
+                "Open Sequence DB", "Open Taxonomy DB", "|", "Edit Node Style" );
         ok &= ck( expected_read_only.equals( words( tp.buildNodeMenu( ab ) ) ),
                   "the editing entries exist only on an editable tree: " + words( tp.buildNodeMenu( ab ) ) );
         tp.getOptions().setEditableForTest( true );

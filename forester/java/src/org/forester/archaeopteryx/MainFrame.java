@@ -83,6 +83,7 @@ import javax.swing.filechooser.FileFilter;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.util.UIScale;
 
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
@@ -142,6 +143,30 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     "could not set look and feel [" + ui + "]: " + e.getMessage());
             FlatLightLaf.setup();
         }
+        applyGuiFont();
+    }
+
+    /**
+     * One GUI font for every menu, control and dialog (Christian, 2026-10-27): the look-and-feel's own face --
+     * the platform's UI font; Helvetica Neue on his Mac, measured -- at {@link Configuration#getGuiFontSize()},
+     * SCALED by FlatLaf's user scale factor ({@code UIScale.scale}): a Windows "make text bigger" setting or a
+     * {@code flatlaf.uiScale} property enlarges every font, padding and icon by that factor, and FlatLaf
+     * re-derives the factor from this very font on Windows and Linux -- an unscaled 12 would shrink the text
+     * back while the chrome stayed large (measured with {@code flatlaf.uiScale=1.5}: fonts 20 after setup, 12
+     * after an unscaled put, 18 after a scaled one). FlatLaf derives every component font from its
+     * {@code defaultFont}, so this is the one place; nothing else in the application sets a GUI font (the control
+     * panel's headers and the node menu's title derive bold from the font they are given). The theme switch
+     * ({@link #setDarkMode}) re-installs the look-and-feel, which replaces the look-and-feel's own defaults; the
+     * font survives that two ways, either alone enough: {@code UIManager.put} writes a DEVELOPER default, which
+     * outlives every {@code setup()}, and this runs again after every setup. {@code GuiFontTest} kills each
+     * safeguard on its own: a bare {@code setup()} with no re-apply (the developer default must carry it), and a
+     * cleared developer default before {@link #installLookAndFeel} (the re-apply must).
+     */
+    static void applyGuiFont() {
+        final Font base = UIManager.getFont("defaultFont");
+        if (base != null) {
+            UIManager.put("defaultFont", base.deriveFont(UIScale.scale((float) Configuration.getGuiFontSize())));
+        }
     }
 
     final static NHFilter nhfilter = new NHFilter();
@@ -155,9 +180,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     final static DefaultFilter defaultfilter = new DefaultFilter();
     static final String USE_MOUSEWHEEL_SHIFT_TO_ROTATE = "rotate with mousewheel + Shift (or A and S), D toggles between horizontal and radial labels";
     private static final long serialVersionUID = 3655000897845508358L;
-    final static Font menu_font = new Font(Configuration.getDefaultFontFamilyName(),
-            Font.PLAIN,
-            Configuration.getGuiFontSize());
     static final String TYPE_MENU_HEADER = "Type";
     // The four rectangular SUB-STYLES (they differ only in how a branch joint is drawn); the rectangular family
     // itself is picked on the control panel's layout row, so calling this one "Rectangular" too would be circular.
@@ -1366,7 +1388,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>Import "
                 + "Metadata (CSV/TSV) first if the tree has no per-tip data yet.</i></html>");
         final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
-        order_menu.setFont(MainFrame.menu_font); // createMenu sets the font only in custom-colors mode
         order_menu.setToolTipText("How this tab's heat-map matrix orders its columns (the other columns keep their "
                 + "place)");
         final ButtonGroup order_group = new ButtonGroup();
@@ -2608,7 +2629,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void customizeCheckBoxMenuItem(final JCheckBoxMenuItem item, final boolean is_selected) {
         if (item != null) {
-            item.setFont(MainFrame.menu_font);
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -2616,7 +2636,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     JMenuItem customizeJMenuItem(final JMenuItem jmi) {
         if (jmi != null) {
-            jmi.setFont(MainFrame.menu_font);
             jmi.addActionListener(this);
         }
         return jmi;
@@ -2624,7 +2643,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void customizeRadioButtonMenuItem(final JRadioButtonMenuItem item, final boolean is_selected) {
         if (item != null) {
-            item.setFont(MainFrame.menu_font);
             item.setSelected(is_selected);
             item.addActionListener(this);
         }

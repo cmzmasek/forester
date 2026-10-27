@@ -429,6 +429,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("One GUI font (menus, control panel, node menu; the theme switch keeps it): ");
+        if (org.forester.archaeopteryx.GuiFontTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Recent files (Open Recent history): ");
         if (org.forester.archaeopteryx.RecentFilesTest.test()) {
             System.out.println("OK.");

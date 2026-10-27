@@ -1628,13 +1628,11 @@ public final class MainFrameApplication extends MainFrame {
     private JMenu buildDemoTreesSubmenu() {
         final JMenu demo_menu = MainFrame.createMenu("Demo Trees", getConfiguration());
         demo_menu.setToolTipText("Open a pre-configured example tree that showcases a capability of Archaeopteryx.");
-        demo_menu.setFont(MainFrame.menu_font); // a submenu needs the item font set explicitly when custom colours are off
         for (final DemoTrees.Demo demo : DemoTrees.catalog()) {
             final JMenuItem item = new JMenuItem(demo.label());
             item.setToolTipText(demo.tooltip());
-            // style the item like the others, but do NOT route it through customizeJMenuItem: that also adds the global
-            // MainFrame action dispatcher (this) as a listener, which would double-fire alongside the demo lambda
-            item.setFont(MainFrame.menu_font);
+            // NOT through customizeJMenuItem: that adds the global MainFrame action dispatcher (this) as a listener,
+            // which would double-fire alongside the demo lambda
             item.addActionListener(e -> openDemo(demo));
             demo_menu.add(item);
         }
@@ -1658,7 +1656,6 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_open_item = new JMenuItem("Open..."));
         _open_item.setToolTipText("Open a tree file (phyloXML, Newick/NHX, Nexus, Auspice JSON, ToL)");
         _file_jmenu.add(_open_recent_menu = new JMenu("Open Recent"));
-        _open_recent_menu.setFont(MainFrame.menu_font); // a submenu does not inherit the item font (see CollapseMenuFontTest)
         rebuildOpenRecentMenu();
         _file_jmenu.addSeparator();
         _file_jmenu.add(buildDemoTreesSubmenu()); // pre-configured example trees, bundled in the jar (like Cytoscape)
@@ -1995,7 +1992,6 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.addSeparator();
         // Collapsing
         final JMenu collapse_menu = createMenu("Collapse Branches", getConfiguration());
-        collapse_menu.setFont(MainFrame.menu_font); // match the sibling items (createMenu sets the font only in custom-colors mode)
         collapse_menu.setToolTipText("Permanently collapse weakly-supported or very short branches into polytomies");
         collapse_menu.add(_collapse_below_threshold = new JMenuItem("Collapse Weakly-Supported Branches…"));
         customizeJMenuItem(_collapse_below_threshold);
