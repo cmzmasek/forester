@@ -73,7 +73,7 @@ public final class DisplayDataCheckboxTest {
                 leaf.getNodeData().setSequence( seq );
                 cp.displayedPhylogenyMightHaveChanged( true );
                 check( ok, cp, DisplayOption.SHOW_SEQ_NAMES, true, "Seq Name (after adding a sequence)" );
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

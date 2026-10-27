@@ -498,7 +498,7 @@ public class DomainHoverTest {
                     ok[ 0 ] = false;
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             if ( !ok[ 0 ] ) {
@@ -565,7 +565,7 @@ public class DomainHoverTest {
                     ok[ 0 ] = false;
                 }
                 finally {
-                    ( (JFrame) mf2[ 0 ] ).dispose();
+                    mf2[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];

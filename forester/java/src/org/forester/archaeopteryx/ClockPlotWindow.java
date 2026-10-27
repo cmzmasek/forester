@@ -97,7 +97,7 @@ final class ClockPlotWindow extends JDialog {
     private final List<String[]> _stat_rows = new ArrayList<String[]>();
 
     ClockPlotWindow( final MainFrame frame ) {
-        super( frame, TITLE, false );
+        super( javax.swing.SwingUtilities.getWindowAncestor( frame ), TITLE );
         _frame = frame;
         setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
         _plot = new ClockPlotPanel( new ClockPlotPanel.Host() {

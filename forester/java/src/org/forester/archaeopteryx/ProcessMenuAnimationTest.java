@@ -84,7 +84,7 @@ public final class ProcessMenuAnimationTest {
                 if ( mf[ 0 ].isProcessAnimationRunningForTest() ) {
                     ok[ 0 ] = fail( "the animation timer must stop when no task is running" );
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
         }
         catch ( final Throwable e ) {

@@ -79,7 +79,7 @@ public final class CollapsedCladeConfidenceTest {
                     if ( mp.getControlPanel().getWriteConfidenceCb() == null ) {
                         System.out.println( "  [CollapsedCladeConfidenceTest] no confidence control -- cannot test" );
                         ok[ 0 ] = false;
-                        ( (JFrame) mf[ 0 ] ).dispose();
+                        mf[ 0 ].dispose();
                         return;
                     }
                     // unique colors so a confidence label is the only possible magenta on the canvas
@@ -93,7 +93,7 @@ public final class CollapsedCladeConfidenceTest {
                     if ( ( ab == null ) || ( cd == null ) ) {
                         System.out.println( "  [CollapsedCladeConfidenceTest] test tree shape unexpected" );
                         ok[ 0 ] = false;
-                        ( (JFrame) mf[ 0 ] ).dispose();
+                        mf[ 0 ].dispose();
                         return;
                     }
                     tp.collapse( ab );
@@ -128,7 +128,7 @@ public final class CollapsedCladeConfidenceTest {
                                 + "collapsed branch with the toggle OFF (magenta px = " + ab_off + ")" );
                         ok[ 0 ] = false;
                     }
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();

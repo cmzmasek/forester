@@ -70,7 +70,7 @@ public final class LegendClickDragTest {
                 frame.showWhole();
                 final Rectangle vp = tp.getVisibleRect();
                 if ( ( vp.width < 300 ) || ( vp.height < 300 ) ) {
-                    ( (JFrame) frame ).dispose(); // no usable viewport in this environment; nothing to assert
+                    frame.dispose(); // no usable viewport in this environment; nothing to assert
                     return;
                 }
                 paint( tp, vp );
@@ -78,7 +78,7 @@ public final class LegendClickDragTest {
                 final Rectangle home = tp.getPropertyLegendBounds();
                 if ( ( toggle == null ) || ( home == null ) ) {
                     fail( ok, "setup: the sort chip / legend bounds were not drawn (35 values over the cap)" );
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                     return;
                 }
                 final MouseListener ml = new MouseListener( tp );
@@ -141,7 +141,7 @@ public final class LegendClickDragTest {
                         }
                     }
                 }
-                ( (JFrame) frame ).dispose();
+                frame.dispose();
             } );
             return ok[ 0 ];
         }

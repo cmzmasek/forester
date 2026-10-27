@@ -73,7 +73,7 @@ public final class LabelExtractionResizeTest {
                     exercise( frame, ok );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];
@@ -85,8 +85,8 @@ public final class LabelExtractionResizeTest {
     }
 
     private static void exercise( final MainFrame frame, final boolean[] ok ) {
-        frame.setSize( 1000, 600 );
-        frame.validate();
+        frame._window.setSize( 1000, 600 );
+        frame._window.validate();
         final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
         final ControlPanel cp = tp.getControlPanel();
         cp.setCheckbox( DisplayOption.SHOW_DOMAIN_ARCHITECTURES, true );

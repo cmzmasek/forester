@@ -352,8 +352,8 @@ public final class AptxRenderTest {
             final Phylogeny phy = p.parse()[ 0 ];
             javax.swing.SwingUtilities.invokeAndWait( () -> {
                 mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "legend column" );
-                mf[ 0 ].setLocation( -32000, -32000 );
-                mf[ 0 ].setVisible( true );
+                mf[ 0 ]._window.setLocation( -32000, -32000 );
+                mf[ 0 ]._window.setVisible( true );
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
                 final int w = 1200;
                 final int h = 800;

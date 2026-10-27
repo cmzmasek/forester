@@ -87,7 +87,7 @@ final class SettingsDialog extends JDialog {
     private JComboBox<String> _axis_combo; // the per-tab Time-Axis combo ("Auto" + Off/Geologic/Calendar; test hook)
 
     SettingsDialog( final MainFrame mf ) {
-        super( mf, "Settings", false );
+        super( javax.swing.SwingUtilities.getWindowAncestor( mf ), "Settings" );
         _mf = mf;
         final JTabbedPane tabs = new JTabbedPane();
         _tabs = tabs;

@@ -107,8 +107,8 @@ public final class ReverseTipOrderRenderTest {
                     // the OVERVIEW thumbnail lays out its OWN (YSecondary) coords, so it must be flipped too -- else
                     // the mini-map mirrors the canvas and its navigator maps to the wrong region. The overview only
                     // activates when the tree is larger than the viewport, so realize the frame + zoom in first.
-                    ( (JFrame) frame ).setSize( 760, 620 );
-                    ( (JFrame) frame ).validate();
+                    frame._window.setSize( 760, 620 );
+                    frame._window.validate();
                     o.setShowOverview( true );
                     final int bw = 1600, bh = 1600;
                     final float ov1_off = overviewTipY( tp, o, t1, false, bw, bh );
@@ -124,7 +124,7 @@ public final class ReverseTipOrderRenderTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];

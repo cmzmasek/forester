@@ -532,7 +532,7 @@ public final class CircularScaleAxisTest {
                     fail( ok, demo + ": unexpected " + t );
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
         }

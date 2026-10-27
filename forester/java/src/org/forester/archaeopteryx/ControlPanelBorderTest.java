@@ -64,7 +64,7 @@ public final class ControlPanelBorderTest {
                     exercise( frame, ok );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];
@@ -76,8 +76,8 @@ public final class ControlPanelBorderTest {
     }
 
     private static void exercise( final MainFrame frame, final boolean[] ok ) {
-        frame.setSize( 1000, 600 );
-        ( (JFrame) frame ).validate();
+        frame._window.setSize( 1000, 600 );
+        frame._window.validate();
         final JScrollPane scroller = controlPanelScroller( frame );
         if ( scroller == null ) {
             fail( ok, "could not locate the control-panel scroll pane" );
@@ -91,7 +91,7 @@ public final class ControlPanelBorderTest {
         }
         // A runtime theme switch reinstalls component UIs via updateComponentTreeUI; that is what used to make the
         // border appear. It must NOT change the border now -- startup already matches the themed look.
-        SwingUtilities.updateComponentTreeUI( (JFrame) frame );
+        SwingUtilities.updateComponentTreeUI( frame._window );
         final Border after = scroller.getBorder();
         if ( after == null ) {
             fail( ok, "control-panel scroll pane border went missing after a theme reinstall" );

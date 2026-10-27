@@ -21,9 +21,9 @@
 package org.forester.archaeopteryx;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,13 +58,13 @@ final class ReportWindow extends JFrame {
     private final JButton          _action;
 
     /**
-     * @param owner        the main window (for placement); may be null
+     * @param owner        the viewer the window opens over (for placement); may be null
      * @param title        the window title
      * @param report       what to show
      * @param initial_dir  where the export file chooser opens; may be null
      * @param remember_dir told the directory of a written export; may be null
      */
-    ReportWindow( final Frame owner, final String title, final TableReport report, final File initial_dir,
+    ReportWindow( final Component owner, final String title, final TableReport report, final File initial_dir,
                   final Consumer<File> remember_dir ) {
         this( owner, title, report, initial_dir, remember_dir, null, null );
     }
@@ -73,7 +73,7 @@ final class ReportWindow extends JFrame {
      * @param action_label the text of an extra button left of "Export TSV…", or null for none
      * @param action       what that button does (it disables itself after running once)
      */
-    ReportWindow( final Frame owner, final String title, final TableReport report, final File initial_dir,
+    ReportWindow( final Component owner, final String title, final TableReport report, final File initial_dir,
                   final Consumer<File> remember_dir, final String action_label, final Runnable action ) {
         super( title );
         _report = report;

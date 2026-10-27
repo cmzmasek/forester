@@ -49,6 +49,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -119,7 +120,7 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.WindowsUtils;
 
-public abstract class MainFrame extends JFrame implements ActionListener {
+public abstract class MainFrame extends JPanel implements ActionListener {
 
     /**
      * Installs the FlatLaf look-and-feel (light or dark) -- the only look-and-feel Archaeopteryx uses. It is
@@ -401,8 +402,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu _process_menu;
     private EqualizerIcon _process_anim_icon;   // the gentle equalizer-bars activity indicator on the process menu
     private Timer         _process_anim_timer;
+    private boolean _closed;
+    private final List<Window> _viewer_windows = new ArrayList<>();
     MainPanel _mainpanel;
     Container _contentpane;
+    /** The window a standalone viewer runs in, created by {@link MainFrameApplication}; null when another program
+     *  hosts the viewer in a window of its own. */
+    JFrame _window;
+    /** True for a viewer from {@link MainFrameApplication#createEmbeddedInstance}: it leaves the look and feel alone
+     *  and keeps no saved settings. */
+    boolean _embedded;
     Configuration _configuration;
     Options _options;
     private Phylogeny _species_tree;
@@ -825,6 +834,36 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _mainpanel.getControlPanel().showWhole();
     }
 
+    /** The viewer's menu bar: a standalone viewer installs it in its own window, a host program in the host's. */
+    public JMenuBar getJMenuBar() {
+        return _jmenubar;
+    }
+
+    /**
+     * Tears this viewer down at once, without asking: unsaved edits are discarded, so a host that wants a
+     * confirmation asks before calling this. Disposes the viewer's own window, if it has one, and every non-modal
+     * window it opened; work that completes afterwards changes nothing. A modal dialog that a host's window owns
+     * stays open until the user dismisses it.
+     */
+    public void dispose() {
+        _closed = true;
+        stopProcessAnimation();
+        for (final Window window : new ArrayList<>(_viewer_windows)) {
+            window.dispose();
+        }
+        _mainpanel.terminate();
+        _contentpane.removeAll();
+        setVisible(false);
+        if (_window != null) {
+            _window.dispose();
+        }
+    }
+
+    /** The panel itself, so the calls written when MainFrame was a JFrame stay as they were. */
+    Container getContentPane() {
+        return this;
+    }
+
     public void updateProcessMenu() {
         // In general Swing is not thread safe.
         // See "Swing's Threading Policy".
@@ -941,6 +980,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     private void doUpdateProcessMenu() {
+        if (_closed) {
+            return;
+        }
         if (_process_pool.size() > 0) {
             if (_process_menu == null) {
                 _process_menu = createMenu("", getConfiguration());
@@ -1002,6 +1044,35 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     boolean isProcessAnimationRunningForTest() {
         return (_process_anim_timer != null) && _process_anim_timer.isRunning();
+    }
+
+    /** True once {@link #dispose()} has torn this viewer down. */
+    public boolean isClosed() {
+        return _closed;
+    }
+
+    /** Records a window this viewer opened, so that dispose() closes it while a host program runs on; once the
+     *  viewer is closed, disposes the window instead and returns false. */
+    boolean addViewerWindow(final Window window) {
+        if (_closed) {
+            window.dispose();
+            return false;
+        }
+        _viewer_windows.add(window);
+        window.addWindowListener(new java.awt.event.WindowAdapter() {
+
+            @Override
+            public void windowClosed(final java.awt.event.WindowEvent e) {
+                _viewer_windows.remove(window);
+            }
+        });
+        return true;
+    }
+
+    void showViewerWindow(final Window window) {
+        if (addViewerWindow(window)) {
+            window.setVisible(true);
+        }
     }
 
     private void removeBranchColors() {
@@ -1191,10 +1262,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static String describeHeapForLog() {
         final StringBuilder sb = new StringBuilder();
         for (final java.awt.Window w : java.awt.Window.getWindows()) {
-            if (!(w instanceof MainFrame) || (((MainFrame) w).getMainPanel() == null)) {
+            final MainFrame mf = viewerOf(w);
+            if ((mf == null) || (mf.getMainPanel() == null)) {
                 continue;
             }
-            for (final TreePanel tp : ((MainFrame) w).getMainPanel().getTreePanels()) {
+            for (final TreePanel tp : mf.getMainPanel().getTreePanels()) {
                 sb.append((sb.length() == 0) ? "" : "\n").append(tp.memoryFootprint());
             }
         }
@@ -1204,11 +1276,19 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void showErrorIndicatorOnAllFrames() {
         javax.swing.SwingUtilities.invokeLater(() -> {
             for (final java.awt.Window w : java.awt.Window.getWindows()) {
-                if (w instanceof MainFrame) {
-                    ((MainFrame) w).showErrorIndicator();
+                final MainFrame mf = viewerOf(w);
+                if (mf != null) {
+                    mf.showErrorIndicator();
                 }
             }
         });
+    }
+
+    /** The standalone viewer that is {@code w}'s content pane, or null. */
+    private static MainFrame viewerOf(final Window w) {
+        final Container content = (w instanceof javax.swing.RootPaneContainer)
+                ? ((javax.swing.RootPaneContainer) w).getContentPane() : null;
+        return (content instanceof MainFrame) ? (MainFrame) content : null;
     }
 
     void showErrorIndicator() {
@@ -1366,7 +1446,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 + "(categorical fields as color strips), ordered by View → Order Matrix Columns.<br><i>Import "
                 + "Metadata (CSV/TSV) first if the tree has no per-tip data yet.</i></html>");
         final JMenu order_menu = createMenu("Order Matrix Columns", getConfiguration());
-        order_menu.setFont(MainFrame.menu_font); // createMenu sets the font only in custom-colors mode
+        applyMenuFont(order_menu); // createMenu sets the font only in custom-colors mode
         order_menu.setToolTipText("How this tab's heat-map matrix orders its columns (the other columns keep their "
                 + "place)");
         final ButtonGroup order_group = new ButtonGroup();
@@ -1539,7 +1619,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final ReportWindow w = new ReportWindow(this, title, report,
                 getCurrentDir(DirectoryPreferences.Category.EXPORT),
                 dir -> setCurrentDir(DirectoryPreferences.Category.EXPORT, dir));
-        w.setVisible(true);
+        showViewerWindow(w);
     }
 
     /**
@@ -2606,9 +2686,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
 
+    /** Gives {@code c} {@link #menu_font}, which is JVM-wide; an embedded viewer's menus keep the host's
+     *  look-and-feel fonts. */
+    void applyMenuFont(final JComponent c) {
+        if (!_embedded) {
+            c.setFont(menu_font);
+        }
+    }
+
     void customizeCheckBoxMenuItem(final JCheckBoxMenuItem item, final boolean is_selected) {
         if (item != null) {
-            item.setFont(MainFrame.menu_font);
+            applyMenuFont(item);
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -2616,7 +2704,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     JMenuItem customizeJMenuItem(final JMenuItem jmi) {
         if (jmi != null) {
-            jmi.setFont(MainFrame.menu_font);
+            applyMenuFont(jmi);
             jmi.addActionListener(this);
         }
         return jmi;
@@ -2624,7 +2712,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void customizeRadioButtonMenuItem(final JRadioButtonMenuItem item, final boolean is_selected) {
         if (item != null) {
-            item.setFont(MainFrame.menu_font);
+            applyMenuFont(item);
             item.setSelected(is_selected);
             item.addActionListener(this);
         }
@@ -3033,7 +3121,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                             + (changed == 1 ? "y" : "ies") + " (undo with Edit > Undo).", title,
                             JOptionPane.INFORMATION_MESSAGE);
                 } : null);
-        w.setVisible(true);
+        showViewerWindow(w);
         return w;
     }
 
@@ -3246,6 +3334,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         final ClockPlotWindow w = new ClockPlotWindow(this);
+        if (!addViewerWindow(w)) {
+            return;
+        }
         _clock_plot_window = w;
         if (!w.showFor(tp)) {
             _clock_plot_window = null;
@@ -3338,6 +3429,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void setDarkMode(final boolean dark) {
+        if (_embedded) {
+            return; // the look and feel, and every window it restyles, belong to the host
+        }
         final Configuration.UI ui = dark ? Configuration.UI.FLAT_DARK : Configuration.UI.FLAT_LIGHT;
         getConfiguration().setUi(ui);
         Configuration.saveUiPreference(ui);
@@ -3692,7 +3786,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // 2. push the defaults out to the menu controls, so a later updateOptions() reads defaults, not stale state
         applyOptionsToMenuStates(getOptions());
         // 3. forget the persisted settings so the reset survives the next launch
-        new GuiPreferences().deleteSettingsFile();
+        if (!_embedded) {
+            new GuiPreferences().deleteSettingsFile();
+        }
         // 4. theme -> shipped default (FlatLaf light); re-inits the L&F and restyles every open window live
         setDarkMode(false);
         if (getMainPanel() != null) {
@@ -4457,7 +4553,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * or {@code null} on cancel.
      */
     private ImportChoice showImportChoice(final Phylogeny phy, final String text) {
-        final javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Import Metadata", true);
+        final javax.swing.JDialog dialog = new javax.swing.JDialog(SwingUtilities.getWindowAncestor(this),
+                "Import Metadata", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE); // 'X' disposes (not just hides)
         final ImportChoice[] result = { null };
         final NodeDataImporter.Table[] cur_table = { null };
@@ -4959,7 +5056,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // picker a left-to-right reading order (Selected, Not-selected, All, Cancel) is clearer, so force
         // forward button order for just this dialog and restore the previous setting afterwards.
         final Object prev_yes_last = UIManager.get("OptionPane.isYesLast");
-        UIManager.put("OptionPane.isYesLast", Boolean.FALSE);
+        if (!_embedded) { // JVM-wide: a host dialog opened meanwhile would see it
+            UIManager.put("OptionPane.isYesLast", Boolean.FALSE);
+        }
         final int choice;
         try {
             choice = JOptionPane.showOptionDialog(this,
@@ -4968,7 +5067,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     options[0]);
         }
         finally {
-            UIManager.put("OptionPane.isYesLast", prev_yes_last);
+            if (!_embedded) {
+                UIManager.put("OptionPane.isYesLast", prev_yes_last);
+            }
         }
         switch (choice) {
             case 0:

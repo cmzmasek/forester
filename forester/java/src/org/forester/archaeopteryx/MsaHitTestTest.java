@@ -267,7 +267,7 @@ public final class MsaHitTestTest {
                             + "alignment does not appear to have been drawn, so this test proved nothing" );
                 }
             } );
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {

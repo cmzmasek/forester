@@ -148,7 +148,7 @@ public final class MenuAcceleratorTest {
                     fail( ok, "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];

@@ -76,7 +76,7 @@ public final class CollapsedCladeRenderTest {
             }
             SwingUtilities.invokeAndWait( () -> {
                 mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(), "collapsed" );
-                mf[ 0 ].setSize( W, H );
+                mf[ 0 ]._window.setSize( W, H );
             } );
             final String[] failure = { null };
             SwingUtilities.invokeAndWait( () -> {
@@ -100,7 +100,7 @@ public final class CollapsedCladeRenderTest {
         finally {
             if ( mf[ 0 ] != null ) {
                 try {
-                    SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+                    SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
                 }
                 catch ( final Exception e ) {
                     // nothing left to release

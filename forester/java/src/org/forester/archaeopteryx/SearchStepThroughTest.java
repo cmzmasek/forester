@@ -278,7 +278,7 @@ public final class SearchStepThroughTest {
         finally {
             if ( mf[ 0 ] != null ) {
                 try {
-                    SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+                    SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
                 }
                 catch ( final Exception ignore ) {
                     // ignore teardown failure

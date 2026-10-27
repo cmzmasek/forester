@@ -251,7 +251,7 @@ public final class RadialLabelReachTest {
 
     private static void dispose( final MainFrame[] mf ) throws Exception {
         if ( mf[ 0 ] != null ) {
-            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
         }
     }
 

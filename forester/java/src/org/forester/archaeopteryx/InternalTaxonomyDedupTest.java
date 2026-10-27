@@ -89,7 +89,7 @@ public final class InternalTaxonomyDedupTest {
         SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
                 .createInstance( new Phylogeny[] { phy }, conf, "taxonomy dedup test" ) );
         SwingUtilities.invokeAndWait( () -> {
-            final JFrame f = (JFrame) mf[ 0 ];
+            final JFrame f = mf[ 0 ]._window;
             try {
                 f.setSize( 1000, 900 );
                 f.validate();

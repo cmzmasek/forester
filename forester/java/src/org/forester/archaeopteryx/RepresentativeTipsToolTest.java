@@ -342,7 +342,7 @@ public final class RepresentativeTipsToolTest {
                     ok[ 0 ] = false;
                 }
 
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

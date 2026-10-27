@@ -155,7 +155,7 @@ public final class FoundSelectedCounterTest {
                     tp.setFoundNodes1( null );
                     ck( ok, !counter.isShowingForTest(), "the counter hides when the found sets are cleared" );
 
-                    ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
                 catch ( final Throwable t ) {
                     t.printStackTrace();

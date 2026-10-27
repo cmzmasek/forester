@@ -72,7 +72,7 @@ public final class FixedExportSizeTest {
                     () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "fixed size" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame f = (JFrame) mf[ 0 ];
+                final JFrame f = mf[ 0 ]._window;
                 try {
                     f.setSize( 640, 420 );
                     f.validate();

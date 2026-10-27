@@ -133,7 +133,7 @@ public final class CladeBandStaleNodeTest {
                 }
                 check.run( tp, ok );
             } );
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {

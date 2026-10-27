@@ -333,7 +333,7 @@ public class RadialExportGeometryTest {
                     ok[ 0 ] = false;
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];

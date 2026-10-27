@@ -119,7 +119,7 @@ public final class FontSizeControlTest {
                     ok[ 0 ] = false;
                     System.out.println( "  ...without changing it: " + mf[ 0 ].getOptions().getDefaultNodeShapeSize() );
                 }
-                ( (javax.swing.JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

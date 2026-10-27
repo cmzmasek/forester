@@ -100,7 +100,7 @@ public final class VisualizationLifecycleTest {
             check( ok, "back on the tree, the field colours again",
                    tp.isColorByProperty() && "x:Sparse".equals( tp.getColorByPropertyRef() ) );
             check( ok, "and the menu never moved: " + cp.colorByPropertyRefs(), menu.equals( cp.colorByPropertyRefs() ) );
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }
@@ -135,7 +135,7 @@ public final class VisualizationLifecycleTest {
                     && !tp.visualizationCandidate( "x:Host" )._kept );
             check( ok, "Genus is back in the menu: " + cp.colorByPropertyRefs(),
                    cp.colorByPropertyRefs().contains( "x:Genus" ) );
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }
@@ -170,7 +170,7 @@ public final class VisualizationLifecycleTest {
             tp.setEdited( true );
             check( ok, "a chosen field with no value left falls back to none", tp.getColorByPropertyRef() == null );
             check( ok, "and leaves the menu: " + cp.colorByPropertyRefs(), !cp.colorByPropertyRefs().contains( "x:Zone" ) );
-            ( (JFrame) mf[ 0 ] ).dispose();
+            mf[ 0 ].dispose();
         } );
         return ok[ 0 ];
     }

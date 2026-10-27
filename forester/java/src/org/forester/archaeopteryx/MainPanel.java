@@ -58,6 +58,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     private Phylogeny _cut_or_copied_tree;
     private Set<Long> _copied_and_pasted_nodes;
     private TreePanel _clipboard_highlight_owner;
+    private boolean _fit_owed;
 
     public MainPanel(final Configuration configuration, final MainFrame parent) {
         if (configuration == null) {
@@ -166,6 +167,7 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     @Override
     public void componentResized(final ComponentEvent e) {
+        fitIfOwed(); // the first layout resizes this panel, even when a host sized the viewer earlier
         if (getCurrentTreePanel() != null) {
             getCurrentTreePanel().updateOvSettings();
             getCurrentTreePanel().updateOvSizes();
@@ -321,6 +323,43 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     Dimension getSizeOfViewport() {
         return getCurrentScrollPane().getViewport().getExtentSize();
+    }
+
+    /**
+     * True, and records a fit owed to {@link #fitIfOwed()}, while the viewport has no size: a fit at zero width would
+     * shrink the labels.
+     */
+    boolean deferFitUntilSized() {
+        if (getCurrentScrollPane() == null) {
+            return false;
+        }
+        final Dimension viewport = getSizeOfViewport();
+        if ((viewport.width > 0) && (viewport.height > 0)) {
+            return false;
+        }
+        _fit_owed = true;
+        return true;
+    }
+
+    /**
+     * Runs the fit skipped for want of a size over every tab, showWholeAll then showWhole. Twice, each time from the
+     * base font as {@link TreePanel#restoreLayoutAfterExport} does: scroll bars called for by the unfitted sizes
+     * narrow the viewport the first pass measures.
+     */
+    private void fitIfOwed() {
+        if (!_fit_owed || !isDisplayable() || deferFitUntilSized()) {
+            return;
+        }
+        _fit_owed = false;
+        for (int pass = 0; pass < 2; ++pass) {
+            getTreeFontSet().setUserFontSize(getTreeFontSet().getUserFontSize());
+            getControlPanel().showWholeAll();
+            getControlPanel().showWhole();
+            for (final JScrollPane scroll_pane : _treegraphic_scroll_panes) {
+                scroll_pane.invalidate(); // a new preferred size does not invalidate the inactive tabs' panes
+            }
+            validate();
+        }
     }
 
     TreeColorSet getTreeColorSet() {

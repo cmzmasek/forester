@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -185,7 +184,7 @@ public final class NodeMenuTest {
             } );
         }
         finally {
-            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
         }
         return ok[ 0 ];
     }
@@ -459,7 +458,7 @@ public final class NodeMenuTest {
             } );
         }
         finally {
-            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
         }
         return ok[ 0 ];
     }

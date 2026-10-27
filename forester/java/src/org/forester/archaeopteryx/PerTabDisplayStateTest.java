@@ -112,7 +112,7 @@ public final class PerTabDisplayStateTest {
                     ok[ 0 ] = fail( "re-seeding must show the TAB's value in the shared checkbox" );
                 }
             } );
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             return ok[ 0 ];
         }
         catch ( final Throwable e ) {

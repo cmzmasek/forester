@@ -154,7 +154,7 @@ public final class TaxonomyNodeLabelOverlapTest {
                     fail( ok, "'" + sci + "': unexpected " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];
@@ -242,7 +242,7 @@ public final class TaxonomyNodeLabelOverlapTest {
                     fail( ok, "'" + sci + "': internal-gap unexpected " + t );
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             return ok[ 0 ];

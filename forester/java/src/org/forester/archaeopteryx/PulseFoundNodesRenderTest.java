@@ -167,7 +167,7 @@ public final class PulseFoundNodesRenderTest {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
                 paint( tp );
                 final boolean was_running = tp.isPulseTimerRunning();
-                ( (JFrame) mf[ 0 ] ).dispose(); // -> removeNotify() stops the timer
+                mf[ 0 ].dispose(); // -> removeNotify() stops the timer
                 if ( was_running && tp.isPulseTimerRunning() ) {
                     fail( ok, "removeNotify() must stop a RUNNING pulse timer once the panel/window is disposed" );
                 }
@@ -180,7 +180,7 @@ public final class PulseFoundNodesRenderTest {
         finally {
             if ( mf[ 0 ] != null ) {
                 try {
-                    SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() ); // best-effort teardown
+                    SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() ); // best-effort teardown
                 }
                 catch ( final Exception ignore ) {
                     // ignore teardown failure

@@ -205,7 +205,7 @@ public final class AlgorithmReferencesTest {
                     System.out.println( "  [AlgorithmReferencesTest] Help menu has no \"References\" item" );
                     ok[ 0 ] = false;
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

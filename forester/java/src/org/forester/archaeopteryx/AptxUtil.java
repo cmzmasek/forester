@@ -1835,7 +1835,9 @@ public final class AptxUtil {
                 "Out of Memory Error [" + AptxConstants.PRG_NAME + " " + AptxConstants.VERSION
                         + "]",
                 JOptionPane.ERROR_MESSAGE);
-        System.exit(-1);
+        if (MainFrameApplication.isLaunchedAsStandaloneApplication()) {
+            System.exit(-1); // otherwise a host program, or a test, owns the JVM
+        }
     }
 
     final static void printAppletMessage(final String applet_name, final String message) {
@@ -1862,14 +1864,18 @@ public final class AptxUtil {
         for (final StackTraceElement s : e.getStackTrace()) {
             sb.append(s + "\n");
         }
+        final boolean standalone = MainFrameApplication.isLaunchedAsStandaloneApplication();
         JOptionPane.showMessageDialog(null,
-                "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
+                "An unexpected (possibly severe) error has occured" + (standalone ? " - terminating" : "")
+                        + ". \nPlease contact: "
                         + AptxConstants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage()
                         + "\n" + sb,
                 "Unexpected Severe Error [" + AptxConstants.PRG_NAME + " "
                         + AptxConstants.VERSION + "]",
                 JOptionPane.ERROR_MESSAGE);
-        System.exit(-1);
+        if (standalone) {
+            System.exit(-1);
+        }
     }
 
     final static void unexpectedException(final Exception e) {

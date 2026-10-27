@@ -203,7 +203,7 @@ public final class AnnotationCellHoverTest {
             SwingUtilities.invokeAndWait( () -> {
                 final MainFrame frame = mf[ 0 ];
                 try {
-                    ( ( JFrame ) frame ).setSize( W, H );
+                    frame._window.setSize( W, H );
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     for( final String l : new String[] { "root-left", "clustergram", "circular" } ) {
                         layout( tp, l );
@@ -218,7 +218,7 @@ public final class AnnotationCellHoverTest {
                     t.printStackTrace();
                 }
                 finally {
-                    ( ( JFrame ) frame ).dispose();
+                    frame.dispose();
                 }
             } );
         }

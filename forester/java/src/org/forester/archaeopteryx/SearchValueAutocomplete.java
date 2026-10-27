@@ -444,6 +444,10 @@ final class SearchValueAutocomplete {
         }
         final Window owner = SwingUtilities.getWindowAncestor( _field );
         _popup = new JWindow( owner );
+        final MainFrame viewer = (MainFrame) SwingUtilities.getAncestorOfClass( MainFrame.class, _field );
+        if ( viewer != null ) {
+            viewer.addViewerWindow( _popup ); // owned by the host's window, which outlives the viewer
+        }
         _popup.setFocusableWindowState( false ); // never steal focus from the value field
         _list_model = new DefaultListModel<>();
         _list = new JList<>( _list_model );

@@ -466,7 +466,7 @@ public final class CrowdedBranchDataTest {
     }
 
     private static void dispose( final MainFrame[] mf ) throws Exception {
-        SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
     }
 
     private static void fail( final boolean[] ok, final String message ) {

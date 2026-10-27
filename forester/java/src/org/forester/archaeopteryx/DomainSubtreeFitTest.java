@@ -219,7 +219,7 @@ public final class DomainSubtreeFitTest {
                             + tp.getPreferredSize().width + ")" );
                 }
             } );
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
         }
         catch ( final Throwable e ) {
             e.printStackTrace();

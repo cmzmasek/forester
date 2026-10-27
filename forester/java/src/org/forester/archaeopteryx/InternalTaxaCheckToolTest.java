@@ -57,7 +57,7 @@ public final class InternalTaxaCheckToolTest {
                 SwingUtilities.invokeAndWait( () -> ok[ 0 ] = run( mf[ 0 ] ) );
             }
             finally {
-                SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+                SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             }
             return ok[ 0 ];
         }

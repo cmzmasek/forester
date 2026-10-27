@@ -58,7 +58,7 @@ public final class CladeTaxonSourceTest {
                 SwingUtilities.invokeAndWait( () -> ok[ 0 ] = run( mf[ 0 ].getMainPanel().getCurrentTreePanel() ) );
             }
             finally {
-                SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+                SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
             }
             return ok[ 0 ];
         }

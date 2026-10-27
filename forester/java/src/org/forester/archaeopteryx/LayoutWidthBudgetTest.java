@@ -423,7 +423,7 @@ public final class LayoutWidthBudgetTest {
             fail( "a circular layout has no width column to divide, so it must carry no budget" );
             ok[ 0 ] = false;
         }
-        SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf[ 0 ] ).dispose() );
+        SwingUtilities.invokeAndWait( () -> mf[ 0 ].dispose() );
     }
 
     /** The shape that broke: many tips, long names, a domain architecture and an aligned sequence on every one. */

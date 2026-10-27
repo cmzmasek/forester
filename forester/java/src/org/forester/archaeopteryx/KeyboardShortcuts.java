@@ -20,7 +20,6 @@
 
 package org.forester.archaeopteryx;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,11 +138,9 @@ final class KeyboardShortcuts {
         return dialog;
     }
 
-    /** Shows the shortcuts reference (non-modal) over {@code parent}. */
-    static void show( final Component parent ) {
-        final Window owner = ( parent instanceof Window ) ? (Window) parent
-                : SwingUtilities.getWindowAncestor( parent );
-        buildDialog( owner ).setVisible( true );
+    /** Shows the shortcuts reference (non-modal) over {@code mf}. */
+    static void show( final MainFrame mf ) {
+        mf.showViewerWindow( buildDialog( SwingUtilities.getWindowAncestor( mf ) ) );
     }
 
     private KeyboardShortcuts() {

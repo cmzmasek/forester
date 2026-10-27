@@ -146,7 +146,7 @@ public final class DomainPaletteTest {
             SwingUtilities.invokeAndWait( () -> {
                 for( final MainFrame m : mf ) {
                     if ( m != null ) {
-                        ( (JFrame) m ).dispose();
+                        m.dispose();
                     }
                 }
             } );

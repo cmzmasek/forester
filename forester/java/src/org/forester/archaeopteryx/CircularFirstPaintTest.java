@@ -248,7 +248,7 @@ public final class CircularFirstPaintTest {
 
     private static void dispose( final MainFrame mf ) throws Exception {
         if ( mf != null ) {
-            SwingUtilities.invokeAndWait( () -> ( (javax.swing.JFrame) mf ).dispose() );
+            SwingUtilities.invokeAndWait( () -> mf.dispose() );
         }
     }
 

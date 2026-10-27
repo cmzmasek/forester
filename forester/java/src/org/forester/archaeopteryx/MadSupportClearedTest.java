@@ -105,7 +105,7 @@ public final class MadSupportClearedTest {
                         ok[ 0 ] = TestFail.here(); // ... so it adds no sentence
                     }
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             // a no-op rooting (no branch lengths) writes no provenance sentence
             final Phylogeny no_lengths = factory.create( "((A,B),(C,D))", new NHXParser() )[ 0 ];
@@ -118,7 +118,7 @@ public final class MadSupportClearedTest {
                 if ( !ForesterUtil.isEmpty( tp.getPhylogeny().getDescription() ) ) {
                     ok[ 0 ] = TestFail.here();
                 }
-                ( (JFrame) mf[ 0 ] ).dispose();
+                mf[ 0 ].dispose();
             } );
             return ok[ 0 ];
         }

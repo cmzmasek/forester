@@ -67,7 +67,7 @@ public final class InternalLabelPlacementTest {
                     .createInstance( new Phylogeny[] { phy }, conf, "internal label test" ) );
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
-                final JFrame f = (JFrame) mf[ 0 ];
+                final JFrame f = mf[ 0 ]._window;
                 try {
                     f.setSize( 900, 600 );
                     f.validate();

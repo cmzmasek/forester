@@ -246,7 +246,7 @@ public final class HeatmapCellBorderTest {
                     fail( "unexpected: " + t );
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
         }

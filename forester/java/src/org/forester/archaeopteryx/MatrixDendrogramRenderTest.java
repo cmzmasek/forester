@@ -125,9 +125,9 @@ public final class MatrixDendrogramRenderTest {
             SwingUtilities.invokeAndWait( () -> {
                 mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, new Configuration(),
                                                                "column dendrogram" );
-                ( ( JFrame ) mf[ 0 ] ).setLocation( -32000, -32000 );
-                ( ( JFrame ) mf[ 0 ] ).setSize( W, H );
-                ( ( JFrame ) mf[ 0 ] ).setVisible( true );
+                mf[ 0 ]._window.setLocation( -32000, -32000 );
+                mf[ 0 ]._window.setSize( W, H );
+                mf[ 0 ]._window.setVisible( true );
             } );
             SwingUtilities.invokeAndWait( () -> {
                 try {
@@ -150,7 +150,7 @@ public final class MatrixDendrogramRenderTest {
                     t.printStackTrace();
                 }
                 finally {
-                    ( ( JFrame ) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
         }

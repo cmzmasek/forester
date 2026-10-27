@@ -92,7 +92,7 @@ public final class FontResourcesTest {
             final boolean[] ok = { true };
             SwingUtilities.invokeAndWait( () -> {
                 try {
-                    final JFrame fr = (JFrame) mf[ 0 ];
+                    final JFrame fr = mf[ 0 ]._window;
                     fr.setSize( 1100, 800 );
                     fr.validate();
                     final MainPanel mp = mf[ 0 ].getMainPanel();

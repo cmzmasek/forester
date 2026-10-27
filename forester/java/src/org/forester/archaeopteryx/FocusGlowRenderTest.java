@@ -153,7 +153,7 @@ public final class FocusGlowRenderTest {
             final Phylogeny phy = ParserBasedPhylogenyFactory.getInstance().create( nh, new NHXParser() )[ 0 ];
             mf = ( MainFrameApplication ) MainFrameApplication.createInstance( new Phylogeny[] { phy },
                                                                               new Configuration(), "focusglow" );
-            mf.setSize( W, H );
+            mf._window.setSize( W, H );
             // NOTE: deliberately NOT pinning the theme with setDarkMode() -- reinstalling the look-and-feel
             // mid-suite leaves FlatLaf's tabbed pane in a broken state (a null tabInsets NPE, then a
             // "missing initial moveto" from the next paint). It is not needed: the found colour is red and the

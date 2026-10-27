@@ -57,6 +57,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JMenu;
@@ -130,7 +131,6 @@ public final class MainFrameApplication extends MainFrame {
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        setVisible(false);
         setOptions(optionsWithSavedPreferences());
         registerMacOsQuitHandler();
         _mainpanel = new MainPanel(_configuration, this);
@@ -146,11 +146,13 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane = getContentPane();
         _contentpane.setLayout(new BorderLayout());
         _contentpane.add(_mainpanel, BorderLayout.CENTER);
+        _window = new JFrame();
+        _window.setContentPane(this);
         // App is this big
-        setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
+        _window.setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
         // The window listener
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
+        _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        _window.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(final WindowEvent e) {
@@ -167,6 +169,9 @@ public final class MainFrameApplication extends MainFrame {
             // the frame is realized (deferred), so the dialog never appears mid-construction
             final Phylogeny[] loaded = phys;
             javax.swing.SwingUtilities.invokeLater(() -> {
+                if (isClosed()) {
+                    return;
+                }
                 reportIgnoredDomains(loaded);
                 offerLabelExtraction(loaded);
                 offerTipDateExtraction();
@@ -180,19 +185,30 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     private MainFrameApplication(final Phylogeny[] phys, final Configuration config, final String title) {
-        this(phys, config, title, null);
+        this(phys, config, title, null, false);
     }
 
     private MainFrameApplication(final Phylogeny[] phys,
                                  final Configuration config,
                                  final String title,
-                                 final File current_dir) {
+                                 final File current_dir,
+                                 final boolean embedded) {
         super();
         _configuration = config;
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        installLookAndFeel(_configuration.getUi());
+        _embedded = embedded;
+        if (embedded) {
+            // the host owns the look and feel; the canvas takes the built-in light theme, not the one a standalone
+            // user saved (Configuration.getUi() would read it from java.util.prefs)
+            _configuration.setUi(Configuration.UI.FLAT_LIGHT);
+        } else {
+            // built before FlatLaf is installed: a frame built after it gets FlatLaf's own title bar, with the menu
+            // bar inside it, on Windows
+            _window = new JFrame();
+            installLookAndFeel(_configuration.getUi());
+        }
         // the export/save choosers were created in the super-constructor, before the
         // look-and-feel above was installed; refresh them, so they are not left with the
         // platform default (e.g. the native macOS file dialog instead of FlatLaf).
@@ -202,13 +218,13 @@ public final class MainFrameApplication extends MainFrame {
         }
         // restore each dialog's last-used directory from the previous session (a saved dir that no longer exists is
         // ignored later, lazily, by getCurrentDir -- which then falls back to the startup dir / home).
-        new DirectoryPreferences().applyTo(_current_dirs);
-        // hide until everything is ready
-        setVisible(false);
-        setOptions(optionsWithSavedPreferences());
-        registerMacOsQuitHandler();
-        // set title
-        setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
+        if (!embedded) {
+            new DirectoryPreferences().applyTo(_current_dirs);
+        }
+        setOptions(embedded ? Options.createInstance() : optionsWithSavedPreferences());
+        if (!embedded) {
+            registerMacOsQuitHandler();
+        }
         _mainpanel = new MainPanel(_configuration, this);
         installTabContextMenu();
         // The file dialogs
@@ -246,7 +262,6 @@ public final class MainFrameApplication extends MainFrame {
         buildTypeMenu();
         buildSettingsMenu();
         buildHelpMenu();
-        setJMenuBar(_jmenubar);
         _jmenubar.add(_help_jmenu);
         // right-aligned "Found / Selected: N" counter (a glue pushes it to the far right); hidden until there are hits
         _found_selected_counter = new FoundSelectedCounter();
@@ -255,8 +270,56 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane = getContentPane();
         _contentpane.setLayout(new BorderLayout());
         _contentpane.add(_mainpanel, BorderLayout.CENTER);
+        if (!embedded) {
+            setUpWindow();
+        }
+        // The component listener
+        addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentResized(final ComponentEvent e) {
+                if (_mainpanel.getCurrentTreePanel() != null) {
+                    _mainpanel.getCurrentTreePanel()
+                            .calcParametersForPainting(_mainpanel.getCurrentTreePanel().getWidth(),
+                                    _mainpanel.getCurrentTreePanel().getHeight());
+                }
+            }
+        });
+        requestFocusInWindow();
+        // addKeyListener( this );
+        if (!embedded) {
+            _window.setVisible(true);
+        }
+        if ((phys != null) && (phys.length > 0)) {
+            AptxUtil.addPhylogeniesToTabs(phys, title, null, _configuration, _mainpanel);
+            validate();
+            getMainPanel().getControlPanel().showWholeAll();
+            getMainPanel().getControlPanel().showWhole();
+        }
+        // align the tree canvas with the resolved (light/dark) theme at startup
+        updateTreeCanvasColors(getConfiguration().getUi());
+        activateSaveAllIfNeeded();
+        // ...and its children
+        _contentpane.repaint();
+        System.gc();
+        // warm the persistent taxonomy cache off the EDT now, so the first colorize/fetch is snappy
+        NcbiTaxonomyLineageService.getShared().primeAsync();
+        // warm the Swing color chooser off the EDT too: building its default panels + loading the classes is a
+        // one-time cost, so the first "Node Style" / subtree-colorize colour pick isn't slow to appear
+        warmColorChooserAsync();
+        // The error log is installed BEFORE any frame exists, so a failure during start-up fires its one-shot
+        // callback while there is no menu bar to mark. Pick that up here, now that there is one.
+        showErrorIndicatorIfAnyLogged();
+    }
+
+    /** Sets up the window a standalone viewer runs in, showing this viewer and its menu bar. */
+    private void setUpWindow() {
+        // set title
+        _window.setTitle(AptxConstants.PRG_NAME + " " + AptxConstants.VERSION + " (" + AptxConstants.PRG_DATE + ")");
+        _window.setJMenuBar(_jmenubar);
+        _window.setContentPane(this);
         // App is this big
-        setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
+        _window.setSize(MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE);
         //        addWindowFocusListener( new WindowAdapter() {
         //
         //            @Override
@@ -265,8 +328,8 @@ public final class MainFrameApplication extends MainFrame {
         //            }
         //        } );
         // The window listener
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
+        _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        _window.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(final WindowEvent e) {
@@ -288,41 +351,6 @@ public final class MainFrameApplication extends MainFrame {
                 exit();
             }
         });
-        // The component listener
-        addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(final ComponentEvent e) {
-                if (_mainpanel.getCurrentTreePanel() != null) {
-                    _mainpanel.getCurrentTreePanel()
-                            .calcParametersForPainting(_mainpanel.getCurrentTreePanel().getWidth(),
-                                    _mainpanel.getCurrentTreePanel().getHeight());
-                }
-            }
-        });
-        requestFocusInWindow();
-        // addKeyListener( this );
-        setVisible(true);
-        if ((phys != null) && (phys.length > 0)) {
-            AptxUtil.addPhylogeniesToTabs(phys, title, null, _configuration, _mainpanel);
-            validate();
-            getMainPanel().getControlPanel().showWholeAll();
-            getMainPanel().getControlPanel().showWhole();
-        }
-        // align the tree canvas with the resolved (light/dark) theme at startup
-        updateTreeCanvasColors(getConfiguration().getUi());
-        activateSaveAllIfNeeded();
-        // ...and its children
-        _contentpane.repaint();
-        System.gc();
-        // warm the persistent taxonomy cache off the EDT now, so the first colorize/fetch is snappy
-        NcbiTaxonomyLineageService.getShared().primeAsync();
-        // warm the Swing color chooser off the EDT too: building its default panels + loading the classes is a
-        // one-time cost, so the first "Node Style" / subtree-colorize colour pick isn't slow to appear
-        warmColorChooserAsync();
-        // The error log is installed BEFORE any frame exists, so a failure during start-up fires its one-shot
-        // callback while there is no menu bar to mark. Pick that up here, now that there is one.
-        showErrorIndicatorIfAnyLogged();
     }
 
     /** Best-effort background warmup of {@link javax.swing.JColorChooser}: constructing one builds all of its default
@@ -397,10 +425,8 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
+    /** Same as {@link #dispose()}. */
     public void end() {
-        _mainpanel.terminate();
-        _contentpane.removeAll();
-        setVisible(false);
         dispose();
     }
 
@@ -934,7 +960,7 @@ public final class MainFrameApplication extends MainFrame {
         if (colorset != null) {
             frame.getTanglegramPanel().applyThemeColors(colorset.getBackgroundColor(), colorset.getBranchColor());
         }
-        frame.setVisible(true);
+        showViewerWindow(frame);
         // no connectors almost always means a user error (wrong field per tree, reversed association columns, or the
         // trees share no tips) -- warn, but only AFTER showing the window so the (empty) tanglegram it refers to is
         // visible behind the dialog
@@ -1280,7 +1306,9 @@ public final class MainFrameApplication extends MainFrame {
                 getMainPanel());
         _mainpanel.getControlPanel().showWhole();
         // remember it only now: a file that could not be parsed is not somewhere the user wants to return to
-        _recent_files.add(file);
+        if (!_embedded) {
+            _recent_files.add(file);
+        }
         rebuildOpenRecentMenu();
         if (nhx_or_nexus && one_desc) {
             JOptionPane.showMessageDialog(this,
@@ -1628,13 +1656,13 @@ public final class MainFrameApplication extends MainFrame {
     private JMenu buildDemoTreesSubmenu() {
         final JMenu demo_menu = MainFrame.createMenu("Demo Trees", getConfiguration());
         demo_menu.setToolTipText("Open a pre-configured example tree that showcases a capability of Archaeopteryx.");
-        demo_menu.setFont(MainFrame.menu_font); // a submenu needs the item font set explicitly when custom colours are off
+        applyMenuFont(demo_menu); // a submenu needs the item font set explicitly when custom colours are off
         for (final DemoTrees.Demo demo : DemoTrees.catalog()) {
             final JMenuItem item = new JMenuItem(demo.label());
             item.setToolTipText(demo.tooltip());
             // style the item like the others, but do NOT route it through customizeJMenuItem: that also adds the global
             // MainFrame action dispatcher (this) as a listener, which would double-fire alongside the demo lambda
-            item.setFont(MainFrame.menu_font);
+            applyMenuFont(item);
             item.addActionListener(e -> openDemo(demo));
             demo_menu.add(item);
         }
@@ -1657,8 +1685,10 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.setToolTipText("Read, save, and export trees; close tabs or exit");
         _file_jmenu.add(_open_item = new JMenuItem("Open..."));
         _open_item.setToolTipText("Open a tree file (phyloXML, Newick/NHX, Nexus, Auspice JSON, ToL)");
-        _file_jmenu.add(_open_recent_menu = new JMenu("Open Recent"));
-        _open_recent_menu.setFont(MainFrame.menu_font); // a submenu does not inherit the item font (see CollapseMenuFontTest)
+        if (!_embedded) {
+            _file_jmenu.add(_open_recent_menu = new JMenu("Open Recent"));
+            _open_recent_menu.setFont(MainFrame.menu_font); // a submenu does not inherit the item font (see CollapseMenuFontTest)
+        }
         rebuildOpenRecentMenu();
         _file_jmenu.addSeparator();
         _file_jmenu.add(buildDemoTreesSubmenu()); // pre-configured example trees, bundled in the jar (like Cytoscape)
@@ -1724,8 +1754,10 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu.add(_close_item = new JMenuItem("Close Tab"));
         _close_item.setToolTipText("To close the current pane.");
         _close_item.setEnabled(true);
-        _file_jmenu.addSeparator();
-        _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
+        if (!_embedded) {
+            _file_jmenu.addSeparator();
+            _file_jmenu.add(_exit_item = new JMenuItem("Exit"));
+        }
         customizeJMenuItem(_open_item);
           customizeJMenuItem(_save_item);
         if (getConfiguration().isEditable()) {
@@ -1920,11 +1952,14 @@ public final class MainFrameApplication extends MainFrame {
             public void menuSelected(final javax.swing.event.MenuEvent e) {
                 javax.swing.MenuSelectionManager.defaultManager().clearSelectedPath();
                 SwingUtilities.invokeLater(() -> {
+                    if (isClosed()) {
+                        return; // queued before end(): building the dialog would bring back the disposed window
+                    }
                     // track the open dialog so a tab switch can re-seed its per-tab controls (tree style, palette,
                     // Time Axis); refreshOpenSettingsDialog() guards on isShowing(), so a closed/hidden one is inert
                     final SettingsDialog d = new SettingsDialog(MainFrameApplication.this);
                     setOpenSettingsDialog(d);
-                    d.setVisible(true);
+                    showViewerWindow(d);
                 });
             }
 
@@ -1995,7 +2030,7 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.addSeparator();
         // Collapsing
         final JMenu collapse_menu = createMenu("Collapse Branches", getConfiguration());
-        collapse_menu.setFont(MainFrame.menu_font); // match the sibling items (createMenu sets the font only in custom-colors mode)
+        applyMenuFont(collapse_menu); // match the sibling items (createMenu sets the font only in custom-colors mode)
         collapse_menu.setToolTipText("Permanently collapse weakly-supported or very short branches into polytomies");
         collapse_menu.add(_collapse_below_threshold = new JMenuItem("Collapse Weakly-Supported Branches…"));
         customizeJMenuItem(_collapse_below_threshold);
@@ -2064,6 +2099,12 @@ public final class MainFrameApplication extends MainFrame {
         _launched_as_standalone_application = true;
     }
 
+    /** True when {@code Archaeopteryx.main} launched this JVM: then exit() and AptxUtil's fatal-error handlers
+     *  end it. */
+    static boolean isLaunchedAsStandaloneApplication() {
+        return _launched_as_standalone_application;
+    }
+
     private void registerMacOsQuitHandler() {
         try {
             if (Desktop.isDesktopSupported()
@@ -2081,10 +2122,7 @@ public final class MainFrameApplication extends MainFrame {
     void exit() {
         new GuiPreferences().saveFrom(getOptions()); // persist the display toggles for the next session
         new DirectoryPreferences().saveFrom(_current_dirs); // and each dialog's last-used directory
-        _mainpanel.terminate();
-        _contentpane.removeAll();
-        setVisible(false);
-        dispose();
+        end();
         if (_launched_as_standalone_application) {
             // Standalone app only: force JVM termination. Disposing the frame is not enough -- a heavyweight
             // rollover Popup (TreePanel/PopupFactory) leaves a cached, still-displayable native window, and the
@@ -2106,7 +2144,7 @@ public final class MainFrameApplication extends MainFrame {
                                            final Configuration config,
                                            final String title,
                                            final File current_dir) {
-        final MainFrameApplication mf = onEventThread(() -> new MainFrameApplication(phys, config, title, current_dir));
+        final MainFrameApplication mf = onEventThread(() -> new MainFrameApplication(phys, config, title, current_dir, false));
         if (_launched_as_standalone_application) {
             mf.startUpdateCheckIfEnabled(); // the real app only: never from a test or an embedding program
         }
@@ -2115,6 +2153,24 @@ public final class MainFrameApplication extends MainFrame {
 
     static MainFrame createInstance(final Phylogeny[] phys, final Configuration config, final String title) {
         return onEventThread(() -> new MainFrameApplication(phys, config, title));
+    }
+
+    /**
+     * Builds a viewer for another Swing program to host. It has no window of its own: the host adds this panel to
+     * one of its windows, installs {@link #getJMenuBar()} there, and calls {@link #end()} when it closes the viewer,
+     * since the viewer's File menu has no Exit. After {@link #end()} the host removes the panel and the menu bar, or
+     * disposes their window. The viewer leaves the look and feel and {@code UIManager}'s defaults alone, never ends
+     * the JVM, and neither reads nor writes the user's saved display settings, directories, recent files or theme.
+     * The trees are fitted once the host has laid the panel out.
+     *
+     * @param phys   the trees, one tab each; may be empty
+     * @param config the viewer's configuration, not null; its theme is set to the light one
+     * @param title  the default tab name, for a tree with neither a name nor an identifier
+     */
+    public static MainFrameApplication createEmbeddedInstance(final Phylogeny[] phys,
+                                                              final Configuration config,
+                                                              final String title) {
+        return onEventThread(() -> new MainFrameApplication(phys, config, title, null, true));
     }
 
     /**

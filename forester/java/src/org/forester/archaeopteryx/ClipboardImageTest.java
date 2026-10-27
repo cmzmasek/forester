@@ -149,7 +149,7 @@ public final class ClipboardImageTest {
 
                 }
                 finally {
-                    ( (JFrame) frame ).dispose();
+                    frame.dispose();
                 }
             } );
             // NO_TREE: a frame with an empty/absent current tree must report NO_TREE and write nothing
@@ -169,8 +169,8 @@ public final class ClipboardImageTest {
                     // if this toolkit refuses an empty-tree frame, skip rather than fail the suite
                 }
                 finally {
-                    if ( empty instanceof JFrame ) {
-                        ( (JFrame) empty ).dispose();
+                    if ( empty != null ) {
+                        empty.dispose();
                     }
                 }
             } );

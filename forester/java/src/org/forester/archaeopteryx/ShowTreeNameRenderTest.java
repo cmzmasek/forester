@@ -132,7 +132,7 @@ public final class ShowTreeNameRenderTest {
                     ok[ 0 ] = TestFail.here();
                 }
                 finally {
-                    ( (JFrame) mf[ 0 ] ).dispose();
+                    mf[ 0 ].dispose();
                 }
             } );
             return ok[ 0 ];
