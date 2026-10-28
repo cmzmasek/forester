@@ -44,6 +44,10 @@ import java.util.Set;
  * itself is untouched: it is the phyloXML editing vocabulary, and cladinator reads it. Ported from forester.js at
  * cc86fb6 (after Christian's review of the JS side: varietas folds onto variety, 67 ranks; a scheme is a key
  * ENDING in clade or lineage, a level suffix allowed, plus clade_membership by name).
+ * <p>
+ * The Color-by's two-priority rule reads this vocabulary too ({@link #isAboveSpecies}, {@link #isPriorityRank} with
+ * its six excluded botanical names): a policy of the candidate ORDER, kept beside the list it reads so the two
+ * cannot drift. The rank tools never consult it.
  */
 final class RankVocabulary {
 
@@ -97,6 +101,36 @@ final class RankVocabulary {
     /** Whether {@code key} (from {@link #key}) is one of {@link #RANKS}. */
     static boolean isListed( final String key ) {
         return ( key != null ) && INDEX.containsKey( key );
+    }
+
+    /** Whether a key (from {@link #key}) is a listed rank ABOVE species in {@link #RANKS}: domain down to
+     *  superspecies, so genus, subgenus, section and subsection are; species and everything below it are not, and
+     *  neither is an unlisted key (a clade or lineage scheme, a strain, null). The Color-by's two-priority rule
+     *  (Christian, 2026-10-27, "taxonomic ranks above species (i.e. subgenus and higher)") reads it. */
+    static boolean isAboveSpecies( final String key ) {
+        final Integer i = ( key == null ) ? null : INDEX.get( key );
+        return ( i != null ) && ( i < INDEX.get( "species" ) );
+    }
+
+    /** The ranks above species the Color-by's two-priority rule does NOT put first (Christian, 2026-10-27, decided
+     *  for both programs: "exclude the six botanical names from the priority test only"): the botanical division
+     *  ranks and the section ranks. No virus, bacterial or animal tree carries them as taxonomy, two are ordinary
+     *  metadata words, and Nextstrain's {@code division} is the administrative one (country > division > location)
+     *  on every ncov and flu build -- a regional build with 20 or fewer states would otherwise open coloured by
+     *  state by accident. They stay listed ranks everywhere else (the rank chooser, the clade tools). The other
+     *  ordinary words above species STAY in the priority (Christian, 2026-10-27, "i go with your recommendation",
+     *  asked once with both corpora measured: 543 real files, every class/order/family/domain field taxonomic,
+     *  no branch, cohort or legion field anywhere): class, order, family and domain are the ranks the rule exists
+     *  for; cohort is NCBI's rank for ray-finned fishes, which our own annotation can write; branch and legion
+     *  exist only in phyloXML's enumeration. The division exclusion was earned by a real collision, not by the
+     *  word. Pinned: x:Class and x:Cohort are prioritized in both contract fixtures. */
+    private static final Set<String> PRIORITY_EXCLUDED = new HashSet<String>( Arrays.asList( "superdivision",
+            "division", "subdivision", "infradivision", "section", "subsection" ) );
+
+    /** Whether a key is a rank the Color-by's two-priority rule puts first: {@link #isAboveSpecies} less the six
+     *  botanical names of {@link #PRIORITY_EXCLUDED}. */
+    static boolean isPriorityRank( final String key ) {
+        return isAboveSpecies( key ) && !PRIORITY_EXCLUDED.contains( key );
     }
 
     /** The canonical spelling of a listed rank's key ("forma specialis" for formaspecialis), null for any other. */

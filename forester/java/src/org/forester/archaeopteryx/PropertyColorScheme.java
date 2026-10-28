@@ -1000,7 +1000,35 @@ final class PropertyColorScheme {
     // Tiers, best first: 0 clean categorical, 1 every numeric, 2 wide, 3 in/out-group, 4 sparse, 5 near-unique;
     // within a tier by score = coverage x normalised entropy, then label, then id. The tree OPENS with the first
     // candidate that is not wide.
+    //
+    // TWO PRIORITIES (Christian, 2026-10-27: "High priority: taxonomic ranks above species (i.e. subgenus and
+    // higher). Low priority: everything else. Within the two priorities keep the current approach."; decided for
+    // both programs, measured on his 329 vfam family trees): a PROPERTY whose local name, in any namespace, is a
+    // listed rank above species (RankVocabulary.isPriorityRank: domain ... superspecies less the six botanical
+    // names superdivision, division, subdivision, infradivision, section, subsection -- Nextstrain's "division" is
+    // the administrative one, a collision JS found; never a clade/lineage scheme, never an element slot), categorical
+    // (names, never numbers) and that the rules above call neither sparse nor near-unique is HIGH and
+    // sorts before every other candidate; inside each priority the order above. The opening rule is unchanged:
+    // a wide Genus (21+ genera) leads the list and still does not open the tree. A sparse rank field is low on
+    // purpose -- literally applied, the priority would have opened 40 of his family trees on a rank field
+    // carried by a few tips (Genus on 4 of 41 tips over Host on 40); with the exclusion 75 open on a clean
+    // Genus/Subgenus/Subfamily that a higher-scoring Country, Host or Year had beaten.
     // =====================================================================================================
+
+    /**
+     * The two-priority rule's name test: whether a property ref names a taxonomic rank ABOVE species -- its local
+     * name, in any namespace ("vipr:Genus", "BVBRC:family", "ncbi:order", "gtdb:phylum", "tol:Domain", "x:Sub-Genus"),
+     * folded as {@link RankVocabulary#key}, is a listed rank before species (domain ... genus, subgenus,
+     * superspecies) other than the six botanical names superdivision, division, subdivision, infradivision, section
+     * and subsection ({@link RankVocabulary#isPriorityRank}: Nextstrain's "division" is a state or province).
+     * Species and below ("vipr:Species", "x:Subspecies", "x:ssp"), a clade or lineage scheme of the file's own
+     * ("clade_membership", "PANGO_Lineage"), a strain field and every other name ("host_genus", "Genus_name") are
+     * not; nor is any element slot, whose fixed id ("tax:scientific_name") names no rank. A candidate passing it
+     * that is neither sparse nor near-unique is {@link VisCandidate#_high}.
+     */
+    static boolean isPriorityRankRef( final String ref ) {
+        return RankVocabulary.isPriorityRank( RankVocabulary.propertyRank( ref ) );
+    }
 
     static final int             VIS_MIN_COVERAGE_NUM     = 2;
     static final int             VIS_MIN_COVERAGE_DEN     = 3;
@@ -1175,6 +1203,7 @@ final class PropertyColorScheme {
         final boolean             _sparse;
         final boolean             _deprioritized;
         final boolean             _shape;
+        final boolean             _high;          // a rank above species, neither sparse nor near-unique: sorts first
         boolean                   _kept;
 
         VisCandidate( final String id,
@@ -1195,7 +1224,8 @@ final class PropertyColorScheme {
                       final boolean near_unique,
                       final boolean sparse,
                       final boolean deprioritized,
-                      final boolean shape ) {
+                      final boolean shape,
+                      final boolean high ) {
             _id = id;
             _ref = ref;
             _element_slot = element_slot;
@@ -1215,6 +1245,7 @@ final class PropertyColorScheme {
             _sparse = sparse;
             _deprioritized = deprioritized;
             _shape = shape;
+            _high = high;
         }
 
         /** forester.js {@code tierOf}: the FIRST flag that applies, in this precedence. */
@@ -1284,11 +1315,19 @@ final class PropertyColorScheme {
         }
     }
 
-    /** Best first: tier, then score (higher first), then label ignoring case, then id. forester.js's sort. */
+    /** Best first: offered before KEPT (a kept field carries the flags of the tree it was built on, so it never
+     *  re-sorts ahead of what is offered), then the high priority (a covered rank above species), then tier, then
+     *  score (higher first), then label ignoring case, then id. forester.js's sort, plus the kept key. */
     static final Comparator<VisCandidate> VIS_ORDER = new Comparator<VisCandidate>() {
 
         @Override
         public int compare( final VisCandidate a, final VisCandidate b ) {
+            if ( a._kept != b._kept ) {
+                return a._kept ? 1 : -1; // a KEPT field stays last, whatever flags the tree it was built on gave it
+            }
+            if ( a._high != b._high ) {
+                return a._high ? -1 : 1; // the two priorities: a covered rank above species before everything else
+            }
             final int ta = a.tier();
             final int tb = b.tier();
             if ( ta != tb ) {
@@ -1496,6 +1535,10 @@ final class PropertyColorScheme {
                 color_mode = "category";
                 Collections.sort( values );
             }
+            // the two priorities: a property naming a rank above species, with coverage, repeating values and NAMES
+            // for values -- a rank field that reads as numbers (taxon ids; an "order" column of 1, 2, 3) is a
+            // measurement and takes the numeric tier (code review 2026-10-27)
+            final boolean high = isPriorityRankRef( s._ref ) && !numeric && !sparse && !near_unique;
             // coverage times balance, where balance is the normalised entropy of the value distribution; StrictMath
             // (fdlibm) is what V8 uses too, so equal scores stay equal across the two programs
             double entropy = 0;
@@ -1523,7 +1566,8 @@ final class PropertyColorScheme {
                                               near_unique,
                                               sparse,
                                               isDeprioritizedRef( s._ref ),
-                                              distinct <= VIS_MAX_SHAPE_CATEGORIES ) );
+                                              distinct <= VIS_MAX_SHAPE_CATEGORIES,
+                                              high ) );
         }
         // two refs whose prettified labels coincide (different namespaces) are BOTH shown as their full ref
         final Map<String, Integer> label_count = new HashMap<String, Integer>();

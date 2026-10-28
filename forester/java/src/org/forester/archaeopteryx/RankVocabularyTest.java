@@ -64,6 +64,20 @@ public final class RankVocabularyTest {
             check( ok, RankVocabulary.key( r ) == null, "refused: " + r );
         }
         check( ok, !RankVocabulary.isListed( null ) && RankVocabulary.isListed( "genus" ) && !RankVocabulary.isListed( "h5clade" ), "isListed" );
+        // above species, and the Color-by priority (2026-10-27): the six botanical names are out of the priority only
+        check( ok, RankVocabulary.isAboveSpecies( "domain" ) && RankVocabulary.isAboveSpecies( "genus" ) && RankVocabulary.isAboveSpecies( "subgenus" )
+                && RankVocabulary.isAboveSpecies( "superspecies" ) && !RankVocabulary.isAboveSpecies( "species" ) && !RankVocabulary.isAboveSpecies( "subspecies" )
+                && !RankVocabulary.isAboveSpecies( "strain" ) && !RankVocabulary.isAboveSpecies( "h5clade" ) && !RankVocabulary.isAboveSpecies( "" )
+                && !RankVocabulary.isAboveSpecies( null ), "isAboveSpecies: domain .. superspecies; never species or below, a scheme, blank or null" );
+        for( final String r : new String[] { "superdivision", "division", "subdivision", "infradivision", "section", "subsection" } ) {
+            check( ok, RankVocabulary.isListed( r ) && RankVocabulary.isAboveSpecies( r ) && !RankVocabulary.isPriorityRank( r ),
+                   "listed and above species, out of the Color-by priority only: " + r );
+        }
+        check( ok, RankVocabulary.isPriorityRank( "genus" ) && RankVocabulary.isPriorityRank( "subgenus" ) && RankVocabulary.isPriorityRank( "superspecies" )
+                && RankVocabulary.isPriorityRank( "tribe" ) && RankVocabulary.isPriorityRank( "domain" ) && !RankVocabulary.isPriorityRank( "species" )
+                && RankVocabulary.isPriorityRank( "class" ) && RankVocabulary.isPriorityRank( "cohort" ) && RankVocabulary.isPriorityRank( "branch" )
+                && !RankVocabulary.isPriorityRank( "h5clade" ) && !RankVocabulary.isPriorityRank( null ),
+               "isPriorityRank: every other rank above species, nothing else" );
         // a property's rank
         check( ok, "genus".equals( RankVocabulary.propertyRank( "vipr:Genus" ) ) && "species".equals( RankVocabulary.propertyRank( "BVBRC:species" ) )
                 && "family".equals( RankVocabulary.propertyRank( "repseq:family" ) ) && "genus".equals( RankVocabulary.propertyRank( "ncbi:genus" ) )

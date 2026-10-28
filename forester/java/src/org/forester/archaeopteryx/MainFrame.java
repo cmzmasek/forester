@@ -4433,7 +4433,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final java.util.List<String> colorable = PropertyColorScheme.colorableRefs(phy); // scan the tree ONCE
         final java.util.List<String> numeric = PropertyColorScheme.numericRefs(phy, colorable);
         // Columns lay out in the SOURCE's own order, NOT in the order the two ref lists arrive in. Those come from
-        // colorableRefs, which ranks Color-by CANDIDATES by tier and score (PropertyColorScheme.VIS_ORDER) -- for a
+        // colorableRefs, which ranks Color-by CANDIDATES by priority, tier and score (PropertyColorScheme.VIS_ORDER:
+        // a covered rank above species first) -- for a
         // 40-gene presence/absence matrix that lays the columns out by an invisible "interestingness" score, which
         // scatters the author's grouping and is not an order a reader can predict or control. The file's (or the
         // imported table's) own column order is the one thing the person preparing the data does control.

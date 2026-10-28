@@ -1765,7 +1765,8 @@ public final class AptxUtil {
             // Show only the Display Data checkboxes for which this tree actually has data.
             cp.updateDataCheckboxVisibility(true);
             // AUTO-COLOR (JS-authoritative): a tree opens coloured by THE FIRST CANDIDATE THAT IS NOT WIDE
-            // (forester.js openingVisualization), so tiers 0, 1, 3 and 4 can open a tree, each only when nothing above
+            // (forester.js openingVisualization) in the two-priority order (a covered taxonomic rank above species
+            // first, PropertyColorScheme), so tiers 0, 1, 3 and 4 can open a tree, each only when nothing above
             // it exists, and a wide field neither opens one nor blocks what sits below it. Only when nothing chose a
             // color already -- a figure spec restored from the file is applied AFTER this and wins anyway, and a tab
             // that carries a color keeps it.

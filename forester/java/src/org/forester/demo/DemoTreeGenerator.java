@@ -105,6 +105,8 @@ public final class DemoTreeGenerator {
     public static void writeAll( final File dir ) throws IOException, PhyloXmlDataFormatException {
         write( dir, "size-by-property.xml", sizeByPropertyTree() );
         write( dir, "color-by-property.xml", colorByPropertyTree() );
+        write( dir, "color-by-rank-priority.xml", colorByRankPriorityTree( false ) );
+        write( dir, "color-by-rank-priority-sparse.xml", colorByRankPriorityTree( true ) );
         write( dir, "annotation-columns.xml", annotationColumnsTree() );
         write( dir, "label-properties.xml", labelPropertiesTree() );
         write( dir, "symbol-columns.xml", symbolColumnsTree() );
@@ -1529,6 +1531,49 @@ public final class DemoTreeGenerator {
         }
         num( n, "data:year", Integer.toString( year ) );
         return n;
+    }
+
+
+    // ----- "Color by: a taxonomic rank comes first" (the two-priority rule, Christian 2026-10-27): a 3-genus
+    //       vipr:Genus beside a 10-host vipr:Host that OUTSCORES it (more values, spread more evenly) and a numeric
+    //       vipr:Year. Load -> coloured by genus. The twin carries the genus on 4 of 13 tips only: sparse, so it
+    //       takes its usual low place and the tree opens on Host.
+    private static Phylogeny colorByRankPriorityTree( final boolean sparse ) {
+        final String[][] rows = { // name, genus, host, year -- 10 distinct hosts and 13 distinct years over 13 tips
+                { "isolate_01", "Betacoronavirus", "Human", "2003" }, { "isolate_02", "Betacoronavirus", "Bat", "2013" },
+                { "isolate_03", "Betacoronavirus", "Camel", "2014" }, { "isolate_04", "Betacoronavirus", "Pangolin", "2019" },
+                { "isolate_05", "Betacoronavirus", "Bovine", "1998" }, { "isolate_06", "Betacoronavirus", "Rodent", "2006" },
+                { "isolate_07", "Betacoronavirus", "Human", "2020" }, { "isolate_08", "Alphacoronavirus", "Feline", "2001" },
+                { "isolate_09", "Alphacoronavirus", "Swine", "2010" }, { "isolate_10", "Alphacoronavirus", "Bat", "2008" },
+                { "isolate_11", "Alphacoronavirus", "Canine", "2004" }, { "isolate_12", "Gammacoronavirus", "Avian", "1996" },
+                { "isolate_13", "Gammacoronavirus", "Swine", "2017" } };
+        final java.util.Set<Integer> with_genus = new java.util.HashSet<Integer>( java.util.Arrays.asList( 0, 1, 7, 11 ) );
+        final PhylogenyNode[] tips = new PhylogenyNode[ rows.length ];
+        for( int i = 0; i < rows.length; ++i ) {
+            tips[ i ] = leaf( rows[ i ][ 0 ] );
+            if ( !sparse || with_genus.contains( i ) ) {
+                cat( tips[ i ], "vipr:Genus", rows[ i ][ 1 ] );
+            }
+            cat( tips[ i ], "vipr:Host", rows[ i ][ 2 ] );
+            num( tips[ i ], "vipr:Year", rows[ i ][ 3 ] );
+        }
+        final PhylogenyNode root = clade( 0,
+                                          clade( 0.08, clade( 0.03, tips[ 0 ], tips[ 1 ], tips[ 2 ], tips[ 3 ] ),
+                                                 clade( 0.04, tips[ 4 ], tips[ 5 ], tips[ 6 ] ) ),
+                                          clade( 0.06, clade( 0.05, tips[ 7 ], tips[ 8 ], tips[ 9 ], tips[ 10 ] ),
+                                                 clade( 0.07, tips[ 11 ], tips[ 12 ] ) ) );
+        if ( sparse ) {
+            return tree( root, "Color by: a sparse rank is not first (demo)",
+                         "The same 13 synthetic coronavirus isolates as color-by-rank-priority.xml, with vipr:Genus on "
+                                 + "4 tips only. A rank field on fewer than two thirds of the tips is sparse and takes its "
+                                 + "usual low place, so the tree opens colored by host; genus is offered below Host and "
+                                 + "Year." );
+        }
+        return tree( root, "Color by: a taxonomic rank comes first (demo)",
+                     "Synthetic coronavirus isolates: each tip has a vipr:Genus (3 genera), a vipr:Host (10 hosts) and "
+                             + "a numeric vipr:Year. By score alone Host would open the tree (more values, spread more "
+                             + "evenly); a taxonomic rank above species is offered first, so the tree opens colored by "
+                             + "genus. Below the genus the usual order: Host, then Year. 13 tips." );
     }
 
     // ----- "Metadata Columns": several metadata fields of the four supported kinds so the tool can render a color strip

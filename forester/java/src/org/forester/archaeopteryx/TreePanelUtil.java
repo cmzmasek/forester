@@ -2566,7 +2566,8 @@ public class TreePanelUtil {
      * <p>
      * This is LAYOUT order, and it is deliberately distinct from the two neighbours it must never be confused with.
      * {@link #userVisiblePropertyRefs} sorts by display name because a CHOOSER wants findability. {@code
-     * PropertyColorScheme.VIS_ORDER} ranks Color-by CANDIDATES by tier and score. An annotation matrix's column
+     * PropertyColorScheme.VIS_ORDER} ranks Color-by CANDIDATES by priority (a covered rank above species first),
+     * tier and score. An annotation matrix's column
      * order instead carries the author's grouping -- a gene presence/absence matrix ordered core / accessory /
      * mobile says something that alphabetizing or score-ranking destroys -- so it follows the source and nothing
      * else.

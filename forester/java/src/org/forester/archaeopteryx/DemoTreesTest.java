@@ -86,6 +86,7 @@ public final class DemoTreesTest {
         ok &= hasCategoricalRef( "color-by-property.xml", "data:host" );
         ok &= hasNumericRef( "color-by-property.xml", "data:year" );
         ok &= hasHostlessTip( "color-by-property.xml" ); // feeds the legend's dashed "no value" row
+        ok &= colorByRankPriorityPairOk( "color-by-rank-priority.xml", "color-by-rank-priority-sparse.xml" );
         // annotation columns: categorical + numeric + text properties
         ok &= hasCategoricalRef( "annotation-columns.xml", "data:host" );
         ok &= hasNumericRef( "annotation-columns.xml", "data:viral_load" );
@@ -2808,6 +2809,49 @@ public final class DemoTreesTest {
      *  order) is what the per-tip report exists to show: from the tree's own annotations, at {@code rank}, every tip
      *  is placed, nothing is looked up, and exactly that annotation is reported as ignored -- the count the demo
      *  catalogue quotes. */
+
+    /** The two-priority Color-by (Christian, 2026-10-27): the pair's full tree opens on its genus although Host
+     *  OUTSCORES it (asserted, else the pair shows nothing); the sparse twin, genus on 4 of 13 tips, opens on Host
+     *  with genus below Year. The counts the descriptions quote (13 tips, 3 genera, 10 hosts, 4 tips) are asserted. */
+    private static boolean colorByRankPriorityPairOk( final String full_name, final String sparse_name ) {
+        final Phylogeny full = load( full_name );
+        final Phylogeny sparse = load( sparse_name );
+        if ( ( full == null ) || ( sparse == null ) ) {
+            return false;
+        }
+        final java.util.List<PropertyColorScheme.VisCandidate> cf = PropertyColorScheme.visualizationCandidates( full );
+        final PropertyColorScheme.VisCandidate g = PropertyColorScheme.findCandidate( cf, "vipr:Genus" );
+        final PropertyColorScheme.VisCandidate h = PropertyColorScheme.findCandidate( cf, "vipr:Host" );
+        final PropertyColorScheme.VisCandidate y = PropertyColorScheme.findCandidate( cf, "vipr:Year" );
+        if ( ( full.getNumberOfExternalNodes() != 13 ) || ( g == null ) || ( h == null ) || ( y == null ) ) {
+            return note( full_name + ": 13 tips with vipr:Genus, vipr:Host and vipr:Year offered; got " + PropertyColorSchemeTest.refsOf( cf ) );
+        }
+        if ( ( g._values.size() != 3 ) || ( g._coverage != 13 ) || ( h._values.size() != 10 ) || ( h._coverage != 13 )
+                || !y._numeric || ( y._values.size() != 13 ) ) {
+            return note( full_name + ": 3 genera on all 13 tips, 10 hosts on all 13, 13 distinct numeric years" );
+        }
+        if ( !( h._score > g._score ) ) {
+            return note( full_name + ": Host must OUTSCORE Genus for the pair to show the rule: " + h._score + " vs " + g._score );
+        }
+        if ( !g._high || h._high || y._high || !PropertyColorSchemeTest.refsOf( cf ).equals( java.util.Arrays.asList( "vipr:Genus", "vipr:Host", "vipr:Year" ) ) ) {
+            return note( full_name + ": Genus (high) first, then Host, then Year; got " + PropertyColorSchemeTest.refsOf( cf ) );
+        }
+        if ( PropertyColorScheme.openingVisualization( cf ) != g ) {
+            return note( full_name + ": opens colored by genus" );
+        }
+        final java.util.List<PropertyColorScheme.VisCandidate> cs = PropertyColorScheme.visualizationCandidates( sparse );
+        final PropertyColorScheme.VisCandidate gs = PropertyColorScheme.findCandidate( cs, "vipr:Genus" );
+        if ( ( sparse.getNumberOfExternalNodes() != 13 ) || ( gs == null ) || ( gs._coverage != 4 ) || !gs._sparse || gs._high
+                || ( gs.tier() != 4 ) ) {
+            return note( sparse_name + ": vipr:Genus on 4 of 13 tips, sparse, not high" );
+        }
+        if ( !PropertyColorSchemeTest.refsOf( cs ).equals( java.util.Arrays.asList( "vipr:Host", "vipr:Year", "vipr:Genus" ) )
+                || !"vipr:Host".equals( PropertyColorScheme.openingVisualization( cs )._ref ) ) {
+            return note( sparse_name + ": Host, Year, Genus and opens on Host; got " + PropertyColorSchemeTest.refsOf( cs ) );
+        }
+        return true;
+    }
+
     private static boolean rankNoVoteOk( final String file_name ) {
         final Phylogeny phy = load( file_name );
         if ( phy == null ) {

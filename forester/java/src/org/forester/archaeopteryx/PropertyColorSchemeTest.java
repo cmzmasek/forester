@@ -22,6 +22,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +61,8 @@ public final class PropertyColorSchemeTest {
                 && testColorIdentityMemory() && testSynonymDictionary() && testElementSlots()
                 && testCandidateOrdering() && testModeBands() && testExcludedRefs()
                 && testDateIsAMeasurementOrNothing()
-                && testUniquenessTiersAndOpening() && testNumericGrammarAndFolding() && testMultiValuedAndAppliesTo()
+                && testUniquenessTiersAndOpening() && testRankPriority() && testNumericGrammarAndFolding()
+                && testMultiValuedAndAppliesTo()
                 && testViewSummarizesNotReclassifies() && testEditKeepsValuedChoice() && testFoldToEmptyIsNoValue()
                 && testContractFixtures();
     }
@@ -1630,8 +1632,9 @@ public final class PropertyColorSchemeTest {
 
     /**
      * THE ACCEPTANCE TEST: both Archaeopteryx.js contract fixtures, run through the desktop's own phyloXML parser and
-     * classifier -- the NAMES (vis-contract.tsv: verdict, label, deprioritization) and the DATA (vis-trees.tsv +
-     * vis-trees/*.xml: every column). Copied from the JS repo's test/fixtures (at f307328) into
+     * classifier -- the NAMES (vis-contract.tsv: verdict, label, deprioritization, the rank priority) and the DATA
+     * (vis-trees.tsv + vis-trees/*.xml: every column, the 15th being {@code high}). Copied from the JS repo's
+     * test/fixtures (at ac1bcb1: the two-priority regeneration of 2026-10-27, six rank_priority trees) into
      * forester/test_data/vis_contract/. When they regenerate, recopy; never edit a row to make this pass. The row
      * counts are pinned so a truncated copy cannot pass.
      */
@@ -1654,7 +1657,8 @@ public final class PropertyColorSchemeTest {
                 final List<PropertyColorScheme.VisCandidate> cs = PropertyColorScheme
                         .visualizationCandidates( fieldTree( 30, refs( ref ), i -> ( ( i % 2 ) == 1 ) ? "A" : "B" ) );
                 final PropertyColorScheme.VisCandidate c = cs.isEmpty() ? null : cs.get( 0 );
-                final String got = ( c == null ) ? "EXCLUDED" : ( c._deprioritized ? "DEPRIORITIZED" : "offered" );
+                final String got = ( c == null ) ? "EXCLUDED"
+                        : ( c._deprioritized ? "DEPRIORITIZED" : ( c._high ? "PRIORITIZED" : "offered" ) );
                 if ( !got.equals( verdict ) ) {
                     return fail( "name fixture: " + ref + " js=" + verdict + " desktop=" + got );
                 }
@@ -1672,8 +1676,8 @@ public final class PropertyColorSchemeTest {
                             + PropertyColorScheme.displayName( ref ) + "'" );
                 }
             }
-            if ( name_rows != 197 ) {
-                return fail( "name fixture: expected 197 rows, read " + name_rows );
+            if ( name_rows != 229 ) {
+                return fail( "name fixture: expected 229 rows, read " + name_rows );
             }
             final Map<String, List<String[]>> by_tree = new java.util.LinkedHashMap<String, List<String[]>>();
             for( final String line : java.nio.file.Files.readAllLines( new java.io.File( dir, "vis-trees.tsv" ).toPath() ) ) {
@@ -1701,11 +1705,12 @@ public final class PropertyColorSchemeTest {
                     final PropertyColorScheme.VisCandidate c = PropertyColorScheme.findCandidate( cands, want[ 1 ] );
                     final String got = ( c == null )
                             ? String.join( "\t", e.getKey(), want[ 1 ], "refused", "-", "-", "-", "-", "-", "-", "-", "-",
-                                           "-", opens, "-" )
+                                           "-", opens, "-", "-" )
                             : String.join( "\t", e.getKey(), want[ 1 ], "offered", String.valueOf( c.tier() ),
                                            String.valueOf( cands.indexOf( c ) ), bit( c._numeric ), bit( c._wide ),
                                            bit( c._near_unique ), bit( c._sparse ), bit( c._deprioritized ),
-                                           c._color_mode, bit( c._shape ), opens, String.valueOf( c._values.size() ) );
+                                           c._color_mode, bit( c._shape ), opens, String.valueOf( c._values.size() ),
+                                           bit( c._high ) );
                     if ( !got.equals( String.join( "\t", want ) ) ) {
                         return fail( "data fixture row differs:\n    js      " + String.join( "\t", want )
                                 + "\n    desktop " + got );
@@ -1721,8 +1726,8 @@ public final class PropertyColorSchemeTest {
                     }
                 }
             }
-            if ( data_rows != 47 ) {
-                return fail( "data fixture: expected 47 rows, read " + data_rows );
+            if ( data_rows != 66 ) {
+                return fail( "data fixture: expected 66 rows, read " + data_rows );
             }
         }
         catch ( final Exception e ) {
@@ -1791,6 +1796,169 @@ public final class PropertyColorSchemeTest {
         return true;
     }
 
+
+    /**
+     * THE TWO PRIORITIES (Christian, 2026-10-27): a property naming a taxonomic rank above species, neither sparse nor
+     * near-unique, sorts before every other candidate; inside each priority the usual order; the opening rule is
+     * unchanged. Each fixture pins the LITERAL order and asserts the precondition that makes it a rule (the low field
+     * outscores the rank, else the old sort would give the same answer).
+     */
+    private static boolean testRankPriority() {
+        // A: a 3-value Genus (20/5/5) beats a 10-value Country (3 each) that outscores it; a numeric Year sits below
+        final Phylogeny a = fieldTree( 30, refs( "x:Genus", "x:Country", "x:Year" ),
+                                       i -> ( i < 20 ) ? "Alphavirus" : ( ( i < 25 ) ? "Betavirus" : "Gammavirus" ),
+                                       i -> "c" + ( i % 10 ), i -> Integer.toString( 1990 + i ) );
+        final List<PropertyColorScheme.VisCandidate> ca = PropertyColorScheme.visualizationCandidates( a );
+        final PropertyColorScheme.VisCandidate a_genus = PropertyColorScheme.findCandidate( ca, "x:Genus" );
+        final PropertyColorScheme.VisCandidate a_country = PropertyColorScheme.findCandidate( ca, "x:Country" );
+        final PropertyColorScheme.VisCandidate a_year = PropertyColorScheme.findCandidate( ca, "x:Year" );
+        if ( ( a_genus == null ) || ( a_country == null ) || ( a_year == null ) ) {
+            return fail( "rank priority A: three candidates expected, got " + refsOf( ca ) );
+        }
+        if ( !( a_country._score > a_genus._score ) ) {
+            return fail( "rank priority A, precondition: Country must OUTSCORE Genus, got " + a_country._score + " vs "
+                    + a_genus._score );
+        }
+        if ( !a_genus._high || a_country._high || a_year._high || ( a_genus.tier() != 0 ) ) {
+            return fail( "rank priority A: Genus is high, Country and Year are not" );
+        }
+        if ( !refsOf( ca ).equals( Arrays.asList( "x:Genus", "x:Country", "x:Year" ) ) ) {
+            return fail( "rank priority A: order Genus, Country, Year; got " + refsOf( ca ) );
+        }
+        if ( PropertyColorScheme.openingVisualization( ca ) != a_genus ) {
+            return fail( "rank priority A: the tree opens on Genus" );
+        }
+        // B: the same Genus on 10 of 30 tips is SPARSE: everything else, after Country, and Country opens
+        final Phylogeny b = fieldTree( 30, refs( "x:Genus", "x:Country" ),
+                                       i -> ( i < 10 ) ? ( ( ( i % 2 ) == 0 ) ? "Alphavirus" : "Betavirus" ) : null,
+                                       i -> "c" + ( i % 10 ) );
+        final List<PropertyColorScheme.VisCandidate> cb = PropertyColorScheme.visualizationCandidates( b );
+        final PropertyColorScheme.VisCandidate b_genus = PropertyColorScheme.findCandidate( cb, "x:Genus" );
+        if ( ( b_genus == null ) || !b_genus._sparse || b_genus._high || ( b_genus.tier() != 4 )
+                || !refsOf( cb ).equals( Arrays.asList( "x:Country", "x:Genus" ) )
+                || !"x:Country".equals( PropertyColorScheme.openingVisualization( cb )._ref ) ) {
+            return fail( "rank priority B: a sparse Genus is low (tier 4, after Country, Country opens); got " + refsOf( cb ) );
+        }
+        // C: a WIDE Genus (21 genera over 35 tips, repeating enough not to be near-unique) leads and never opens
+        final Phylogeny c = fieldTree( 35, refs( "x:Genus", "x:Host" ), i -> "g" + ( i % 21 ),
+                                       i -> ( ( i % 2 ) == 0 ) ? "Human" : "Bat" );
+        final List<PropertyColorScheme.VisCandidate> cc = PropertyColorScheme.visualizationCandidates( c );
+        final PropertyColorScheme.VisCandidate c_genus = PropertyColorScheme.findCandidate( cc, "x:Genus" );
+        if ( ( c_genus == null ) || !c_genus._wide || c_genus._near_unique || !c_genus._high || ( c_genus.tier() != 2 )
+                || !refsOf( cc ).equals( Arrays.asList( "x:Genus", "x:Host" ) )
+                || !"x:Host".equals( PropertyColorScheme.openingVisualization( cc )._ref ) ) {
+            return fail( "rank priority C: a wide Genus is high, first, and the tree still opens on Host; got " + refsOf( cc ) );
+        }
+        // D: the same 21 genera over 34 tips are NEAR-UNIQUE: low, last
+        final Phylogeny d = fieldTree( 34, refs( "x:Genus", "x:Host" ), i -> "g" + ( i % 21 ),
+                                       i -> ( ( i % 2 ) == 0 ) ? "Human" : "Bat" );
+        final List<PropertyColorScheme.VisCandidate> cd = PropertyColorScheme.visualizationCandidates( d );
+        final PropertyColorScheme.VisCandidate d_genus = PropertyColorScheme.findCandidate( cd, "x:Genus" );
+        if ( ( d_genus == null ) || !d_genus._near_unique || d_genus._high || ( d_genus.tier() != 5 )
+                || !refsOf( cd ).equals( Arrays.asList( "x:Host", "x:Genus" ) ) ) {
+            return fail( "rank priority D: a near-unique Genus is low, after Host; got " + refsOf( cd ) );
+        }
+        // E: the boundary. Subfamily and Subgenus (score 1.0 each, tie by label) are high; Country (1.0) heads the
+        // rest; Species, Strain, a clade scheme and the taxonomy slot -- all 20/5/5 -- are low and tie by label.
+        final Phylogeny e = fieldTree( 30, refs( "x:Subfamily", "x:Subgenus", "x:Country", "x:Species", "x:Strain",
+                                                 "x:clade_membership" ),
+                                       i -> ( i < 15 ) ? "Alphaherpesvirinae" : "Betaherpesvirinae",
+                                       i -> ( i < 15 ) ? "Sarbecovirus" : "Embecovirus", i -> "c" + ( i % 10 ),
+                                       i -> ( i < 20 ) ? "s1" : ( ( i < 25 ) ? "s2" : "s3" ),
+                                       i -> ( i < 20 ) ? "st1" : ( ( i < 25 ) ? "st2" : "st3" ),
+                                       i -> ( i < 20 ) ? "19A" : ( ( i < 25 ) ? "20A" : "20B" ) );
+        for( final PhylogenyNode tip : e.getExternalNodes() ) {
+            final int i = Integer.parseInt( tip.getName().substring( 1 ) );
+            final org.forester.phylogeny.data.Taxonomy t = new org.forester.phylogeny.data.Taxonomy();
+            t.setScientificName( ( i < 20 ) ? "Species one" : ( ( i < 25 ) ? "Species two" : "Species three" ) );
+            tip.getNodeData().setTaxonomy( t );
+        }
+        final List<PropertyColorScheme.VisCandidate> ce = PropertyColorScheme.visualizationCandidates( e );
+        if ( !refsOf( ce ).equals( Arrays.asList( "x:Subfamily", "x:Subgenus", "x:Country", "x:clade_membership",
+                                                  "tax:scientific_name", "x:Species", "x:Strain" ) ) ) {
+            return fail( "rank priority E: Subfamily, Subgenus | Country, Clade Membership, Scientific Name, Species, Strain; got "
+                    + refsOf( ce ) );
+        }
+        for( final PropertyColorScheme.VisCandidate x : ce ) {
+            final boolean want = x._ref.equals( "x:Subfamily" ) || x._ref.equals( "x:Subgenus" );
+            if ( x._high != want ) {
+                return fail( "rank priority E: " + x._ref + " high=" + x._high );
+            }
+        }
+        if ( !"x:Subfamily".equals( PropertyColorScheme.openingVisualization( ce )._ref ) ) {
+            return fail( "rank priority E: opens on Subfamily" );
+        }
+        // F: the name test alone -- every listed rank before species, in any namespace and spelling, except the
+        // six botanical names (Christian, 2026-10-27: Nextstrain's "division" is a state or province); nothing else
+        for( final String high : new String[] { "x:Genus", "x:Subgenus", "x:Superspecies", "x:Kingdom", "x:Superkingdom",
+                                                "x:Domain", "x:Phylum", "x:Tribe", "x:Subfamily", "x:Superorder",
+                                                "x:Class", "x:Cohort", "x:Order", "x:Branch", "x:Legion", // decided 2026-10-27: they stay
+                                                "vipr:Genus", "BVBRC:family", "ncbi:order", "gtdb:phylum", "repseq:class",
+                                                "tol:Domain", "x:Sub-Genus", "x:sub_family", "x:GENUS", "Genus" } ) {
+            if ( !PropertyColorScheme.isPriorityRankRef( high ) ) {
+                return fail( "rank priority F: " + high + " names a priority rank" );
+            }
+        }
+        for( final String low : new String[] { "x:Species", "x:Subspecies", "x:ssp", "x:Strain", "x:Serotype", "x:Variety",
+                                               "x:Forma_specialis", "x:clade_membership", "vipr:PANGO_Lineage",
+                                               "ird:H5Clade", "x:host_genus", "x:Genus_name", "x:genus_id",
+                                               "tax:scientific_name", "x:Host", "x:other", "x:unknown", "", null,
+                                               "nextstrain:division", "x:Division", "x:Superdivision", "x:Subdivision",
+                                               "x:Infradivision", "x:Section", "x:Subsection", "x:sub_section" } ) {
+            if ( PropertyColorScheme.isPriorityRankRef( low ) ) {
+                return fail( "rank priority F: " + low + " is not a priority rank" );
+            }
+        }
+        // ... the six stay listed ranks above species in the vocabulary: the exclusion is the priority test's alone
+        for( final String botanical : new String[] { "superdivision", "division", "subdivision", "infradivision",
+                                                     "section", "subsection" } ) {
+            if ( !RankVocabulary.isListed( botanical ) || !RankVocabulary.isAboveSpecies( botanical )
+                    || RankVocabulary.isPriorityRank( botanical ) ) {
+                return fail( "rank priority F: " + botanical + " stays a listed rank above species, out of the priority only" );
+            }
+        }
+        // ... and on the name fixture's own tree (30 tips, A/B): a rank name is high there, a species name is not
+        if ( !cand( fieldTree( 30, refs( "vipr:Genus" ), i -> ( ( i % 2 ) == 1 ) ? "A" : "B" ), "vipr:Genus" )._high
+                || cand( fieldTree( 30, refs( "vipr:Species" ), i -> ( ( i % 2 ) == 1 ) ? "A" : "B" ), "vipr:Species" )._high ) {
+            return fail( "rank priority F: on the 30-tip A/B tree vipr:Genus is high and vipr:Species is not" );
+        }
+        // G: the priority never promotes a KEPT field: a chosen Genus the edit left single-valued is appended last,
+        // flagged kept, its high flag as derived -- the kept rule outranks the priority
+        final Phylogeny g = fieldTree( 30, refs( "x:Genus", "x:Country" ), i -> "Alphavirus", i -> "c" + ( i % 10 ) );
+        final List<PropertyColorScheme.VisCandidate> cg = PropertyColorScheme
+                .visualizationCandidatesKeeping( g, Arrays.asList( a_genus ) );
+        if ( !refsOf( cg ).equals( Arrays.asList( "x:Country", "x:Genus" ) ) || !cg.get( 1 )._kept || !cg.get( 1 )._high
+                || ( PropertyColorScheme.openingVisualization( cg ) != cg.get( 0 ) ) ) {
+            return fail( "rank priority G: a kept Genus is appended after the offered Country, still flagged high; got "
+                    + refsOf( cg ) );
+        }
+        final List<PropertyColorScheme.VisCandidate> re = new ArrayList<PropertyColorScheme.VisCandidate>( cg );
+        java.util.Collections.sort( re, PropertyColorScheme.VIS_ORDER );
+        if ( !refsOf( re ).equals( refsOf( cg ) ) ) {
+            return fail( "rank priority G: a kept field stays last under VIS_ORDER too; got " + refsOf( re ) );
+        }
+        // H: a rank field whose values are NUMBERS (taxon ids) is a measurement, not a priority: the numeric tier,
+        // below a text Host, and never the opener (code review 2026-10-27)
+        final Phylogeny h = fieldTree( 30, refs( "x:Genus", "x:Host" ), i -> Integer.toString( 694002 + i ),
+                                       i -> ( ( i % 2 ) == 0 ) ? "Human" : "Bat" );
+        final List<PropertyColorScheme.VisCandidate> ch = PropertyColorScheme.visualizationCandidates( h );
+        final PropertyColorScheme.VisCandidate h_genus = PropertyColorScheme.findCandidate( ch, "x:Genus" );
+        if ( ( h_genus == null ) || !h_genus._numeric || h_genus._high || ( h_genus.tier() != 1 )
+                || !refsOf( ch ).equals( Arrays.asList( "x:Host", "x:Genus" ) )
+                || !"x:Host".equals( PropertyColorScheme.openingVisualization( ch )._ref ) ) {
+            return fail( "rank priority H: a numeric Genus is low, tier 1, after Host, and Host opens; got " + refsOf( ch ) );
+        }
+        final Phylogeny h3 = fieldTree( 30, refs( "x:Genus", "x:Host" ),
+                                        i -> ( i < 20 ) ? "11118" : ( ( i < 25 ) ? "694002" : "290028" ),
+                                        i -> ( ( i % 2 ) == 0 ) ? "Human" : "Bat" );
+        final PropertyColorScheme.VisCandidate h3_genus = PropertyColorScheme
+                .findCandidate( PropertyColorScheme.visualizationCandidates( h3 ), "x:Genus" );
+        if ( ( h3_genus == null ) || !h3_genus._numeric || h3_genus._high ) {
+            return fail( "rank priority H: three taxon ids are still numbers, not a priority" );
+        }
+        return true;
+    }
+
     private static String bit( final boolean b ) {
         return b ? "1" : "0";
     }
@@ -1809,7 +1977,8 @@ public final class PropertyColorSchemeTest {
         return PropertyColorScheme.findCandidate( PropertyColorScheme.visualizationCandidates( p ), ref );
     }
 
-    private static List<String> refsOf( final List<PropertyColorScheme.VisCandidate> cs ) {
+    /** The refs of candidates in their order; DemoTreesTest reads it too. */
+    static List<String> refsOf( final List<PropertyColorScheme.VisCandidate> cs ) {
         final List<String> r = new ArrayList<String>();
         for( final PropertyColorScheme.VisCandidate c : cs ) {
             r.add( c._ref );
