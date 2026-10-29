@@ -21,10 +21,15 @@
 package org.forester.archaeopteryx;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.forester.phylogeny.Phylogeny;
@@ -44,6 +49,12 @@ import org.forester.phylogeny.data.Taxonomy;
  * exactly one segment's color: this catches glyph-BODY overlap (the offset regression this guards), though a
  * hair-thin anti-aliased overhang alone would round away -- the offset fix is what keeps the bodies apart.
  * Guarded to a no-op when headless.
+ *
+ * At HIGH RESOLUTION (a 2x Retina screen, the 4x raster export, 300 dpi) a label part is drawn at its
+ * near-fractional width while the component's FontMetrics measure it at 1x: an italic name ran up to 3.5 px past
+ * its measure and swallowed the space before the node data (the Peribunyaviridae 4x PNG, 2026-10-29), and a
+ * right-aligned internal label ran into its branch. {@code testDrawnAdvanceWidth} (always runs) pins the measure
+ * against INK; {@code testHiResLabelsMatchScaleOne} (headful) renders through the export at each scale against 1x.
  */
 public final class TaxonomyNodeLabelOverlapTest {
 
@@ -60,7 +71,410 @@ public final class TaxonomyNodeLabelOverlapTest {
             ok &= testNoRenderedOverlap( "Drosophila melanogasterf" ); // ends in an italic 'f': largest right overhang
             ok &= testInternalGapMatchesExternal();
         }
+        // after the checks above: they look for exact pure-colour pixels, which a 1x italic in the bundled font
+        // never has (text is antialiased here even with antialiasing off), and the next line registers that font
+        ok &= testDrawnAdvanceWidth();
+        if ( !GraphicsEnvironment.isHeadless() ) {
+            for( final double s : HI_RES_SCALES ) {
+                ok &= testHiResLabelsMatchScaleOne( s );
+            }
+            ok &= testRadialOneSpaceAfterName( Options.PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+            ok &= testRadialOneSpaceAfterName( Options.PHYLOGENY_GRAPHICS_TYPE.UNROOTED );
+        }
         return ok;
+    }
+
+    /** A Retina screen, the default 4x raster export, a 300 dpi fixed-size export. */
+    private static final double[] HI_RES_SCALES   = { 2.0, 4.0, 300.0 / 72.0 };
+    /** Tip names from the Peribunyaviridae tree whose 4x PNG lost the space after the name (2026-10-29). Termeil
+     *  is the control: its 1x advance is no shorter than its drawn one at 4x, so it kept its gap even then. */
+    private static final String[]  TIP_NAMES       = { "Guaroa virus", "Yacaaba virus", "Shamonda virus",
+            "Akabane virus", "Termeil virus" };
+    private static final String    INTERNAL_NAME   = "Orthobunyavirus akabaneense";
+    /** Roman letters whose 1x advance is short of the drawn one at 2x / 4x / 300 dpi in Source Sans 3 12 (about
+     *  +5 px in all); the roman words of real metadata ("Peru", "Australia") drift the other way, so they could not
+     *  show a short measure of the node-data segment. */
+    private static final String    INTERNAL_DATA   = "SDGTWZSDGT";
+    private static final String    TIP_DATA        = "Peru";
+
+    private static Font bundledFont( final int style ) {
+        FontResources.registerBundledFonts();
+        return new Font( FontResources.DEFAULT_FIGURE_FONT, style, 12 );
+    }
+
+    /**
+     * {@link TreePanel#drawnAdvanceWidth} is what a label part ADVANCES when drawn: measured by INK (the left edge
+     * of a bar drawn after the text in the same call, minus the bar drawn alone), never by asking the font again.
+     * At 1x it equals the component's integer metrics exactly, so the screen at 1x and a scale-1 raster are
+     * unchanged. At 2x / 4x / 300 dpi it covers the drawn advance and rounds up by less than a pixel, where the
+     * component metrics fall short (the precondition: by 2 px or more for some name, the space they swallowed).
+     */
+    private static boolean testDrawnAdvanceWidth() {
+        boolean ok = true;
+        final Font it = bundledFont( Font.ITALIC );
+        if ( !FontResources.DEFAULT_FIGURE_FONT.equals( it.getFamily() ) ) {
+            return fail( "the bundled " + FontResources.DEFAULT_FIGURE_FONT + " is not registered (got "
+                    + it.getFamily() + "): the measured fixtures below would be meaningless" );
+        }
+        final FontMetrics component = new JPanel().getFontMetrics( it );
+        for( final boolean aa : new boolean[] { false, true } ) {
+            for( final String s : TIP_NAMES ) {
+                final Graphics2D g = scaledGraphics( 1.0, aa );
+                final int w = TreePanel.drawnAdvanceWidth( g, it, s );
+                g.dispose();
+                if ( w != component.stringWidth( s ) ) {
+                    ok = fail( "at 1x (aa=" + aa + ") '" + s + "' must measure as the component metrics do: "
+                            + w + " != " + component.stringWidth( s ) );
+                }
+                final double ink = inkAdvance( it, s, 1.0, aa );
+                if ( Math.abs( ink - w ) > 1e-9 ) {
+                    ok = fail( "at 1x (aa=" + aa + ") '" + s + "' advances " + ink + " px, measured " + w );
+                }
+            }
+        }
+        for( final double scale : HI_RES_SCALES ) {
+            double worst_short = 0;
+            for( final String s : TIP_NAMES ) {
+                final double ink = inkAdvance( it, s, scale, false );
+                final Graphics2D g = scaledGraphics( scale, false );
+                final int w = TreePanel.drawnAdvanceWidth( g, it, s );
+                g.dispose();
+                if ( ( w < ink - 1e-6 ) || ( w >= ink + 1.0 + ( 1.0 / scale ) ) ) {
+                    ok = fail( "at " + scale + "x '" + s + "' advances " + ink + " px by ink, measured " + w
+                            + " (must cover it, by less than a pixel)" );
+                }
+                worst_short = Math.max( worst_short, ink - component.stringWidth( s ) );
+            }
+            if ( worst_short < 2.0 ) {
+                ok = fail( "precondition at " + scale + "x: no fixture name is drawn 2 px wider than the 1x metrics"
+                        + " say (worst " + worst_short + "), so nothing here would show a short measure" );
+            }
+        }
+        return ok;
+    }
+
+    private static Graphics2D scaledGraphics( final double scale, final boolean aa ) {
+        final Graphics2D g = new BufferedImage( 4, 4, BufferedImage.TYPE_INT_RGB ).createGraphics();
+        g.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, aa ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+        g.scale( scale, scale );
+        return g;
+    }
+
+    /** The advance of {@code s} as drawString lays it out, from ink: a bar drawn after s in the SAME call stands
+     *  exactly one advance right of the bar drawn alone. User-space px, to 1/scale. */
+    private static double inkAdvance( final Font f, final String s, final double scale, final boolean aa ) {
+        return barLeft( f, s + "|", scale, aa ) - barLeft( f, "|", scale, aa );
+    }
+
+    private static double barLeft( final Font f, final String text, final double scale, final boolean aa ) {
+        final int w = (int) Math.ceil( 300 * scale ), h = (int) Math.ceil( 30 * scale );
+        final BufferedImage img = new BufferedImage( w, h, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g = img.createGraphics();
+        g.setColor( Color.WHITE );
+        g.fillRect( 0, 0, w, h );
+        g.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, aa ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+        g.scale( scale, scale );
+        g.setColor( Color.BLACK );
+        g.setFont( f );
+        g.drawString( text, 10f, 22f );
+        g.dispose();
+        // the bar is the rightmost ink: walk left from its right edge to the first blank column
+        int x = w - 1;
+        while ( ( x >= 0 ) && !inkColumn( img, x ) ) {
+            --x;
+        }
+        while ( ( x > 0 ) && inkColumn( img, x - 1 ) ) {
+            --x;
+        }
+        return x / scale;
+    }
+
+    private static boolean inkColumn( final BufferedImage img, final int x ) {
+        for( int y = 0; y < img.getHeight(); ++y ) {
+            if ( ( img.getRGB( x, y ) & 0xFF ) < 128 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A raster at {@code scale} places every label segment where the 1x raster does, scaled -- through the app's
+     * own export ({@link AptxUtil#renderPhylogenyToImage}). Two placements the 1x component metrics broke at high
+     * resolution (the 4x PNG of 2026-10-29): (1) a tip's node data starts after the italic name's space, not inside
+     * it -- the clear gap between the two inks, in user px, may not shrink by more than a pixel; (2) an internal
+     * label right-aligned to its node (taxonomy, then node data) ends where it ends at 1x -- not past it into the
+     * branch. The precondition: the fixture's names are drawn at least 2 px wider than the 1x metrics say at this
+     * scale, so the old measure would fail both.
+     */
+    private static boolean testHiResLabelsMatchScaleOne( final double scale ) {
+        try {
+            final Configuration conf = new Configuration();
+            final Phylogeny phy = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            final PhylogenyNode a = withData( "A", INTERNAL_NAME, INTERNAL_DATA );
+            final PhylogenyNode[] tips = new PhylogenyNode[ TIP_NAMES.length ];
+            for( int i = 0; i < TIP_NAMES.length; ++i ) {
+                tips[ i ] = withData( "t" + i, TIP_NAMES[ i ], TIP_DATA );
+                ( i < 2 ? a : root ).addAsChild( tips[ i ] );
+            }
+            root.addAsChild( a );
+            phy.setRoot( root );
+            phy.externalNodesHaveChanged();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "hires" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_SEQ_NAMES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_NODE_NAMES, false );
+                    final Options o = frame.getOptions();
+                    o.setAntialiasExport( false ); // a pixel is exactly one segment's colour
+                    o.setUseItalicScientificNames( true );
+                    o.setInternalLabelsAboveBranch( true );
+                    o.setGraphicsExportWhiteBackground( false );
+                    final int tax = 0xFF00FF, seq = 0x00FFFF;
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.BACKGROUND, new Color( 255, 255, 255 ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.TAXONOMY, new Color( tax ) );
+                    tp.getTreeColorSet().setColorforDefault( TreeColorSet.SEQUENCE, new Color( seq ) );
+                    tp.getTreeColorSet().setColorSchema( 0 );
+                    // the measured fixture is Source Sans 3 at 12: at 11 every one of these names is drawn NARROWER
+                    // than its 1x metrics, and the test would see nothing
+                    frame.getMainPanel().getTreeFontSet().setBaseFont( bundledFont( Font.PLAIN ) );
+                    frame.showWhole();
+                    final int w = 1100, h = 700;
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    final Font large = frame.getMainPanel().getTreeFontSet().getLargeFont();
+                    if ( !FontResources.DEFAULT_FIGURE_FONT.equals( large.getFamily() ) || ( large.getSize() != 12 ) ) {
+                        fail( ok, scale + "x: the tree font did not stay " + FontResources.DEFAULT_FIGURE_FONT
+                                + " 12 (got " + large + ")" );
+                        return;
+                    }
+                    // precondition: at this scale the old measure is short by 2 px or more, for a tip name, the
+                    // internal name and the internal node data alike
+                    final Font italic = large.deriveFont( large.getStyle() | Font.ITALIC );
+                    final Graphics2D probe = scaledGraphics( scale, false );
+                    double tip_short = 0;
+                    for( final String s : TIP_NAMES ) {
+                        tip_short = Math.max( tip_short, TreePanel.drawnAdvanceWidth( probe, italic, s )
+                                - tp.getFontMetrics( italic ).stringWidth( s ) );
+                    }
+                    final int internal_short = TreePanel.drawnAdvanceWidth( probe, italic, INTERNAL_NAME )
+                            - tp.getFontMetrics( italic ).stringWidth( INTERNAL_NAME );
+                    final int data_short = TreePanel.drawnAdvanceWidth( probe, large, INTERNAL_DATA )
+                            - tp.getFontMetrics( large ).stringWidth( INTERNAL_DATA );
+                    probe.dispose();
+                    if ( ( tip_short < 2 ) || ( internal_short < 2 ) || ( data_short < 2 ) ) {
+                        fail( ok, "precondition at " + scale + "x: the 1x metrics must fall 2 px short (tip names "
+                                + tip_short + ", internal name " + internal_short + ", internal data "
+                                + data_short + ")" );
+                        return;
+                    }
+                    final BufferedImage one = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, 1, false );
+                    final BufferedImage hi = AptxUtil.renderPhylogenyToImage( w, h, tp, o, false, scale, false );
+                    final double actual_scale = (double) hi.getWidth() / one.getWidth();
+                    if ( Math.abs( actual_scale - scale ) > 0.01 ) {
+                        fail( ok, "the export was not rendered at " + scale + "x (got " + actual_scale + ")" );
+                        return;
+                    }
+                    final int band = large.getSize() + 8;
+                    for( int i = 0; i < tips.length; ++i ) {
+                        final double g1 = gapUser( one, 1.0, tips[ i ].getYcoord(), band, tax, seq );
+                        final double gs = gapUser( hi, scale, tips[ i ].getYcoord(), band, tax, seq );
+                        if ( Double.isNaN( g1 ) || Double.isNaN( gs ) ) {
+                            fail( ok, scale + "x '" + TIP_NAMES[ i ] + "': name and node data not both drawn" );
+                        }
+                        else if ( gs < g1 - 1.0 ) {
+                            fail( ok, scale + "x '" + TIP_NAMES[ i ] + "': the gap after the italic name shrank from "
+                                    + g1 + " px at 1x to " + gs + " px" );
+                        }
+                    }
+                    // the internal label sits ABOVE its branch: a band from a font height above the node to just
+                    // below it, clear of the tip rows (about 60 px away)
+                    for( final int colour : new int[] { tax, seq } ) {
+                        final double e1 = rightmostInkUser( one, 1.0, a.getYcoord(), band, colour );
+                        final double es = rightmostInkUser( hi, scale, a.getYcoord(), band, colour );
+                        final String what = ( colour == tax ) ? "name" : "node data";
+                        if ( Double.isNaN( e1 ) || Double.isNaN( es ) ) {
+                            fail( ok, scale + "x: the internal label's " + what + " was not drawn" );
+                        }
+                        else if ( es > e1 + 1.0 ) {
+                            fail( ok, scale + "x: the internal label's " + what + " ends at " + es
+                                    + " px, past where it ends at 1x (" + e1 + "), toward its node" );
+                        }
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, scale + "x: unexpected " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Circular and unrooted put ONE space between the scientific name and the node data, as the rectangular label
+     * does: the taxonomy label ends with its own separator, so the node-data string drops its leading one. Read off
+     * the box each drawn label claims (its width is the width of exactly what is drawn: the taxonomy parts, italic
+     * name in italics, then the node-data string). A tip WITHOUT a taxonomy keeps its leading space, so its label
+     * stands where it stood -- the deliberate non-change. Until 2026-10-29 the radial label had two spaces there;
+     * at high resolution the short measure of the italic name ate about one of them, which hid it.
+     */
+    private static boolean testRadialOneSpaceAfterName( final Options.PHYLOGENY_GRAPHICS_TYPE type ) {
+        try {
+            final Configuration conf = new Configuration();
+            final Phylogeny phy = new Phylogeny();
+            final PhylogenyNode root = new PhylogenyNode();
+            for( final String sci : TIP_NAMES ) {
+                root.addAsChild( withData( "x", sci, TIP_DATA ) );
+            }
+            for( int i = 0; i < 2; ++i ) { // the controls: node data alone
+                final PhylogenyNode n = new PhylogenyNode();
+                final Sequence seq = new Sequence();
+                seq.setName( TIP_DATA + i );
+                n.getNodeData().addSequence( seq );
+                root.addAsChild( n );
+            }
+            phy.setRoot( root );
+            phy.externalNodesHaveChanged();
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait(
+                    () -> mf[ 0 ] = MainFrameApplication.createInstance( new Phylogeny[] { phy }, conf, "radial" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final MainFrame frame = mf[ 0 ];
+                try {
+                    final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_SEQ_NAMES, true );
+                    tp.getControlPanel().setCheckbox( DisplayOption.SHOW_NODE_NAMES, false );
+                    frame.getOptions().setUseItalicScientificNames( true );
+                    frame.getMainPanel().getTreeFontSet().setBaseFont( bundledFont( Font.PLAIN ) );
+                    tp.setPhylogenyGraphicsType( type );
+                    final int w = 1100, h = 1100;
+                    tp.setSize( w, h );
+                    tp.calcParametersForPainting( w, h );
+                    tp.setRecordLabelBoxesForTest( true );
+                    AptxUtil.renderPhylogenyToImage( w, h, tp, frame.getOptions(), false, 1, false );
+                    final java.util.List<double[]> boxes = tp.labelBoxesForTest();
+                    tp.setRecordLabelBoxesForTest( false );
+                    final Font large = frame.getMainPanel().getTreeFontSet().getLargeFont();
+                    final FontMetrics roman = tp.getFontMetrics( large );
+                    final FontMetrics italic = tp.getFontMetrics( large.deriveFont( large.getStyle() | Font.ITALIC ) );
+                    if ( ( boxes == null ) || ( boxes.size() != phy.getNumberOfExternalNodes() ) ) {
+                        fail( ok, type + ": every tip label must be drawn (drew "
+                                + ( boxes == null ? "none" : boxes.size() ) + " of " + phy.getNumberOfExternalNodes()
+                                + ")" );
+                        return;
+                    }
+                    int with_taxonomy = 0, without = 0;
+                    for( final double[] b : boxes ) {
+                        final PhylogenyNode n = phy.getNode( (long) b[ 5 ] );
+                        final String data = n.getNodeData().getSequence().getName();
+                        final int expected;
+                        if ( n.getNodeData().isHasTaxonomy() ) {
+                            ++with_taxonomy;
+                            final String sci = n.getNodeData().getTaxonomy().getScientificName();
+                            expected = italic.stringWidth( sci ) + roman.stringWidth( " " ) + roman.stringWidth( data );
+                        }
+                        else {
+                            ++without;
+                            expected = roman.stringWidth( " " + data );
+                        }
+                        final double drawn = 2.0 * b[ 2 ];
+                        if ( Math.abs( drawn - expected ) > 1e-6 ) {
+                            fail( ok, type + " '" + ( n.getNodeData().isHasTaxonomy()
+                                    ? n.getNodeData().getTaxonomy().getScientificName() + " " : "" ) + data
+                                    + "': the label is " + drawn + " px wide, " + expected + " px with "
+                                    + ( n.getNodeData().isHasTaxonomy() ? "one space after the name"
+                                            : "its leading space" ) );
+                        }
+                    }
+                    if ( ( with_taxonomy != TIP_NAMES.length ) || ( without != 2 ) ) {
+                        fail( ok, type + ": expected " + TIP_NAMES.length + " named tips and 2 controls, read "
+                                + with_taxonomy + " and " + without );
+                    }
+                }
+                catch ( final Throwable t ) {
+                    fail( ok, type + ": unexpected " + t );
+                }
+                finally {
+                    ( (JFrame) frame ).dispose();
+                }
+            } );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Whether {@code rgb} is CORE ink of {@code colour} (magenta or cyan) on white: at least half covered. Text is
+     * antialiased on macOS even with antialiasing off, and a thin 1x italic stroke covers no pixel fully, so an
+     * exact-colour test finds nothing there; the half-coverage edge is where the glyph's edge is at every scale.
+     */
+    private static boolean isInk( final int rgb, final int colour ) {
+        final int r = ( rgb >> 16 ) & 0xFF, g = ( rgb >> 8 ) & 0xFF, b = rgb & 0xFF;
+        if ( b < 200 ) {
+            return false;
+        }
+        return ( colour == 0xFF00FF ) ? ( ( r >= 200 ) && ( g <= 127 ) ) : ( ( g >= 200 ) && ( r <= 127 ) );
+    }
+
+    /** The clear gap, in USER px, between the rightmost {@code tax} ink and the leftmost {@code seq} ink in a band
+     *  of +/-{@code band} user px around {@code yc} on an image rendered at {@code scale}; NaN when either is
+     *  absent. The leftmost seq ink is global, so an overlap comes out negative. */
+    private static double gapUser( final BufferedImage img, final double scale, final float yc, final int band,
+                                   final int tax, final int seq ) {
+        final int y0 = Math.max( 0, (int) Math.floor( ( yc - band ) * scale ) );
+        final int y1 = Math.min( img.getHeight(), (int) Math.ceil( ( yc + band ) * scale ) );
+        int tax_max = -1, seq_min = Integer.MAX_VALUE;
+        for( int y = y0; y < y1; ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                final int p = img.getRGB( x, y ) & 0xFFFFFF;
+                if ( isInk( p, tax ) ) {
+                    tax_max = Math.max( tax_max, x );
+                }
+                else if ( isInk( p, seq ) ) {
+                    seq_min = Math.min( seq_min, x );
+                }
+            }
+        }
+        return ( ( tax_max < 0 ) || ( seq_min == Integer.MAX_VALUE ) ) ? Double.NaN
+                : ( ( seq_min - ( tax_max + 1 ) ) / scale );
+    }
+
+    /** The right edge of {@code colour}'s ink in the band from {@code band} px above {@code yc} to 2 px below it,
+     *  in USER px (the column after the last inked one); NaN when absent. */
+    private static double rightmostInkUser( final BufferedImage img, final double scale, final float yc,
+                                            final int band, final int colour ) {
+        final int y0 = Math.max( 0, (int) Math.floor( ( yc - band ) * scale ) );
+        final int y1 = Math.min( img.getHeight(), (int) Math.ceil( ( yc + 2 ) * scale ) );
+        int max = -1;
+        for( int y = y0; y < y1; ++y ) {
+            for( int x = 0; x < img.getWidth(); ++x ) {
+                if ( isInk( img.getRGB( x, y ) & 0xFFFFFF, colour ) && ( x > max ) ) {
+                    max = x;
+                }
+            }
+        }
+        return ( max < 0 ) ? Double.NaN : ( ( max + 1 ) / scale );
     }
 
     /**
@@ -285,13 +699,17 @@ public final class TaxonomyNodeLabelOverlapTest {
     }
 
     private static PhylogenyNode withData( final String name, final String sci ) {
+        return withData( name, sci, "SEQ" );
+    }
+
+    private static PhylogenyNode withData( final String name, final String sci, final String seq_name ) {
         final PhylogenyNode n = new PhylogenyNode();
         n.setName( name );
         final Taxonomy t = new Taxonomy();
         t.setScientificName( sci );
         n.getNodeData().setTaxonomy( t );
         final Sequence s = new Sequence();
-        s.setName( "SEQ" );
+        s.setName( seq_name );
         n.getNodeData().addSequence( s );
         return n;
     }

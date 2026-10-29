@@ -4367,7 +4367,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     /**
      * Advance width of a label string under the same font selection node painting uses everywhere: the
      * fractional-metrics advance for the vector-export path, the large default font otherwise (unless a
-     * per-node visual font or a found-node font is in effect). Single source of truth for the width logic
+     * per-node visual font or a found-node font is in effect), measured as g draws it at its scale
+     * ({@link #drawnAdvanceWidth}). Single source of truth for the width logic
      * in paintTaxonomy, paintNodeData and paintInternalLabelAboveBranch.
      */
     private int labelStringWidth(final Graphics2D g,
@@ -4381,10 +4382,9 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if (to_pdf) {
             return fractionalAdvanceWidth(g, str);
         }
-        if (!using_visual_font && !is_in_found_nodes) {
-            return getFontMetricsForLargeDefaultFont().stringWidth(str);
-        }
-        return getFontMetrics(g.getFont()).stringWidth(str);
+        // the font choice is unchanged; the width is measured as g draws it (see drawnAdvanceWidth)
+        return drawnAdvanceWidth(g, (!using_visual_font && !is_in_found_nodes) ? getTreeFontSet().getLargeFont()
+                : g.getFont(), str);
     }
 
     private final void drawConnection(final float x1,
@@ -4546,6 +4546,12 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         final float gap = effectiveNodeHalfBoxSize(node) + 3f
                 + (hasTipImage(node) ? (float) (img_footprint + TIP_IMAGE_GAP) : 0);
         final int tax_w = show_tax ? taxonomyLabelWidth(node.getNodeData().getTaxonomy(), base_font) : 0;
+        // The taxonomy label ends with its own separator space, so the leading one of rest would make two: one space
+        // between the scientific name and the node data, as in the rectangular label (nodeDataAsSB). Without a
+        // taxonomy, rest keeps its leading space (the label's distance from the node is unchanged).
+        if ((tax_w > 0) && rest.startsWith(" ")) {
+            rest = rest.substring(1);
+        }
         // Radial layouts: a full label in a circle runs ~twice the radius (off the canvas), so truncate the node-name/
         // sequence part with an ellipsis to the label budget left after the taxonomy, keeping tree + labels + domains
         // on-canvas. (No cap in a rectangular layout -- radialMaxLabelWidth returns MAX_VALUE there.)
@@ -7347,7 +7353,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             if (draw) {
                 TreePanel.drawString(shown, start_x + w[0], baseline_y, g);
             }
-            w[0] += to_pdf ? fractionalAdvanceWidth(g, shown) : getFontMetrics(g.getFont()).stringWidth(shown);
+            w[0] += to_pdf ? fractionalAdvanceWidth(g, shown) : drawnAdvanceWidth(g, g.getFont(), shown);
         });
         g.setFont(base);
         return w[0];
@@ -7778,10 +7784,22 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // the font's true *fractional* widths, whereas FontMetrics.stringWidth grid-fits each advance to an
     // integer; at the small leaf-label font that rounding deficit accumulates over a long label into a
     // one-to-two character overlap with the next label (e.g. scientific name running into node name).
-    // Raster/screen are unaffected -- AWT grid-fits glyphs to the same integers it measures -- so this
-    // is used only on the to_pdf (vector) path, keeping screen and raster output pixel-identical.
+    // Used only on the to_pdf (vector) path; raster and screen use drawnAdvanceWidth.
     static int fractionalAdvanceWidth(final Graphics2D g, final String s) {
         return (int) Math.ceil(g.getFont().getStringBounds(s, FRC_FRACTIONAL).getWidth());
+    }
+
+    /**
+     * Advance (px, user space, rounded up) of {@code s} in {@code font} as {@code g} lays it out: measured in g's
+     * OWN render context, which carries g's transform. The component's FontMetrics measure at 1x, so they match
+     * what is drawn only when g is unscaled. AWT rounds each glyph advance in DEVICE pixels, so a scaled raster
+     * (a 4x PNG, a 300 dpi export, a 2x Retina screen) draws a label at its near-fractional width: measured
+     * 2026-10-29 in Source Sans 3 Italic 12, "Guaroa virus" is 60 px by the component metrics and 63 / 62.25 /
+     * 62.16 px drawn at 2x / 4x / 300 dpi, enough to eat the 2-px space before the next label segment. At 1x the
+     * two agree to the pixel, so the screen at 1x and a scale-1 raster are unchanged.
+     */
+    static int drawnAdvanceWidth(final Graphics2D g, final Font font, final String s) {
+        return (int) Math.ceil(font.getStringBounds(s, g.getFontRenderContext()).getWidth());
     }
 
     private boolean setFont(final Graphics2D g, final PhylogenyNode node) {
