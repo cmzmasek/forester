@@ -293,6 +293,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node data links: ");
+        if (org.forester.archaeopteryx.NodeDataLinksTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node frame: ");
         if (org.forester.archaeopteryx.NodeFrameTest.test()) {
             System.out.println("OK.");

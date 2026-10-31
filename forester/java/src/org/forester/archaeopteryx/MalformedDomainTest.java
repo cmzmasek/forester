@@ -36,6 +36,10 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
  * a file is SCHEMA-VALID and the XSD-validating parser met exactly the same fate: Archaeopteryx refused a document
  * that conforms to phyloXML. A domain is a display annotation and the tree is the data, so now the annotation is what
  * gets dropped -- skipped, counted, and reported once at load.
+ * <p>
+ * A domain's CONFIDENCE is no reason to drop it: the attribute is optional in phyloXML, and the writer saves a domain
+ * without one as {@code confidence="-1.0"}. Until 0.11.195 the reader refused a missing or negative confidence, so
+ * every domain saved without one vanished when its file was opened again ({@link #confidenceIsOptional}).
  */
 public final class MalformedDomainTest {
 
@@ -158,6 +162,9 @@ public final class MalformedDomainTest {
                     false ) ) != 0 ) {
                 return fail( "a tree without domains must report nothing ignored" );
             }
+            if ( !confidenceIsOptional() ) {
+                return false;
+            }
             // ---- the counter is a PARSE-time artifact, not data --------------------------------------------
             // copy() builds a new architecture from the domain list, so a copied tree carries no phantom count
             final DomainArchitecture copied = ( DomainArchitecture ) architectureOf( inverted[ 0 ], "A" ).copy();
@@ -169,6 +176,55 @@ public final class MalformedDomainTest {
         catch ( final Exception e ) {
             return fail( "unexpected exception: " + e );
         }
+    }
+
+    /**
+     * A missing, negative ("-1.0", what the writer saves for none), unreadable or empty confidence keeps the domain
+     * with no confidence; a real one is read as written; and a domain built without one survives a write and a
+     * read -- the reported case.
+     */
+    private static boolean confidenceIsOptional() throws Exception {
+        final String none = "<domain from=\"50\" to=\"80\">NoConf</domain>";
+        final String minus = "<domain from=\"82\" to=\"95\" confidence=\"-1.0\">Minus</domain>";
+        for( final boolean validating : new boolean[] { false, true } ) { // both shapes are schema-valid
+            final String who = validating ? "XSD-validating parser" : "parser";
+            final Phylogeny[] phys = load( xml( GOOD_A + none + minus ), validating );
+            final DomainArchitecture a = architectureOf( phys[ 0 ], "A" );
+            if ( ( a.getDomains().size() != 3 ) || ( MainFrame.countIgnoredDomains( phys ) != 0 ) ) {
+                return fail( who + ": a domain without a confidence, or with -1.0, must be kept: " + a.getDomains().size()
+                        + " kept, " + MainFrame.countIgnoredDomains( phys ) + " ignored" );
+            }
+            if ( ( a.getDomain( 0 ).getConfidence() != 1e-8 ) || ( a.getDomain( 1 ).getConfidence() != -1 )
+                    || ( a.getDomain( 2 ).getConfidence() != -1 ) ) {
+                return fail( who + ": a real confidence is read as written, a missing or negative one as none (-1): "
+                        + a.getDomain( 0 ).getConfidence() + " " + a.getDomain( 1 ).getConfidence() + " "
+                        + a.getDomain( 2 ).getConfidence() );
+            }
+        }
+        final Phylogeny[] odd = load( xml( "<domain from=\"5\" to=\"40\" confidence=\"abc\">Text</domain>"
+                + "<domain from=\"50\" to=\"80\" confidence=\"\">Empty</domain>"
+                + "<domain from=\"81\" to=\"90\" confidence=\"-3\">Negative</domain>" ), false );
+        final DomainArchitecture o = architectureOf( odd[ 0 ], "A" );
+        if ( ( o.getDomains().size() != 3 ) || ( o.getDomain( 0 ).getConfidence() != -1 )
+                || ( o.getDomain( 1 ).getConfidence() != -1 ) || ( o.getDomain( 2 ).getConfidence() != -1 ) ) {
+            return fail( "an unreadable, empty or negative confidence: kept, with none, got " + o.getDomains().size() );
+        }
+        // the reported case: built without a confidence (the editor, a demo, a converter), saved, opened again
+        final Phylogeny built = load( xml( GOOD_A ), false )[ 0 ];
+        final DomainArchitecture b = architectureOf( built, "A" );
+        b.addDomain( new org.forester.phylogeny.data.ProteinDomain( "Built", 50, 80, "PF00533" ) );
+        final String written = new org.forester.io.writers.PhylogenyWriter().toPhyloXML( built, 0 ).toString();
+        if ( !written.contains( "confidence=\"-1.0\"" ) ) {
+            return fail( "precondition: the writer saves a domain without a confidence as -1.0" );
+        }
+        final Phylogeny[] again = load( written, false );
+        final DomainArchitecture r = architectureOf( again[ 0 ], "A" );
+        if ( ( r.getDomains().size() != 2 ) || !"Built".equals( r.getDomain( 1 ).getName() )
+                || !"PF00533".equals( r.getDomain( 1 ).getId() ) || ( r.getDomain( 1 ).getConfidence() != -1 ) ) {
+            return fail( "a domain saved without a confidence must come back when the file is opened again: "
+                    + r.getDomains().size() + " domains" );
+        }
+        return true;
     }
 
     private static boolean fail( final String msg ) {

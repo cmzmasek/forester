@@ -135,13 +135,18 @@ final class NodeHoverText {
      * and the rollover then simply has no Pfam row.
      */
     static String pfamAccession( final ProteinDomain d ) {
-        if ( ( d == null ) || ForesterUtil.isEmpty( d.getId() ) ) {
+        return ( d == null ) ? null : pfamAccession( d.getId() );
+    }
+
+    /** The Pfam accession {@code id} is, or null (also read for a cross-reference whose source is pfam). */
+    static String pfamAccession( final String id ) {
+        if ( ForesterUtil.isEmpty( id ) ) {
             return null;
         }
         // ANCHORED, not a substring search: an id that merely CONTAINS an accession -- "SM00109_PF00018",
         // a pipe-joined composite -- is not a Pfam accession, and linking it to that entry would send the
         // user to a different family. A trailing ".25" version suffix is allowed, nothing else is.
-        final java.util.regex.Matcher m = PFAM_ACC.matcher( d.getId().trim().toUpperCase( java.util.Locale.US ) );
+        final java.util.regex.Matcher m = PFAM_ACC.matcher( id.trim().toUpperCase( java.util.Locale.US ) );
         return m.matches() ? m.group( 1 ) : null;
     }
 

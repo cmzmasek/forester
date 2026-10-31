@@ -158,6 +158,8 @@ public final class DemoTreeGenerator {
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
+        write( dir, "node-data-links.xml", nodeDataLinksTree() );
+        write( dir, "node-data-links-none.xml", nodeDataLinksNoneTree() );
         write( dir, "tree-properties.xml", treePropertiesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         writeText( dir, "beast-rate-missing.nex", beastRateMissingNexus() );
@@ -1372,6 +1374,116 @@ public final class DemoTreeGenerator {
                              + "sequences on the human tip, confidences, a dated node with a speciation event, a "
                              + "distribution, a reference, and typed metadata fields. Click a node and choose \"Edit "
                              + "Node Data\". Schematic sequences (truncated), not real data." );
+    }
+
+    // ----- "Node data links": five records from five databases on a SCHEMATIC tree (the topology means nothing),
+    //       each value a link in Display Node Data. Every identifier is a real record (checked 2026-10-30): BRCA1
+    //       (UniProt P38398, its InterPro/Ensembl/Gene cross-references and Pfam domains at UniProt's positions,
+    //       the 1994 paper), Guaroa virus (NCBI protein), bat SARS coronavirus HKU3-1 (a UniProt taxonomy id and
+    //       code), BtVs-BetaCoV/SC2013 (a GENOME accession on a protein sequence: it opens NCBI Nucleotide), and
+    //       Bundibugyo virus (a Pathoplexus record). The twin, node-data-links-none.xml, must link nothing.
+    private static Phylogeny nodeDataLinksTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode brca1 = linkTip( "BRCA1_HUMAN", "Homo sapiens", "HUMAN", "9606", "ncbi" );
+        final Sequence s = linkSequence( brca1, "Breast cancer type 1 susceptibility protein", "protein", "P38398",
+                                         "UniProt" );
+        s.setSymbol( "BRCA1" );
+        s.addCrossReference( new Accession( "IPR011364", "interpro" ) );
+        s.addCrossReference( new Accession( "IPR001357", "interpro" ) );
+        s.addCrossReference( new Accession( "IPR001841", "interpro" ) );
+        s.addCrossReference( new Accession( "ENSG00000012048", "ensembl" ) );
+        s.addCrossReference( new Accession( "672", "geneid" ) );
+        // no E-values: a domain saved without a confidence must come back when the file is opened (until 0.11.195
+        // the reader dropped it); DemoTreesTest counts these three domains' links
+        final DomainArchitecture da = new DomainArchitecture();
+        da.addDomain( new ProteinDomain( "zf-C3HC4", 24, 65, "PF00097" ) );
+        da.addDomain( new ProteinDomain( "BRCT", 1642, 1736, "PF00533" ) );
+        da.addDomain( new ProteinDomain( "BRCT", 1756, 1855, "PF00533" ) );
+        da.setTotalLength( 1863 );
+        s.setDomainArchitecture( da );
+        brca1.getNodeData().setReference( new Reference( "Miki Y et al. (1994) A strong candidate for the breast and "
+                + "ovarian cancer susceptibility gene BRCA1. Science 266:66-71", "10.1126/science.7545954" ) );
+        addProperty( brca1, "data:gene_page", "https://www.ncbi.nlm.nih.gov/gene/672", "xsd:string" );
+        final PhylogenyNode guaroa = linkTip( "Guaroa_virus|AKC42486.1", "Guaroa virus", null, "80941", "ncbi" );
+        linkSequence( guaroa, "polymerase [Guaroa virus]", "protein", "AKC42486.1", "ncbi" );
+        final PhylogenyNode hku3 = linkTip( "AAY88866", "Bat SARS coronavirus HKU3-1", "BCHK3", "333387", "uniprot" );
+        final Sequence spike = linkSequence( hku3, "Bat SARS coronavirus HKU3-1 spike glycoprotein", "protein",
+                                             "AAY88866", "ncbi" );
+        spike.setGeneName( "S" );
+        spike.addCrossReference( new Accession( "IPR002552", "interpro" ) );
+        spike.addCrossReference( new Accession( "IPR018548", "interpro" ) );
+        spike.addCrossReference( new Accession( "Q3LZX1", "uniprot" ) );
+        final PhylogenyNode sc2013 = linkTip( "KJ473821", "BtVs-BetaCoV/SC2013", null, "1495253", "uniprot" );
+        linkSequence( sc2013, "BtVs-BetaCoV/SC2013, complete genome", "protein", "KJ473821", "ncbi" );
+        final PhylogenyNode bdbv = linkTip( "PP_006XHL9.4", "Bundibugyo virus", null, "565995", "ncbi" );
+        linkSequence( bdbv, "Bundibugyo ebolavirus", "dna", "PP_006XHL9.4", "pathoplexus" )
+                .addUri( new Uri( URI.create( "https://pathoplexus.org/seq/PP_006XHL9.4" ), "pathoplexus record",
+                                  null ) );
+        final PhylogenyNode root = clade( 0, clade( 0.05, brca1, guaroa ), clade( 0.05, hku3, sc2013, bdbv ) );
+        return tree( root, "Node Data Links (demo)",
+                     "Five real records on a schematic tree (the topology means nothing). Click a tip and choose "
+                             + "\"Display Node Data\": the scientific name, taxonomy code and identifier, the "
+                             + "accession, cross-references, URIs, domains, the DOI and a metadata web address are "
+                             + "links that open the page they name in your browser." );
+    }
+
+    /** The twin of {@link #nodeDataLinksTree}: node data that names no page we know -- nothing may link. */
+    private static Phylogeny nodeDataLinksNoneTree() throws PhyloXmlDataFormatException {
+        final PhylogenyNode bvbrc = leaf( "fig|1000.9.peg.1" ); // a BV-BRC feature id: a source we do not know
+        final Sequence s = linkSequence( bvbrc, "Type II topoisomerase subunit", "protein", "fig|1000.9.peg.1",
+                                         "BV-BRC" );
+        s.addUri( new Uri( URI.create( "file:///data/genomes/1000.9.fasta" ), "local copy", null ) );
+        bvbrc.getNodeData().setReference( new Reference( "Unpublished (no DOI)" ) );
+        cat( bvbrc, "data:note", "see the BV-BRC record" ); // mentions a database, is not an address
+        final PhylogenyNode ecoli = leaf( "dnaA_E_coli" );
+        final Taxonomy gtdb = new Taxonomy(); // a GTDB taxon as the id, and a common name (never a link)
+        gtdb.setIdentifier( new Identifier( "s__Escherichia coli", "gtdb" ) );
+        gtdb.setCommonName( "E. coli" );
+        ecoli.getNodeData().setTaxonomy( gtdb );
+        final Sequence dnaa = new Sequence();
+        dnaa.setName( "chromosomal replication initiator protein DnaA" );
+        dnaa.setType( "protein" );
+        dnaa.addCrossReference( new Accession( "eco:b3702", "kegg" ) ); // KEGG: a source we do not know
+        ecoli.getNodeData().addSequence( dnaa );
+        final PhylogenyNode itis = leaf( "tsn_180092" );
+        final Taxonomy t = new Taxonomy(); // ITIS's number for Homo sapiens: a provider we do not know
+        t.setIdentifier( new Identifier( "180092", "itis" ) );
+        t.setCommonName( "human" );
+        itis.getNodeData().setTaxonomy( t );
+        final PhylogenyNode shape = leaf( "XYZ12345678" ); // an NCBI accession of no known shape and no type
+        linkSequence( shape, "an accession of unknown shape", null, "XYZ12345678", "ncbi" );
+        final PhylogenyNode root = clade( 0, clade( 0.05, bvbrc, ecoli ), clade( 0.05, itis, shape ) );
+        return tree( root, "Node Data Links: none (demo)",
+                     "The twin of node-data-links.xml: node data that names no page Archaeopteryx knows how to open "
+                             + "(a BV-BRC feature id, a GTDB and an ITIS taxonomy id, a KEGG cross-reference, a "
+                             + "file: URI, a reference without a DOI, an NCBI accession of unknown shape and no "
+                             + "type). Display Node Data shows every value as plain text: no links." );
+    }
+
+    private static PhylogenyNode linkTip( final String name, final String scientific_name, final String code,
+                                          final String tax_id, final String provider )
+            throws PhyloXmlDataFormatException {
+        final PhylogenyNode n = leaf( name );
+        final Taxonomy t = new Taxonomy();
+        t.setScientificName( scientific_name );
+        if ( code != null ) {
+            t.setTaxonomyCode( code );
+        }
+        t.setIdentifier( new Identifier( tax_id, provider ) );
+        n.getNodeData().setTaxonomy( t );
+        return n;
+    }
+
+    private static Sequence linkSequence( final PhylogenyNode n, final String name, final String type,
+                                          final String accession, final String source )
+            throws PhyloXmlDataFormatException {
+        final Sequence s = new Sequence();
+        s.setName( name );
+        if ( type != null ) {
+            s.setType( type );
+        }
+        s.setAccession( new Accession( accession, source ) );
+        n.getNodeData().addSequence( s );
+        return s;
     }
 
     // ---- tree properties (View > Tree Properties, Cmd-I): every section of the window has something to show ----

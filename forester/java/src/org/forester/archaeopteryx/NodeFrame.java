@@ -77,6 +77,14 @@ final class NodeFrame extends EditorFrame {
         }
     }
 
+    /** A read-only window on {@code node} re-reads it (a Write in another window changed it); else nothing. */
+    void reread( final PhylogenyNode node ) {
+        if ( !_form.isEditable() && ( _form.node() == node ) ) {
+            _form.rebind( node );
+            setBaseTitle( "Node: " + NodeDataForm.nodeLabel( node ) );
+        }
+    }
+
     /** Releases the tree panel's slot. */
     @Override
     protected void onClosed() {

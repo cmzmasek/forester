@@ -75,6 +75,7 @@ import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.NodeData;
+import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
@@ -88,7 +89,10 @@ import org.forester.util.TaxonomyUtil;
  * {@link #problems()}) and tracks dirtiness against the draft it opened with ({@link #isDirty()}). NOTHING reaches
  * the tree until {@link #write()}, which is atomic (no write while any field is invalid), one undo step, and appends
  * a provenance sentence. In {@link Mode#VIEW} the same page shows only what is present, read-only, plus the
- * read-only extras (annotations, lineage, binary characters, ...) that the editor does not edit.
+ * read-only extras (annotations, lineage, binary characters, ...) that the editor does not edit; there, a value that
+ * names a database record (taxonomy, accession, cross-reference, URI, domain, DOI, a metadata web address) is a
+ * link that opens it in the browser -- {@link NodeDataLinks} decides where, and when nothing is named, that it is
+ * plain text.
  * <p>
  * The window chrome (buttons, status line, close confirmation) lives in {@link NodeFrame}; this panel is a plain
  * {@code JPanel} so its logic runs headless in tests.
@@ -131,6 +135,11 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
     private NodeDataDraft                       _current;
     private List<Problem>                       _current_problems;
     private final DocumentListener              _doc_listener   = onChange( this::fireChanged );
+    /** VIEW mode: the address each linked value opens, by field key (taxonomy + reference; a sequence card keeps
+     *  its own). Recomputed whenever the page is built. */
+    private final Map<String, String>           _view_urls      = new HashMap<>();
+    /** What a click on a link does: opens the browser; a test swaps in a recorder. */
+    private java.util.function.Consumer<String> _link_opener    = this::openInBrowser;
 
     NodeDataForm( final PhylogenyNode node, final TreePanel tree_panel, final Mode mode ) {
         super( new BorderLayout() );
@@ -400,6 +409,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
                 phy.setDescription( ForesterUtil.isEmpty( existing ) ? prov : existing + " " + prov );
             }
             refreshTreePanel( sections, length_changed );
+            _tree_panel.nodeDataWritten( _node ); // an open Display Node Data window on it re-reads its values + links
         }
         fireChanged();
         return true;
@@ -572,9 +582,161 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         return _header.getTitle();
     }
 
+    void setLinkOpenerForTest( final java.util.function.Consumer<String> opener ) {
+        _link_opener = opener;
+    }
+
+    /** Every link on the page, in page order, as {text, address}. */
+    List<String[]> linksForTest() {
+        final List<String[]> out = new ArrayList<>();
+        for( final JTextComponent c : linkComponents( this, new ArrayList<>() ) ) {
+            out.add( new String[] { c.getText(), (String) c.getClientProperty( LINK_URL_PROPERTY ) } );
+        }
+        return out;
+    }
+
+    /** Clicks ON THE TEXT of the first link showing {@code text} (the middle of its first character), with these
+     *  modifiers and click count (false: no such link). */
+    boolean clickLinkForTest( final String text, final int modifiers_ex, final int click_count ) {
+        final JTextComponent c = linkForTest( text );
+        if ( c == null ) {
+            return false;
+        }
+        mouseForTest( c, java.awt.event.MouseEvent.MOUSE_CLICKED, onTextForTest( c ), modifiers_ex, click_count );
+        return true;
+    }
+
+    /** The first link showing {@code text}, the page laid out first (a form never shown has no size, and a text
+     *  without a place has no character under any point); null when there is none. */
+    JTextComponent linkForTest( final String text ) {
+        if ( getWidth() == 0 ) {
+            setSize( 620, 2400 );
+            for( int pass = 0; pass < 2; ++pass ) { // wrapped areas know their height only after a first layout
+                layOut( this );
+            }
+        }
+        for( final JTextComponent c : linkComponents( this, new ArrayList<>() ) ) {
+            if ( c.getText().equals( text ) ) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /** The middle of the first character of {@code c}'s text. */
+    static java.awt.Point onTextForTest( final JTextComponent c ) {
+        try {
+            final java.awt.geom.Rectangle2D b = FormWidgets.characterBox( c, 0 );
+            if ( b == null ) {
+                throw new IllegalStateException( "not laid out: " + c.getText() );
+            }
+            return new java.awt.Point( (int) b.getCenterX(), (int) b.getCenterY() );
+        }
+        catch ( final javax.swing.text.BadLocationException e ) {
+            throw new IllegalStateException( e );
+        }
+    }
+
+    static void mouseForTest( final JTextComponent c, final int id, final java.awt.Point p, final int modifiers_ex,
+                              final int click_count ) {
+        c.dispatchEvent( new java.awt.event.MouseEvent( c, id, System.currentTimeMillis(), modifiers_ex, p.x, p.y,
+                                                        click_count, false, java.awt.event.MouseEvent.BUTTON1 ) );
+    }
+
+    private static void layOut( final Component c ) {
+        if ( c instanceof java.awt.Container ) {
+            ( (java.awt.Container) c ).doLayout();
+            for( final Component child : ( (java.awt.Container) c ).getComponents() ) {
+                layOut( child );
+            }
+        }
+    }
+
+    /** The address the metadata value in {@code row} links to, or null. */
+    String propertyLinkForTest( final int row ) {
+        return propertyLink( row, 1 );
+    }
+
+    /** Clicks the metadata VALUE cell of {@code row} (a plain left click: modifiers 0, one click). */
+    void clickPropertyValueForTest( final int row, final int modifiers_ex, final int click_count ) {
+        final java.awt.Rectangle r = _property_table.getCellRect( row, 1, false );
+        _property_table.dispatchEvent( new java.awt.event.MouseEvent( _property_table,
+                                                                      java.awt.event.MouseEvent.MOUSE_CLICKED,
+                                                                      System.currentTimeMillis(), modifiers_ex,
+                                                                      r.x + 2, r.y + 2, click_count, false,
+                                                                      java.awt.event.MouseEvent.BUTTON1 ) );
+    }
+
+    private static List<JTextComponent> linkComponents( final Component c, final List<JTextComponent> out ) {
+        if ( ( c instanceof JTextComponent ) && ( ( (JComponent) c ).getClientProperty( LINK_URL_PROPERTY ) != null ) ) {
+            out.add( (JTextComponent) c );
+        }
+        if ( c instanceof java.awt.Container ) {
+            for( final Component child : ( (java.awt.Container) c ).getComponents() ) {
+                linkComponents( child, out );
+            }
+        }
+        return out;
+    }
+
+    // ------------------------------------------------------------------ links
+    private void openLink( final String url ) {
+        _link_opener.accept( url );
+    }
+
+    private void openInBrowser( final String url ) {
+        try {
+            AptxUtil.openWebsite( url ); // the one launcher, as the tree's domain links use
+        }
+        catch ( final Exception e ) {
+            AptxUtil.showErrorMessage( this, "Could not open " + url + "\n" + e.getMessage() );
+        }
+    }
+
+    /** VIEW: the addresses of the taxonomy and reference values ({@link NodeDataLinks} has the rules). */
+    private void computeViewUrls( final NodeDataDraft d ) {
+        _view_urls.clear();
+        if ( isEditable() ) {
+            return;
+        }
+        final String id_url = NodeDataLinks.taxonomyIdUrl( d.taxId, d.taxProvider );
+        putUrl( NodeDataDraft.TAX_ID, id_url );
+        putUrl( NodeDataDraft.TAX_SCI_NAME, NodeDataLinks.scientificNameUrl( d.taxSciName, id_url ) );
+        putUrl( NodeDataDraft.TAX_CODE, NodeDataLinks.taxonomyCodeUrl( d.taxCode ) );
+        putUrl( NodeDataDraft.REF_DOI, NodeDataLinks.doiUrl( d.refDoi ) );
+    }
+
+    private void putUrl( final String key, final String url ) {
+        if ( url != null ) {
+            _view_urls.put( key, url );
+        }
+    }
+
+    /** VIEW: one line per URI, each a link when it is a web address. */
+    private JPanel uriList( final String lines ) {
+        final List<String> texts = new ArrayList<>();
+        final List<String> urls = new ArrayList<>();
+        for( final String line : lines.split( "\n" ) ) {
+            if ( !line.trim().isEmpty() ) {
+                texts.add( line.trim() );
+                urls.add( NodeDataLinks.webUrl( line ) );
+            }
+        }
+        return linkList( texts, urls, this::openLink );
+    }
+
+    /** The address a metadata cell links to: a VALUE that is a web address, in VIEW mode only; else null. */
+    private String propertyLink( final int row, final int col ) {
+        if ( isEditable() || ( col != 1 ) || ( row < 0 ) || ( row >= _property_model.getRowCount() ) ) {
+            return null;
+        }
+        return NodeDataLinks.webUrl( String.valueOf( _property_model.getValueAt( row, col ) ) );
+    }
+
     // ------------------------------------------------------------------ building
     private void buildSections( final JPanel page, final NodeDataDraft d ) {
         final NodeData nd = _node.getNodeData();
+        computeViewUrls( d );
         // -- Basic --
         {
             final Grid g = new Grid( _label_width );
@@ -736,6 +898,8 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
             _property_table.putClientProperty( "terminateEditOnFocusLost", Boolean.TRUE );
             _property_table.setSurrendersFocusOnKeystroke( true );
             _property_table.setShowGrid( false );
+            // the cell code (problem marks, editors, links) reads view columns as model columns: keep them one
+            _property_table.getTableHeader().setReorderingAllowed( false );
             _property_table.setIntercellSpacing( new Dimension( 6, 0 ) );
             final int[] widths = { 150, 140, 90, 100, 80 };
             for( int i = 0; i < widths.length; ++i ) {
@@ -751,6 +915,9 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
                 _property_table.getColumnModel().getColumn( 4 ).setCellEditor( new DefaultCellEditor( applies ) );
             }
             _property_table.setDefaultRenderer( Object.class, new ProblemCellRenderer() );
+            if ( !isEditable() ) {
+                linkPropertyValues();
+            }
             _property_model.addTableModelListener( e -> {
                 final Section sec = _sections.get( NodeDataDraft.SEC_PROPERTIES );
                 if ( sec != null ) {
@@ -889,7 +1056,7 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     private JComponent valueComponent( final String key, final String value, final String placeholder ) {
         if ( !isEditable() ) {
-            final JComponent c = viewValue( value, false );
+            final JComponent c = linkValue( value, _view_urls.get( key ), false, this::openLink );
             register( key, c );
             return c;
         }
@@ -917,6 +1084,11 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
     private JComponent areaComponent( final String key, final String value, final String placeholder,
                                       final int rows, final boolean monospace ) {
+        if ( !isEditable() && NodeDataDraft.TAX_URIS.equals( key ) ) {
+            final JComponent c = uriList( value );
+            register( key, c );
+            return c;
+        }
         if ( !isEditable() ) {
             final JComponent c = viewValue( value, true );
             if ( monospace ) {
@@ -1098,10 +1270,13 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         private JCheckBox                    _aligned;
         private JLabel                       _length_hint;
         private Sequence                     _origin;
+        /** VIEW: where the accession links to (null: no link). */
+        private final String                 _acc_url;
 
         SequenceCard( final SequenceDraft s ) {
             super( new BorderLayout( 0, 6 ) );
             _origin = s.origin;
+            _acc_url = isEditable() ? null : NodeDataLinks.accessionUrl( s.accession, s.source, s.type );
             setAlignmentX( LEFT_ALIGNMENT );
             setBorder( BorderFactory.createCompoundBorder( BorderFactory.createLineBorder( borderColor(), 1, true ),
                                                            BorderFactory.createEmptyBorder( 8, 10, 8, 10 ) ) );
@@ -1201,18 +1376,24 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
             final SortedSet<Accession> xrefs = seq.getCrossReferences();
             if ( ( xrefs != null ) && !xrefs.isEmpty() ) {
                 final List<String> lines = new ArrayList<>();
+                final List<String> urls = new ArrayList<>();
                 for( final Accession x : xrefs ) {
                     lines.add( x.asText().toString() );
+                    urls.add( NodeDataLinks.accessionUrl( x.getValue(), x.getSource(), null ) );
                 }
-                g.row( "Cross references", viewValue( String.join( "\n", lines ), true ), true );
+                g.row( "Cross references", linkList( lines, urls, NodeDataForm.this::openLink ), true );
             }
             final DomainArchitecture da = seq.getDomainArchitecture();
             if ( ( da != null ) && ( da.getNumberOfDomains() > 0 ) ) {
-                final List<String> names = new ArrayList<>();
+                // one line per domain, in order, each opening what a click on it in the tree opens
+                final List<String> lines = new ArrayList<>();
+                final List<String> urls = new ArrayList<>();
                 for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
-                    names.add( da.getDomain( i ).getName() );
+                    final ProteinDomain pd = da.getDomain( i );
+                    lines.add( pd.getName() + " (" + pd.getFrom() + "-" + pd.getTo() + ")" );
+                    urls.add( TreePanel.domainUrl( pd ) );
                 }
-                viewRow( g, "Domains", da.getNumberOfDomains() + ": " + String.join( ", ", names ) );
+                g.row( "Domains", linkList( lines, urls, NodeDataForm.this::openLink ), true );
             }
         }
 
@@ -1245,7 +1426,8 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
 
         private JComponent cardValue( final String key, final String value, final String placeholder ) {
             if ( !isEditable() ) {
-                final JComponent c = viewValue( value, false );
+                final JComponent c = linkValue( value, NodeDataDraft.SEQ_ACC.equals( key ) ? _acc_url : null, false,
+                                                NodeDataForm.this::openLink );
                 _f.put( key, c );
                 return c;
             }
@@ -1259,6 +1441,11 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         }
 
         private JComponent cardArea( final String key, final String value, final int rows, final boolean mono ) {
+            if ( !isEditable() && NodeDataDraft.SEQ_URIS.equals( key ) ) {
+                final JComponent c = uriList( value );
+                _f.put( key, c );
+                return c;
+            }
             if ( !isEditable() ) {
                 final JComponent c = viewValue( value, true );
                 _f.put( key, c );
@@ -1456,13 +1643,43 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
                 }
             }
             else {
-                c.setForeground( selected ? table.getSelectionForeground() : table.getForeground() );
+                // VIEW: a value that is a web address reads as a link (see the table's mouse listener)
+                final String link = propertyLink( row, col );
+                c.setForeground( selected ? table.getSelectionForeground()
+                        : ( link != null ) ? linkColor() : table.getForeground() );
                 if ( c instanceof JComponent ) {
-                    ( (JComponent) c ).setToolTipText( null );
+                    ( (JComponent) c ).setToolTipText( link );
                 }
             }
             return c;
         }
+    }
+
+    /** VIEW: a plain left click on a metadata value that is a web address opens it; the pointer is a hand there. */
+    private void linkPropertyValues() {
+        final java.awt.event.MouseAdapter m = new java.awt.event.MouseAdapter() {
+
+            @Override
+            public void mouseClicked( final java.awt.event.MouseEvent e ) {
+                if ( isPlainSingleLeftClick( e ) ) {
+                    final String url = propertyLink( _property_table.rowAtPoint( e.getPoint() ),
+                                                     _property_table.columnAtPoint( e.getPoint() ) );
+                    if ( url != null ) {
+                        openLink( url );
+                    }
+                }
+            }
+
+            @Override
+            public void mouseMoved( final java.awt.event.MouseEvent e ) {
+                final boolean over = propertyLink( _property_table.rowAtPoint( e.getPoint() ),
+                                                   _property_table.columnAtPoint( e.getPoint() ) ) != null;
+                _property_table.setCursor( over ? java.awt.Cursor.getPredefinedCursor( java.awt.Cursor.HAND_CURSOR )
+                        : java.awt.Cursor.getDefaultCursor() );
+            }
+        };
+        _property_table.addMouseListener( m );
+        _property_table.addMouseMotionListener( m );
     }
 
     /** For tests: whether the property cell at {@code row}/{@code field} is currently marked as a problem. */

@@ -209,8 +209,28 @@ public final class NodeWindowRebindTest {
             check( ok, "view open", ( view != null ) && !view.isEditable() );
             tp.showNodeEditFrame( named( tp, "B" ) );
             final NodeFrame edit = openFrame( 1 );
+            tp.showNodeFrameForTest( named( tp, "A" ) ); // a view on ANOTHER node: a write to B leaves it alone
+            final NodeFrame view_a = openFrame( 2 );
+            check( ok, "a view on A", ( view_a != null ) && "Node: A".equals( view_a.getTitle() ) );
             edit.getForm().setTextForTest( NodeDataDraft.NAME, "B2" );
+            edit.getForm().setTextForTest( NodeDataDraft.TAX_CODE, "HUMAN" );
+            check( ok, "precondition: the view links nothing yet", view.getForm().linksForTest().isEmpty() );
+            final javax.swing.JComponent edit_name = edit.getForm().fieldForTest( NodeDataDraft.NAME );
+            final javax.swing.JComponent view_a_name = view_a.getForm().fieldForTest( NodeDataDraft.NAME );
             check( ok, "write B2", edit.writeNow() );
+            check( ok, "the editor's own page is not rebuilt by its write",
+                   edit.getForm().fieldForTest( NodeDataDraft.NAME ) == edit_name );
+            check( ok, "the view on A still shows A, its page untouched: " + view_a.getTitle(),
+                   ( view_a.getForm().node() == named( tp, "A" ) ) && "Node: A".equals( view_a.getTitle() )
+                           && ( view_a.getForm().fieldForTest( NodeDataDraft.NAME ) == view_a_name ) );
+            view_a.close();
+            // the view on the SAME node follows the write at once: its values, its title, and the links they make
+            check( ok, "the view follows a write: " + view.getTitle(), "Node: B2".equals( view.getTitle() )
+                    && "B2".equals( headerTitle( view ) ) && "B2".equals( valueOf( view, NodeDataDraft.NAME ) ) );
+            check( ok, "the view's links are the written data's", ( view.getForm().linksForTest().size() == 1 )
+                    && "https://www.uniprot.org/taxonomy?query=mnemonic:HUMAN".equals( view.getForm().linksForTest().get( 0 )[ 1 ] ) );
+            check( ok, "the editor itself is untouched by it", "B2".equals( valueOf( edit, NodeDataDraft.NAME ) )
+                    && !edit.isDirty() );
             tp.undo();
             check( ok, "view still open", view.isDisplayable() && ( tp.openNodeFrameCountForTest() == 2 ) );
             check( ok, "view rebuilt from the restored node: " + view.getTitle(), "Node: B".equals( view.getTitle() )

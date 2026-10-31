@@ -45,14 +45,12 @@ public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
         String name = "";
         int f = -1;
         int t = -1;
-        double conf = ProteinDomain.CONFIDENCE_DEFAULT;
+        final double conf = confidence( element );
         String id = ProteinDomain.IDENTIFIER_DEFAULT;
         try {
             f = Integer
                     .parseInt( element.getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_FROM ) );
             t = Integer.parseInt( element.getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_TO ) );
-            conf = Double.parseDouble( element
-                                       .getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE ) );
             if ( element.isHasAttribute( PhyloXmlMapping.IDENTIFIER ) ) {
                 id = element.getAttribute( PhyloXmlMapping.IDENTIFIER );
             }
@@ -69,12 +67,27 @@ public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
             throw new PhyloXmlDataFormatException( "\"" + PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_TO
                     + "\" attribute not set in: " + element );
         }
-        if ( conf < 0 ) {
-            throw new PhyloXmlDataFormatException( "\""
-                    + PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE
-                    + "\" attribute either negative or not set in: " + element );
-        }
         return new ProteinDomain( name, f, t, id, conf );
+    }
+
+    /**
+     * The domain's confidence (an E-value, say), or {@link ProteinDomain#CONFIDENCE_DEFAULT} when it has none. The
+     * attribute is OPTIONAL in phyloXML, and the writer saves a domain without one as the default, -1.0 -- so a
+     * missing, unreadable or negative value means "no confidence", never a malformed domain. (Until 0.11.195 it
+     * meant the latter: every domain saved without a confidence was dropped when its file was opened again.)
+     */
+    private static double confidence( final XmlElement element ) {
+        if ( !element.isHasAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE ) ) {
+            return ProteinDomain.CONFIDENCE_DEFAULT;
+        }
+        try {
+            final double c = Double.parseDouble( element
+                    .getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE ).trim() );
+            return ( Double.isNaN( c ) || ( c < 0 ) ) ? ProteinDomain.CONFIDENCE_DEFAULT : c;
+        }
+        catch ( final NumberFormatException e ) {
+            return ProteinDomain.CONFIDENCE_DEFAULT;
+        }
     }
 
     public static PhylogenyDataPhyloXmlParser getInstance() {

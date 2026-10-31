@@ -243,6 +243,7 @@ public final class DemoTreesTest {
         // model without a validation problem
         ok &= hasAtLeastTips( "node-data-editor.xml", 5 );
         ok &= nodeDataEditorDemoOk( "node-data-editor.xml" );
+        ok &= nodeDataLinksDemosOk();
 
         // tree properties (View > Tree Properties): tree-level identifier / type / unit, two kinds of support
         // values, a polytomy and a zero-length branch, and mixed annotation coverage -- every section has content
@@ -949,6 +950,80 @@ public final class DemoTreesTest {
                 || coverage.value( "Taxonomy" ).contains( "100%" ) ) {
             return note( file_name + " needs mixed coverage: an event, a distribution, internal dates, and SOME "
                     + "(not all) tips with taxonomy; got " + coverage.facts );
+        }
+        return true;
+    }
+
+    /**
+     * node-data-links.xml: each tip's Display Node Data page carries exactly the links its records name (the
+     * genome accession on a protein sequence opens NCBI Nucleotide; the metadata web address links); its twin
+     * node-data-links-none.xml: data on every tip, and not one link.
+     */
+    private static boolean nodeDataLinksDemosOk() {
+        final Phylogeny links = load( "node-data-links.xml" );
+        final Phylogeny none = load( "node-data-links-none.xml" );
+        if ( ( links == null ) || ( none == null ) ) {
+            return false;
+        }
+        final java.util.Map<String, Integer> want = new java.util.LinkedHashMap<>();
+        want.put( "BRCA1_HUMAN", 13 ); // name, code, id; accession; 5 cross-references; 3 domains; DOI
+        want.put( "Guaroa_virus|AKC42486.1", 3 ); // name, id, accession
+        want.put( "AAY88866", 7 ); // name, code, id, accession, 3 cross-references
+        want.put( "KJ473821", 3 ); // name, id, accession
+        want.put( "PP_006XHL9.4", 4 ); // name, id, accession, URI
+        final java.util.Map<String, Integer> got = new java.util.LinkedHashMap<>();
+        for( final PhylogenyNode tip : links.getExternalNodes() ) {
+            final NodeDataForm f = new NodeDataForm( tip, null, NodeDataForm.Mode.VIEW );
+            got.put( tip.getName(), f.linksForTest().size() );
+            if ( tip.getName().equals( "KJ473821" ) && !f.linksForTest().stream()
+                    .anyMatch( l -> l[ 1 ].equals( "https://www.ncbi.nlm.nih.gov/nuccore/KJ473821" ) ) ) {
+                return note( "node-data-links.xml: the genome accession on a protein sequence must open Nucleotide" );
+            }
+            if ( tip.getName().equals( "BRCA1_HUMAN" )
+                    && !"https://www.ncbi.nlm.nih.gov/gene/672".equals( f.propertyLinkForTest( 0 ) ) ) {
+                return note( "node-data-links.xml: the metadata web address must link" );
+            }
+            // the node menu opens pages the window links: Open Taxonomy DB, and each sequence's Open Sequence DB
+            final java.util.Set<String> urls = new java.util.HashSet<>();
+            f.linksForTest().forEach( l -> urls.add( l[ 1 ] ) );
+            if ( !urls.contains( TreePanel.taxonomyDbUrl( tip ) ) ) {
+                return note( "node-data-links.xml: " + tip.getName() + ": Open Taxonomy DB opens "
+                        + TreePanel.taxonomyDbUrl( tip ) + ", which the window does not link" );
+            }
+            for( final org.forester.phylogeny.data.Sequence seq : tip.getNodeData().getSequences() ) {
+                if ( !urls.contains( TreePanel.sequenceDbUrl( seq ) ) ) {
+                    return note( "node-data-links.xml: " + tip.getName() + ": Open Sequence DB opens "
+                            + TreePanel.sequenceDbUrl( seq ) + ", which the window does not link" );
+                }
+            }
+        }
+        if ( !want.equals( got ) ) {
+            return note( "node-data-links.xml: links per tip " + got + ", expected " + want );
+        }
+        for( final PhylogenyNode tip : none.getExternalNodes() ) {
+            final NodeDataForm f = new NodeDataForm( tip, null, NodeDataForm.Mode.VIEW );
+            if ( !f.hasSectionForTest( NodeDataDraft.SEC_TAXONOMY ) && !f.hasSectionForTest( NodeDataDraft.SEC_SEQUENCES ) ) {
+                return note( "node-data-links-none.xml: " + tip.getName() + " must show data (else 'no links' is empty)" );
+            }
+            if ( !f.linksForTest().isEmpty() || ( tip.getNodeData().isHasProperties()
+                    && ( f.propertyLinkForTest( 0 ) != null ) ) ) {
+                return note( "node-data-links-none.xml: " + tip.getName() + " must link nothing, links "
+                        + f.linksForTest().size() );
+            }
+            if ( TreePanel.taxonomyDbUrl( tip ) != null ) { // a common name or an unknown provider's id: no page
+                return note( "node-data-links-none.xml: " + tip.getName() + ": Open Taxonomy DB must be greyed, opens "
+                        + TreePanel.taxonomyDbUrl( tip ) );
+            }
+            for( final org.forester.phylogeny.data.Sequence seq : tip.getNodeData().isHasSequence()
+                    ? tip.getNodeData().getSequences() : new java.util.ArrayList<org.forester.phylogeny.data.Sequence>() ) {
+                if ( TreePanel.sequenceDbUrl( seq ) != null ) {
+                    return note( "node-data-links-none.xml: " + tip.getName() + ": a sequence links "
+                            + TreePanel.sequenceDbUrl( seq ) );
+                }
+            }
+        }
+        if ( none.getNumberOfExternalNodes() != 4 ) {
+            return note( "node-data-links-none.xml: 4 tips expected" );
         }
         return true;
     }

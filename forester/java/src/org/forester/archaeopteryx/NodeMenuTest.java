@@ -47,6 +47,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.util.SequenceAccessionTools;
 
@@ -273,6 +274,59 @@ public final class NodeMenuTest {
                   && ( item( on_b, "Open Sequence DB" ) == null ),
                   "a sequence with an accession: one link named by it (once, the name being the accession), in place of the bare entry: " + words( on_b ) );
         ok &= ck( enabled( tp.buildNodeMenu( c ), "Open Taxonomy DB" ), "a taxonomy: the taxonomy link applies" );
+        // the menu opens what the node window's link opens (NodeDataLinks): the provider's database
+        ok &= ck( "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name=Homo+sapiens".equals( TreePanel.taxonomyDbUrl( c ) ),
+                  "a name without an id: NCBI Taxonomy by name: " + TreePanel.taxonomyDbUrl( c ) );
+        final Taxonomy c_tax = c.getNodeData().getTaxonomy();
+        c_tax.setIdentifier( new Identifier( "9606", "ncbi" ) );
+        ok &= ck( "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606".equals( TreePanel.taxonomyDbUrl( c ) ),
+                  "an ncbi id: NCBI Taxonomy, not UniProt: " + TreePanel.taxonomyDbUrl( c ) );
+        final Taxonomy only_unknown_id = new Taxonomy();
+        only_unknown_id.setIdentifier( new Identifier( "g__Homo", "gtdb" ) );
+        c.getNodeData().setTaxonomy( only_unknown_id );
+        ok &= ck( !enabled( tp.buildNodeMenu( c ), "Open Taxonomy DB" ) && ( TreePanel.taxonomyDbUrl( c ) == null ),
+                  "a taxonomy that names no page we can open: the link is greyed" );
+        ok &= ck( TreePanel.NO_TAXONOMY_PAGE.equals( item( tp.buildNodeMenu( c ), "Open Taxonomy DB" ).getToolTipText() ),
+                  "greyed, it says why" );
+        final Taxonomy id_only = new Taxonomy(); // what phyloxml_converter -f=i1 and an NHX T= without S= produce
+        id_only.setIdentifier( new Identifier( "9606", "ncbi" ) );
+        c.getNodeData().setTaxonomy( id_only );
+        ok &= ck( enabled( tp.buildNodeMenu( c ), "Open Taxonomy DB" )
+                  && "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606".equals( TreePanel.taxonomyDbUrl( c ) ),
+                  "an id alone opens its page: " + TreePanel.taxonomyDbUrl( c ) );
+        final Taxonomy common_only = new Taxonomy(); // the window links no common name, so neither does the menu
+        common_only.setCommonName( "human" );
+        c.getNodeData().setTaxonomy( common_only );
+        ok &= ck( !enabled( tp.buildNodeMenu( c ), "Open Taxonomy DB" ) && ( TreePanel.taxonomyDbUrl( c ) == null ),
+                  "a common name alone: greyed" );
+        c.getNodeData().setTaxonomy( c_tax );
+        c_tax.setIdentifier( null );
+        ok &= ck( "this node has no taxonomy".equals( item( tp.buildNodeMenu( a ), "Open Taxonomy DB" ).getToolTipText() ),
+                  "no taxonomy: greyed, and says so: " + item( tp.buildNodeMenu( a ), "Open Taxonomy DB" ).getToolTipText() );
+        // the per-sequence entries open what the node window's accession links: the source's database, by format
+        final Sequence pp = new Sequence(); // a Pathoplexus record: the window links it, the menu's own reading not
+        pp.setAccession( new Accession( "PP_006XHL9.4", "pathoplexus" ) );
+        final Sequence ebov = new Sequence(); // a strain token in the name: the menu's own reading took that
+        ebov.setName( "EBOV/DML12268/2014" );
+        try {
+            ebov.setType( "dna" );
+        }
+        catch ( final org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException e ) {
+            throw new IllegalStateException( e );
+        }
+        ebov.setAccession( new Accession( "KT357822.1", "ncbi" ) );
+        b.getNodeData().addSequence( pp );
+        b.getNodeData().addSequence( ebov );
+        final List<String> b_words = words( tp.buildNodeMenu( b ) );
+        ok &= ck( b_words.contains( "Open Sequence DB [PP_006XHL9.4]" )
+                  && "https://pathoplexus.org/seq/PP_006XHL9.4".equals( tp.sequenceMenuUrl( pp ) ),
+                  "a sequence only the window's rule reads gets its entry, opening the window's page: " + b_words );
+        ok &= ck( b_words.contains( "Open Sequence DB [EBOV/DML12268/2014 [KT357822.1]]" )
+                  && "https://www.ncbi.nlm.nih.gov/nuccore/KT357822.1".equals( tp.sequenceMenuUrl( ebov ) ),
+                  "a linked accession names the entry and is what it opens, not a token of the name: " + b_words + " "
+                          + tp.sequenceMenuUrl( ebov ) );
+        b.getNodeData().getSequences().remove( ebov );
+        b.getNodeData().getSequences().remove( pp );
 
         // ---- (4) a subtree view: its root climbs back out, nothing re-roots ------------------------------
         tp.subTree( ab );

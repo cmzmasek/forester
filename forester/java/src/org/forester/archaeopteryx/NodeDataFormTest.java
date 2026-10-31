@@ -20,7 +20,13 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.event.InputEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -28,7 +34,11 @@ import javax.swing.JTextField;
 
 import org.forester.archaeopteryx.NodeDataDraft.PropertyDraft;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Property.AppliesTo;
+import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.phylogeny.data.Sequence;
 
 /**
@@ -48,7 +58,7 @@ public final class NodeDataFormTest {
     public static boolean test() {
         try {
             return editOpensClean() && dirtyValidateWrite() && sequenceCards() && confidenceRows()
-                    && propertyRows() && sections() && viewMode() && headerText();
+                    && propertyRows() && sections() && viewMode() && viewLinks() && headerText();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -246,6 +256,171 @@ public final class NodeDataFormTest {
                 && !vb.hasSectionForTest( NodeDataDraft.SEC_DATE ) && !vb.hasSectionForTest( NodeDataDraft.SEC_PROPERTIES ) )
                 && check( "bare view: empty fields hidden", vb.fieldForTest( NodeDataDraft.BRANCH_LENGTH ) == null );
         return ok;
+    }
+
+    /**
+     * VIEW: every value that names a page is a link to it, in page order and nothing else is; a plain left click
+     * opens it, a modified or double click does not; a metadata value that is a web address links too; the edit
+     * page has no links; a rebind (undo/redo) rebuilds them.
+     */
+    private static boolean viewLinks() throws Exception {
+        final PhylogenyNode n = NodeDataDraftTest.richNode();
+        final Sequence s1 = n.getNodeData().getSequences().get( 0 );
+        s1.addCrossReference( new Accession( "IPR002552", "interpro" ) );
+        s1.addCrossReference( new Accession( "fig|1000.9.peg.1", "BV-BRC" ) ); // a source we do not know
+        final DomainArchitecture da = new DomainArchitecture();
+        da.addDomain( new ProteinDomain( "NB-ARC", 1, 10, "PF00931" ) );
+        da.addDomain( new ProteinDomain( "WD40", 20, 60 ) ); // a name only: a search, as in the tree
+        da.setTotalLength( 100 );
+        s1.setDomainArchitecture( da );
+        n.getNodeData().getSequences().get( 1 ).setAccession( new Accession( "fig|1000.9.peg.1", "BV-BRC" ) );
+        final Sequence s3 = new Sequence(); // a shape only the declared type can place: the card passes the type on
+        s3.setType( "rna" );
+        s3.setAccession( new Accession( "XYZ12345678", "ncbi" ) );
+        n.getNodeData().addSequence( s3 );
+        n.getNodeData().getProperties().addProperty( new Property( "data:page", "https://example.org/sample/7", "",
+                                                                   "xsd:anyURI", AppliesTo.NODE ) );
+        final List<String> want = Arrays.asList( "Homo sapiens", NCBI_TAX + "9606", //
+                                                 "HUMAN", "https://www.uniprot.org/taxonomy?query=mnemonic:HUMAN", //
+                                                 "9606", NCBI_TAX + "9606", //
+                                                 "https://example.org/tax/9606", "https://example.org/tax/9606", //
+                                                 "P38398", "https://www.uniprot.org/uniprot/P38398", //
+                                                 "https://example.org/seq/P38398", "https://example.org/seq/P38398", //
+                                                 "interpro: IPR002552",
+                                                 "https://www.ebi.ac.uk/interpro/entry/InterPro/IPR002552/", //
+                                                 "NB-ARC (1-10)", "https://www.ebi.ac.uk/interpro/entry/pfam/PF00931/", //
+                                                 "WD40 (20-60)", "https://www.ebi.ac.uk/interpro/search/text/WD40/", //
+                                                 "XYZ12345678", "https://www.ncbi.nlm.nih.gov/nuccore/XYZ12345678", //
+                                                 "10.1126/science.7545954", "https://doi.org/10.1126/science.7545954" );
+        final NodeDataForm v = new NodeDataForm( n, null, NodeDataForm.Mode.VIEW );
+        final List<String> opened = new ArrayList<>();
+        v.setLinkOpenerForTest( opened::add );
+        boolean ok = eq( "the links, in page order", want, flatten( v.linksForTest() ) );
+        final JComponent bv = v.fieldForTest( NodeDataDraft.sequenceKey( 1, NodeDataDraft.SEQ_ACC ) );
+        ok &= check( "an accession of an unknown source is shown, as plain text",
+                     ( bv instanceof JTextField ) && "fig|1000.9.peg.1".equals( ( (JTextField) bv ).getText() )
+                             && ( bv.getClientProperty( FormWidgets.LINK_URL_PROPERTY ) == null ) );
+        ok &= check( "a plain value is not a link", !v.clickLinkForTest( "Linnaeus, 1758", 0, 1 ) );
+        ok &= check( "a plain left click opens", v.clickLinkForTest( "HUMAN", 0, 1 ) )
+                && eq( "what it opened", Arrays.asList( "https://www.uniprot.org/taxonomy?query=mnemonic:HUMAN" ), opened );
+        opened.clear();
+        v.clickLinkForTest( "9606", InputEvent.META_DOWN_MASK, 1 );
+        v.clickLinkForTest( "P38398", 0, 2 );
+        ok &= eq( "a modified click and the second click of a double open nothing", new ArrayList<String>(), opened );
+        ok &= eq( "a metadata value that is an address links", "https://example.org/sample/7", v.propertyLinkForTest( 2 ) )
+                && eq( "a metadata value that is not, does not", null, v.propertyLinkForTest( 0 ) );
+        v.clickPropertyValueForTest( 0, 0, 1 );
+        ok &= eq( "a click on a plain metadata value opens nothing", new ArrayList<String>(), opened );
+        v.clickPropertyValueForTest( 2, InputEvent.META_DOWN_MASK, 1 );
+        v.clickPropertyValueForTest( 2, 0, 2 );
+        ok &= eq( "a modified or double click on a linked metadata value opens nothing", new ArrayList<String>(),
+                  opened );
+        v.clickPropertyValueForTest( 2, 0, 1 );
+        ok &= eq( "a click on a linked metadata value opens it", Arrays.asList( "https://example.org/sample/7" ), opened );
+        ok &= linkSurface( n );
+        // a rebind (undo/redo) to a node with OTHER data: the links are the new node's, not kept from the old page
+        final PhylogenyNode n2 = NodeDataDraftTest.richNode();
+        n2.getNodeData().getTaxonomy().setIdentifier( new org.forester.phylogeny.data.Identifier( "10090", "ncbi" ) );
+        n2.getNodeData().getReference().setDoi( "10.1038/nature12373" );
+        v.rebind( n2 );
+        final List<String> after = flatten( v.linksForTest() );
+        ok &= check( "a rebind to other data: the new id and DOI link: " + after,
+                     after.contains( NCBI_TAX + "10090" ) && after.contains( "https://doi.org/10.1038/nature12373" )
+                             && !after.contains( NCBI_TAX + "9606" )
+                             && !after.contains( "https://doi.org/10.1126/science.7545954" ) );
+        final NodeDataForm e = new NodeDataForm( n, null, NodeDataForm.Mode.EDIT );
+        ok &= eq( "the edit page has no links", new ArrayList<String>(), flatten( e.linksForTest() ) )
+                && eq( "nor in its metadata table", null, e.propertyLinkForTest( 2 ) );
+        return ok;
+    }
+
+    /**
+     * A link is its TEXT, not the row it is stretched across: the colour, the URL tooltip; a hand cursor and an
+     * underline only over the text; a click beside the text opens nothing. The colour survives a look-and-feel
+     * update (a theme switch). The metadata table: its columns cannot be dragged (the cell code reads view columns
+     * as model columns), and its link cell is painted as one.
+     */
+    private static boolean linkSurface( final PhylogenyNode n ) {
+        // a look and feel supplies its link colour as a UIResource -- the kind an update replaces; without FlatLaf
+        // (a standalone run) there is none, so supply one the same way
+        final boolean supplied = javax.swing.UIManager.getColor( "Component.linkColor" ) == null;
+        if ( supplied ) {
+            javax.swing.UIManager.put( "Component.linkColor", new javax.swing.plaf.ColorUIResource( 0x2675BF ) );
+        }
+        try {
+            return linkSurface( new NodeDataForm( n, null, NodeDataForm.Mode.VIEW ) );
+        }
+        finally {
+            if ( supplied ) {
+                javax.swing.UIManager.put( "Component.linkColor", null );
+            }
+        }
+    }
+
+    private static boolean linkSurface( final NodeDataForm v ) {
+        final List<String> opened = new ArrayList<>();
+        v.setLinkOpenerForTest( opened::add );
+        final javax.swing.text.JTextComponent link = v.linkForTest( "9606" );
+        final java.awt.Point on = NodeDataForm.onTextForTest( link );
+        final java.awt.Point beside = new java.awt.Point( link.getWidth() - 4, on.y );
+        boolean ok = check( "precondition: the value is stretched well beyond its text (" + link.getWidth() + " px)",
+                            FormWidgets.isOverText( link, on ) && !FormWidgets.isOverText( link, beside )
+                                    && ( link.getWidth() > ( on.x + 100 ) ) );
+        ok &= check( "precondition: below the text is not on it either",
+                     !FormWidgets.isOverText( link, new java.awt.Point( on.x, link.getHeight() + 50 ) ) );
+        NodeDataForm.mouseForTest( link, java.awt.event.MouseEvent.MOUSE_CLICKED, beside, 0, 1 );
+        ok &= eq( "a click beside the text opens nothing", new ArrayList<String>(), opened );
+        ok &= check( "the link colour and the address as tooltip",
+                     link.getForeground().getRGB() == FormWidgets.linkColor().getRGB()
+                             && ( NCBI_TAX + "9606" ).equals( link.getToolTipText() ) );
+        final java.awt.Cursor base = link.getCursor();
+        NodeDataForm.mouseForTest( link, java.awt.event.MouseEvent.MOUSE_MOVED, on, 0, 0 );
+        ok &= check( "over the text: a hand, underlined",
+                     ( link.getCursor().getType() == java.awt.Cursor.HAND_CURSOR )
+                             && java.awt.font.TextAttribute.UNDERLINE_ON
+                                     .equals( link.getFont().getAttributes().get( java.awt.font.TextAttribute.UNDERLINE ) ) );
+        NodeDataForm.mouseForTest( link, java.awt.event.MouseEvent.MOUSE_MOVED, beside, 0, 0 );
+        ok &= check( "beside it: neither", ( link.getCursor() == base ) && ( link.getFont().getAttributes()
+                .get( java.awt.font.TextAttribute.UNDERLINE ) == null ) );
+        final javax.swing.text.JTextComponent plain = (javax.swing.text.JTextComponent) v
+                .fieldForTest( NodeDataDraft.TAX_COMMON_NAME );
+        // a theme switch: the look and feel's link colour CHANGES (light 0x2675BF vs dark 0x579BF6), then every
+        // component is updated; the link must take the NEW theme's colour, not keep the old one or lose it
+        final int before = FormWidgets.linkColor().getRGB();
+        javax.swing.UIManager.put( "Component.linkColor", new javax.swing.plaf.ColorUIResource( 0x579BF7 ) );
+        try {
+            javax.swing.SwingUtilities.updateComponentTreeUI( v );
+            ok &= check( "precondition: the switch changed the link colour", FormWidgets.linkColor().getRGB() != before )
+                    && check( "after a theme switch a link wears the new theme's link colour",
+                              link.getForeground().getRGB() == FormWidgets.linkColor().getRGB() )
+                    && check( "control: a plain value takes the text colour, not the link's",
+                              plain.getForeground().getRGB() != FormWidgets.linkColor().getRGB() );
+        }
+        finally {
+            javax.swing.UIManager.put( "Component.linkColor", null ); // the look and feel's own (or the caller's) again
+        }
+        final javax.swing.JTable t = v.propertyTableForTest();
+        ok &= check( "the metadata columns cannot be dragged", !t.getTableHeader().getReorderingAllowed() );
+        // one renderer component serves every cell: read each cell's look before preparing the next
+        final java.awt.Component cell = t.prepareRenderer( t.getCellRenderer( 2, 1 ), 2, 1 );
+        ok &= check( "the linked metadata value is painted as a link, with its address",
+                     ( cell.getForeground().getRGB() == FormWidgets.linkColor().getRGB() )
+                             && "https://example.org/sample/7".equals( ( (JComponent) cell ).getToolTipText() ) );
+        final java.awt.Component ref = t.prepareRenderer( t.getCellRenderer( 2, 0 ), 2, 0 );
+        ok &= check( "its reference is not", ( ref.getForeground().getRGB() != FormWidgets.linkColor().getRGB() )
+                && ( ( (JComponent) ref ).getToolTipText() == null ) );
+        return ok;
+    }
+
+    private static final String NCBI_TAX = "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=";
+
+    private static List<String> flatten( final List<String[]> pairs ) {
+        final List<String> out = new ArrayList<>();
+        for( final String[] p : pairs ) {
+            out.add( p[ 0 ] );
+            out.add( p[ 1 ] );
+        }
+        return out;
     }
 
     private static boolean headerText() throws Exception {

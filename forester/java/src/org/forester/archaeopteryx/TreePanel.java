@@ -60,10 +60,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -1897,16 +1895,14 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     final private boolean isCanOpenTaxWeb(final PhylogenyNode node) {
-        if (node.getNodeData().isHasTaxonomy() && ((!ForesterUtil
-                .isEmpty(node.getNodeData().getTaxonomy().getScientificName()))
-                || (!ForesterUtil.isEmpty(node.getNodeData().getTaxonomy().getTaxonomyCode()))
-                || (!ForesterUtil.isEmpty(node.getNodeData().getTaxonomy().getCommonName()))
-                || ((node.getNodeData().getTaxonomy().getIdentifier() != null)
-                && !ForesterUtil.isEmpty(node.getNodeData().getTaxonomy().getIdentifier().getValue())))) {
-            return true;
-        } else {
-            return false;
-        }
+        return taxonomyDbUrl(node) != null;
+    }
+
+    /** Where "Open Taxonomy DB" goes for {@code node}: the node window's rule ({@link NodeDataLinks#taxonomyUrl}),
+     *  so the menu and the window open the same page. Null when the taxonomy names none. */
+    static String taxonomyDbUrl(final PhylogenyNode node) {
+        return node.getNodeData().isHasTaxonomy() ? NodeDataLinks.taxonomyUrl(node.getNodeData().getTaxonomy())
+                : null;
     }
 
     private boolean isInFoundNodes(final PhylogenyNode n) {
@@ -2375,13 +2371,18 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return menu;
     }
 
-    /** "Open Sequence DB": one item per sequence carrying an accession, named by the sequence; false when none. */
+    /**
+     * "Open Sequence DB": one item per sequence carrying an accession, named by the sequence; false when none. A
+     * sequence whose accession the node window links ({@link #sequenceDbUrl}) is named by that accession and opens
+     * that page; any other is read the menu's own way ({@code SequenceAccessionTools}, names included).
+     */
     private boolean addPerSequenceDbItems(final JPopupMenu menu, final PhylogenyNode node) {
         final List<Sequence> seqs = node.getNodeData().getSequences();
         boolean added = false;
         if (seqs != null) {
             for (final Sequence seq : seqs) {
-                final Accession acc = SequenceAccessionTools.obtainAccessorFromSequence(seq);
+                final Accession acc = (sequenceDbUrl(seq) != null) ? seq.getAccession()
+                        : SequenceAccessionTools.obtainAccessorFromSequence(seq);
                 if (acc != null) {
                     final String trimmedName = TreePanelUtil.ellipsize(seq.getName(), 20);
                     // the accession alone when the sequence has no name, or is named by its accession
@@ -2494,6 +2495,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                     return NOT_IN_UNROOTED;
                 }
                 return atSubtreeCap() ? NO_DEEPER_SUBTREE : null;
+            case OPEN_TAX_WEB:
+                return node.getNodeData().isHasTaxonomy() ? NO_TAXONOMY_PAGE : "this node has no taxonomy";
             case UNCOLLAPSE_ALL:
             case COLOR_SUBTREE:
             case CUT_SUBTREE:
@@ -2508,6 +2511,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     private static final String NOT_IN_UNROOTED = "not in the unrooted layout";
+    static final String NO_TAXONOMY_PAGE = "no identifier, scientific name or code that names a page";
     private static final String NO_DEEPER_SUBTREE = "no deeper subtree view: return to a supertree first";
 
     /** The warning colour for the delete entry: the look and feel's, else a plain red. */
@@ -2714,8 +2718,22 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         }
     }
 
+    /** Where the node window links {@code seq}'s accession ({@link NodeDataLinks#accessionUrl}), or null: the
+     *  per-sequence "Open Sequence DB" opens this page when there is one, so the menu and the window agree. */
+    static String sequenceDbUrl(final Sequence seq) {
+        final Accession a = seq.getAccession();
+        return (a == null) ? null : NodeDataLinks.accessionUrl(a.getValue(), a.getSource(), seq.getType());
+    }
+
+    /** What the per-sequence "Open Sequence DB" opens: the node window's link ({@link #sequenceDbUrl}), else the
+     *  menu's own reading of the sequence; null when neither names a page. */
+    final String sequenceMenuUrl(final Sequence seq) {
+        final String link = sequenceDbUrl(seq);
+        return (link != null) ? link : TreePanelUtil.createUriForSeqWeb(seq, getConfiguration(), this);
+    }
+
     final private void openSeqWebForSequence(final PhylogenyNode node, final Sequence seq) {
-        final String uri_str = TreePanelUtil.createUriForSeqWeb(seq, getConfiguration(), this);
+        final String uri_str = sequenceMenuUrl(seq);
         if (!ForesterUtil.isEmpty(uri_str)) {
             try {
                 AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_seq");
@@ -2732,57 +2750,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     final private void openTaxWeb(final PhylogenyNode node) {
-        if (!isCanOpenTaxWeb(node)) {
-            cannotOpenBrowserWarningMessage("taxonomic");
-            return;
-        }
-        String uri_str = null;
-        final Taxonomy tax = node.getNodeData().getTaxonomy();
-        if ((tax.getIdentifier() != null) && !ForesterUtil.isEmpty(tax.getIdentifier().getValue())
-                && tax.getIdentifier().getValue().startsWith("http://")) {
-            try {
-                uri_str = new URI(tax.getIdentifier().getValue()).toString();
-            } catch (final URISyntaxException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                uri_str = null;
-                e.printStackTrace();
-            }
-        } else if ((tax.getIdentifier() != null) && !ForesterUtil.isEmpty(tax.getIdentifier().getValue())
-                && !ForesterUtil.isEmpty(tax.getIdentifier().getProvider())
-                && (tax.getIdentifier().getProvider().equalsIgnoreCase("ncbi")
-                || tax.getIdentifier().getProvider().equalsIgnoreCase("uniprot"))) {
-            try {
-                uri_str = "http://www.uniprot.org/taxonomy/"
-                        + URLEncoder.encode(tax.getIdentifier().getValue(), ForesterConstants.UTF_8);
-            } catch (final UnsupportedEncodingException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        } else if (!ForesterUtil.isEmpty(tax.getScientificName())) {
-            try {
-                uri_str = "http://www.uniprot.org/taxonomy/?query="
-                        + URLEncoder.encode(tax.getScientificName(), ForesterConstants.UTF_8);
-            } catch (final UnsupportedEncodingException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        } else if (!ForesterUtil.isEmpty(tax.getTaxonomyCode())) {
-            try {
-                uri_str = "http://www.uniprot.org/taxonomy/?query="
-                        + URLEncoder.encode(tax.getTaxonomyCode(), ForesterConstants.UTF_8);
-            } catch (final UnsupportedEncodingException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        } else if (!ForesterUtil.isEmpty(tax.getCommonName())) {
-            try {
-                uri_str = "http://www.uniprot.org/taxonomy/?query="
-                        + URLEncoder.encode(tax.getCommonName(), ForesterConstants.UTF_8);
-            } catch (final UnsupportedEncodingException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        }
+        final String uri_str = taxonomyDbUrl(node);
         if (!ForesterUtil.isEmpty(uri_str)) {
             try {
                 AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_tax");
@@ -8126,9 +8094,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** A plain single left click: no other button, no modifier, not the second of a double click. */
     private static boolean isPlainSingleLeftClick(final MouseEvent e) {
-        return SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 1)
-                && ((e.getModifiersEx() & (InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK
-                        | InputEvent.ALT_DOWN_MASK | InputEvent.META_DOWN_MASK)) == 0);
+        return FormWidgets.isPlainSingleLeftClick(e); // one gate for every link: the tree's and the node window's
     }
 
     /** Test hook for {@link #isPlainSingleLeftClick} -- the gate that keeps a right-click, a modified click
@@ -18295,6 +18261,16 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             }
         }
         return false;
+    }
+
+    /** After a Write from a node window changed {@code node}: every read-only window on it re-reads it, so its
+     *  values -- and the links they make -- are the node's as it now is. */
+    final void nodeDataWritten(final PhylogenyNode node) {
+        for (int i = 0; i < _node_frame_index; ++i) {
+            if (_node_frames[i] != null) {
+                _node_frames[i].reread(node);
+            }
+        }
     }
 
     /** After an undo/redo installed {@code phy}, or a delete changed the live tree: every open node window

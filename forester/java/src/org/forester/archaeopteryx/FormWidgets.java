@@ -228,6 +228,156 @@ final class FormWidgets {
         return tc;
     }
 
+    /** The client property a link value carries: the address it opens (read by tests and by nothing else). */
+    static final String LINK_URL_PROPERTY = "aptx.link.url";
+
+    /** The theme's link colour (FlatLaf's {@code Component.linkColor}, readable on light and dark). */
+    static Color linkColor() {
+        final Color c = UIManager.getColor( "Component.linkColor" );
+        return ( c != null ) ? c : accentColor();
+    }
+
+    /** A plain single left click: no other button, no modifier, not the second of a double click. */
+    static boolean isPlainSingleLeftClick( final MouseEvent e ) {
+        return javax.swing.SwingUtilities.isLeftMouseButton( e ) && ( e.getClickCount() == 1 )
+                && ( ( e.getModifiersEx() & ( java.awt.event.InputEvent.SHIFT_DOWN_MASK
+                        | java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.ALT_DOWN_MASK
+                        | java.awt.event.InputEvent.META_DOWN_MASK ) ) == 0 );
+    }
+
+    /**
+     * A read-only value ({@link #viewValue}) that opens {@code url} on a plain left click ON ITS TEXT: the link
+     * colour, an underline and a hand cursor while the pointer is over the text, and the address as its tooltip.
+     * The component itself is stretched across its row, so the blank space beside or below the text is not the
+     * link ({@link #isOverText}). The colour is re-applied after every look-and-feel update (a theme switch
+     * re-installs the theme's text colour). With a null {@code url} it is the plain value, so a caller need not
+     * branch.
+     */
+    static JTextComponent linkValue( final String text, final String url, final boolean multiline,
+                                     final java.util.function.Consumer<String> open ) {
+        final JTextComponent tc = viewValue( text, multiline );
+        if ( url == null ) {
+            return tc;
+        }
+        tc.setForeground( plainColor( linkColor() ) );
+        tc.addPropertyChangeListener( "UI", e -> tc.setForeground( plainColor( linkColor() ) ) );
+        tc.setToolTipText( url );
+        tc.putClientProperty( LINK_URL_PROPERTY, url );
+        final Cursor base = tc.getCursor();
+        final MouseAdapter m = new MouseAdapter() {
+
+            private Font _plain; // non-null while the pointer is over the text
+
+            @Override
+            public void mouseClicked( final MouseEvent e ) {
+                if ( isPlainSingleLeftClick( e ) && isOverText( tc, e.getPoint() ) ) {
+                    open.accept( url );
+                }
+            }
+
+            @Override
+            public void mouseMoved( final MouseEvent e ) {
+                hover( isOverText( tc, e.getPoint() ) );
+            }
+
+            @Override
+            public void mouseExited( final MouseEvent e ) {
+                hover( false );
+            }
+
+            private void hover( final boolean over ) {
+                if ( over == ( _plain != null ) ) {
+                    return;
+                }
+                if ( over ) {
+                    _plain = tc.getFont();
+                    final java.util.Map<java.awt.font.TextAttribute, Object> a = new java.util.HashMap<>();
+                    a.put( java.awt.font.TextAttribute.UNDERLINE, java.awt.font.TextAttribute.UNDERLINE_ON );
+                    tc.setFont( _plain.deriveFont( a ) );
+                    tc.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
+                }
+                else {
+                    tc.setFont( _plain );
+                    tc.setCursor( base );
+                    _plain = null;
+                }
+            }
+        };
+        tc.addMouseListener( m );
+        tc.addMouseMotionListener( m );
+        return tc;
+    }
+
+    /** {@code c} as a plain colour: a look-and-feel update replaces a {@code UIResource} colour, never this. */
+    private static Color plainColor( final Color c ) {
+        return new Color( c.getRGB(), true );
+    }
+
+    /**
+     * Whether {@code p} lies on a character of {@code tc}'s text -- not on the blank stretch beside the text, below
+     * its last line, or in the border. False for a component that has not been laid out.
+     */
+    static boolean isOverText( final JTextComponent tc, final java.awt.Point p ) {
+        final int n = tc.getDocument().getLength();
+        if ( n == 0 ) {
+            return false;
+        }
+        try {
+            // the caret position nearest the pointer: the character under it is the one before or the one after
+            final int pos = tc.viewToModel2D( p );
+            for( int i = Math.max( 0, pos - 1 ); i <= Math.min( n - 1, pos ); ++i ) {
+                final java.awt.geom.Rectangle2D box = characterBox( tc, i );
+                if ( ( box != null ) && box.contains( p.getX(), p.getY() ) ) {
+                    return true;
+                }
+            }
+        }
+        catch ( final javax.swing.text.BadLocationException e ) {
+            return false;
+        }
+        return false;
+    }
+
+    /** The box character {@code i} of {@code tc} occupies: from its caret position to the next one on its line
+     *  (at a line's end, its advance); null for a line break or before layout. */
+    static java.awt.geom.Rectangle2D characterBox( final JTextComponent tc, final int i )
+            throws javax.swing.text.BadLocationException {
+        final String ch = tc.getDocument().getText( i, 1 );
+        final java.awt.geom.Rectangle2D a = tc.modelToView2D( i );
+        if ( ( a == null ) || ch.equals( "\n" ) ) {
+            return null;
+        }
+        final java.awt.geom.Rectangle2D b = tc.modelToView2D( i + 1 );
+        final double x0;
+        final double x1;
+        if ( ( b != null ) && ( Math.abs( b.getY() - a.getY() ) < 0.5 ) && ( b.getX() != a.getX() ) ) {
+            x0 = Math.min( a.getX(), b.getX() );
+            x1 = Math.max( a.getX(), b.getX() );
+        }
+        else { // the last character of a (wrapped) line
+            x0 = a.getX();
+            x1 = a.getX() + tc.getFontMetrics( tc.getFont() ).stringWidth( ch );
+        }
+        return new java.awt.geom.Rectangle2D.Double( x0, a.getY(), x1 - x0, a.getHeight() );
+    }
+
+    /**
+     * Several values, one per line, each a link where {@code urls} has an address for it (null: plain text). Each
+     * line wraps on its own, so a long address stays readable.
+     */
+    static JPanel linkList( final java.util.List<String> texts, final java.util.List<String> urls,
+                            final java.util.function.Consumer<String> open ) {
+        final JPanel p = new JPanel();
+        p.setOpaque( false );
+        p.setLayout( new BoxLayout( p, BoxLayout.Y_AXIS ) );
+        for( int i = 0; i < texts.size(); ++i ) {
+            final JTextComponent line = linkValue( texts.get( i ), urls.get( i ), true, open );
+            line.setAlignmentX( Component.LEFT_ALIGNMENT );
+            p.add( line );
+        }
+        return p;
+    }
+
     /** A flat, left-aligned text button for in-page actions ("+ Add ..."). */
     static JButton linkButton( final String text, final Runnable action ) {
         final JButton b = new JButton( text );
