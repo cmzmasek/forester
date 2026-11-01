@@ -47,8 +47,9 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     private static final String   DEFAULT_FONT_NAME = "Sans";
     public static final long      serialVersionUID  = 62256323L;
     private static final String[] STYLE             = { REGULAR, BOLD, ITALIC, BOLD_ITALIC };
-    private static final String[] SIZE              = { "3", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22",
-            "24", "26", "28", "36", "72"           };
+    /** Every size the tree font can have, {@link TreeFontSet#MIN_FONT_SIZE} to {@link TreeFontSet#MAX_FONT_SIZE}: the
+     *  list offers nothing the tree cannot show, and a size opens on its own entry (a list with gaps snapped 13 to 14). */
+    private static final String[] SIZE              = sizes();
     private static final int      OK_OPTION         = 1;
     private static final int      CANCEL_OPTION     = 2;
     private Font                  _font;
@@ -56,7 +57,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     private String                _type;
     private int                   _style;
     private int                   _size;
-    private final JList<String>   _font_list        = new JList<String>( AptxUtil.getAvailableFontFamiliesSorted() );
+    private final JList<String>   _font_list;
     private final JList<String>   _style_list       = new JList<String>( STYLE );
     private final JList<String>   _size_list        = new JList<String>( SIZE );
     private final JTextField      _fonts_tf         = new JTextField();
@@ -65,7 +66,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     private final JLabel          _fonts_label      = new JLabel( "Font:" );
     private final JLabel          _style_label      = new JLabel( "Style:" );
     private final JLabel          _size_label       = new JLabel( "Size:" );
-    private final JScrollPane     _font_jsp         = new JScrollPane( _font_list );
+    private final JScrollPane     _font_jsp;
     private final JScrollPane     _style_jsp        = new JScrollPane( _style_list );
     private final JScrollPane     _size_jsp         = new JScrollPane( _size_list );
     private final JButton         _ok_button        = new JButton( "OK" );
@@ -77,6 +78,13 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     }
 
     public FontChooser( final Font font ) {
+        this( font, AptxUtil.getAvailableFontFamiliesSorted() );
+    }
+
+    /** The chooser over {@code families} (the installed ones, by the public constructors; a test passes its own). */
+    FontChooser( final Font font, final String[] families ) {
+        _font_list = new JList<String>( families );
+        _font_jsp = new JScrollPane( _font_list );
         final Container container = getContentPane();
         final JPanel panel = new JPanel();
         final TitledBorder panel_border = new TitledBorder( "Demo" );
@@ -220,37 +228,57 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     }
 
     public int showDialog( final Component parent, final String title ) {
-        boolean found = false;
         _option = CANCEL_OPTION;
         setTitle( title );
-        _test_tf.setFont( new Font( _type, _style, _size ) );
-        for( int i = 0; i < _font_list.getModel().getSize(); i++ ) {
-            _font_list.setSelectedIndex( i );
-            if ( _font.getFamily().equals( _font_list.getSelectedValue() ) ) {
-                found = true;
-                setScrollPos( _font_jsp, _font_list, i );
-                break;
-            }
-        }
-        if ( !found ) {
-            _font_list.clearSelection();
-        }
-        _style_list.setSelectedIndex( _font.getStyle() );
-        found = false;
-        for( int i = 0; i < _size_list.getModel().getSize(); i++ ) {
-            _size_list.setSelectedIndex( i );
-            if ( _font.getSize() <= Integer.parseInt( _size_list.getSelectedValue() ) ) {
-                found = true;
-                setScrollPos( _size_jsp, _size_list, i );
-                break;
-            }
-        }
-        if ( !found ) {
-            _size_list.clearSelection();
-        }
+        selectCurrent();
         setLocationRelativeTo( parent );
         setVisible( true );
         return _option;
+    }
+
+    /**
+     * Selects the current font's family, style and size in the lists, each ONCE (a selection updates its field and
+     * the value OK applies). The family is looked up in the list's model: selecting every family in turn fired a
+     * selection -- a new Font -- per installed family, and when the font's family was not listed (the list is read
+     * once, possibly before the bundled font was registered) left the LAST family chosen, so OK switched the tree to
+     * it. Unlisted, the family is kept as it is.
+     */
+    private void selectCurrent() {
+        final String family = _font.getFamily();
+        final int fi = indexOf( _font_list, family );
+        if ( fi >= 0 ) {
+            _font_list.setSelectedIndex( fi );
+            setScrollPos( _font_jsp, _font_list, fi );
+        }
+        else {
+            _fonts_tf.setText( family );
+            _font_list.clearSelection();
+            _type = family;
+        }
+        _style_list.setSelectedIndex( _font.getStyle() );
+        final int si = TreeFontSet.clampSize( _font.getSize() ) - TreeFontSet.MIN_FONT_SIZE; // every size has its entry
+        _size_list.setSelectedIndex( si );
+        setScrollPos( _size_jsp, _size_list, si );
+        _test_tf.setFont( new Font( _type, _style, _size ) );
+    }
+
+    private static int indexOf( final JList<String> list, final String value ) {
+        for( int i = 0; i < list.getModel().getSize(); ++i ) {
+            if ( list.getModel().getElementAt( i ).equals( value ) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** For tests: the family OK would apply now. */
+    String familyForTest() {
+        return _type;
+    }
+
+    /** For tests: {@link #selectCurrent}, what the dialog does as it opens. */
+    void selectCurrentForTest() {
+        selectCurrent();
     }
 
     @Override
@@ -287,6 +315,8 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         }
     }
 
+    /** Reads a typed size, kept within the tree font's range; the field then shows the size that will apply. An
+     *  unreadable entry keeps the size there was. */
     private void parseSize() {
         try {
             _size = ( Integer.parseInt( _size_tf.getText().trim() ) );
@@ -294,9 +324,38 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         catch ( final Exception ex ) {
             // Ignore.
         }
-        if ( _size < 1 ) {
-            _size = 1;
+        _size = TreeFontSet.clampSize( _size );
+        _size_tf.setText( Integer.toString( _size ) );
+    }
+
+    private static String[] sizes() {
+        final String[] s = new String[ ( TreeFontSet.MAX_FONT_SIZE - TreeFontSet.MIN_FONT_SIZE ) + 1 ];
+        for( int i = 0; i < s.length; ++i ) {
+            s[ i ] = Integer.toString( TreeFontSet.MIN_FONT_SIZE + i );
         }
+        return s;
+    }
+
+    /** For tests: the sizes the list offers. */
+    String[] sizeChoicesForTest() {
+        return SIZE.clone();
+    }
+
+    /** For tests: types {@code text} into the size field and presses Enter; returns the size that now applies. */
+    int typeSizeForTest( final String text ) {
+        _size_tf.setText( text );
+        actionPerformed( new ActionEvent( _size_tf, ActionEvent.ACTION_PERFORMED, "" ) );
+        return _size;
+    }
+
+    /** For tests: the field's text. */
+    String sizeFieldForTest() {
+        return _size_tf.getText();
+    }
+
+    /** For tests: presses OK (closes the dialog; {@link #getFont} is then the font that applies). */
+    void pressOkForTest() {
+        actionPerformed( new ActionEvent( _ok_button, ActionEvent.ACTION_PERFORMED, "" ) );
     }
 
     private void setScrollPos( final JScrollPane sp, final JList<String> list, final int index ) {

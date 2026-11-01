@@ -1019,8 +1019,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         if (tfs == null) {
             return;
         }
-        final int size = Math.max(TreeFontSet.MIN_FONT_SIZE,
-                Math.min(TreeFontSet.MAX_FONT_SIZE, tfs.getLargeFont().getSize()));
+        // the large font can be auto-shrunk below the range for a paint; the slider shows it within the range
+        final int size = TreeFontSet.clampSize(tfs.getLargeFont().getSize());
         if (_font_size_slider.getValue() != size) {
             _font_slider_is_being_set = true; // don't let setValue() re-trigger an apply
             _font_size_slider.setValue(size);

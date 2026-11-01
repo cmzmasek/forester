@@ -75,7 +75,9 @@ public final class TreeFontSet {
 
 
     private void intializeFonts() {
-        final int small_size = getBaseFont().getSize() - 2;
+        // two points smaller, but never below the smallest size: at 2 or 3 pt the small font was 0 or 1 pt, and every
+        // branch number, ruler and annotation-column text drawn in it vanished
+        final int small_size = Math.max( MIN_FONT_SIZE, getBaseFont().getSize() - 2 );
         _small_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
         _large_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
         _large_font_memory = _large_font;
@@ -133,11 +135,17 @@ public final class TreeFontSet {
         return getBaseFont().getSize();
     }
 
-    /** Sets the user font size (clamped), re-deriving large/small from it and clearing any auto-shrink. */
+    /** Sets the user font size ({@link #clampSize clamped}), re-deriving large/small from it and clearing any
+     *  auto-shrink. */
     void setUserFontSize( final int size ) {
-        final int s = Math.max( MIN_FONT_SIZE, Math.min( MAX_FONT_SIZE, size ) );
         setDecreasedSizeBySystem( false );
-        setBaseFont( getBaseFont().deriveFont( (float) s ) ); // re-derives large/small + their memory
+        setBaseFont( getBaseFont().deriveFont( (float) clampSize( size ) ) ); // re-derives large/small + their memory
+    }
+
+    /** {@code size} kept within [{@link #MIN_FONT_SIZE}, {@link #MAX_FONT_SIZE}]: the ONE rule for the tree font's
+     *  range, used by every way in (this set, the slider, the font chooser). */
+    static int clampSize( final int size ) {
+        return Math.max( MIN_FONT_SIZE, Math.min( MAX_FONT_SIZE, size ) );
     }
 
     void increaseUserFontSize() {
@@ -152,9 +160,22 @@ public final class TreeFontSet {
         return _decreased_size_by_system;
     }
 
+    /**
+     * Sets the tree font, its size kept within [{@link #MIN_FONT_SIZE}, {@link #MAX_FONT_SIZE}] -- the range the
+     * slider and the keyboard offer, so every way in (the font chooser, the defaults on start-up and Reset,
+     * {@code MainFrame.applyTreeDisplayPreferences}) lands where they can show it and step from it. The tree font is
+     * not saved between sessions. (Before 0.11.197 the font chooser set any size it was typed, and the next "bigger"
+     * step from 72 pt fell to 32.)
+     */
     void setBaseFont( final Font base_font ) {
-        _base_font = base_font;
+        _base_font = withinRange( base_font );
         intializeFonts();
+    }
+
+    /** {@code f} with its size kept within [{@link #MIN_FONT_SIZE}, {@link #MAX_FONT_SIZE}]; {@code f} itself when it is. */
+    static Font withinRange( final Font f ) {
+        final float s = f.getSize2D();
+        return ( ( s < MIN_FONT_SIZE ) || ( s > MAX_FONT_SIZE ) ) ? f.deriveFont( (float) clampSize( Math.round( s ) ) ) : f;
     }
 
 }

@@ -9875,13 +9875,27 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     private static final Stroke NO_VALUE_SWATCH_STROKE = new BasicStroke(1f, BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_MITER, 10f, new float[] { 2f, 2f }, 0f);
     private static final int LEGEND_SHOW_ALL = Integer.MAX_VALUE;
-    // The legend is a fixed key, not tree data, so keep it readable even when node-label fonts are
-    // set very small: use the small tree font but never below this floor.
-    private static final float PROPERTY_LEGEND_MIN_FONT_SIZE = 11f;
+    // The legend is a fixed key, not tree data: it follows the small tree font, kept readable when node-label fonts
+    // are set very small (the floor) and compact when they are set large (the ceiling, Christian, 2026-10-31: at the
+    // slider's 32 pt a 20-row legend was 497 x 982 px, taller than the 720 x 810 px panel the window opens with; at
+    // 16 pt it is 275 x 564).
+    static final float PROPERTY_LEGEND_MIN_FONT_SIZE = 11f;
+    static final float PROPERTY_LEGEND_MAX_FONT_SIZE = 16f;
 
     private Font legendFont() {
         final Font small = getTreeFontSet().getSmallFont();
-        return small.deriveFont(Math.max(small.getSize2D(), PROPERTY_LEGEND_MIN_FONT_SIZE));
+        return small.deriveFont(legendFontSize(small.getSize2D()));
+    }
+
+    /** Every legend's font size for a small tree font of {@code small_font_size}: that size, kept within
+     *  [{@link #PROPERTY_LEGEND_MIN_FONT_SIZE}, {@link #PROPERTY_LEGEND_MAX_FONT_SIZE}]. */
+    static float legendFontSize(final float small_font_size) {
+        return Math.max(PROPERTY_LEGEND_MIN_FONT_SIZE, Math.min(PROPERTY_LEGEND_MAX_FONT_SIZE, small_font_size));
+    }
+
+    /** For tests: the size of the font every legend is drawn in now. */
+    float legendFontSizeForTest() {
+        return legendFont().getSize2D();
     }
 
     /**

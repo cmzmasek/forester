@@ -309,6 +309,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Font bounds (legend 11-16 pt, tree font 2-32 pt on every way in): ");
+        if (org.forester.archaeopteryx.FontBoundsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Rank dialogs (each row its own height, fits a laptop screen): ");
+        if (org.forester.archaeopteryx.RankDialogLayoutTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node frame: ");
         if (org.forester.archaeopteryx.NodeFrameTest.test()) {
             System.out.println("OK.");

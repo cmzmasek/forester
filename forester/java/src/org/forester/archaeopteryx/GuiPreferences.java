@@ -171,7 +171,7 @@ final class GuiPreferences {
             // that is their choice and it survives a restart, like every other display toggle.
             boolPref( "show_fps", Options::isShowFps, Options::setShowFps ),
             // How the width is split between the tree and the tracks beside it -- a figure-proportion preference,
-            // so it survives a restart the way the base font and the tip-image size do.
+            // so it survives a restart the way the tip-image size does.
             doublePref( "tree_width_share", Options::getTreeWidthShare, Options::setTreeWidthShare,
                         AptxConstants.TREE_WIDTH_SHARE_MIN, AptxConstants.TREE_WIDTH_SHARE_MAX ),
             intPref( "msa_column_width", Options::getMsaColumnWidth, Options::setMsaColumnWidth,

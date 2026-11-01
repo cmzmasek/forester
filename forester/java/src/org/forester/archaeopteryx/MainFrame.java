@@ -1466,14 +1466,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (_last_clade_rank != null) {
             chooser.selectRank(_last_clade_rank);
         }
-        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
-        panel.add(new JLabel("Colorize subtrees by rank:"));
-        panel.add(chooser.rankBox());
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Taxa from:"));
-        panel.add(chooser.sourcePanel());
-        panel.add(new JLabel(" "));
-        panel.add(chooser.writeLineagesBox());
+        final JPanel panel = stackedRows(new JLabel("Colorize subtrees by rank:"), chooser.rankBox(), new JLabel(" "),
+                new JLabel("Taxa from:"), chooser.sourcePanel(), new JLabel(" "), chooser.writeLineagesBox());
         if (JOptionPane.showConfirmDialog(this, panel, "Colorize Subtrees via Taxonomic Rank",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;
@@ -1504,6 +1498,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     /** The source a rank dialog opens on: the one last chosen this session, else the tree's own annotations when the
      *  tree carries any rank, else the databases. */
+    /** For tests: the source the rank dialogs open on next, as if it were the one chosen last. */
+    void setLastTaxonSourceForTest(final TaxonSource s) {
+        _last_taxon_source = s;
+    }
+
     private TaxonSource initialTaxonSource(final Phylogeny phy) {
         return (_last_taxon_source != null) ? _last_taxon_source
                 : TaxonSource.defaultFor(!AptxUtil.getRankCounts(phy).isEmpty());
@@ -1973,6 +1972,27 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return true;
     }
 
+    /**
+     * A one-column form whose rows each keep their OWN height and span the dialog's width, 2 px apart. A
+     * {@code GridLayout(0, 1)} gives every row the height of the tallest: once the three-line "Taxa from" panel
+     * joined them (0.11.179), every one of Annotate Clades by Rank's 23 rows was 57-63 px tall and the dialog
+     * 608 x 1443 px -- taller than a laptop screen, OK and Cancel below its edge (422 x 538 px before).
+     */
+    static JPanel stackedRows(final java.awt.Component... rows) {
+        final JPanel p = new JPanel(new java.awt.GridBagLayout());
+        final java.awt.GridBagConstraints c = new java.awt.GridBagConstraints();
+        c.gridx = 0;
+        c.weightx = 1;
+        c.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        c.anchor = java.awt.GridBagConstraints.WEST;
+        for (int i = 0; i < rows.length; ++i) {
+            c.gridy = i;
+            c.insets = new java.awt.Insets((i == 0) ? 0 : 2, 0, 0, 0);
+            p.add(rows[i], c);
+        }
+        return p;
+    }
+
     void labelCladesByRank() {
         if (_mainpanel.getCurrentTreePanel() == null) {
             return;
@@ -2059,30 +2079,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         };
         rank_box.addActionListener(syncWrite);
         syncWrite.actionPerformed(null);
-        final JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2));
-        panel.add(new JLabel("Annotate clades by rank:"));
-        panel.add(rank_box);
-        panel.add(angle_box);
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Taxa from:"));
-        panel.add(chooser.sourcePanel());
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Show as:"));
-        panel.add(boxes_rb);
-        panel.add(bars_rb);
-        panel.add(brackets_rb);
-        panel.add(skip_singletons_cb);
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Additional nested levels (Bars / Brackets only):"));
-        panel.add(rank_box_2);
-        panel.add(angle_box_2);
-        panel.add(rank_box_3);
-        panel.add(angle_box_3);
-        panel.add(new JLabel(" "));
-        panel.add(write_cb);
-        panel.add(overwrite_cb);
-        panel.add(chooser.writeLineagesBox());
-        panel.add(report_only_cb);
+        final JPanel panel = stackedRows(new JLabel("Annotate clades by rank:"), rank_box, angle_box, new JLabel(" "),
+                new JLabel("Taxa from:"), chooser.sourcePanel(), new JLabel(" "),
+                new JLabel("Show as:"), boxes_rb, bars_rb, brackets_rb, skip_singletons_cb, new JLabel(" "),
+                new JLabel("Additional nested levels (Bars / Brackets only):"), rank_box_2, angle_box_2, rank_box_3,
+                angle_box_3, new JLabel(" "),
+                write_cb, overwrite_cb, chooser.writeLineagesBox(), report_only_cb);
         if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
             return;

@@ -315,6 +315,12 @@ final class RankSourcePanel {
         for( final Runnable r : _listeners ) {
             r.run();
         }
+        // an online source's entries are longer ("... now; 12 to look up"): let the open dialog grow (or shrink) to
+        // them, so no row is cut off at its right edge
+        final java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor( _rank_box );
+        if ( w != null ) {
+            w.pack();
+        }
     }
 
     private void reselect( final JComboBox<String> box, final String[] entries ) {
