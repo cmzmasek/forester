@@ -301,6 +301,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Node click/hover target (floor, nearest wins): ");
+        if (org.forester.archaeopteryx.NodeHitTargetTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node frame: ");
         if (org.forester.archaeopteryx.NodeFrameTest.test()) {
             System.out.println("OK.");

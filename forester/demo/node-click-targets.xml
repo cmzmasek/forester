@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Click targets (demo)</name>
+  <description>Large node marks (48 px rings) beside plain tips, on a schematic tree. In the window as it opens (900 px wide, at most 900 px tall) each ring is taller than the rows are apart, so its click square covers its neighbours&apos; nodes. Hover or click: the hover card and the node menu go to the node NEAREST the pointer -- a click right on a plain tip opens that tip, never the large one around it. The two no_mark tips have a node size of 0 (no mark is drawn) and are still a 9 x 9 px target.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_01</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_01</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_02</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_02</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_03</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_03</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_04</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_04</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_05</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_05</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_06</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_06</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_07</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_07</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_08</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_08</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_09</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_09</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_10</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_10</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_11</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_11</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_12</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_12</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_13</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_13</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_14</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_14</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_15</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_15</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_16</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_16</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_17</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_17</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_18</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_18</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>large_19</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+        <clade>
+          <name>plain_19</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02</branch_length>
+        <clade>
+          <name>plain_20</name>
+          <branch_length>0.02</branch_length>
+        </clade>
+        <clade>
+          <name>large_20</name>
+          <branch_length>0.02</branch_length>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">48.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.04</branch_length>
+      <clade>
+        <name>no_mark_1</name>
+        <branch_length>0.02</branch_length>
+        <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+        <property ref="style:node_size" datatype="xsd:float" applies_to="node">0.0</property>
+        <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+        <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+      </clade>
+      <clade>
+        <name>no_mark_2</name>
+        <branch_length>0.02</branch_length>
+        <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+        <property ref="style:node_size" datatype="xsd:float" applies_to="node">0.0</property>
+        <property ref="style:node_color" datatype="xsd:token" applies_to="node">#2675bf</property>
+        <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

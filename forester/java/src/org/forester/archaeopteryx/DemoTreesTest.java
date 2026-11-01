@@ -244,6 +244,7 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "node-data-editor.xml", 5 );
         ok &= nodeDataEditorDemoOk( "node-data-editor.xml" );
         ok &= nodeDataLinksDemosOk();
+        ok &= nodeClickTargetsDemoOk();
 
         // tree properties (View > Tree Properties): tree-level identifier / type / unit, two kinds of support
         // values, a polytomy and a zero-length branch, and mixed annotation coverage -- every section has content
@@ -1024,6 +1025,49 @@ public final class DemoTreesTest {
         }
         if ( none.getNumberOfExternalNodes() != 4 ) {
             return note( "node-data-links-none.xml: 4 tips expected" );
+        }
+        return true;
+    }
+
+    /**
+     * node-click-targets.xml has the shape its README row quotes: 42 tips -- 20 with a 48 px ring, 20 plain, two with
+     * a node size of 0 -- and every clade holds a large and a plain tip in BOTH orders. (The hit rule itself is
+     * measured on this file in a real window by NodeHitTargetTest.)
+     */
+    private static boolean nodeClickTargetsDemoOk() {
+        final Phylogeny phy = load( "node-click-targets.xml" );
+        if ( phy == null ) {
+            return false;
+        }
+        int large = 0, plain = 0, no_mark = 0;
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            final org.forester.phylogeny.data.NodeVisualData v = tip.getNodeData().getNodeVisualData();
+            final float size = ( v == null ) ? -1 : v.getSize();
+            if ( tip.getName().startsWith( "large_" ) && ( size == 48 ) ) {
+                ++large;
+            }
+            else if ( tip.getName().startsWith( "plain_" ) && ( ( v == null ) || v.isEmpty() ) ) {
+                ++plain;
+            }
+            else if ( tip.getName().startsWith( "no_mark_" ) && ( size == 0 ) ) {
+                ++no_mark;
+            }
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 42 ) || ( large != 20 ) || ( plain != 20 ) || ( no_mark != 2 ) ) {
+            return note( "node-click-targets.xml: 42 tips (20 large rings of 48, 20 plain, 2 of size 0) expected, got "
+                    + phy.getNumberOfExternalNodes() + " (" + large + ", " + plain + ", " + no_mark + ")" );
+        }
+        int both_orders = 0;
+        for( final PhylogenyNode c : phy.getRoot().getDescendants() ) {
+            if ( ( c.getNumberOfDescendants() == 2 ) && ( c.getChildNode( 0 ).getNumberOfDescendants() == 2 )
+                    && ( c.getChildNode( 1 ).getNumberOfDescendants() == 2 )
+                    && c.getChildNode( 0 ).getChildNode( 0 ).getName().startsWith( "large_" )
+                    && c.getChildNode( 1 ).getChildNode( 1 ).getName().startsWith( "large_" ) ) {
+                ++both_orders;
+            }
+        }
+        if ( both_orders != 10 ) {
+            return note( "node-click-targets.xml: 10 clades of (large, plain), (plain, large) expected, got " + both_orders );
         }
         return true;
     }

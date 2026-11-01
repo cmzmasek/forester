@@ -7369,8 +7369,15 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      *  and the node carries one, else the global default node-shape size. Label positions offset by this so a large
      *  per-node node shape doesn't overlap its label (a plain default node uses the default, unchanged). */
     int effectiveNodeHalfBoxSize(final PhylogenyNode node) {
-        float box_size = getOptions().getDefaultNodeShapeSize();
-        if (shows(DisplayOption.USE_STYLE) && (node != null)) {
+        return effectiveNodeHalfBoxSize(node, shows(DisplayOption.USE_STYLE), getOptions().getDefaultNodeShapeSize());
+    }
+
+    /** {@link #effectiveNodeHalfBoxSize(PhylogenyNode)} with the two settings it reads passed in, so a loop over every
+     *  node ({@link #findNode}) reads them once. */
+    private static int effectiveNodeHalfBoxSize(final PhylogenyNode node, final boolean use_style,
+                                                final float default_size) {
+        float box_size = default_size;
+        if (use_style && (node != null)) {
             final NodeVisualData vis = node.getNodeData().getNodeVisualData();
             if ((vis != null) && (vis.getSize() != NodeVisualData.DEFAULT_SIZE)) {
                 box_size = vis.getSize();
@@ -16220,11 +16227,34 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     /**
-     * Find the node, if any, at the given location
-     *
-     * @param x
-     * @param y
-     * @return pointer to the node at x,y, null if not found
+     * The smallest click / hover reach around a node or a branch: 4 px, a 9x9 px square around a node -- the default
+     * node size's target (5 px: 2 + {@link #WIGGLE}). Node sizes 0 to 3, or marks not drawn at all, keep this reach
+     * instead of shrinking it (sizes 0-1 gave a 5x5 px square, 2-3 a 7x7). (Christian, 2026-10-31)
+     */
+    static final int MIN_NODE_HIT_HALF_SIZE = 4;
+
+    /** The hit reach around a mark whose half side is {@code mark_half}: the mark plus {@link #WIGGLE}, never under
+     *  {@link #MIN_NODE_HIT_HALF_SIZE}, never capped. ONE rule for {@link #findNode} (each node's own mark) and
+     *  {@link #findBranch} (the default mark), so the two cannot drift apart. */
+    private static double hitReach(final double mark_half) {
+        return Math.max(MIN_NODE_HIT_HALF_SIZE, mark_half + WIGGLE);
+    }
+
+    /**
+     * Half the side of the square that hit-tests {@code node}: {@link #hitReach} of its drawn mark
+     * ({@link #effectiveNodeHalfBoxSize}, per-node when styled). No ceiling: a large custom mark is clickable across
+     * all of it, and where squares overlap {@link #findNode} takes the nearest node, so a large square cannot take a
+     * click from a neighbour nearer the pointer.
+     */
+    final int nodeHitHalfSize(final PhylogenyNode node) {
+        return (int) hitReach(effectiveNodeHalfBoxSize(node));
+    }
+
+    /**
+     * The node under ({@code x},{@code y}) for a click or a hover, or null: of the nodes whose square
+     * ({@link #nodeHitHalfSize}) holds the point, the one whose centre is NEAREST (a tie: the first in postorder).
+     * Until 0.11.196 the first in postorder won, so where squares overlapped -- large marks, or tips packed closer
+     * than their squares -- a click right on one tip could open its neighbour.
      */
     final PhylogenyNode findNode(final int x, final int y) {
         if ((_phylogeny == null) || _phylogeny.isEmpty() || !hitTestableLayout()) {
@@ -16232,29 +16262,35 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         }
         // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
         final Point2D.Double p = toLogicalPoint(x, y);
+        final boolean use_style = shows(DisplayOption.USE_STYLE); // read once: this runs on every pointer move
+        final float default_size = getOptions().getDefaultNodeShapeSize();
+        PhylogenyNode nearest = null;
+        double nearest_d2 = Double.MAX_VALUE;
         for (final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            // size the click target to the mark ACTUALLY drawn (per-node when styled) so a large custom node shape
-            // is clickable across its full extent, not just the default-sized box
-            final int half_box_size_plus_wiggle = effectiveNodeHalfBoxSize(node) + WIGGLE;
+            final double half = hitReach(effectiveNodeHalfBoxSize(node, use_style, default_size));
+            final double dx = node.getXcoord() - p.x;
+            final double dy = node.getYcoord() - p.y;
             if ((_phylogeny.isRooted() || !node.isRoot() || (node.getNumberOfDescendants() > 2))
-                    && ((node.getXcoord() - half_box_size_plus_wiggle) <= p.x)
-                    && ((node.getXcoord() + half_box_size_plus_wiggle) >= p.x)
-                    && ((node.getYcoord() - half_box_size_plus_wiggle) <= p.y)
-                    && ((node.getYcoord() + half_box_size_plus_wiggle) >= p.y)
-                    // skip nodes hidden under a collapsed ancestor: they keep stale pre-collapse coords, so a
-                    // box hit there is a phantom. The collapsed clade-root itself is still returned (it is drawn
-                    // as the triangle and IS selectable). Gated behind the cheap box test above (O(depth), rare).
-                    && !isHiddenUnderCollapse(node)) {
-                return node;
+                    && (Math.abs(dx) <= half) && (Math.abs(dy) <= half)) {
+                final double d2 = (dx * dx) + (dy * dy);
+                // skip nodes hidden under a collapsed ancestor: they keep stale pre-collapse coords, so a box hit
+                // there is a phantom. The collapsed clade-root itself is still returned (it is drawn as the
+                // triangle and IS selectable). Asked only of a nearer candidate (O(depth), rare).
+                if ((d2 < nearest_d2) && !isHiddenUnderCollapse(node)) {
+                    nearest = node;
+                    nearest_d2 = d2;
+                }
             }
         }
-        return null;
+        return nearest;
     }
 
     /**
      * The child node whose incoming branch is under ({@code x},{@code y}), or null -- for branch-click clade
-     * selection. Picks the nearest branch within a small tolerance (same forgiveness as {@link #findNode}). Each
+     * selection. Picks the nearest branch closer than {@link #hitReach} of the DEFAULT node mark -- the same floor
+     * as {@link #findNode}, but not a node's own style size (a branch joins two nodes). {@link #findNode} is asked
+     * first, so within a node's square the node wins. Each
      * layout hit-tests the branch geometry it actually DRAWS: RECTANGULAR the horizontal leg (at the child's y) plus
      * the vertical fork connector; TRIANGULAR / UNROOTED the straight parent-&gt;child line; CIRCULAR the radial leg
      * from the child to the point on the parent's radius at the child's angle. EURO_STYLE/ROUNDED offset the leg near
@@ -16271,7 +16307,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if ((_phylogeny == null) || _phylogeny.isEmpty() || !(rectangular || diagonal || circular)) {
             return null;
         }
-        final double tol = (getOptions().getDefaultNodeShapeSize() / 2.0) + WIGGLE;
+        final double tol = hitReach(getOptions().getDefaultNodeShapeSize() / 2.0);
         // in a vertical orientation the node coords are logical (un-rotated); map the device click back to that space
         final Point2D.Double click = toLogicalPoint(x, y);
         // circular: the root is at the ring centre; each node's angle is derivable from its coords (atan2), so the
@@ -19091,6 +19127,16 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     /** The device (screen) position of an arbitrary LOGICAL point under the current orientation. Raw in horizontal. */
     Point2D.Double screenPoint(final double logical_x, final double logical_y) {
         final Point2D.Double p = new Point2D.Double(logical_x, logical_y);
+        if (isVerticalOrientation() && (_orientation_R != null)) {
+            _orientation_R.transform(p, p);
+        }
+        return p;
+    }
+
+    /** For tests: the device (panel) point where the LOGICAL node-space point ({@code x},{@code y}) is drawn -- the
+     *  inverse of {@link #toLogicalPoint}: the orientation's rotation in a vertical orientation, else the point. */
+    final Point2D.Double toDevicePointForTest(final double x, final double y) {
+        final Point2D.Double p = new Point2D.Double(x, y);
         if (isVerticalOrientation() && (_orientation_R != null)) {
             _orientation_R.transform(p, p);
         }

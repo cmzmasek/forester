@@ -157,6 +157,7 @@ public final class DemoTreeGenerator {
         writeText( dir, "sparse-accessory-genome.tsv", sparse._tsv );
         write( dir, "search-emphasis.xml", searchEmphasisTree() );
         write( dir, "node-visual-styles.xml", nodeVisualStylesTree() );
+        write( dir, "node-click-targets.xml", nodeClickTargetsTree() );
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
         write( dir, "node-data-links.xml", nodeDataLinksTree() );
         write( dir, "node-data-links-none.xml", nodeDataLinksNoneTree() );
@@ -1311,6 +1312,41 @@ public final class DemoTreeGenerator {
     }
 
 
+    // ----- click targets: large node marks beside plain tips. In the window as it opens (900 px wide, at most 900 px
+    //       tall: the screen may cap the height) each ring is taller
+    //       than the rows are apart, so its click square covers its neighbours' nodes: the NEAREST node wins (a click
+    //       right on a plain tip opens it). Both orders in every clade -- (large, plain) and (plain, large) -- because
+    //       the old rule, the first in postorder, got only the first wrong. Two tips with a node size of 0 keep the
+    //       9 x 9 px minimum target. NodeHitTargetTest measures all of it on this file in a real window.
+    static final int CLICK_TARGETS_RING_SIZE = 48;
+
+    private static Phylogeny nodeClickTargetsTree() {
+        final List<PhylogenyNode> clades = new ArrayList<>();
+        for( int k = 1; k <= 10; ++k ) {
+            final String a = String.format( "%02d", ( 2 * k ) - 1 );
+            final String b = String.format( "%02d", 2 * k );
+            clades.add( clade( 0.04, clade( 0.02, markLeaf( "large_" + a, CLICK_TARGETS_RING_SIZE ), leaf( "plain_" + a ) ),
+                               clade( 0.02, leaf( "plain_" + b ), markLeaf( "large_" + b, CLICK_TARGETS_RING_SIZE ) ) ) );
+        }
+        clades.add( clade( 0.04, markLeaf( "no_mark_1", 0 ), markLeaf( "no_mark_2", 0 ) ) );
+        final PhylogenyNode root = clade( 0, clades.toArray( new PhylogenyNode[ 0 ] ) );
+        return tree( root, "Click targets (demo)",
+                     "Large node marks (48 px rings) beside plain tips, on a schematic tree. In the window as it opens "
+                             + "(900 px wide, at most 900 px tall) each ring is taller than the rows are apart, so its "
+                             + "click square covers "
+                             + "its neighbours' nodes. Hover or click: the hover card and the node menu go to the node "
+                             + "NEAREST the pointer -- a click right on a plain tip opens that tip, never the large "
+                             + "one around it. The two no_mark tips have a node size of 0 (no mark is drawn) and are "
+                             + "still a 9 x 9 px target." );
+    }
+
+    /** A tip whose node mark is a ring of {@code size} px (0: no mark), in a node style. */
+    private static PhylogenyNode markLeaf( final String name, final float size ) {
+        final PhylogenyNode n = leaf( name );
+        n.getNodeData().setNodeVisualData( nodeMark( NodeShape.CIRCLE, NodeFill.NONE, size, new Color( 0x26, 0x75, 0xBF ) ) );
+        return n;
+    }
+
     // ----- "Node data editor": a small gene-family tree whose nodes carry one of EVERYTHING the editor handles --
     //       taxonomy (with id / code / rank / synonym / URI), TWO sequences on one tip (protein + mRNA), branch
     //       confidences, a dated internal node with duplication/speciation events, a distribution with a point,
@@ -1590,17 +1626,24 @@ public final class DemoTreeGenerator {
                                              final Color font_color, final NodeShape shape, final NodeFill fill,
                                              final float node_size, final Color node_color ) {
         final PhylogenyNode n = leaf( name );
-        final NodeVisualData vis = new NodeVisualData();
+        final NodeVisualData vis = nodeMark( shape, fill, node_size, node_color );
         vis.setFontName( "Source Sans 3" );
         vis.setFontStyle( font_style );
         vis.setFontSize( font_size );
         vis.setFontColor( font_color );
-        vis.setShape( shape );
-        vis.setFillType( fill );
-        vis.setSize( node_size );
-        vis.setNodeColor( node_color );
         n.getNodeData().setNodeVisualData( vis );
         return n;
+    }
+
+    /** A node style holding just a node mark: shape, fill, size, colour (the font left unset). */
+    private static NodeVisualData nodeMark( final NodeShape shape, final NodeFill fill, final float size,
+                                            final Color color ) {
+        final NodeVisualData vis = new NodeVisualData();
+        vis.setShape( shape );
+        vis.setFillType( fill );
+        vis.setSize( size );
+        vis.setNodeColor( color );
+        return vis;
     }
 
     private static PhylogenyNode sizedLeaf( final String name, final int read_count ) {
