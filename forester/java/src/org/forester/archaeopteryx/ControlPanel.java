@@ -1221,7 +1221,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             case SHORTEN_LABELS:
                 _shorten_labels_cb = new JCheckBox(title);
                 _shorten_labels_cb.setToolTipText(
-                        "Shorten over-long node names (e.g. full UniProt/NCBI descriptions) for display; the prefix nearly every tip shares is dropped, then the first and last eight characters are kept. Node names only, and the names themselves are not changed. A long scientific name is shortened by \"Abbreviate Scientific Taxonomic Names\" instead, and a label a circular or unrooted layout cuts with an ellipsis comes back with a lower Tree share or a zoom.");
+                        "Shorten over-long node names (e.g. full UniProt/NCBI descriptions) for display, in every layout; the prefix nearly every tip shares is dropped, then the first and last eight characters are kept. Node names only, and the names themselves are not changed. A long scientific name is shortened by \"Abbreviate Scientific Taxonomic Names\" instead, and a label a circular or unrooted layout cuts with an ellipsis comes back with a lower Tree share or a zoom.");
                 addJCheckBox(_shorten_labels_cb, ch_panel);
                 add(ch_panel);
                 break;

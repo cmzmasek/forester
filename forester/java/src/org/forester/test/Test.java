@@ -325,6 +325,30 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Shaded clade boxes (two legends, names, unrooted): ");
+        if (org.forester.archaeopteryx.CladeBoxesTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Rank palette (own colours, shared names, a figure's Color by off): ");
+        if (org.forester.archaeopteryx.RankPaletteTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Radial labels as measured: ");
+        if (org.forester.archaeopteryx.RadialShortenLabelsTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Node frame: ");
         if (org.forester.archaeopteryx.NodeFrameTest.test()) {
             System.out.println("OK.");

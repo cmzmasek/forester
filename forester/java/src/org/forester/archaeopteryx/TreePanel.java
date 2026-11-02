@@ -556,6 +556,19 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // tip and the first, where the Scale Axis ruler runs (paintCircularScaleAxis).
     private double _circular_seam_angle = 0;
     final private HashMap<Long, Double> _urt_nodeid_angle_map = new HashMap<>();
+    // each node's equal-angle wedge {low, high} from the last unrooted pass: the shaded boxes' sectors
+    final private HashMap<Long, double[]> _unrooted_wedges = new HashMap<>();
+    // each tip label's box {cx, cy, half width, half height, theta} as the last radial pass laid it out (drawn or
+    // refused; a collapsed clade's too): how far a clade's sector reaches, and what its name keeps clear of
+    final private HashMap<Long, double[]> _radial_label_boxes = new HashMap<>();
+    // each tip's domain track as the last radial pass drew it along its spoke, a box like the labels' above: the
+    // unrooted clade marks reach past it (circular paints its domains after its clade marks, and rings them by the
+    // measure, getLongestExtNodeInfo, which counts the track)
+    final private HashMap<Long, double[]> _radial_domain_boxes = new HashMap<>();
+    // each collapsed clade's wedge as the last unrooted pass drew it: its two far corners {x1, y1, x2, y2}
+    final private HashMap<Long, double[]> _unrooted_collapsed_corners = new HashMap<>();
+    // what the unrooted clade names keep clear of (the labels above), reused pass to pass
+    private final OrientedOccupancy _clade_name_obstacles = new OrientedOccupancy();
     /** The UNROOTED layout's per-tip spoke angle, recorded as the tips are painted. Unlike the circular
      *  layout's map above, this angle is only ever a recursion parameter, so without recording it the domain
      *  rollover could not find the track it is looking at without re-running the layout. */
@@ -2529,18 +2542,30 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return _common_name_prefix;
     }
 
+    /** The node name as a label shows it, in EVERY layout -- shortened under Shorten Labels, left out where it repeats
+     *  the taxonomy shown -- or null when the label shows none. The one text the label is measured by
+     *  ({@link #labelTextWidth}) and drawn with: until 0.11.198 the radial labels drew the full name while the layout
+     *  measured the shortened one, and ran up to ~70 px past the room kept for them (Christian, 2026-11-01: "A,
+     *  shorten them in radial too"; the JS builds one label text for every layout too). */
+    private String displayedNodeName(final PhylogenyNode node) {
+        if (!shows(DisplayOption.SHOW_NODE_NAMES) || ForesterUtil.isEmpty(node.getName())
+                || nameDuplicatesShownTaxonomy(node)) {
+            return null;
+        }
+        // Display-only shortening of an over-long name (e.g. a whole UniProt/NCBI header): the node's actual name is
+        // left intact, so export / Find / accession parsing keep the full text.
+        return shows(DisplayOption.SHORTEN_LABELS)
+                ? AptxUtil.shortenLabel(node.getName(), commonNamePrefix(), node.isExternal()) : node.getName();
+    }
+
     private final void nodeDataAsSB(final PhylogenyNode node, final StringBuilder sb) {
         if (node != null) {
-            if (shows(DisplayOption.SHOW_NODE_NAMES) && (!ForesterUtil.isEmpty(node.getName()))
-                    && !nameDuplicatesShownTaxonomy(node)) {
+            final String name = displayedNodeName(node);
+            if (name != null) {
                 if (sb.length() > 0) {
                     sb.append(" ");
                 }
-                // Display-only shortening of an over-long name (e.g. a whole UniProt/NCBI header): the
-                // node's actual name is left intact, so export / Find / accession parsing keep the full text.
-                sb.append(shows(DisplayOption.SHORTEN_LABELS)
-                        ? AptxUtil.shortenLabel(node.getName(), commonNamePrefix(), node.isExternal())
-                        : node.getName());
+                sb.append(name);
             }
             if (node.getNodeData().isHasSequence()
                     && (shows(DisplayOption.SHOW_SEQ_SYMBOLS)
@@ -3398,6 +3423,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         g.setTransform(saved);
         final double cos = Math.cos(angle);
         final double sin = Math.sin(angle);
+        if (!circular) { // how far a clade mark around it must reach: the wedge's far corners (and its label, below)
+            _unrooted_collapsed_corners.put(clade.getId(), new double[] {
+                    x + (reach[0] * cos) + (half_h * sin), y + (reach[0] * sin) - (half_h * cos),
+                    x + (reach[1] * cos) - (half_h * sin), y + (reach[1] * sin) + (half_h * cos) });
+        }
         final double far_x = x + (cos * reach[1]);
         final double far_y = y + (sin * reach[1]);
         double ax = far_x;
@@ -3435,6 +3465,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         frame.transform(centre, centre);
         final double theta = radial_labels ? m : 0;
         if (lw > 0) {
+            _radial_label_boxes.put(clade.getId(), new double[] { centre.x, centre.y, lw / 2.0, lh / 2.0, theta });
             if (autoHideCrowdedData() && (look.found == 0) && !isInFoundNodes(clade)
                     && _label_occupancy.overlaps(centre.x, centre.y, lw / 2.0, lh / 2.0, theta)) {
                 ++_labels_hidden;
@@ -4421,7 +4452,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         // whose label is pinned to the common outer ring (circularLabelAnchor). Cull on the ANCHOR (the label position),
         // and reuse it for the label placement + the aligned leader below.
         final Point2D.Double anchor = circularLabelAnchor(node);
-        if (isRadialLabelPointInvisible(anchor.x, anchor.y) && !to_graphics_file && !to_pdf) {
+        // Out of view on screen: not drawn. While clade marks are drawn it is still LAID OUT -- its box recorded, nothing
+        // drawn, claimed or counted (measure_only, below): the marks are sized from every label, and a label scrolled
+        // out of view must not move a sector, a name or a ring with the scroll position, nor away from the export's.
+        final boolean measure_only = isRadialLabelPointInvisible(anchor.x, anchor.y) && !to_graphics_file && !to_pdf;
+        if (measure_only && !hasCladeBands()) {
             return;
         }
         // Leave a collapsed clade-ROOT label-less radially (as before internal labels were enabled). Its coords ARE
@@ -4465,9 +4500,10 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 && (shows(DisplayOption.SHOW_TAX_CODE) || shows(DisplayOption.SHOW_TAXONOMY_SCIENTIFIC_NAMES)
                         || shows(DisplayOption.SHOW_TAXONOMY_COMMON_NAMES) || shows(DisplayOption.SHOW_TAX_RANK));
         _sb.setLength(0);
-        if (shows(DisplayOption.SHOW_NODE_NAMES) && (node.getName().length() > 0)) {
+        final String name = displayedNodeName(node); // the text the layout measured (labelTextWidth)
+        if (name != null) {
             _sb.append(" ");
-            _sb.append(node.getName());
+            _sb.append(name);
         }
         if (node.getNodeData().isHasSequence()) {
             final Sequence seq = node.getNodeData().getSequence();
@@ -4576,6 +4612,16 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             frame.transform(centre, centre);
             final double theta = radial_labels ? m : 0;
             final boolean has_text = lw > 0;
+            if (has_text) {
+                // the box as laid out (drawn or not): how far the clade marks must reach
+                _radial_label_boxes.put(node.getId(), new double[] { centre.x, centre.y, lw / 2.0, lh / 2.0, theta });
+            }
+            if (measure_only) { // out of view: laid out for the clade marks, and that is all
+                if (need_to_reset) {
+                    g.setTransform(_at);
+                }
+                return;
+            }
             if (!has_text && (img_wh == null)) {
                 // a taxonomy that is "shown" but renders empty, no other text, no image: nothing to draw, so it is
                 // neither counted as drawn nor recorded as a zero-width box (a review find, 2026-09-27)
@@ -7457,6 +7503,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             n.setXcoord(radialCanvasCenterX(graphics_file_width, to_pdf, to_graphics_file));
             n.setYcoord(radialCanvasCenterY(graphics_file_height, to_pdf, to_graphics_file));
         }
+        _unrooted_wedges.put(n.getId(), new double[] { low_angle, high_angle }); // the clade boxes' sectors
         if (n.isExternal()) {
             paintNodeDataUnrootedCirc(g,
                     n,
@@ -7876,7 +7923,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             // The label margin may take at most what the tree's share leaves -- the same "Tree share" setting the
             // other layouts divide by, so the slider moves the fan too instead of being inert in this one layout.
             final double cap = 1.0 - treeWidthShare();
-            final int per_side = (int) Math.min(MOVE + getLongestExtNodeInfo(), half * cap);
+            final int per_side = (int) Math.min(MOVE + getLongestExtNodeInfo() + unrootedCladeNameReserve(), half * cap);
             d = Math.max(MIN_RADIAL_DIAMETER, radialDiameter() - (2 * per_side));
         } else {
             d = getVisibleRect().width < getVisibleRect().height ? getVisibleRect().width : getVisibleRect().height;
@@ -8578,13 +8625,70 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // navigation/prune, so the per-frame paint + the dot-suppression guard do a map lookup instead of re-parsing
     // the BEAST brace strings on every repaint.
     private Map<PhylogenyNode, List<TreePanelUtil.StateProbability>> _ancestral_pie_dist = null;
-    // The property-color legend can be dragged: _legend_offset is its top-left relative to the
+    // The property-color legend can be dragged: a slot's offset is its top-left relative to the
     // visible area (null = the default top-right corner), so it stays put as the user scrolls.
-    // _property_legend_bounds is where it was last drawn on screen (for hit-testing a drag).
-    private Point               _legend_offset = null;
-    private Rectangle           _property_legend_bounds = null;
-    // the [colors]/[gradient] mode-switch chip's clickable bounds (null when not drawn)
-    private Rectangle           _legend_mode_toggle_bounds = null;
+    // its bounds are where it was last drawn on screen (for hit-testing a drag).
+    /**
+     * The state of ONE categorical legend that can be dragged and clicked: where it was dragged to, where it was last
+     * drawn, its in-legend controls, the value rows a click is mapped through, its sort / "show all" choice, and the
+     * memo of its ordered entries. Two of them: the SHARED slot (the Color-by legend, or an annotation column's) and
+     * the RANK slot (the clade bands' / rank colorization's legend), so both legends can be on screen at once
+     * (Christian, 2026-10-31: the rank legend vanished under Color by and never came back). {@link #_slot} points at
+     * the one being drawn or clicked; it is the shared slot outside {@link #inSlot}. Every draw names its slot, the
+     * shared one too: a click on a legend can open a modal dialog (a row's colour), and a paint inside that dialog's
+     * event loop runs while {@link #_slot} still points at the clicked legend.
+     */
+    private static final class LegendSlot {
+
+        Point                  offset          = null;
+        Rectangle              bounds          = null;
+        Rectangle              mode_toggle     = null;
+        Rectangle              sort_toggle     = null;
+        Rectangle              more            = null;
+        java.util.List<String> row_labels      = new java.util.ArrayList<>();
+        int                    rows_top        = 0;
+        int                    row_height      = 0;
+        boolean                sort_by_count   = true;
+        int                    max_entries     = DEFAULT_LEGEND_MAX_ENTRIES;
+        String                 subject         = null;
+        Map<String, Color>     ordered         = null;
+        Map<String, Color>     ordered_colors_key = null;
+        Map<String, Integer>   ordered_counts_key = null;
+        boolean                ordered_by_count_key = true;
+        int                    ordered_max_key = DEFAULT_LEGEND_MAX_ENTRIES;
+
+        /** What a draw RECORDS (bounds, controls, value rows): copied out and back by a measurement. */
+        Object[] recorded() {
+            return new Object[] { bounds, mode_toggle, sort_toggle, more, row_labels, rows_top, row_height };
+        }
+
+        @SuppressWarnings("unchecked")
+        void restore(final Object[] r) {
+            bounds = (Rectangle) r[0];
+            mode_toggle = (Rectangle) r[1];
+            sort_toggle = (Rectangle) r[2];
+            more = (Rectangle) r[3];
+            row_labels = (java.util.List<String>) r[4];
+            rows_top = (Integer) r[5];
+            row_height = (Integer) r[6];
+        }
+    }
+
+    private final LegendSlot    _shared_slot = new LegendSlot();
+    private final LegendSlot    _rank_slot   = new LegendSlot();
+    private LegendSlot          _slot        = _shared_slot;
+
+    /** Runs {@code r} with {@link #_slot} pointing at {@code slot} (draw or handle THAT legend), then back. */
+    private void inSlot(final LegendSlot slot, final Runnable r) {
+        final LegendSlot was = _slot;
+        _slot = slot;
+        try {
+            r.run();
+        } finally {
+            _slot = was;
+        }
+    }
+
     private int                 _legend_grab_dx = 0;
     private int                 _legend_grab_dy = 0;
     // A SECOND, independent legend for "Size by" (own draggable position + last-drawn bounds), so its size key can
@@ -8606,7 +8710,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // Which legend the active drag moves (they share _legend_grab_dx/dy). Generalized from a single "size?" boolean
     // once a third (pie) draggable legend was added.
     enum DRAGGED_LEGEND {
-        PROPERTY, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA, DOMAIN
+        PROPERTY, RANK, SIZE, ANCESTRAL_PIE, INTERNAL_TAXA, DOMAIN
     }
     private DRAGGED_LEGEND      _dragged_legend = DRAGGED_LEGEND.PROPERTY;
     // User-assigned per-value colors: ref -> (group key -> color); applied by the color scheme,
@@ -8627,30 +8731,17 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // whether the CURRENT color-by field is mode-switchable (drives the legend's [colors]/[gradient] chip)
     private boolean                               _color_by_switchable = false;
     // Layout of the legend's value rows (recorded when drawn) so a click can be mapped to a value.
-    private java.util.List<String> _legend_row_labels   = new java.util.ArrayList<>();
-    private int                 _legend_rows_top    = 0;
-    private int                 _legend_row_height  = 0;
     // In-legend controls (recorded when a categorical legend is drawn; null otherwise): the sort toggle in
     // the title row and the clickable "+N more / show fewer" footer. Hit-tested in handleLegendClick.
-    private Rectangle           _legend_sort_toggle_bounds = null;
-    private Rectangle           _legend_more_bounds = null;
     // Categorical-legend display prefs (per tab, toggled from the legend itself): sort by count vs A-Z, and
     // how many entries to show before "+N more". Default: most-frequent first, DEFAULT_LEGEND_MAX_ENTRIES cap.
-    private boolean             _legend_sort_by_count = true;
-    private int                 _legend_max_entries = DEFAULT_LEGEND_MAX_ENTRIES;
     // Memo of the last ordered legend entries so the sort+alloc in orderLegendEntries does not run on every
     // repaint; invalidated (by identity/value comparison) when the source map, counts, sort mode, or cap change.
-    private Map<String, Color>   _ordered_legend = null;
-    private Map<String, Color>   _ordered_legend_colors_key = null;
-    private Map<String, Integer> _ordered_legend_counts_key = null;
-    private boolean             _ordered_legend_by_count_key = true;
-    private int                 _ordered_legend_max_key = DEFAULT_LEGEND_MAX_ENTRIES;
     // Which legend subject (property ref / rank / column) is currently shown; when it changes, the expand
     // ("show all") state resets so expanding one legend does not leak onto a different, possibly larger one.
-    private String              _legend_subject = null;
-    // Legend for "Colorize Subtrees via Taxonomic Rank": taxon name -> color (sorted), with a title.
-    // Shown (and draggable, via the same machinery as the property legend) when no property-color
-    // legend is active. Null when not colorizing by rank.
+    // The RANK legend (its own slot, beside the Color-by legend): taxon name -> color (sorted), with a title -- the
+    // branch colorization's ("Colorize Subtrees via Taxonomic Rank") or the clade bands', whichever owns the slot
+    // (refreshRankSlot). Null when neither draws a key.
     private Map<String, Color>  _rank_legend = null;
     private String              _rank_legend_title = null;
     // Per-taxon (visible) tip counts for the rank/clade legend, so its rows show "(N)" and can sort by count
@@ -8670,6 +8761,15 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // The rank at which branches are currently rank-colorized, or null. Lets a legend recolor re-apply to
     // the branches as well as to clade bands.
     private String              _branch_rank_colorize_rank = null;
+    // THE RANK SLOT has two possible owners, the branch colorization (Colorize Subtrees) and the clade bands; the
+    // one applied LAST owns it (rankSlotShowsColorize), and a rebuild or recolour of the other -- a Color-by change,
+    // a navigation -- does not take it. The colorization's legend is kept here, as it was dealt, so the slot can show
+    // it again when the bands give it up without re-dealing the branches (which would wipe colours applied by hand
+    // since).
+    private Map<String, Color>   _colorize_legend         = null;
+    private Map<String, Integer> _colorize_legend_counts  = null;
+    private int                  _colorize_legend_missing = 0;
+    private boolean              _colorize_owns_rank_slot = false; // applied after the bands
     // Clade annotation bands: shaded boxes (behind/over the clade) or right-edge bars by taxonomic rank.
     // See CladeBand / TreePanelUtil.cladeBands; geometry is computed at paint time from the clade's tips.
     enum CLADE_VIS {
@@ -8681,7 +8781,22 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // order (finest rank first = nearest the tips), decided once by CladeLevel.order.
     private java.util.List<CladeLevel.Spec> _clade_level_specs = null;
     private java.util.List<CladeLevel>      _clade_levels = null;
+    // a figure applied to this tab said Color by is OFF (colorby=""): the load-time auto-colour leaves the tab alone
+    private boolean                         _color_by_off_by_figure = false;
+    // Color by's colour for each value the tree wears (colorByNameColors), as of the last rebuildPropertyColorScheme
+    private Map<String, Color>              _color_by_name_colors = java.util.Collections.emptyMap();
+    // the Color-by names and colours the bands were last coloured with (rankColorsFor): a change recolours them
+    private Map<String, Color>              _clade_bands_color_by_names = java.util.Collections.emptyMap();
+    // the bands of the last full rebuild, per level, in the rank palette as dealt (no colour picked by hand or taken
+    // from Color by yet), and their tip counts: what a recolour starts from (recolorCladeBands)
+    private java.util.List<java.util.List<CladeBand>> _clade_dealt_levels = null;
+    private Map<String, Integer>            _clade_band_counts = null;
+    private int                             _clade_band_rebuilds = 0; // for the tests
+    private int                             _clade_band_recolors = 0; // for the tests
     private CLADE_VIS                 _clade_bands_mode = CLADE_VIS.BOXES;
+    // Shaded boxes: name each clade beside its box (true) or in the legend (false, the default) -- Christian,
+    // 2026-10-31, "like the JS does". Set BEFORE setCladeLevels, which builds the legend from it.
+    private boolean                   _clade_box_labels = false;
     private boolean                   _clade_bands_skip_singletons = true; // BARS/BRACKETS: skip a single-tip clade
     // Where the clade bands take each tip's taxon from (the user's choice in the dialog); a rebuild after an edit,
     // an undo or a navigation uses the same source, so the figure never changes under the user.
@@ -8699,6 +8814,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     private final static int          CLADE_BOX_ALPHA = 46;
     private final static int          CLADE_BAR_WIDTH = 9;
     private final static int          CLADE_BAR_GAP   = 16;
+    private final static int          UNROOTED_CLADE_MARK_GAP = 4; // unrooted bars/brackets: square to name
     // a few px of breathing room past the longest label, so the box/bar clears the text
     private final static int          CLADE_BAND_RIGHT_PAD = 6;
     private final static int          CLADE_BRACKET_TICK = 5;       // end-tick length of the monochrome "]" bracket
@@ -8723,17 +8839,50 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** The on-screen bounds of the last-drawn property-color legend, or null; used by the drag test. */
     final Rectangle getPropertyLegendBounds() {
-        return _property_legend_bounds;
+        return hookSlot().bounds;
     }
 
-    /** Whether the point of {@code e} is over the (last-drawn) legend box (property-color, rank, or column).
-     *  The active-legend test must match the paint dispatch exactly (hasColorByPropertyLegend): a chosen field
-     *  whose scheme is EMPTY in this view -- no visible tip carries it -- still draws a legend, its "no value" row,
-     *  because a view never un-chooses a field. */
+    /** For the legend test hooks: the slot a legend test means -- the shared one when it holds a legend (or nothing
+     *  does), else the rank legend's. Before the rank legend had its own slot it was drawn in the shared one, and a
+     *  test of a rank-only legend still reads it through these hooks. */
+    private LegendSlot hookSlot() {
+        return (hasColorByPropertyLegend() || hasAnnotationColumnLegend() || !hasRankLegend()) ? _shared_slot
+                : _rank_slot;
+    }
+
+    /** Test hook: runs {@code r} as a click on the rank legend runs (a modal colour chooser's paints included). */
+    void inRankSlotForTest(final Runnable r) {
+        inSlot(_rank_slot, r);
+    }
+
+    /** Test hook: the rank legend's last-drawn bounds (null when it was not drawn). */
+    Rectangle getRankLegendBoundsForTest() {
+        return _rank_slot.bounds;
+    }
+
+    /** Whether the point of {@code e} is over a (last-drawn) categorical legend box: the Color-by or column legend,
+     *  or the rank legend in its own slot beside it. */
     final boolean isOnPropertyLegend(final MouseEvent e) {
-        return (hasColorByPropertyLegend() || hasRankLegend() || hasAnnotationColumnLegend())
-                && (_property_legend_bounds != null)
-                && _property_legend_bounds.contains(e.getX(), e.getY());
+        return isOnSharedLegend(e) || isOnRankLegend(e);
+    }
+
+    /** Over the Color-by / column legend. The active-legend test must match the paint dispatch exactly
+     *  (hasColorByPropertyLegend): a chosen field whose scheme is EMPTY in this view -- no visible tip carries it --
+     *  still draws a legend, its "no value" row, because a view never un-chooses a field. */
+    private boolean isOnSharedLegend(final MouseEvent e) {
+        return (hasColorByPropertyLegend() || hasAnnotationColumnLegend()) && (_shared_slot.bounds != null)
+                && _shared_slot.bounds.contains(e.getX(), e.getY());
+    }
+
+    /** Whether {@code e} is over the (last-drawn) rank legend -- the clade bands' or the rank colorization's, in its
+     *  own slot beside the Color-by legend. */
+    final boolean isOnRankLegend(final MouseEvent e) {
+        return hasRankLegend() && (_rank_slot.bounds != null) && _rank_slot.bounds.contains(e.getX(), e.getY());
+    }
+
+    /** The categorical legend under {@code e} -- the rank legend first (it is drawn after, so on top) -- or null. */
+    private LegendSlot slotAt(final MouseEvent e) {
+        return isOnRankLegend(e) ? _rank_slot : isOnSharedLegend(e) ? _shared_slot : null;
     }
 
     /** Whether {@code e} is over the (last-drawn) "Size by" legend box -- an independent, separately draggable key. */
@@ -8779,8 +8928,10 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 return _ancestral_pie_legend_bounds;
             case SIZE:
                 return _size_legend_bounds;
+            case RANK:
+                return _rank_slot.bounds;
             default:
-                return _property_legend_bounds;
+                return _shared_slot.bounds;
         }
     }
 
@@ -8795,6 +8946,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             _dragged_legend = DRAGGED_LEGEND.ANCESTRAL_PIE;
         } else if (isOnSizeLegend(e)) {
             _dragged_legend = DRAGGED_LEGEND.SIZE;
+        } else if (isOnRankLegend(e)) {
+            _dragged_legend = DRAGGED_LEGEND.RANK;
         } else {
             _dragged_legend = DRAGGED_LEGEND.PROPERTY;
         }
@@ -8829,8 +8982,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             case SIZE:
                 _size_legend_offset = new Point(ox, oy);
                 break;
+            case RANK:
+                _rank_slot.offset = new Point(ox, oy);
+                break;
             default:
-                _legend_offset = new Point(ox, oy);
+                _shared_slot.offset = new Point(ox, oy);
                 break;
         }
         repaint();
@@ -8904,37 +9060,47 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         setCursor(ARROW_CURSOR);
     }
 
-    /** Returns the legend to its default top-right corner. */
+    /** Returns the categorical legend the test hooks read ({@link #hookSlot}) to its default corner. */
     final void resetLegendPosition() {
-        _legend_offset = null;
+        hookSlot().offset = null;
         repaint();
     }
 
     /** The legend value label under {@code e}, or null (title row, "+N more", or not on the legend). */
     final String legendValueAt(final MouseEvent e) {
-        if (!isOnPropertyLegend(e) || _legend_row_labels.isEmpty() || (_legend_row_height <= 0)) {
+        final LegendSlot s = slotAt(e);
+        if ((s == null) || s.row_labels.isEmpty() || (s.row_height <= 0)) {
             return null;
         }
-        if (e.getY() < _legend_rows_top) {
+        if (e.getY() < s.rows_top) {
             return null; // the title row / padding above the first value row (avoids a negative index truncating to 0)
         }
-        final int idx = (e.getY() - _legend_rows_top) / _legend_row_height;
-        return (idx < _legend_row_labels.size()) ? _legend_row_labels.get(idx) : null;
+        final int idx = (e.getY() - s.rows_top) / s.row_height;
+        return (idx < s.row_labels.size()) ? s.row_labels.get(idx) : null;
     }
 
+    /** A click on a categorical legend: handled by the legend under it (the rank legend's own controls, rows and
+     *  position, or the shared legend's). */
     final void handleLegendClick(final MouseEvent e) {
+        final LegendSlot s = slotAt(e);
+        if (s != null) {
+            inSlot(s, () -> handleLegendClickInSlot(e));
+        }
+    }
+
+    private void handleLegendClickInSlot(final MouseEvent e) {
         // in-legend controls take precedence over the value rows and the reset gesture
-        if ((_legend_mode_toggle_bounds != null) && _legend_mode_toggle_bounds.contains(e.getX(), e.getY())) {
+        if ((_slot.mode_toggle != null) && _slot.mode_toggle.contains(e.getX(), e.getY())) {
             toggleColorByMode(); // [colors] <-> [gradient] on a switchable numeric field
             return;
         }
-        if ((_legend_sort_toggle_bounds != null) && _legend_sort_toggle_bounds.contains(e.getX(), e.getY())) {
-            _legend_sort_by_count = !_legend_sort_by_count; // toggle between "by count" and "A-Z"
+        if ((_slot.sort_toggle != null) && _slot.sort_toggle.contains(e.getX(), e.getY())) {
+            _slot.sort_by_count = !_slot.sort_by_count; // toggle between "by count" and "A-Z"
             repaint();
             return;
         }
-        if ((_legend_more_bounds != null) && _legend_more_bounds.contains(e.getX(), e.getY())) {
-            _legend_max_entries = (_legend_max_entries >= LEGEND_SHOW_ALL) ? DEFAULT_LEGEND_MAX_ENTRIES
+        if ((_slot.more != null) && _slot.more.contains(e.getX(), e.getY())) {
+            _slot.max_entries = (_slot.max_entries >= LEGEND_SHOW_ALL) ? DEFAULT_LEGEND_MAX_ENTRIES
                     : LEGEND_SHOW_ALL; // toggle "show all" / "show fewer"
             repaint();
             return;
@@ -8945,7 +9111,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 chooseColorForValue(value); // left-click a value row -> set its color
             }
         } else if (e.getClickCount() == 2) {
-            resetLegendPosition(); // double-click off a value row returns the legend to its corner
+            _slot.offset = null; // double-click off a value row returns THIS legend to its corner
+            repaint();
         }
     }
 
@@ -8963,23 +9130,23 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      *  or static-export mode -- so a test can compare the two (exports omit the interactive chips). */
     void drawLegendForTest(final Graphics2D g, final Rectangle bounds, final boolean draggable) {
         if (hasAnnotationColumnLegend()) {
-            drawAnnotationColumnLegend(g, bounds, draggable);
+            inSlot(_shared_slot, () -> drawAnnotationColumnLegend(g, bounds, draggable));
         } else if (hasColorByPropertyLegend()) {
-            drawPropertyColorLegend(g, bounds, draggable);
+            inSlot(_shared_slot, () -> drawPropertyColorLegend(g, bounds, draggable));
         } else if (hasRankLegend()) {
-            drawRankLegend(g, bounds, draggable);
+            inSlot(_rank_slot, () -> drawRankLegend(g, bounds, draggable));
         }
     }
 
     /** Test hooks for the in-legend controls (their last-drawn on-screen bounds, or null). */
     /** Test hook: how many value rows the last-drawn legend laid out (drives the "+N more" check). */
     int legendRowCountForTest() {
-        return _legend_row_labels.size();
+        return hookSlot().row_labels.size();
     }
 
     /** Test hook: the y at the centre of the legend's FIRST value row -- where a colour-square click lands. */
     int legendFirstRowCenterYForTest() {
-        return _legend_rows_top + (_legend_row_height / 2);
+        return hookSlot().rows_top + (hookSlot().row_height / 2);
     }
 
     /** Test hook: the value a click would resolve to (null off any value row). */
@@ -8988,31 +9155,33 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     Rectangle legendSortToggleBoundsForTest() {
-        return _legend_sort_toggle_bounds;
+        return hookSlot().sort_toggle;
     }
 
     Rectangle legendMoreBoundsForTest() {
-        return _legend_more_bounds;
+        return hookSlot().more;
     }
 
     boolean isLegendSortByCount() {
-        return _legend_sort_by_count;
+        return hookSlot().sort_by_count;
     }
 
     int legendMaxEntries() {
-        return _legend_max_entries;
+        return hookSlot().max_entries;
     }
 
     // Clicking any categorical legend row recolors that value -- property-color, rank-colorize, or
     // clade-band legends all behave the same (the inconsistency was that only the property one did).
     private void chooseColorForValue(final String label) {
+        if (_slot == _rank_slot) { // a row of the rank legend, in its own slot
+            chooseRankColorForValue(label);
+            return;
+        }
         if (hasAnnotationColumnLegend()) {
             return; // a header-focused annotation-column legend is display-only (no per-value recolor)
         }
         if ((_property_color_scheme != null) && (_color_by_property_ref != null)) {
             choosePropertyColorForValue(label);
-        } else if (hasRankLegend()) {
-            chooseRankColorForValue(label);
         }
     }
 
@@ -9065,7 +9234,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     // Rank-colorize / clade-band legend row: same chooser; the override is stored per rank and re-applied
-    // to the branches and/or clade bands (see reapplyRankColorization).
+    // to the clade bands and/or the branches at that rank (see reapplyRankColorization).
     private void chooseRankColorForValue(final String taxon) {
         final String rank = rankLegendRankFor(taxon);
         if ((rank == null) || (_rank_legend == null)) {
@@ -9082,9 +9251,12 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         }
     }
 
-    /** The rank the current rank/clade legend is for (clade bands take precedence), or null. With several levels
-     *  annotated the finest one owns the legend rows, which is where most of the taxa are. */
+    /** The rank the current rank/clade legend is for (the slot's owner, {@link #rankSlotShowsColorize}), or null.
+     *  With several levels annotated the finest one owns the legend rows, which is where most of the taxa are. */
     private String currentRankLegendRank() {
+        if (rankSlotShowsColorize()) {
+            return _branch_rank_colorize_rank;
+        }
         if (hasCladeBands()) {
             final java.util.List<String> ranks = cladeLevelRanks();
             return ranks.isEmpty() ? null : ranks.get(0);
@@ -9106,12 +9278,103 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return (m != null) ? m : java.util.Collections.<String, Color> emptyMap();
     }
 
+    /**
+     * The colours a rank's clade marks take over the rank palette ({@link AptxUtil#RANK_PALETTE}): a name the
+     * Color-by legend also shows keeps Color by's colour, case aside, so one name never wears two colours in the two
+     * legends (the JS's rule -- there all or nothing, as its rank marks deal from Color by's own palette; here per
+     * name: a name Color by does not show keeps the rank palette's colour); a colour picked by hand on the rank
+     * legend wins over both. Not for Colorize Subtrees by rank: it writes branch colours into the tree, dealt with
+     * Color by off (it switches it off first), and a later Color by does not repaint them -- a display choice never
+     * edits the tree -- so its legend and the Color-by legend can show one name in two colours.
+     */
+    private Map<String, Color> rankColorsFor(final String rank) {
+        final Map<String, Color> user = rankOverridesFor(rank);
+        return _color_by_name_colors.isEmpty() ? user : new RankNameColors(user, _color_by_name_colors);
+    }
+
+    /** {@link #rankColorsFor}'s lookup: the colour picked by hand for a name, else Color by's for that exact spelling,
+     *  else Color by's for the name case aside -- the most frequent of its spellings (Color by on an element keeps
+     *  "Homo sapiens" and "homo sapiens" apart, in two colours). Only {@code get} and {@code isEmpty} are asked. */
+    private static final class RankNameColors extends java.util.AbstractMap<String, Color> {
+
+        private final Map<String, Color>           _user;
+        private final Map<String, Color>           _exact;
+        private final java.util.TreeMap<String, Color> _folded = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        RankNameColors(final Map<String, Color> user, final Map<String, Color> color_by) {
+            _user = user;
+            _exact = color_by;
+            for (final Map.Entry<String, Color> e : color_by.entrySet()) { // most frequent first
+                _folded.putIfAbsent(e.getKey(), e.getValue());
+            }
+        }
+
+        @Override
+        public Color get(final Object name) {
+            Color c = _user.get(name);
+            if (c == null) {
+                c = _exact.get(name);
+            }
+            if ((c == null) && (name instanceof String)) {
+                c = _folded.get(name);
+            }
+            return c;
+        }
+
+        @Override
+        public boolean containsKey(final Object name) {
+            return get(name) != null;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return _user.isEmpty() && _exact.isEmpty();
+        }
+
+        @Override
+        public java.util.Set<Map.Entry<String, Color>> entrySet() {
+            final Map<String, Color> all = new java.util.LinkedHashMap<>(_exact);
+            all.putAll(_user);
+            return java.util.Collections.unmodifiableMap(all).entrySet();
+        }
+    }
+
+    /** Color by's colour for each value the tree wears: the values its legend shows, most frequent first, then those
+     *  only tips hidden in collapsed clades carry, in the colour their collapsed clade wears -- collapsing a clade
+     *  changes the view, not a name's colour. Empty while Color by is off, and for a gradient (no values). Kept from
+     *  the last {@link #rebuildPropertyColorScheme}; never null. */
+    private Map<String, Color> colorByNameColors() {
+        return _color_by_name_colors;
+    }
+
+    private Map<String, Color> computeColorByNameColors(final java.util.List<PhylogenyNode> view_tips,
+                                                        final java.util.List<PhylogenyNode> all_tips) {
+        if ((_property_color_scheme == null) || _property_color_scheme.isGradient()) {
+            return java.util.Collections.emptyMap();
+        }
+        final Map<String, Color> m = new java.util.LinkedHashMap<>(_property_color_scheme.getValueColors());
+        if (all_tips.size() > view_tips.size()) {
+            final java.util.Set<String> keys = new java.util.HashSet<>(_property_color_scheme.getValueKeys().values());
+            for (final PhylogenyNode tip : all_tips) {
+                final String key = _property_color_scheme.colorKeyOf(tip);
+                if ((key != null) && keys.add(key)) { // a value no tip on screen carries
+                    final Color c = rememberedPropertyColor(tip);
+                    final String label = _property_color_scheme.colorLabelOf(tip);
+                    if ((c != null) && (label != null)) {
+                        m.putIfAbsent(label, c);
+                    }
+                }
+            }
+        }
+        return m;
+    }
+
     void setRankColorOverride(final String rank, final String taxon, final Color color) {
         if (rank == null) {
             return;
         }
         _rank_color_overrides.computeIfAbsent(rank, k -> new HashMap<>()).put(taxon, color);
-        reapplyRankColorization();
+        reapplyRankColorization(rank);
         setEdited(true);
         repaint();
     }
@@ -9120,18 +9383,19 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         final Map<String, Color> per_rank = (rank == null) ? null : _rank_color_overrides.get(rank);
         if (per_rank != null) {
             per_rank.remove(taxon);
-            reapplyRankColorization();
+            reapplyRankColorization(rank);
             setEdited(true);
             repaint();
         }
     }
 
-    // Re-derive whatever the rank legend drives, honoring the (just-changed) overrides.
-    private void reapplyRankColorization() {
+    // Re-derive whatever the (just-changed) colours of {@code rank} drive: the bands, and the branch colorization
+    // when it is at that rank -- never at another: re-dealing the branches wipes colours applied by hand since.
+    private void reapplyRankColorization(final String rank) {
         if (hasCladeBands()) {
-            rebuildCladeBands();
+            recolorCladeBands();
         }
-        if (_branch_rank_colorize_rank != null) {
+        if ((_branch_rank_colorize_rank != null) && _branch_rank_colorize_rank.equals(rank)) {
             recolorBranchesByRank(_branch_rank_colorize_rank);
         }
     }
@@ -9224,7 +9488,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     final void setLegendOffsetForTest(final Point offset) {
-        _legend_offset = offset;
+        hookSlot().offset = offset;
     }
 
     final void setSizeLegendOffsetForTest(final Point offset) {
@@ -9238,12 +9502,22 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     private int rightEdgeLegendWidth() {
         final boolean chrome = legendsCarryScreenChrome();
         int width = 0;
-        if ((_legend_offset == null) && !defaultLegendGoesLeft()) {
-            final Dimension shared = measureSharedLegend(chrome);
+        Dimension shared = null;
+        Dimension rank = null;
+        if ((_shared_slot.offset == null) && !defaultLegendGoesLeft()) {
+            shared = measureSharedLegend(chrome);
             if (shared != null) {
                 width = Math.max(width, shared.width);
             }
         }
+        if (hasRankLegend() && (_rank_slot.offset == null) && !defaultLegendGoesLeft()) {
+            rank = measureRankLegend(chrome); // stacked under the shared one at the right edge...
+            if (rank != null) {
+                width = Math.max(width, rank.width);
+            }
+        }
+        // ...or, when the two do not fit one above the other, beside it (claimDefaultLegendSpot): the column holds both
+        width = Math.max(width, sideBySideLegendsWidth(shared, rank, legendPlacementHeight()));
         final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
         if (isSizeByProperty() && (_size_legend_offset == null)) {
             final Dimension size = measureLegend(g -> drawSizeLegend(g, anywhere, chrome));
@@ -9259,6 +9533,35 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         }
         return width;
     }
+
+    /** The width the shared and the rank legend take at the right edge when they stand SIDE BY SIDE -- when the
+     *  rank legend, stacked under the shared one at its default corner, would leave a {@code height} tall frame, as
+     *  claimDefaultLegendSpot decides -- else 0. */
+    static int sideBySideLegendsWidth(final Dimension shared, final Dimension rank, final int height) {
+        if ((shared == null) || (rank == null)) {
+            return 0;
+        }
+        final int stacked = LEGEND_EDGE_INSET + shared.height + LEGEND_EDGE_INSET + rank.height;
+        return (stacked > height) ? (shared.width + LEGEND_EDGE_INSET + rank.width) : 0;
+    }
+
+    /** The height of the frame a right-edge legend is placed in: a fixed-size export's canvas while it is laid out
+     *  for one, else the view on screen, else the panel (a rendered figure's canvas). (A full-canvas export is laid out
+     *  for the window: its taller canvas stacks what the window placed side by side, and has room to spare.) */
+    private int legendPlacementHeight() {
+        if (_export_layout_height > 0) {
+            return _export_layout_height;
+        }
+        final int view = getVisibleRect().height;
+        return (view > 0) ? view : getHeight();
+    }
+
+    /** Test hook: {@link #legendPlacementHeight}. */
+    int legendPlacementHeightForTest() {
+        return legendPlacementHeight();
+    }
+
+    private int _export_layout_height = 0; // > 0 between layoutForExportSize and restoreLayoutAfterExport
 
     /**
      * Whether the legends of THIS panel are drawn with their on-screen chrome -- the drag affordance, the sort
@@ -9278,23 +9581,39 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return measureSharedLegend(legendsCarryScreenChrome());
     }
 
+    /** The size of the rank legend as it would be drawn now (null when there is none). */
+    private Dimension measureRankLegend(final boolean draggable) {
+        if (!hasRankLegend()) {
+            return null;
+        }
+        final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
+        final Dimension[] d = new Dimension[1];
+        inSlot(_rank_slot, () -> d[0] = measureLegend(g -> drawRankLegend(g, anywhere, draggable)));
+        return d[0];
+    }
+
+    /** Test hook: the rank legend's size, measured as this panel will draw it. */
+    final Dimension rankLegendSizeForTest() {
+        return measureRankLegend(legendsCarryScreenChrome());
+    }
+
     /** The size of the legend the shared slot would draw now (null when it would draw none). */
     private Dimension measureSharedLegend(final boolean draggable) {
         final boolean annotation = annotationLegendVisible();
         final boolean color = hasColorByPropertyLegend();
-        if (!annotation && !color && !hasRankLegend()) {
+        if (!annotation && !color) {
             return null;
         }
         final Rectangle anywhere = new Rectangle(0, 0, 100000, 100000);
-        return measureLegend(g -> {
+        final Dimension[] d = new Dimension[1];
+        inSlot(_shared_slot, () -> d[0] = measureLegend(g -> {
             if (annotation) {
                 drawAnnotationColumnLegend(g, anywhere, draggable);
-            } else if (color) {
-                drawPropertyColorLegend(g, anywhere, draggable);
             } else {
-                drawRankLegend(g, anywhere, draggable);
+                drawPropertyColorLegend(g, anywhere, draggable);
             }
-        });
+        }));
+        return d[0];
     }
 
     /** A legend's box size, by drawing it once into a scratch image -- so the measurement IS the drawing code's own
@@ -9312,28 +9631,22 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         // the real bounds with x=99843 on a 1400 px panel. Snapshot and restore every bounds field rather than
         // guarding each writer, so no recorder -- present or future -- can leak out of a measurement.
         // The box each legend was drawn in...
-        final Rectangle saved_property = _property_legend_bounds;
+        final Object[] saved_shared = _shared_slot.recorded();
+        final Object[] saved_rank = _rank_slot.recorded();
         final Rectangle saved_size = _size_legend_bounds;
         final Rectangle saved_pie = _ancestral_pie_legend_bounds;
         final Rectangle saved_taxa = _internal_taxa_key_bounds;
         final Rectangle saved_domain = _domain_legend_bounds;
         // ...its in-legend CONTROLS ([colors]/[gradient], [by count]/[A-Z], "+N more"/"show fewer")...
-        final Rectangle saved_mode_toggle = _legend_mode_toggle_bounds;
-        final Rectangle saved_sort_toggle = _legend_sort_toggle_bounds;
-        final Rectangle saved_more = _legend_more_bounds;
+        // (the slots' controls -- see saved_shared / saved_rank above)
         // ...and the value-row layout a click is mapped through to reach a colour square. All three groups are
         // recorded while drawing, so all three have to be put back, or the legend keeps its box but loses its
         // controls -- which looks like "the chips do nothing" rather than an obviously broken legend.
-        // The row group is belt-and-braces, and deliberately so: MEASURED, restoring it changes nothing today,
-        // because the sentinel box and the real box both start at y ~0, the row lookup keys off Y only, and the
-        // shared legend is never placed at the bottom -- so only X diverges and X is not consulted. Its mutation
-        // therefore survives the test, which is recorded here rather than left for someone to rediscover. It is
-        // kept because the invariant worth having is "measuring leaves NO trace", not "leaves no trace that
-        // happens not to matter": the moment this legend is placed anywhere but the top, the sentinel's y ~99900
-        // would map every click to the wrong row.
-        final java.util.List<String> saved_rows = _legend_row_labels;
-        final int saved_rows_top = _legend_rows_top;
-        final int saved_row_height = _legend_row_height;
+        // The rows are saved with each slot. For the SHARED legend alone they would be belt-and-braces (the sentinel
+        // box and the real one both start at y ~0 and the row lookup keys off Y only), but the RANK legend stands
+        // stacked below it or anywhere it was dragged: left behind, a measurement takes its box, its controls and its
+        // rows to the sentinel spot and every click on it is lost (CladeBoxesTest measures after the draw and reads a
+        // row). The invariant is "measuring leaves NO trace".
         // ...and this paint's default spots: a measurement is not a placement, and must neither claim nor yield.
         // Belt-and-braces like the row group: MEASURED (2026-09-30), none of 203 measurements across the legend
         // tests ran inside a legend pass, so its mutation survives; kept for the same invariant.
@@ -9345,17 +9658,12 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             return _last_legend_box_size;
         } finally {
             g.dispose();
-            _property_legend_bounds = saved_property;
+            _shared_slot.restore(saved_shared);
+            _rank_slot.restore(saved_rank);
             _size_legend_bounds = saved_size;
             _ancestral_pie_legend_bounds = saved_pie;
             _internal_taxa_key_bounds = saved_taxa;
             _domain_legend_bounds = saved_domain;
-            _legend_mode_toggle_bounds = saved_mode_toggle;
-            _legend_sort_toggle_bounds = saved_sort_toggle;
-            _legend_more_bounds = saved_more;
-            _legend_row_labels = saved_rows;
-            _legend_rows_top = saved_rows_top;
-            _legend_row_height = saved_row_height;
             _default_legend_claims = saved_claims;
         }
     }
@@ -9363,18 +9671,18 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     // Top-left corner at which to draw the legend box; honors a dragged position on screen AND in
     // exports (PDF/PNG/...), mapping it onto the export target by its viewport fraction.
     private Point legendTopLeft(final Rectangle bounds, final int box_w, final int box_h) {
-        if ((_legend_offset == null) && defaultLegendGoesLeft()) {
+        if ((_slot.offset == null) && defaultLegendGoesLeft()) {
             // The never-dragged default is the top-RIGHT corner, which is exactly where the clade bar/bracket
             // columns are -- an annotated figure would open with its legend sitting on top of the marks it
             // describes (and, with several nested columns, hiding whole ranks of them). Start on the left
             // instead, above the root, where a root-left tree has room. Dragging still overrides this.
             return claimDefaultLegendSpot(bounds, new Point(bounds.x + 10, bounds.y + 10), box_w, box_h);
         }
-        if (_legend_offset == null) {
+        if (_slot.offset == null) {
             return claimDefaultLegendSpot(bounds, legendTopLeftFor(bounds, getVisibleRect(), null, box_w, box_h),
                     box_w, box_h);
         }
-        return legendTopLeftFor(bounds, getVisibleRect(), _legend_offset, box_w, box_h);
+        return legendTopLeftFor(bounds, getVisibleRect(), _slot.offset, box_w, box_h);
     }
 
     /**
@@ -9429,6 +9737,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      *  actually drawn there, i.e. in the rectangular root-left layout (the vertical orientations put their marks
      *  along the top/bottom, and the radial layouts ring the tree, so neither collides with the corner). */
     private boolean defaultLegendGoesLeft() {
+        // named boxes keep the legend at the right: their names sit inside the band reserve, the legend's column
+        // past it (measured 2026-10-31: sent left, the legend covered the tree's top-left clades)
         return hasCladeBands() && (_clade_bands_mode != CLADE_VIS.BOXES) && !isRadialLayout()
                 && !isVerticalOrientation() && (drawnCladeBandCount() > 0);
     }
@@ -9462,23 +9772,58 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** Colorize leaves by the given property reference, or turn it off when {@code ref} is empty. */
     void setColorByPropertyRef(final String ref) {
+        // the rank legend stays: it has its own slot beside the Color-by legend (it used to be cleared here, and so
+        // never came back when Color by was turned off again)
         _color_by_property_ref = ForesterUtil.isEmpty(ref) ? null : ref;
-        if (_color_by_property_ref != null) {
-            clearRankLegend(); // the property-color legend takes over the (single) legend slot
-        }
         rebuildPropertyColorScheme();
     }
 
-    /** Hides the taxonomic-rank legend (after colors are cleared, or another coloring takes over). */
+    /** Forgets the branch colorization's legend (its colours were removed, or the tree was replaced); the clade
+     *  bands' legend, when they have one, takes the rank slot. */
     final void clearRankLegend() {
+        _branch_rank_colorize_rank = null; // branches are no longer rank-colorized
+        _colorize_legend = null;
+        _colorize_legend_counts = null;
+        _colorize_legend_missing = 0;
+        _colorize_owns_rank_slot = false;
+        refreshRankSlot();
+        repaint();
+    }
+
+    private void clearRankLegendRows() {
         _rank_legend = null;
         _rank_legend_counts = null;
         _rank_legend_missing = 0;
         _rank_legend_title = null;
         _rank_legend_sections = null;
         _rank_legend_section_order = null;
-        _branch_rank_colorize_rank = null; // branches are no longer rank-colorized
-        repaint();
+    }
+
+    /** Whether the clade bands draw a colour key of their own: brackets carry no colour, named boxes name themselves. */
+    private boolean cladeBandsHaveLegend() {
+        return hasCladeBands() && (_clade_bands_mode != CLADE_VIS.BRACKETS) && !cladeBoxNamesShown();
+    }
+
+    /** Whether the rank slot shows the branch colorization's legend: there is one, and it was applied after the
+     *  bands, or the bands draw no key of their own. */
+    private boolean rankSlotShowsColorize() {
+        return (_branch_rank_colorize_rank != null) && (_colorize_legend != null)
+                && (_colorize_owns_rank_slot || !cladeBandsHaveLegend());
+    }
+
+    /** Puts the rank slot's owner's legend in it ({@link #rankSlotShowsColorize}): the colorization's as it was dealt,
+     *  else the clade bands', else none. */
+    private void refreshRankSlot() {
+        clearRankLegendRows();
+        if (rankSlotShowsColorize()) {
+            _rank_legend = _colorize_legend;
+            _rank_legend_counts = _colorize_legend_counts;
+            _rank_legend_missing = _colorize_legend_missing;
+            _rank_legend_title = "Taxonomy: " + _branch_rank_colorize_rank;
+        }
+        else if (cladeBandsHaveLegend()) {
+            writeCladeBandLegend(_clade_band_counts);
+        }
     }
 
     /** Whether a taxonomic-rank legend is currently available to show. */
@@ -9517,7 +9862,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         setColorByPropertyRef( null ); // turns coloring off and rebuilds the scheme (-> null)
         setSizeByPropertyRef( null ); // turns sizing off and rebuilds the scale (-> null), clears the size legend pos
         setAncestralPieTrait( null ); // turns ancestral-state pies off, clears the pie legend pos
-        _legend_offset = null; // also return the color/rank legend to its default corner
+        _shared_slot.offset = null; // also return the color and rank legends to their default corners
+        _rank_slot.offset = null;
         repaint();
     }
 
@@ -9614,6 +9960,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     void rebuildPropertyColorScheme() {
         if ((_color_by_property_ref == null) || (_phylogeny == null) || _phylogeny.isEmpty()) {
             _property_color_scheme = null;
+            _color_by_name_colors = java.util.Collections.emptyMap();
         } else {
             // the field's CANDIDATE decides how its values group and whether it is numeric -- decided on the tree,
             // never re-decided by this view; the view only re-summarizes it (null for a ref that is not a candidate,
@@ -9647,6 +9994,13 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             if (all_tips.size() > view_tips.size()) {
                 _property_color_scheme.rememberValuesOf(all_tips, memory, next);
             }
+            _color_by_name_colors = computeColorByNameColors(view_tips, all_tips);
+        }
+        // the clade marks take a name's Color-by colour (rankColorsFor): recolour them when those colours change --
+        // Color by on, off or to another field, a value recoloured, the palette switched -- and only then; the
+        // clades themselves are what they were (a recolour, not a rebuild: 150+ ms a level on 13,000 tips)
+        if ((_clade_levels != null) && !colorByNameColors().equals(_clade_bands_color_by_names)) {
+            recolorCladeBands();
         }
     }
 
@@ -9670,7 +10024,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** Test hook: the [colors]/[gradient] chip's clickable bounds from the last SCREEN legend draw. */
     Rectangle legendModeToggleBoundsForTest() {
-        return _legend_mode_toggle_bounds;
+        return _shared_slot.mode_toggle;
     }
 
     /** Whether the current Color-by field's mode can be flipped colors <-> gradient (the legend chip). */
@@ -9867,7 +10221,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     // Default number of categorical-legend rows shown before "+N more"; the user can expand (show all) or
-    // collapse from the legend itself (see _legend_max_entries / the clickable footer).
+    // collapse from the legend itself (see _slot.max_entries / the clickable footer).
     private static final int DEFAULT_LEGEND_MAX_ENTRIES = 20;
     // The "no value" legend row's swatch: a DASHED, unfilled circle -- a circle because the tree's Color-by
     // mark is a dot (drawPropertyColorDot), so the dashed empty circle literally reads "these tips carry no
@@ -9946,30 +10300,30 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      * deliberate consistency choice). A no-op across repaints/navigation of the same subject.
      */
     private void noteLegendSubject(final String subject) {
-        if ((subject == null) ? (_legend_subject != null) : !subject.equals(_legend_subject)) {
-            _legend_max_entries = DEFAULT_LEGEND_MAX_ENTRIES;
-            _legend_subject = subject;
+        if ((subject == null) ? (_slot.subject != null) : !subject.equals(_slot.subject)) {
+            _slot.max_entries = DEFAULT_LEGEND_MAX_ENTRIES;
+            _slot.subject = subject;
         }
     }
 
     private Map<String, Color> orderedLegend(final Map<String, Color> colors, final Map<String, Integer> counts) {
-        if ((_ordered_legend != null) && (colors == _ordered_legend_colors_key)
-                && (counts == _ordered_legend_counts_key) && (_ordered_legend_by_count_key == _legend_sort_by_count)
-                && (_ordered_legend_max_key == _legend_max_entries)) {
-            return _ordered_legend;
+        if ((_slot.ordered != null) && (colors == _slot.ordered_colors_key)
+                && (counts == _slot.ordered_counts_key) && (_slot.ordered_by_count_key == _slot.sort_by_count)
+                && (_slot.ordered_max_key == _slot.max_entries)) {
+            return _slot.ordered;
         }
-        _ordered_legend = orderLegendEntries(colors, counts, _legend_max_entries, _legend_sort_by_count);
-        _ordered_legend_colors_key = colors;
-        _ordered_legend_counts_key = counts;
-        _ordered_legend_by_count_key = _legend_sort_by_count;
-        _ordered_legend_max_key = _legend_max_entries;
-        return _ordered_legend;
+        _slot.ordered = orderLegendEntries(colors, counts, _slot.max_entries, _slot.sort_by_count);
+        _slot.ordered_colors_key = colors;
+        _slot.ordered_counts_key = counts;
+        _slot.ordered_by_count_key = _slot.sort_by_count;
+        _slot.ordered_max_key = _slot.max_entries;
+        return _slot.ordered;
     }
 
     /**
      * Draws the shared legend chrome -- a constant-1px border around a background-filled box with the title on
      * the first line -- and records the draggable on-screen bounds into the caller's slot ({@code size_legend}
-     * selects _size_legend_bounds vs the shared _property_legend_bounds). The stroke is left as STROKE_1 for the
+     * selects _size_legend_bounds vs the shared _slot.bounds). The stroke is left as STROKE_1 for the
      * caller's own in-box drawing (the caller saves/restores it); returns the title baseline y.
      */
     private int drawLegendBox(final Graphics2D g, final int x, final int y, final int box_w, final int box_h,
@@ -9981,7 +10335,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             if (size_legend) {
                 _size_legend_bounds = b;
             } else {
-                _property_legend_bounds = b;
+                _slot.bounds = b;
             }
         }
         g.setStroke(STROKE_1);
@@ -9996,11 +10350,13 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     /** Clears the categorical-legend row/control hit-test state; used by the gradient/bar legends, which have
-     *  no clickable value rows, sort toggle, or expand control. */
+     *  no clickable value rows, sort toggle, or expand control -- nor a [colors]/[gradient] chip unless they draw
+     *  one again after this (a chip left from the slot's previous legend took its clicks). */
     private void clearLegendRowControls() {
-        _legend_row_labels = new java.util.ArrayList<>();
-        _legend_sort_toggle_bounds = null;
-        _legend_more_bounds = null;
+        _slot.row_labels = new java.util.ArrayList<>();
+        _slot.sort_toggle = null;
+        _slot.more = null;
+        _slot.mode_toggle = null;
     }
 
     /** Draws a capped value-to-color legend; draggable (recorded for hit-testing) on screen. */
@@ -10064,8 +10420,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         final FontMetrics fm = g.getFontMetrics();
         final int row_h = fm.getHeight() + 2;
         final int sections = Math.max(1, _rank_legend_section_order.size());
-        final int per_section = (_legend_max_entries >= LEGEND_SHOW_ALL) ? LEGEND_SHOW_ALL
-                : Math.max(3, _legend_max_entries / sections);
+        final int per_section = (_slot.max_entries >= LEGEND_SHOW_ALL) ? LEGEND_SHOW_ALL
+                : Math.max(3, _slot.max_entries / sections);
         // rows in draw order: a header (null label) then that rank's taxa, ordered by the shared sort toggle
         final java.util.List<String> labels = new ArrayList<>();
         final java.util.List<String> headers = new ArrayList<>();
@@ -10081,7 +10437,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 continue;
             }
             final Map<String, Color> shown = orderLegendEntries(in_rank, _rank_legend_counts, per_section,
-                    _legend_sort_by_count);
+                    _slot.sort_by_count);
             hidden += in_rank.size() - shown.size();
             headers.add(rank);
             labels.add(null); // the header row itself is not a clickable taxon
@@ -10097,7 +10453,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         // the sort order still drives the rows inside every block, so the control that changes it has to be here
         // too -- without it, annotating a second rank silently froze the legend on whatever order it was left in
         final boolean show_sort = draggable && (shown_rows >= 2);
-        final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
+        final String sort_chip = _slot.sort_by_count ? "[by count]" : "[A-Z]";
         int text_w = fm.stringWidth(_rank_legend_title)
                 + ((expand_chip != null) ? (gap + fm.stringWidth(expand_chip)) : 0)
                 + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0);
@@ -10119,12 +10475,12 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         final int x = tl.x;
         final int y = clampLegendTop(bounds, tl.y, row_h, pad);
         if (draggable) {
-            _legend_row_labels = labels; // nulls at the header rows -> a click there resolves to no taxon
-            _legend_rows_top = y + pad + row_h;
-            _legend_row_height = row_h;
-            _legend_sort_toggle_bounds = null; // set below only when actually drawn
-            _legend_more_bounds = null;
-            _legend_mode_toggle_bounds = null;
+            _slot.row_labels = labels; // nulls at the header rows -> a click there resolves to no taxon
+            _slot.rows_top = y + pad + row_h;
+            _slot.row_height = row_h;
+            _slot.sort_toggle = null; // set below only when actually drawn
+            _slot.more = null;
+            _slot.mode_toggle = null;
         }
         final Color fg = getTreeColorSet().getSequenceColor();
         int baseline = drawLegendBox(g, x, y, box_w, box_h, pad, _rank_legend_title, fm, draggable, false);
@@ -10134,14 +10490,14 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             final int chip_w = fm.stringWidth(expand_chip);
             final int chip_x = chip_right - chip_w;
             g.drawString(expand_chip, chip_x, baseline);
-            _legend_more_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            _slot.more = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
             chip_right = chip_x - gap;
         }
         if (show_sort) {
             final int chip_w = fm.stringWidth(sort_chip);
             final int chip_x = chip_right - chip_w;
             g.drawString(sort_chip, chip_x, baseline);
-            _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            _slot.sort_toggle = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
         }
         int header_i = 0;
         for (final String label : labels) {
@@ -10187,7 +10543,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** Test hook: the legend rows as drawn -- {@code null} where a rank heading sits. */
     final java.util.List<String> legendRowLabelsForTest() {
-        return _legend_row_labels;
+        return hookSlot().row_labels;
     }
 
     /**
@@ -10198,7 +10554,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if (hidden > 0) {
             return "[show all]";
         }
-        return ((_legend_max_entries >= LEGEND_SHOW_ALL) && (shown > DEFAULT_LEGEND_MAX_ENTRIES)) ? "[show fewer]"
+        return ((_slot.max_entries >= LEGEND_SHOW_ALL) && (shown > DEFAULT_LEGEND_MAX_ENTRIES)) ? "[show fewer]"
                 : null;
     }
 
@@ -10246,7 +10602,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         // The expand/collapse control sits in the TITLE row, not the footer: an expanded legend is often taller
         // than the window, and a control at the bottom of it cannot be reached (see clampLegendTop).
         final String expand_chip = draggable ? legendExpandChip(shown, more) : null;
-        final String sort_chip = _legend_sort_by_count ? "[by count]" : "[A-Z]";
+        final String sort_chip = _slot.sort_by_count ? "[by count]" : "[A-Z]";
         final String mode_chip_text = (draggable && mode_chip) ? "[gradient]" : null; // flip to a gradient
         final String more_text = "… +" + more + " more";
         int text_w = fm.stringWidth(title) + (show_sort ? (gap + fm.stringWidth(sort_chip)) : 0)
@@ -10262,7 +10618,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         // when PDF font metrics run slightly wider than AWT's stringWidth().
         // "no value" row (JS parity): total - coverage, pinned LAST (below even the "+N more" line, so the
         // expand cap can never truncate it), with a count like every other row. Informative, so it is drawn
-        // in exports too (like "+N more"); it is NOT in _legend_row_labels, so a click on it is inert.
+        // in exports too (like "+N more"); it is NOT in _slot.row_labels, so a click on it is inert.
         final String no_value_text = "no value (" + missing + ")";
         if (missing > 0) {
             text_w = Math.max(text_w, swatch + gap + fm.stringWidth(no_value_text));
@@ -10273,11 +10629,13 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         final int x = tl.x;
         final int y = clampLegendTop(bounds, tl.y, row_h, pad);
         if (draggable) {
-            _legend_row_labels = new java.util.ArrayList<>(values.keySet());
-            _legend_rows_top = y + pad + row_h; // first value row starts just below the title row
-            _legend_row_height = row_h;
-            _legend_sort_toggle_bounds = null; // set below only when actually drawn
-            _legend_more_bounds = null;
+            _slot.row_labels = new java.util.ArrayList<>(values.keySet());
+            _slot.rows_top = y + pad + row_h; // first value row starts just below the title row
+            _slot.row_height = row_h;
+            _slot.sort_toggle = null; // set below only when actually drawn
+            _slot.more = null;
+            _slot.mode_toggle = null; // the previous legend's chip would take this one's clicks (the click handler
+                                      // asks it first)
         }
         // constant 1px stroke for the box outline (drawLegendBox); swatches/chips are fillRect/drawString,
         // so they are already stroke-independent
@@ -10290,21 +10648,21 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             final int chip_w = fm.stringWidth(expand_chip);
             final int chip_x = chip_right - chip_w;
             g.drawString(expand_chip, chip_x, baseline);
-            _legend_more_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            _slot.more = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
             chip_right = chip_x - gap;
         }
         if (show_sort) { // sort toggle, right-aligned in the title row (on-screen only -> draggable)
             final int chip_w = fm.stringWidth(sort_chip);
             final int chip_x = chip_right - chip_w;
             g.drawString(sort_chip, chip_x, baseline);
-            _legend_sort_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            _slot.sort_toggle = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
             chip_right = chip_x - gap;
         }
         if (mode_chip_text != null) { // [gradient]: flip a switchable numeric field to its gradient mode
             final int chip_w = fm.stringWidth(mode_chip_text);
             final int chip_x = chip_right - chip_w;
             g.drawString(mode_chip_text, chip_x, baseline);
-            _legend_mode_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
+            _slot.mode_toggle = new Rectangle(chip_x - 2, y + pad, chip_w + 4, row_h);
         }
         for (final Map.Entry<String, Color> e : values.entrySet()) {
             baseline += row_h;
@@ -10374,7 +10732,6 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         final int y = tl.y;
         if (draggable) {
             clearLegendRowControls(); // a gradient legend has no clickable value rows / sort / expand controls
-            _legend_mode_toggle_bounds = null;
         }
         // The legend is a fixed UI key, not tree data: draw its borders with a constant 1px stroke
         // rather than inheriting the branch stroke set by setupStroke(), which shrinks to sub-pixel
@@ -10389,7 +10746,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             final int chip_w = fm.stringWidth(mode_chip_text);
             final int chip_x = (x + box_w) - pad - chip_w;
             g.drawString(mode_chip_text, chip_x, baseline);
-            _legend_mode_toggle_bounds = new Rectangle(chip_x - 2, y + pad, chip_w + 4,
+            _slot.mode_toggle = new Rectangle(chip_x - 2, y + pad, chip_w + 4,
                     fm.getHeight() + 2);
         }
         final int bar_x = x + pad;
@@ -10868,14 +11225,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         // (otherwise its legend would be drawn over the rank-colored branches) and sync the dropdown
         setColorByPropertyRef(null);
         _control_panel.populateColorByPropertyBox();
-        _rank_legend = null;
-        _rank_legend_counts = null;
-        _rank_legend_missing = 0;
-        _rank_legend_title = null;
-        _rank_legend_sections = null;
-        _rank_legend_section_order = null;
         _branch_rank_colorize_rank = null;
+        _colorize_legend = null;
+        _colorize_owns_rank_slot = true; // applied last: its legend takes the rank slot from the bands
         final int colorizations = recolorBranchesByRank(rank); // honors any stored overrides for this rank
+        refreshRankSlot(); // nothing coloured: the slot is the bands' again, or empty
         if (colorizations > 0) {
             _control_panel.setColorBranches(true);
             if (_control_panel.getUseVisualStylesCb() != null) {
@@ -10905,13 +11259,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 TreePanelUtil.getDefaultLineageService(), legend, rankOverridesFor(rank), counts,
                 _branch_rank_colorize_source);
         if (!legend.isEmpty()) {
-            _rank_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
-            _rank_legend_counts = counts;
-            _rank_legend_missing = unplacedForLegend(counts);
-            _rank_legend_title = "Taxonomy: " + rank;
-            _rank_legend_sections = null; // one rank -> the plain flat legend
-            _rank_legend_section_order = null;
+            _colorize_legend = new java.util.TreeMap<>(legend); // sorted by taxon name
+            _colorize_legend_counts = counts;
+            _colorize_legend_missing = unplacedForLegend(counts);
             _branch_rank_colorize_rank = rank;
+            refreshRankSlot();
         }
         return colorizations;
     }
@@ -10974,6 +11326,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     final int setCladeLevels(final java.util.List<CladeLevel.Spec> specs, final CLADE_VIS mode,
                              final boolean skip_singletons, final TaxonSource source) {
         _clade_level_specs = CladeLevel.order(specs);
+        _colorize_owns_rank_slot = false; // applied last: the bands' legend, if they draw one, takes the rank slot
         _clade_bands_mode = mode;
         _clade_bands_skip_singletons = skip_singletons;
         _clade_taxon_source = (source == null) ? TaxonSource.DATABASE : source;
@@ -11184,18 +11537,35 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     final void clearCladeBands() {
         _clade_levels = null;
+        _clade_label_widths.clear();
         _clade_level_specs = null;
-        if (_branch_rank_colorize_rank == null) {
-            clearRankLegend(); // nothing else owns the color key -> it goes with the bands
-        }
-        else {
-            // A branch rank-colorization still owns the legend, but the CLADE bands overwrote its contents
-            // (updateCladeBandLegend replaces the rows and the title). Leaving those rows behind would show a key
-            // for marks that are gone, at a rank the branches are not colored by -- and a color picked on one of
-            // them would be stored against the BRANCH rank, because currentRankLegendRank() falls back to it once
-            // the bands are gone. Re-derive the branch legend instead.
-            recolorBranchesByRank(_branch_rank_colorize_rank);
-        }
+        _clade_dealt_levels = null;
+        // the branch colorization's legend, if there is one, as it was dealt -- never re-dealt here: that wiped every
+        // branch colour applied by hand since (Reset, Clear All Overlays and the dialog's remove come through here)
+        refreshRankSlot();
+        repaint();
+    }
+
+    /** Whether shaded boxes name their clades beside each box (else in the legend). */
+    final boolean isCladeBoxLabels() {
+        return _clade_box_labels;
+    }
+
+    /** Shaded boxes: name each clade beside its box ({@code true}) or in the legend. Call BEFORE
+     *  {@link #setCladeLevels}, which builds the legend from it. */
+    final void setCladeBoxLabels(final boolean labels) {
+        _clade_box_labels = labels;
+    }
+
+    /** Whether the clade marks take room past the tip labels, in any layout: bars, brackets and named boxes do, boxes
+     *  named in the legend do not. A change between the two needs a re-fit (MainFrame.refitForCladeMarks). */
+    final boolean cladeMarksReserveRoom() {
+        return hasCladeBands() && ((_clade_bands_mode != CLADE_VIS.BOXES) || _clade_box_labels);
+    }
+
+    /** Whether clade names are drawn beside shaded boxes now. */
+    private boolean cladeBoxNamesShown() {
+        return hasCladeBands() && (_clade_bands_mode == CLADE_VIS.BOXES) && _clade_box_labels;
     }
 
     final boolean hasCladeBands() {
@@ -11213,10 +11583,14 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** Recomputes the bands from the current tree (cache-only); call after navigation swaps the tree. */
     final void rebuildCladeBands() {
+        ++_clade_band_rebuilds;
         if ((_clade_level_specs == null) || _clade_level_specs.isEmpty() || (_phylogeny == null)
                 || _phylogeny.isEmpty()) {
             _clade_levels = null;
-            return; // leave any existing (property/rank-colorize) legend untouched
+            _clade_dealt_levels = null;
+            _clade_label_widths.clear();
+            refreshRankSlot(); // no bands: the colorization's legend, or none -- never the bands' old rows
+            return;
         }
         // Counts are gathered PER LEVEL and merged first-wins (the specs run finest-first), not accumulated into
         // one shared map: a taxon name that is assigned at two annotated ranks would otherwise have its two tip
@@ -11228,31 +11602,97 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             // each level runs its OWN maximal-monophyletic assignment at its rank; nesting is therefore whatever
             // the taxonomy actually says, not something imposed -- a clade whose broader rank is unresolved simply
             // has no mark outside it, which is honest about the gap rather than inventing a parent
+            // the rank palette as dealt, no per-name colour yet: colourCladeLevels applies those, here and on every
+            // recolour
             per_level.add(TreePanelUtil.cladeBands(_phylogeny, spec.getRank(),
-                    TreePanelUtil.getDefaultLineageService(), rankOverridesFor(spec.getRank()), level_counts,
-                    _clade_taxon_source));
+                    TreePanelUtil.getDefaultLineageService(), null, level_counts, _clade_taxon_source));
             for (final Map.Entry<String, Integer> e : level_counts.entrySet()) {
                 counts.putIfAbsent(e.getKey(), e.getValue()); // finest level first -> the finer count wins
             }
         }
+        _clade_dealt_levels = per_level;
+        _clade_band_counts = counts;
+        colourCladeLevels();
+    }
+
+    /** Recolours the clades of the last rebuild -- a name's colour changed (picked on the rank legend, or Color by's),
+     *  not which clades there are; the same result as {@link #rebuildCladeBands} on the same tree. */
+    private void recolorCladeBands() {
+        if ((_clade_dealt_levels == null) || (_clade_level_specs == null)
+                || (_clade_dealt_levels.size() != _clade_level_specs.size())) {
+            rebuildCladeBands();
+            return;
+        }
+        ++_clade_band_recolors;
+        colourCladeLevels();
+    }
+
+    /** The levels from {@link #_clade_dealt_levels}: several levels hue-banded, then each name's own colour (picked by
+     *  hand, else Color by's, {@link #rankColorsFor}) over the result; the legend rebuilt. */
+    private void colourCladeLevels() {
         // Several levels: re-colour them so each finer clade's colour sits inside its containing clade's hue slice
-        // (a single level has no hierarchy to express and keeps the plain distinct-colour palette). Runs BEFORE the
-        // per-taxon overrides are re-applied below, so a colour the user chose by hand still wins.
-        final java.util.List<java.util.List<CladeBand>> colored = CladeHuePalette.hueBand(per_level);
+        // (a single level has no hierarchy to express and keeps the dealt palette). hueBand reads the tree, never the
+        // colours it is given, so the per-taxon colours go on AFTER it -- a colour the user chose by hand, and a name
+        // Color by shows, win.
+        final java.util.List<java.util.List<CladeBand>> colored = CladeHuePalette.hueBand(_clade_dealt_levels);
         final java.util.List<CladeLevel> levels = new ArrayList<>();
         for (int i = 0; i < _clade_level_specs.size(); ++i) {
             final CladeLevel.Spec spec = _clade_level_specs.get(i);
             levels.add(new CladeLevel(spec, applyCladeColorOverrides(colored.get(i), spec.getRank())));
         }
         _clade_levels = levels;
-        updateCladeBandLegend(counts);
+        _clade_label_widths.clear(); // its keys are the levels just replaced
+        _clade_bands_color_by_names = colorByNameColors();
+        refreshRankSlot();
     }
 
-    /** Re-applies this rank's per-taxon user colour overrides after hue-banding, so a colour picked by hand on a
-     *  legend row is never silently replaced by a computed one. */
+    /** Test hook: the rank legend's taxon-to-colour rows (empty when there is none). */
+    Map<String, Color> rankLegendColorsForTest() {
+        return (_rank_legend == null) ? java.util.Collections.<String, Color> emptyMap()
+                : java.util.Collections.unmodifiableMap(_rank_legend);
+    }
+
+    /** Test hook: {@link #unrootedCladeNameReserve}. */
+    int unrootedCladeNameReserveForTest() {
+        return unrootedCladeNameReserve();
+    }
+
+    /** Test hook: how many times the clade bands were rebuilt. */
+    int cladeBandRebuildsForTest() {
+        return _clade_band_rebuilds;
+    }
+
+    /** Test hook: {@link RankNameColors}' answer for {@code name}. */
+    static Color rankNameColorForTest(final Map<String, Color> user, final Map<String, Color> color_by,
+                                      final String name) {
+        return new RankNameColors(user, color_by).get(name);
+    }
+
+    /** Test hook: the rank a colour picked on the rank legend's row for {@code taxon} is stored under. */
+    String rankLegendRankForTest(final String taxon) {
+        return rankLegendRankFor(taxon);
+    }
+
+    /** Test hook: how many times the clade bands were recoloured without a rebuild. */
+    int cladeBandRecolorsForTest() {
+        return _clade_band_recolors;
+    }
+
+    /** Whether the last figure applied to this tab said Color by is off ({@code FigureSpec}); the load-time
+     *  auto-colour ({@code AptxUtil}) then leaves the tab uncoloured. */
+    boolean isColorByOffByFigure() {
+        return _color_by_off_by_figure;
+    }
+
+    void setColorByOffByFigure(final boolean off) {
+        _color_by_off_by_figure = off;
+    }
+
+    /** Re-applies this rank's per-taxon colours ({@link #rankColorsFor}) after hue-banding, so a colour picked by hand
+     *  on a legend row, or a name's Color-by colour, is never silently replaced by a computed one. */
     private java.util.List<CladeBand> applyCladeColorOverrides(final java.util.List<CladeBand> bands,
                                                                final String rank) {
-        final Map<String, Color> overrides = rankOverridesFor(rank);
+        final Map<String, Color> overrides = rankColorsFor(rank);
         if (overrides.isEmpty()) {
             return bands;
         }
@@ -11265,22 +11705,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     /**
-     * Mirrors the current clade bands in the shared, draggable taxon-&gt;color legend (with per-taxon tip
-     * {@code counts}), so the boxes/bars are labeled even when internal-node data is hidden. Reuses the
-     * rank-colorization legend slot (no new control); whichever rank feature was applied last owns the legend.
+     * Mirrors the current clade bands in the rank slot's draggable taxon-&gt;color legend (with per-taxon tip
+     * {@code counts}), so the boxes/bars are keyed even when internal-node data is hidden. The slot is shared with
+     * the branch colorization; {@link #refreshRankSlot} decides whose legend it shows.
      */
-    private void updateCladeBandLegend(final Map<String, Integer> counts) {
-        if (!hasCladeBands()) {
-            return;
-        }
-        if (_clade_bands_mode == CLADE_VIS.BRACKETS) {
-            // monochrome brackets carry no color key; drop the clade legend unless a branch
-            // rank-colorization still owns the legend slot
-            if (_branch_rank_colorize_rank == null) {
-                clearRankLegend();
-            }
-            return;
-        }
+    private void writeCladeBandLegend(final Map<String, Integer> counts) {
         final Map<String, Color> legend = new java.util.TreeMap<>(); // sorted by taxon name; dedups repeated taxa
         final java.util.List<CladeLevel> levels = drawableCladeLevels();
         final Map<String, String> sections = new HashMap<>();
@@ -11417,6 +11846,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if ((_phylogeny != null) && !_phylogeny.isEmpty()) {
             calculateLongestExtNodeInfo();
         }
+    }
+
+    /** Test hook: {@link #labelTextWidth} in the large tree font -- the width the layout reserves for a tip label. */
+    int labelTextWidthForTest(final PhylogenyNode node) {
+        return labelTextWidth(node, getTreeFontSet().getLargeFont());
     }
 
     /** For tests: the label text the renderer would draw for {@code node}, assembled by the very method the paint
@@ -11616,10 +12050,10 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      *  (clicked its header) if it has a legend, else -- for the always-on clustergram heat-map legend -- the first
      *  MATRIX column, else -1. So a heat-map matrix shows its shared-scale legend WITHOUT a click, while clicking any
      *  other column's header still overrides to that column's own legend.
-     *  <p>The always-on matrix legend DEFERS to an active "Color by" / rank-colorize legend: those share the one
-     *  legend slot, and the user explicitly turned them on, so it would be wrong to silently hide them (and their
-     *  click-to-recolor) just because a matrix column is present. The matrix legend is still reachable by clicking
-     *  its header (an explicit focus, handled above). */
+     *  <p>The always-on matrix legend DEFERS to an active "Color by" legend: the two share the one slot, and the user
+     *  explicitly turned Color by on, so it would be wrong to silently hide it (and its click-to-recolor) just
+     *  because a matrix column is present. The matrix legend is still reachable by clicking its header (an explicit
+     *  focus, handled above). (The rank legend has a slot of its own and is not involved.) */
     private int annotationLegendColumn() {
         if (!hasAnnotationColumns()) {
             return -1;
@@ -11627,8 +12061,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if ((_focused_annotation_column >= 0) && columnLegendReady(_focused_annotation_column)) {
             return _focused_annotation_column;
         }
-        if (hasColorByPropertyLegend() || hasRankLegend()) {
-            return -1; // an active color/rank legend owns the slot; do not usurp it with the always-on matrix legend
+        if (hasColorByPropertyLegend()) {
+            return -1; // an active Color-by legend owns the shared slot; do not usurp it with the always-on matrix one
         }
         for (int i = 0; i < _annotation_columns.size(); ++i) {
             if ((_annotation_columns.getColumn(i).getType() == AnnotationColumns.Type.MATRIX) && columnLegendReady(i)) {
@@ -13925,6 +14359,9 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         rds.setRenderingHeight(height);
         ++_radial_domains_drawn;
         recordDomainPainted(node);
+        final double half_w = renderedDomainWidth(node) / 2.0;
+        _radial_domain_boxes.put(node.getId(), new double[] { pivot_x + ((start_dist + half_w) * Math.cos(angle)),
+                pivot_y + ((start_dist + half_w) * Math.sin(angle)), half_w, height / 2.0, angle });
         final java.awt.geom.AffineTransform saved = g.getTransform();
         g.rotate(angle, pivot_x, pivot_y); // the spoke at `angle` becomes the local +x axis
         rds.render((float) (pivot_x + start_dist), (float) (pivot_y - (height / 2.0)), g, this, to_pdf, false);
@@ -14377,6 +14814,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
     }
 
     private void paintCladeBands(final Graphics2D g) {
+        forgetCladeBoxNames();
         if (!hasCladeBands()) {
             return;
         }
@@ -14393,13 +14831,19 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         }
     }
 
-    /** Radial space (px) reserved OUTSIDE the tip labels for the circular clade BARS/BRACKETS (the arc itself; a long
-     *  taxon label riding the spoke past it may still overflow -- a known limitation, like the rectangular label reach).
-     *  0 for the BOXES mode (annular sectors sit within the labels) or when no clade bands are shown. */
+    /** Radial space (px) reserved OUTSIDE the tip labels for the circular clade marks: BARS/BRACKETS the arcs (a long
+     *  taxon label riding the spoke past the outermost may still overflow -- a known limitation, like the rectangular
+     *  label reach); named BOXES the gap and the names riding past the sectors. 0 for boxes named in the legend (the
+     *  sectors sit within the labels) or when no clade bands are shown. */
     private int circularCladeBandReserve() {
-        if ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || !hasCladeBands()
-                || (_clade_bands_mode == CLADE_VIS.BOXES)) {
+        if ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR) || !hasCladeBands()) {
             return 0;
+        }
+        if (_clade_bands_mode == CLADE_VIS.BOXES) {
+            // named boxes: the gap and the names riding past it -- reserved, unlike the outermost bar label, because
+            // here the names are the only key (no legend) and a cut name names nothing
+            return (_clade_box_labels && !drawableCladeLevels().isEmpty())
+                    ? (CLADE_BAR_GAP + maxCladeLabelWidth(drawableCladeLevels().get(0)) + 4) : 0;
         }
         // Every level's ring must be inside the reserve, and so must every label EXCEPT the outermost one's --
         // that last one riding past the edge is the pre-existing, documented limitation above, and reserving it
@@ -14443,19 +14887,364 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         }
     }
 
+    /**
+     * Shaded boxes in the UNROOTED layout (Christian, 2026-10-31, after the JS's): each clade a translucent SECTOR of
+     * its root's own equal-angle wedge -- the arc the layout gave that root, its tips' share of the full turn about
+     * its spoke -- from the root out past its farthest tip AND that tip's drawn label; a disc when the clade is the
+     * whole tree. Never built from where the tips landed: tips on zero-length branches sit ON their root, and a sector
+     * fitted to their positions misses the ones that moved (the JS's finding, 2026-10-20). Named boxes put the name at
+     * the mouth of the wedge, upright, read away from the root.
+     * <p>
+     * Bars and brackets (Christian, 2026-11-01, "yes" to the JS's): no sector; at the same mouth a square mark next to
+     * the tree and the name past it -- the bar's square in the clade's colour, the bracket's an outline in the text
+     * colour (brackets carry no colour). Every level, finest first: a broader clade's mark goes past the marks of the
+     * clades inside it, as the other layouts nest their columns (shaded boxes are one level everywhere).
+     */
+    private void paintCladeBandsUnrooted(final Graphics2D g, final Rectangle canvas) {
+        forgetCladeBoxNames();
+        if (!hasCladeBands()) {
+            return;
+        }
+        final java.util.List<CladeLevel> levels = drawableCladeLevels(); // boxes: one level; bars, brackets: all
+        if (levels.isEmpty()) {
+            return;
+        }
+        final boolean boxes = _clade_bands_mode == CLADE_VIS.BOXES;
+        final Font font = getTreeFontSet().getLargeFont();
+        final FontMetrics fm = getFontMetricsForLargeDefaultFont();
+        // what a name keeps clear of: the names placed before it, and every label this pass laid out (one Auto-hide
+        // dropped too: a neighbour's drawn label stands there) -- a name at its wedge's mouth reaches sideways
+        // across the neighbouring wedges, whose labels can reach farther out than its own clade's
+        final java.util.List<java.awt.Shape> names = new java.util.ArrayList<>();
+        _clade_name_obstacles.reset(Math.max(8f, fm.getHeight()));
+        for (final double[] b : _radial_label_boxes.values()) {
+            _clade_name_obstacles.place(b[0], b[1], b[2], b[3], b[4]);
+        }
+        for (final double[] b : _radial_domain_boxes.values()) { // and every domain track, past the labels
+            _clade_name_obstacles.place(b[0], b[1], b[2], b[3], b[4]);
+        }
+        // bars and brackets: the square, then a gap, then the name; the square sits on the side nearer the tree
+        final int mark = boxes ? 0 : (CLADE_BAR_WIDTH + UNROOTED_CLADE_MARK_GAP);
+        // a broader level's marks start where the finer levels' end -- each level as deep as the room the fan keeps for
+        // it (unrootedCladeNameReserve), as circular rings its levels: the finest rank nearest the tips, the broadest
+        // outermost. (Past every finer NAME inside the clade instead, a wide wedge's mark was pushed out by a name on
+        // its far side, off the canvas.)
+        double finer = 0;
+        for (final CladeLevel level : levels) {
+            final java.util.List<Object[]> queued = new java.util.ArrayList<>(); // {band, wedge, radius}
+            for (final CladeBand band : level.getBands()) {
+                final PhylogenyNode root = band.getRoot();
+                final double[] wedge = _unrooted_wedges.get(root.getId());
+                if (wedge == null) {
+                    continue; // not laid out in this pass (off the displayed tree, or folded into a collapsed clade)
+                }
+                if (skipCladeBand(band)) { // "Skip single-member clades": no bar/bracket (boxes still draw), as elsewhere
+                    continue;
+                }
+                final double r = unrootedCladeReach(root) + finer + CLADE_BAND_RIGHT_PAD;
+                if (boxes) {
+                    final Color c = band.getColor();
+                    final Color saved = g.getColor();
+                    g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), CLADE_BOX_ALPHA));
+                    g.fill(unrootedSector(root.getXcoord(), root.getYcoord(), r, wedge[0], wedge[1]));
+                    g.setColor(saved);
+                }
+                if (!boxes || _clade_box_labels) {
+                    queued.add(new Object[] { band, wedge, r });
+                }
+            }
+            // the names: at the mouth of each wedge, read away from the root, placed largest clade first; moved
+            // further out along the spoke, a line at a time, while it would touch a name placed before it or a label,
+            // and left out when six lines out are not clear either
+            queued.sort((x, y) -> Integer.compare(((CladeBand) y[0]).getRoot().getNumberOfExternalNodes(),
+                    ((CladeBand) x[0]).getRoot().getNumberOfExternalNodes()));
+            for (final Object[] q : queued) {
+                final CladeBand band = (CladeBand) q[0];
+                final PhylogenyNode root = band.getRoot();
+                final double[] wedge = (double[]) q[1];
+                final double r = (Double) q[2];
+                final double mid = (wedge[0] + wedge[1]) / 2.0;
+                final boolean right = Math.cos(mid) >= 0;
+                final int tw = mark + fm.stringWidth(band.getTaxon());
+                final int th = fm.getHeight();
+                Rectangle2D box = null;
+                Rectangle2D mouth = null;
+                for (int step = 0; step <= 6; ++step) {
+                    final double out = r + CLADE_BAR_GAP + (step * th);
+                    final double px = root.getXcoord() + (out * Math.cos(mid));
+                    final double py = root.getYcoord() + (out * Math.sin(mid));
+                    final Rectangle2D at = keptOn(canvas,
+                            new Rectangle2D.Double(right ? px : (px - tw), py - (th / 2.0), tw, th));
+                    if (mouth == null) {
+                        mouth = at;
+                    }
+                    if (!touchesAny(at, names) && !_clade_name_obstacles.overlaps(at.getCenterX(), at.getCenterY(),
+                            at.getWidth() / 2.0, at.getHeight() / 2.0, 0)) {
+                        box = at;
+                        if (step > 0) {
+                            ++_clade_box_names_moved;
+                        }
+                        break;
+                    }
+                }
+                if (box == null) {
+                    noteCladeBoxNameLeftOut(band.getTaxon(), mouth);
+                    continue;
+                }
+                names.add(box);
+                final Color saved = g.getColor();
+                if (!boxes) {
+                    drawUnrootedCladeMark(g, band.getColor(), right ? box.getX() : (box.getMaxX() - CLADE_BAR_WIDTH),
+                            box.getCenterY() - (CLADE_BAR_WIDTH / 2.0));
+                }
+                g.setFont(font);
+                g.setColor(getTreeColorSet().getSequenceColor());
+                TreePanel.drawString(band.getTaxon(), (float) (right ? (box.getX() + mark) : box.getX()),
+                        (float) (box.getCenterY() + ((fm.getAscent() - fm.getDescent()) / 2.0)), g);
+                g.setColor(saved);
+                noteCladeBoxName(band.getTaxon(), box);
+            }
+            finer += unrootedCladeLevelExtent(level);
+        }
+    }
+
+    /** The unrooted bar's or bracket's square at ({@code x},{@code y}): filled in the clade's {@code color} for a bar,
+     *  outlined in the text colour for a bracket. */
+    private void drawUnrootedCladeMark(final Graphics2D g, final Color color, final double x, final double y) {
+        final Color saved = g.getColor();
+        final Stroke saved_stroke = g.getStroke();
+        if (_clade_bands_mode == CLADE_VIS.BARS) {
+            g.setColor(color);
+            g.fill(new Rectangle2D.Double(x, y, CLADE_BAR_WIDTH, CLADE_BAR_WIDTH));
+        }
+        else {
+            final double h = CLADE_BRACKET_STROKE / 2.0; // the outline stays inside the square
+            g.setColor(getTreeColorSet().getSequenceColor());
+            g.setStroke(new BasicStroke(CLADE_BRACKET_STROKE));
+            g.draw(new Rectangle2D.Double(x + h, y + h, CLADE_BAR_WIDTH - (2 * h), CLADE_BAR_WIDTH - (2 * h)));
+        }
+        g.setColor(saved);
+        g.setStroke(saved_stroke);
+    }
+
+    /** {@code b} moved, without resizing, to lie on {@code canvas} (as far as it fits): a name at a wedge's mouth past
+     *  the edge of the fan is pulled back onto the canvas rather than cut off. */
+    private static Rectangle2D keptOn(final Rectangle canvas, final Rectangle2D b) {
+        final double x = Math.max(canvas.x, Math.min(b.getX(), (canvas.x + canvas.width) - b.getWidth()));
+        final double y = Math.max(canvas.y, Math.min(b.getY(), (canvas.y + canvas.height) - b.getHeight()));
+        return new Rectangle2D.Double(x, y, b.getWidth(), b.getHeight());
+    }
+
+    /** How far a clade reaches from its root in the unrooted layout: the farthest of its displayed tips (a collapsed
+     *  clade counts as one) and of the far corners of their labels, as this pass laid them out
+     *  ({@link #_radial_label_boxes}; re-measuring them came out up to 23 px short of what is drawn, 2026-10-31).
+     *  A label Auto-hide dropped still counts, as in the JS: a sector sized to the drawn labels only left small
+     *  clades a sliver at the centre, their names piled on each other there. */
+    private double unrootedCladeReach(final PhylogenyNode root) {
+        double far = 0;
+        final java.util.ArrayDeque<PhylogenyNode> todo = new java.util.ArrayDeque<>();
+        todo.add(root);
+        while (!todo.isEmpty()) {
+            final PhylogenyNode n = todo.poll();
+            if (n.isExternal() || n.isCollapse()) {
+                far = Math.max(far, Math.hypot(n.getXcoord() - root.getXcoord(), n.getYcoord() - root.getYcoord()));
+                final double[] b = _radial_label_boxes.get(n.getId());
+                if (b != null) {
+                    far = Math.max(far, farthestCorner(b, root.getXcoord(), root.getYcoord()));
+                }
+                final double[] d = _radial_domain_boxes.get(n.getId()); // its domain track, past the label
+                if (d != null) {
+                    far = Math.max(far, farthestCorner(d, root.getXcoord(), root.getYcoord()));
+                }
+                final double[] w = _unrooted_collapsed_corners.get(n.getId()); // a collapsed clade's wedge
+                if (w != null) {
+                    far = Math.max(far, Math.max(Math.hypot(w[0] - root.getXcoord(), w[1] - root.getYcoord()),
+                            Math.hypot(w[2] - root.getXcoord(), w[3] - root.getYcoord())));
+                }
+            }
+            else {
+                for (int i = 0; i < n.getNumberOfDescendants(); ++i) {
+                    todo.add(n.getChildNode(i));
+                }
+            }
+        }
+        return far;
+    }
+
+    /** How far from ({@code x},{@code y}) the farthest corner of the oriented box {@code b} {cx, cy, half width, half
+     *  height, theta} lies. */
+    private static double farthestCorner(final double[] b, final double x, final double y) {
+        final double c = Math.cos(b[4]), s = Math.sin(b[4]);
+        double far = 0;
+        for (int i = -1; i <= 1; i += 2) {
+            for (int j = -1; j <= 1; j += 2) {
+                far = Math.max(far, Math.hypot((b[0] + (i * b[2] * c)) - (j * b[3] * s) - x,
+                        (b[1] + (i * b[2] * s) + (j * b[3] * c)) - y));
+            }
+        }
+        return far;
+    }
+
+    /** How far from ({@code x},{@code y}) the farthest label of the last radial pass reaches (0 for none). */
+    private double farthestRadialLabel(final double x, final double y) {
+        double far = 0;
+        for (final double[] b : _radial_label_boxes.values()) {
+            far = Math.max(far, farthestCorner(b, x, y));
+        }
+        return far;
+    }
+
+    /** Test hook: each tip's domain track as the last radial pass drew it, {cx, cy, half length, half height,
+     *  angle}. */
+    Map<Long, double[]> radialDomainBoxesForTest() {
+        return java.util.Collections.unmodifiableMap(_radial_domain_boxes);
+    }
+
+    /** Test hook: the bands of every drawn level, finest first. */
+    java.util.List<java.util.List<CladeBand>> cladeBandLevelsForTest() {
+        final java.util.List<java.util.List<CladeBand>> out = new ArrayList<>();
+        for (final CladeLevel level : drawableCladeLevels()) {
+            out.add(level.getBands());
+        }
+        return out;
+    }
+
+    /** The sector of radius {@code r} about ({@code x},{@code y}) from angle {@code a0} to {@code a1} (radians, the
+     *  layout's: x = cos, y = sin, y down); the full disc for a full turn. The layout's wedges are float sums (the
+     *  root's "full turn" measured 2.9e-7 rad short), so a turn within 1e-5 rad is the disc, not a pie with a seam. */
+    private static java.awt.Shape unrootedSector(final double x, final double y, final double r, final double a0,
+                                                 final double a1) {
+        if ((a1 - a0) >= (TWO_PI - 1e-5)) {
+            return new java.awt.geom.Ellipse2D.Double(x - r, y - r, 2 * r, 2 * r);
+        }
+        return new Arc2D.Double(x - r, y - r, 2 * r, 2 * r, -Math.toDegrees(a0), -Math.toDegrees(a1 - a0), Arc2D.PIE);
+    }
+
+    // the names of shaded boxes the last pass drew, and the shape each took (rectangular: the tree's own frame, before
+    // any root-top/bottom rotation; circular and unrooted: the canvas) -- for the tests
+    private final java.util.List<String>         _clade_box_names_drawn  = new java.util.ArrayList<>();
+    private final java.util.List<java.awt.Shape> _clade_box_name_shapes  = new java.util.ArrayList<>();
+
+    private int _clade_box_names_moved = 0; // unrooted: names placed past their wedge's mouth, clear of another
+    // radial: the names left out because they would touch a name placed first, and where each would have gone
+    private final java.util.List<String>         _clade_box_names_left_out  = new java.util.ArrayList<>();
+    private final java.util.List<java.awt.Shape> _clade_box_left_out_shapes = new java.util.ArrayList<>();
+
+    private void forgetCladeBoxNames() {
+        _clade_box_names_drawn.clear();
+        _clade_box_name_shapes.clear();
+        _clade_box_names_moved = 0;
+        _clade_box_names_left_out.clear();
+        _clade_box_left_out_shapes.clear();
+    }
+
+    private void noteCladeBoxNameLeftOut(final String taxon, final java.awt.Shape shape) {
+        _clade_box_names_left_out.add(taxon);
+        _clade_box_left_out_shapes.add(shape);
+    }
+
+    /** Test hook: the names of shaded boxes the last radial pass left out (they would touch a name placed first). */
+    java.util.List<String> cladeBoxNamesLeftOutForTest() {
+        return java.util.Collections.unmodifiableList(_clade_box_names_left_out);
+    }
+
+    /** Test hook: where each name in {@link #cladeBoxNamesLeftOutForTest} would have gone. */
+    java.util.List<java.awt.Shape> cladeBoxLeftOutShapesForTest() {
+        return java.util.Collections.unmodifiableList(_clade_box_left_out_shapes);
+    }
+
+    /** Test hook: how many names the last unrooted pass moved outward along their spoke, clear of another name. */
+    int cladeBoxNamesMovedForTest() {
+        return _clade_box_names_moved;
+    }
+
+    /** Test hook: where the rectangular boxes end and their names begin (the tree's own frame). */
+    float cladeBandRightEdgeForTest() {
+        return cladeBandRightEdge();
+    }
+
+    private void noteCladeBoxName(final String taxon, final java.awt.Shape shape) {
+        _clade_box_names_drawn.add(taxon);
+        _clade_box_name_shapes.add(shape);
+    }
+
+    /** Test hook: the names of shaded boxes the last pass drew, in drawing order. */
+    java.util.List<String> cladeBoxNamesDrawnForTest() {
+        return java.util.Collections.unmodifiableList(_clade_box_names_drawn);
+    }
+
+    /** Test hook: the shape of each name in {@link #cladeBoxNamesDrawnForTest}, in the same order. */
+    java.util.List<java.awt.Shape> cladeBoxNameShapesForTest() {
+        return java.util.Collections.unmodifiableList(_clade_box_name_shapes);
+    }
+
+    /** The room past the tip labels the unrooted fan keeps for the names at the wedges' mouths -- named shaded boxes,
+     *  bars and brackets (per level: the pad, the gap, a bar's or bracket's square and its gap, the widest name) --
+     *  so they stay on the canvas; 0 otherwise. */
+    private int unrootedCladeNameReserve() {
+        if ((getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED) || !hasCladeBands()) {
+            return 0;
+        }
+        final boolean boxes = _clade_bands_mode == CLADE_VIS.BOXES;
+        if (boxes && !_clade_box_labels) {
+            return 0;
+        }
+        int reserve = 0;
+        for (final CladeLevel level : drawableCladeLevels()) {
+            reserve += unrootedCladeLevelExtent(level);
+        }
+        return reserve;
+    }
+
+    /** How deep one level of unrooted clade marks is past where it starts: the pad, the gap, a bar's or bracket's
+     *  square and its gap, the level's widest name. */
+    private int unrootedCladeLevelExtent(final CladeLevel level) {
+        return CLADE_BAND_RIGHT_PAD + CLADE_BAR_GAP
+                + ((_clade_bands_mode == CLADE_VIS.BOXES) ? 0 : (CLADE_BAR_WIDTH + UNROOTED_CLADE_MARK_GAP))
+                + maxCladeLabelWidth(level);
+    }
+
+    /** Test hook: the bands of the first drawn level (the only level shaded boxes draw), or an empty list. */
+    java.util.List<CladeBand> cladeBandsForTest() {
+        final java.util.List<CladeLevel> levels = drawableCladeLevels();
+        return levels.isEmpty() ? java.util.Collections.<CladeBand> emptyList() : levels.get(0).getBands();
+    }
+
+    /** Test hook: {@link #unrootedSector}. */
+    static java.awt.Shape unrootedSectorForTest(final double x, final double y, final double r, final double a0,
+                                                final double a1) {
+        return unrootedSector(x, y, r, a0, a1);
+    }
+
+    /** Test hook: the unrooted wedge {@code {a0, a1}} the last layout pass gave {@code n}, or null. */
+    double[] unrootedWedgeForTest(final PhylogenyNode n) {
+        return _unrooted_wedges.get(n.getId());
+    }
+
+    /** Test hook: how far a clade reaches from its root in the unrooted layout (its sector's radius less the pad). */
+    double unrootedCladeReachForTest(final PhylogenyNode root) {
+        return unrootedCladeReach(root);
+    }
+
     /** Clade bands for the CIRCULAR layout -- the polar analogue of paintCladeBands. BOXES become translucent ANNULAR
      *  SECTORS spanning each clade's angular extent (clade-root radius out past the tips + labels); BARS a solid colour
      *  arc at that outer radius with a radial taxon label; BRACKETS a thin arc + radial end-ticks + label. cx/cy = the
      *  ring centre, radius = the tip ring radius. */
     private void paintCladeBandsCircular(final Graphics2D g, final int cx, final int cy, final int radius) {
+        forgetCladeBoxNames();
         if (!hasCladeBands() || (radius <= 0)) {
             return;
         }
-        // just past the tips + labels AND any annotation rings (so the clade marks sit outside the ring stack)
-        final double base = radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve() + CLADE_BAND_RIGHT_PAD;
+        // just past the tips + labels + domain tracks (the measure counts them) AND any annotation rings (so the clade
+        // marks sit outside the ring stack) -- and past every label as this pass laid it out, where that reaches
+        // farther (the gap off the node box, a leading space): a sector short of its labels, or a name on one, is
+        // what a measure alone gives (until 0.11.198 the drawn radial name was the full one, up to ~70 px longer)
+        final double base = Math.max(radius + getLongestExtNodeInfo() + circularAnnotationRingsReserve(),
+                farthestRadialLabel(cx, cy)) + CLADE_BAND_RIGHT_PAD;
         final double displayed = circularRowUnits();
         final double half_step = (displayed > 0) ? (Math.PI / displayed) : 0; // half a tip's angular slice
         double r_outer = base; // the radius cursor: each level's ring sits outside the one before it
+        final java.util.List<Object[]> names = new ArrayList<>(); // {band, angle, radius}: named boxes, placed below
         for (final CladeLevel level : drawableCladeLevels()) {
             for (final CladeBand band : level.getBands()) {
                 if (skipCladeBand(band)) { // single-member clades: no bar/bracket (boxes still draw)
@@ -14475,11 +15264,49 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                         break;
                     default:
                         drawCircularCladeSector(g, cx, cy, band, a0, a1, r_outer);
+                        if (_clade_box_labels) {
+                            names.add(new Object[] { band, (a0 + a1) / 2.0, r_outer + CLADE_BAR_GAP });
+                        }
                         break;
                 }
             }
             r_outer += circularCladeLevelRadialExtent(level);
         }
+        // each name rides the spoke just past its sector, like a bar's -- placed largest clade first, and left out
+        // where it would touch a name already placed (neighbouring one-tip clades), as a crowded tip label is
+        names.sort((x, y) -> Integer.compare(((CladeBand) y[0]).getRoot().getNumberOfExternalNodes(),
+                ((CladeBand) x[0]).getRoot().getNumberOfExternalNodes()));
+        final java.util.List<java.awt.Shape> placed = new ArrayList<>();
+        // in the large font, as the other layouts name their boxes (and as circularCladeBandReserve measured them)
+        final Font font = getTreeFontSet().getLargeFont();
+        final FontMetrics fm = getFontMetricsForLargeDefaultFont();
+        for (final Object[] q : names) {
+            final String taxon = ((CladeBand) q[0]).getTaxon();
+            final java.awt.Shape box = radialTextShape(taxon, fm, cx, cy, (Double) q[2], (Double) q[1]);
+            if (touchesAny(box, placed)) {
+                noteCladeBoxNameLeftOut(taxon, box);
+                continue;
+            }
+            placed.add(box);
+            final Color saved = g.getColor();
+            g.setColor(getTreeColorSet().getSequenceColor());
+            noteCladeBoxName(taxon, drawRadialTextCentered(g, taxon, cx, cy, (Double) q[2], (Double) q[1], font, fm));
+            g.setColor(saved);
+        }
+    }
+
+    /** Whether {@code s} overlaps any of {@code others} (by area, not just bounding boxes: names on a slant). */
+    private static boolean touchesAny(final java.awt.Shape s, final java.util.List<java.awt.Shape> others) {
+        for (final java.awt.Shape o : others) {
+            if (o.getBounds2D().intersects(s.getBounds2D())) {
+                final Area a = new Area(s);
+                a.intersect(new Area(o));
+                if (!a.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** The radial thickness one circular bar/bracket level occupies: the gap, the mark, and the taxon label riding
@@ -14554,27 +15381,51 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** Draws {@code text} centred on the point at radius {@code r} and device angle {@code angle} from (cx,cy), rotated
      *  to ride the spoke and kept upright on the far half of the fan (the radial-label convention). */
-    private void drawRadialTextCentered(final Graphics2D g, final String text, final int cx, final int cy,
-                                        final double r, final double angle) {
+    private java.awt.Shape drawRadialTextCentered(final Graphics2D g, final String text, final int cx, final int cy,
+                                                  final double r, final double angle) {
+        return drawRadialTextCentered(g, text, cx, cy, r, angle, getTreeFontSet().getSmallFont(),
+                getTreeFontSet().getFontMetricsSmall());
+    }
+
+    /** {@link #drawRadialTextCentered} in {@code font} ({@code fm} its metrics). */
+    private java.awt.Shape drawRadialTextCentered(final Graphics2D g, final String text, final int cx, final int cy,
+                                                  final double r, final double angle, final Font font,
+                                                  final FontMetrics fm) {
         if (ForesterUtil.isEmpty(text)) {
-            return;
+            return null;
         }
-        g.setFont(getTreeFontSet().getSmallFont());
-        final FontMetrics fm = getTreeFontSet().getFontMetricsSmall();
+        g.setFont(font);
+        final double[] f = radialTextFrame(text, fm, cx, cy, r, angle);
+        final AffineTransform saved = g.getTransform();
+        g.rotate(f[0], f[1], f[2]);
+        TreePanel.drawString(text, (float) (f[1] - (fm.stringWidth(text) / 2.0)), (float) f[3], g);
+        g.setTransform(saved);
+        return radialTextShape(text, fm, cx, cy, r, angle);
+    }
+
+    /** Where {@link #drawRadialTextCentered} puts {@code text}: {rotation, centre x, centre y, baseline y}. Centred a
+     *  half-width out along the spoke so its NEAR edge sits at {@code r}; upright on the far half of the fan. */
+    private static double[] radialTextFrame(final String text, final FontMetrics fm, final int cx, final int cy,
+                                            final double r, final double angle) {
         double m = angle % TWO_PI;
         if (m < 0) {
             m += TWO_PI;
         }
         if ((m > HALF_PI) && (m < ONEHALF_PI)) {
-            m -= PI; // upright on the far half of the fan
+            m -= PI;
         }
-        final double ar = r + (fm.stringWidth(text) / 2.0); // centre it a half-width out so its NEAR edge sits at r
+        final double ar = r + (fm.stringWidth(text) / 2.0);
         final double lx = cx + (ar * Math.cos(angle)), ly = cy + (ar * Math.sin(angle));
-        final AffineTransform saved = g.getTransform();
-        g.rotate(m, lx, ly);
-        TreePanel.drawString(text, (float) (lx - (fm.stringWidth(text) / 2.0)),
-                (float) (ly + (fm.getAscent() / 2.0) - (fm.getDescent() / 2.0)), g);
-        g.setTransform(saved);
+        return new double[] { m, lx, ly, (ly + (fm.getAscent() / 2.0)) - (fm.getDescent() / 2.0) };
+    }
+
+    /** The box {@link #drawRadialTextCentered} would ink for {@code text}, turned with it (the caller's frame). */
+    private static java.awt.Shape radialTextShape(final String text, final FontMetrics fm, final int cx, final int cy,
+                                                  final double r, final double angle) {
+        final double[] f = radialTextFrame(text, fm, cx, cy, r, angle);
+        final int w = fm.stringWidth(text);
+        return AffineTransform.getRotateInstance(f[0], f[1], f[2]).createTransformedShape(new Rectangle2D.Double(
+                f[1] - (w / 2.0), f[3] - fm.getAscent(), w, fm.getAscent() + fm.getDescent()));
     }
 
     /** Radial space (px) reserved OUTSIDE the tip labels for the concentric annotation-column RINGS in the circular
@@ -15734,6 +16585,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if (hasCladeBands()) {
             if (_clade_bands_mode == CLADE_VIS.BOXES) {
                 extra += CLADE_BAND_RIGHT_PAD;
+                if (_clade_box_labels && !drawableCladeLevels().isEmpty()) { // the names past the boxes, read straight
+                    final int label_h = getFontMetricsForLargeDefaultFont().getHeight();
+                    extra += CLADE_BAR_GAP + (isVerticalOrientation() ? label_h
+                            : Math.max(label_h, maxCladeLabelWidth(drawableCladeLevels().get(0)))) + 4;
+                }
             } else if (drawnCladeBandCount() > 0) { // no bar/bracket reserve if every band is a skipped single-member clade
                 final int label_h = getFontMetricsForLargeDefaultFont().getHeight();
                 extra += CLADE_BAND_RIGHT_PAD;
@@ -16021,14 +16877,31 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      *  horizontal/diagonal label space; 0 if none. Skipped single-member clades don't draw, so they don't reserve. */
     private int maxCladeLabelWidth(final CladeLevel level) {
         final FontMetrics fm = getFontMetricsForLargeDefaultFont();
+        // kept per level: the radial layouts ask once per TIP LABEL per paint (their label reach sits inside the
+        // reserve this feeds), and each band's single-member test walks its clade -- tips x bands a paint, 33 ms at
+        // 92 bands measured (2026-11-01). The levels are replaced (and this forgotten) whenever the bands, the mode
+        // or the skip rule change; the font changes on its own, so it is part of the key.
+        if (!fm.getFont().equals(_clade_label_widths_font)) {
+            _clade_label_widths.clear();
+            _clade_label_widths_font = fm.getFont();
+        }
+        final Integer kept = _clade_label_widths.get(level);
+        if (kept != null) {
+            return kept;
+        }
         int max = 0;
         for (final CladeBand band : level.getBands()) {
             if (!skipCladeBand(band)) {
                 max = Math.max(max, fm.stringWidth(band.getTaxon()));
             }
         }
+        _clade_label_widths.put(level, max);
         return max;
     }
+
+    // maxCladeLabelWidth's answers, by level (identity), for this font
+    private final Map<CladeLevel, Integer> _clade_label_widths      = new java.util.IdentityHashMap<>();
+    private Font                           _clade_label_widths_font = null;
 
     /** Whether {@code node} still hangs off the displayed tree's root. A node deleted from the tree keeps its own
      *  children, so it looks perfectly normal in isolation -- only walking UP reveals that it is detached. */
@@ -16096,6 +16969,24 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             final Color c = band.getColor();
             g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), CLADE_BOX_ALPHA));
             g.fillRect(Math.round(left), Math.round(yr[0] - pad), w, h);
+            if (_clade_box_labels) {
+                // the name just past the box, read straight (upright in a vertical orientation), as the JS draws it --
+                // and only where the box is a line tall (wide enough, in a vertical orientation), so no two names
+                // can meet: a smaller clade's name would sit on its neighbours'
+                g.setFont(getTreeFontSet().getLargeFont());
+                final FontMetrics fm = g.getFontMetrics();
+                final int room = isVerticalOrientation() ? fm.stringWidth(band.getTaxon()) : fm.getHeight();
+                if (h >= room) {
+                    g.setColor(getTreeColorSet().getSequenceColor());
+                    final float mid = (yr[0] + yr[1]) / 2.0f;
+                    drawCladeBandLabel(g, band.getTaxon(), right + CLADE_BAR_GAP, mid, fm, CLADE_LABEL_ANGLE.HORIZONTAL);
+                    final int tw = fm.stringWidth(band.getTaxon());
+                    final int th = fm.getHeight();
+                    noteCladeBoxName(band.getTaxon(), isVerticalOrientation() // depth x along, tips y across
+                            ? new Rectangle2D.Float(right + CLADE_BAR_GAP, mid - (tw / 2.0f), th, tw)
+                            : new Rectangle2D.Float(right + CLADE_BAR_GAP, mid - (th / 2.0f), tw, th));
+                }
+            }
         }
     }
 
@@ -17338,6 +18229,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      */
     final int[] layoutForExportSize(final int w, final int h) {
         final int[] prior = { getWidth(), getHeight(), _radial_diameter };
+        _export_layout_height = h; // the frame the legends are placed in (legendPlacementHeight)
         // This re-lays out EVERY display type for the export frame, so from here the coordinates are not the
         // panel's -- in the rectangular family too, which the paint itself never re-centres. restoreLayoutAfterExport
         // puts the distances back and repaints; the node coordinates only return with that paint, and until it
@@ -17361,6 +18253,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         if (prior == null) {
             return;
         }
+        _export_layout_height = 0;
         if (isRadialLayout()) {
             _radial_diameter = prior[2];
         }
@@ -17973,6 +18866,10 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         } else if (getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED) {
             final double angle = getStartingAngle();
             final boolean radial_labels = getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL;
+            _unrooted_wedges.clear();
+            _radial_label_boxes.clear();
+            _radial_domain_boxes.clear();
+            _unrooted_collapsed_corners.clear();
             paintUnrooted(_phylogeny.getRoot(),
                     angle,
                     (float) (angle + (2 * Math.PI)),
@@ -17984,6 +18881,13 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                     graphics_file_height);
             paintQueuedInternalLabels(g, to_pdf, to_graphics_file); // after every tip label
             paintQueuedRadialBranchData(g, to_pdf, to_graphics_file); // now that every line and label is known
+            // shaded boxes as wedge sectors, over the tree like the other layouts' wash, or the bars' and brackets'
+            // marks at the wedges' mouths; the canvas keeps their names
+            // (the drawing canvas, as the ring is centred: a full export's frame, else the panel -- a visible-region
+            // export draws the panel shifted to its crop, so it keeps the names where the screen has them)
+            paintCladeBandsUnrooted(g, isFullCanvasExport(to_pdf, to_graphics_file)
+                    ? new Rectangle(0, 0, graphics_file_width, graphics_file_height)
+                    : new Rectangle(0, 0, getWidth(), getHeight()));
             if ((getControlPanel().getDynamicallyHideData() != null) && !to_pdf && !to_graphics_file) {
                 // the control panel's cue says what the SCREEN hides; an export paint at another size must not move it
                 getControlPanel().setDynamicHidingIsOn((_labels_hidden + _internal_labels_hidden) > 0);
@@ -18037,6 +18941,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             paintCalendarRingsCircular(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
             // the Scale Grid as concentric distance rings behind the tree (self-gated: circularDistanceScaleApplies)
             paintCircularScaleRings(g, center_x, center_y, radius > 0 ? radius : 0, to_pdf, to_graphics_file);
+            _radial_label_boxes.clear(); // the clade marks ring the labels as this pass lays them out
+            _radial_domain_boxes.clear(); // (refilled by paintDomainsCircular, after the clade marks)
             paintCircular(_phylogeny, getStartingAngle(), center_x, center_y, radius > 0 ? radius : 0, g, to_pdf,
                     to_graphics_file);
             paintQueuedInternalLabels(g, to_pdf, to_graphics_file); // after every tip label
@@ -18121,22 +19027,30 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         try {
             final boolean draw_annotation_legend = annotationLegendVisible();
             final boolean draw_color_legend = hasColorByPropertyLegend();
-            if (draw_annotation_legend || draw_color_legend || hasRankLegend()) {
-                final boolean to_screen = !(to_pdf || to_graphics_file);
-                final Rectangle legend_bounds = to_screen
-                        ? getVisibleRect()
-                        : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
-                // one legend slot; a header-focused annotation-column legend wins (the user just clicked it),
-                // else the property-color legend, else the rank legend
-                if (draw_annotation_legend) {
-                    drawAnnotationColumnLegend(g, legend_bounds, to_screen);
-                } else if (draw_color_legend) {
-                    drawPropertyColorLegend(g, legend_bounds, to_screen);
-                } else {
-                    drawRankLegend(g, legend_bounds, to_screen);
-                }
+            final boolean legend_to_screen = !(to_pdf || to_graphics_file);
+            final Rectangle categorical_bounds = legend_to_screen ? getVisibleRect()
+                    : new Rectangle(graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height);
+            if (draw_annotation_legend || draw_color_legend) {
+                // the shared slot: a header-focused annotation-column legend wins (the user just clicked it), else the
+                // property-color legend
+                // pinned to the shared slot: a paint can run while a click on the RANK legend is being handled (its
+                // colour chooser is modal), and must not record this legend into that one
+                inSlot(_shared_slot, () -> {
+                    if (draw_annotation_legend) {
+                        drawAnnotationColumnLegend(g, categorical_bounds, legend_to_screen);
+                    } else {
+                        drawPropertyColorLegend(g, categorical_bounds, legend_to_screen);
+                    }
+                });
             } else {
-                _property_legend_bounds = null; // nothing in the shared slot -> no stale hit region
+                _shared_slot.bounds = null; // nothing in the shared slot -> no stale hit region
+            }
+            // the rank legend in its OWN slot, beside the shared one (both on screen at once); drawn after it, so it
+            // stacks below it at its default corner and is on top for a click
+            if (hasRankLegend()) {
+                inSlot(_rank_slot, () -> drawRankLegend(g, categorical_bounds, legend_to_screen));
+            } else {
+                _rank_slot.bounds = null;
             }
             // "Size by" has its OWN legend (a separate, independently placed key), drawn last so it can appear
             // ALONGSIDE the color/rank legend -- the whole point of the combined color+size figure. Its size dots now

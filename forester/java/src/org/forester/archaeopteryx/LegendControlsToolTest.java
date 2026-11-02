@@ -361,6 +361,8 @@ public final class LegendControlsToolTest {
                                           AppliesTo.NODE ) ); // 5 distinct numbers -> SMALL band
             pl.addProperty( new Property( "data:wide", Integer.toString( i * 7 ), "", "xsd:decimal",
                                           AppliesTo.NODE ) ); // 25 distinct numbers -> LARGE band (> 20)
+            pl.addProperty( new Property( "data:word", "w" + ( char ) ( 'a' + i ), "", "xsd:string",
+                                          AppliesTo.NODE ) ); // 25 distinct words -> a categorical legend, no chip
             leaf.getNodeData().setProperties( pl );
             root.addAsChild( leaf );
         }
@@ -414,6 +416,21 @@ public final class LegendControlsToolTest {
             render( tp );
             if ( tp.legendModeToggleBoundsForTest() != null ) {
                 fail( ok, "no mode chip on a non-switchable field" );
+            }
+            // the chip of the previous legend must not outlive it: [gradient] drawn, then a text field's legend --
+            // a stale chip took the clicks meant for its [by count] (the click handler asks the chip first)
+            tp.setColorByPropertyRef( "data:code" );
+            render( tp );
+            if ( tp.legendModeToggleBoundsForTest() == null ) {
+                fail( ok, "precondition: the [gradient] chip is drawn again" );
+            }
+            tp.setColorByPropertyRef( "data:word" );
+            render( tp );
+            if ( tp.getPropertyColorScheme().isGradient() || tp.isColorBySwitchable() ) {
+                fail( ok, "precondition: a text field draws a categorical legend without a chip" );
+            }
+            if ( tp.legendModeToggleBoundsForTest() != null ) {
+                fail( ok, "a text field's legend keeps no [gradient] chip from the legend before it" );
             }
             ( (JFrame) frame ).dispose();
         } );

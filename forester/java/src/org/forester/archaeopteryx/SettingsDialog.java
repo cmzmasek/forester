@@ -256,7 +256,8 @@ final class SettingsDialog extends JDialog {
         auto_color.setToolTipText( "When a tree is opened, color it right away: by a taxonomic rank above species "
                 + "(genus, family, ...) when a field names one and covers the tips, else by its most informative "
                 + "field (taxonomy, sequence, or metadata) -- like Archaeopteryx.js. A category with more than 20 "
-                + "values is offered in \"Color by\" but never chosen automatically. Turn off to open trees uncolored." );
+                + "values is offered in \"Color by\" but never chosen automatically. A tree saved with its coloring, or "
+                + "with Color by off, opens as saved. Turn off to open trees uncolored." );
         auto_color.addActionListener( e -> _mf.getOptions().setAutoColorNewTrees( auto_color.isSelected() ) );
         add( c, auto_color );
         add( c, cb( _mf._color_labels_same_as_parent_branch ) );

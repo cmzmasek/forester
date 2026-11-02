@@ -455,7 +455,12 @@ public final class ResetToDefaultsTest {
                     if ( !tp.hasAnnotationColumns() ) {
                         fail( ok, "precondition: annotation columns should be active before reset" );
                     }
-                    // clade annotations are per-tab display state exactly like the columns, so a reset owes them too
+                    // clade annotations are per-tab display state exactly like the columns, so a reset owes them too --
+                    // and the boxes' naming choice with them (the legend is the default)
+                    tp.setCladeBoxLabels( true );
+                    if ( !tp.isCladeBoxLabels() ) {
+                        fail( ok, "precondition: the boxes should be named beside each box before reset" );
+                    }
                     tp.setCladeBands( "genus", TreePanel.CLADE_VIS.BARS, false,
                                       TreePanel.CLADE_LABEL_ANGLE.VERTICAL );
                     // assert on the SPECS, not on placed bands: this fixture's taxonomy does not resolve offline,
@@ -599,6 +604,9 @@ public final class ResetToDefaultsTest {
                     if ( ( tp.cladeLevelSpecCountForTest() != 0 ) || tp.hasCladeBands() ) {
                         fail( ok, "clade annotations must be cleared by reset, still "
                                 + tp.cladeLevelSpecCountForTest() + " level(s), ranks " + tp.cladeLevelRanks() );
+                    }
+                    if ( tp.isCladeBoxLabels() ) {
+                        fail( ok, "reset must put the shaded boxes' names back in the legend" );
                     }
                     // 3g. persisted settings file deleted (so the reset survives a restart)
                     if ( Files.exists( settings ) ) {

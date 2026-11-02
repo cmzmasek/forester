@@ -178,20 +178,22 @@ Archaeopteryx; the command-line tools are run via `-cp`, as shown above).
 
 ### Run the test suite
 
-The headless test suite (`org.forester.test.Test`) resolves its test data
-relative to the repository root, so run it from there with the compiled classes
-on the classpath:
+The test suite (`org.forester.test.Test`) resolves its test data relative to the
+repository root, so run it from there, with the compiled classes and the bundled
+libraries on the classpath:
 
 ```
-java -Duser.dir="$(pwd)" -cp forester/java/classes org.forester.test.Test
+java -Duser.dir="$(pwd)" -cp "forester/java/classes:forester/java/resources/*" org.forester.test.Test
 ```
 
-It prints `Failed tests: 0` on success. A handful of GUI integration tests need a
-display (and FlatLaf), so they are kept out of the headless suite (and out of the
-shipped jar) and run individually, for example:
+It prints `Failed tests: 0` on success. Many of its tests drive the Archaeopteryx
+window, so run it with a display: without one (headless, as on a CI server) those
+tests pass without doing anything. On a high-resolution (Retina) screen add
+`-Dsun.java2d.uiScale=1`, which one label-spacing test needs. Any test class also runs on
+its own (the tests are kept out of the shipped jar), for example:
 
 ```
-java -cp forester/java/classes org.forester.archaeopteryx.SubSuperTreeButtonsTest
+java -Duser.dir="$(pwd)" -cp "forester/java/classes:forester/java/resources/*" org.forester.archaeopteryx.CladeBoxesTest
 ```
 
 New or changed code should come with tests — see the existing `*Test` classes for

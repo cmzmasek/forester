@@ -115,6 +115,8 @@ public final class DemoTreeGenerator {
         write( dir, "ncbi-lineage-metadata.xml", ncbiLineageMetadataTree() );
         write( dir, "internal-taxa-check.xml", internalTaxaCheckTree() );
         write( dir, "rank-no-vote.xml", rankNoVoteTree() );
+        write( dir, "clade-boxes.xml", cladeBoxesTree() );
+        write( dir, "clade-boxes-crowded.xml", cladeBoxesCrowdedTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -142,10 +144,10 @@ public final class DemoTreeGenerator {
         write( dir, "crowded-tracks.xml", crowdedTracksTree() );
         write( dir, "sequence-logo.xml", sequenceLogoTree() );
         write( dir, "zero-length-nest.xml", zeroLengthNestTree() );
-        write( dir, "radial-numbers-fit.xml", radialNumbersTree( 10, true ) );
-        write( dir, "radial-numbers-crowded.xml", radialNumbersTree( 32, false ) );
-        write( dir, "radial-labels-fit.xml", radialLabelsTree( 12, true ) );
-        write( dir, "radial-labels-crowded.xml", radialLabelsTree( 96, false ) );
+        write( dir, "radial-numbers-fit.xml", fullNames( radialNumbersTree( 10, true ) ) );
+        write( dir, "radial-numbers-crowded.xml", fullNames( radialNumbersTree( 32, false ) ) );
+        write( dir, "radial-labels-fit.xml", fullNames( radialLabelsTree( 12, true ) ) );
+        write( dir, "radial-labels-crowded.xml", fullNames( radialLabelsTree( 96, false ) ) );
         write( dir, "gtdb-genomes.xml", gtdbGenomeTree() );
         writeText( dir, "gtdb-classifications.tsv", gtdbClassificationsTsv() );
         writeText( dir, "import-annotations.csv", importAnnotationsCsv() );
@@ -1934,6 +1936,152 @@ public final class DemoTreeGenerator {
                              + "contradicted by Uukuniemi virus's own Uukuvirus: reported, never corrected. vipr:Strain "
                              + "is a field, not a rank; repseq:Lineage_L1 is a scheme of the file's own, offered under "
                              + "its spelling. 4 clades at genus; 11 tips, 10 placed." );
+    }
+
+    // ----- "Shaded clade boxes" (Christian, 2026-10-31): the boxes' own legend beside the Color-by legend, the names
+    //       beside each box instead of a legend, and the boxes in the UNROOTED layout as sectors of each clade's
+    //       wedge. 22 coronaviruses in 5 genera (a vipr:Genus field) with a vipr:Host field to colour by; the four
+    //       deltacoronaviruses sit on ZERO-length branches (one point in the tree), whose wedge must still reach past
+    //       their labels. Opens unrooted, the boxes named, coloured by host.
+    private static Phylogeny cladeBoxesTree() {
+        final PhylogenyNode alpha = clade( 0.30,
+                                           clade( 0.10, boxTip( "Human coronavirus 229E", "Alphacoronavirus", "Human", 0.12 ),
+                                                  boxTip( "Bat coronavirus HKU10", "Alphacoronavirus", "Bat", 0.15 ),
+                                                  boxTip( "Human coronavirus NL63", "Alphacoronavirus", "Human", 0.18 ) ),
+                                           clade( 0.12, boxTip( "Porcine epidemic diarrhea virus", "Alphacoronavirus", "Pig", 0.16 ),
+                                                  clade( 0.06, boxTip( "Transmissible gastroenteritis virus", "Alphacoronavirus", "Pig", 0.05 ),
+                                                         boxTip( "Feline coronavirus", "Alphacoronavirus", "Cat", 0.06 ) ) ) );
+        final PhylogenyNode beta = clade( 0.28,
+                                          clade( 0.14, clade( 0.08, boxTip( "SARS coronavirus", "Betacoronavirus", "Human", 0.05 ),
+                                                              clade( 0.03, boxTip( "SARS coronavirus 2", "Betacoronavirus", "Human", 0.02 ),
+                                                                     boxTip( "Bat coronavirus RaTG13", "Betacoronavirus", "Bat", 0.02 ) ) ),
+                                                 clade( 0.12, boxTip( "MERS coronavirus (human)", "Betacoronavirus", "Human", 0.01 ),
+                                                        boxTip( "MERS coronavirus (camel)", "Betacoronavirus", "Camel", 0.01 ) ) ),
+                                          clade( 0.10, clade( 0.06, boxTip( "Human coronavirus OC43", "Betacoronavirus", "Human", 0.07 ),
+                                                              boxTip( "Murine hepatitis virus", "Betacoronavirus", "Mouse", 0.09 ) ),
+                                                 boxTip( "Human coronavirus HKU1", "Betacoronavirus", "Human", 0.14 ) ) );
+        final PhylogenyNode gamma = clade( 0.32,
+                                           clade( 0.10, boxTip( "Avian infectious bronchitis virus", "Gammacoronavirus", "Chicken", 0.04 ),
+                                                  boxTip( "Turkey coronavirus", "Gammacoronavirus", "Turkey", 0.05 ) ),
+                                           boxTip( "Beluga whale coronavirus SW1", "Gammacoronavirus", "Whale", 0.25 ) );
+        final PhylogenyNode delta = clade( 0.30, // identical sequences: every tip ON the clade's root
+                                           boxTip( "Porcine deltacoronavirus", "Deltacoronavirus", "Pig", 0.0 ),
+                                           boxTip( "Bulbul coronavirus HKU11", "Deltacoronavirus", "Bird", 0.0 ),
+                                           boxTip( "Munia coronavirus HKU13", "Deltacoronavirus", "Bird", 0.0 ),
+                                           boxTip( "Night heron coronavirus HKU19", "Deltacoronavirus", "Bird", 0.0 ) );
+        final PhylogenyNode leto = boxTip( "Microhyla letovirus 1", "Alphaletovirus", "Frog", 0.9 );
+        final PhylogenyNode root = clade( 0, clade( 0.2, clade( 0.08, alpha, beta ), clade( 0.10, gamma, delta ) ), leto );
+        // a genome length to size the tips by (Size by), a little over each genus's typical length
+        final Map<String, Double> kb = new HashMap<String, Double>();
+        kb.put( "Alphacoronavirus", 27.2 );
+        kb.put( "Betacoronavirus", 29.8 );
+        kb.put( "Gammacoronavirus", 27.5 );
+        kb.put( "Deltacoronavirus", 25.3 );
+        kb.put( "Alphaletovirus", 22.3 );
+        int k = 0;
+        for( final PhylogenyNode tip : root.getAllExternalDescendants() ) {
+            final String genus = tip.getNodeData().getProperties().getProperties( "vipr:Genus" ).get( 0 ).getValue();
+            num( tip, "vipr:Genome_kb", String.format( Locale.ROOT, "%.1f", kb.get( genus ) + ( 0.1 * ( k++ % 9 ) ) ) );
+        }
+        final Phylogeny phy = tree( root, "Shaded clade boxes (demo)",
+                                    "Synthetic coronavirus tree: 22 tips in 5 genera (a vipr:Genus field), coloured by "
+                                            + "host (vipr:Host). Opens UNROOTED with Annotate Clades by Rank at genus "
+                                            + "as shaded boxes, each named beside its box: every clade is a sector of "
+                                            + "its own wedge, out past its tips' labels. The four deltacoronaviruses "
+                                            + "sit on zero-length branches (one point), and their sector still covers "
+                                            + "their labels. Rectangular and circular name the boxes the same way; "
+                                            + "\"named in the legend\" in the dialog gives the boxes a legend of their own, "
+                                            + "beside the Color-by legend." );
+        figure( phy, "v1;layout=UNROOTED;colorby=vipr:Host;clademode=BOXES;cladeskip=true;cladelevels=genus~VERTICAL;"
+                + "cladenames=labels" );
+        return phy;
+    }
+
+    // ----- The twin of "Shaded clade boxes": a name the rectangular layout REFUSES. 150 picornaviruses in 13 genera,
+    //       6 of them a single tip, some side by side. At any window under ~2,000 px tall a one-tip box is shorter than
+    //       a line of text, and its name would sit on its neighbours': it carries none. The circular and unrooted
+    //       layouts place the names largest clade first: unrooted moves a name outward along its spoke where it
+    //       would touch another, circular leaves it out. Opens rectangular, the boxes named, coloured by host.
+    private static Phylogeny cladeBoxesCrowdedTree() {
+        // one-tip genera side by side (two, then three): their names meet at the wedges' mouths in the unrooted layout
+        final Object[][] genera = { { "Enterovirus", 40, "Human|Chimpanzee" }, { "Hepatovirus", 1, "Human" },
+                { "Parechovirus", 1, "Human" }, { "Kobuvirus", 18, "Cattle|Pig|Human" }, { "Aphthovirus", 22, "Cattle|Pig" },
+                { "Cardiovirus", 1, "Mouse" }, { "Senecavirus", 1, "Pig" }, { "Tremovirus", 1, "Bird" },
+                { "Sapelovirus", 15, "Pig|Bird" }, { "Teschovirus", 20, "Pig" }, { "Avihepatovirus", 12, "Duck" },
+                { "Cosavirus", 1, "Human" }, { "Salivirus", 17, "Human" } };
+        final Random rnd = new Random( 20261031L );
+        PhylogenyNode spine = null; // a ladder of genera, the first nearest the root
+        for( int i = genera.length - 1; i >= 0; --i ) {
+            final String genus = ( String ) genera[ i ][ 0 ];
+            final int n = ( Integer ) genera[ i ][ 1 ];
+            final String[] hosts = ( ( String ) genera[ i ][ 2 ] ).split( "\\|" );
+            final PhylogenyNode g;
+            if ( n == 1 ) {
+                g = boxTip( genus.substring( 0, genus.length() - 5 ) + "virus A", genus, hosts[ 0 ], 0.35 );
+            }
+            else {
+                final List<PhylogenyNode> tips = new ArrayList<PhylogenyNode>();
+                for( int k = 1; k <= n; ++k ) {
+                    tips.add( boxTip( String.format( Locale.ROOT, "%s isolate %02d", genus, k ), genus,
+                                      hosts[ rnd.nextInt( hosts.length ) ], 0.02 + ( 0.01 * rnd.nextInt( 8 ) ) ) );
+                }
+                g = randomClade( tips, rnd );
+                g.setDistanceToParent( 0.25 );
+            }
+            spine = ( spine == null ) ? g : clade( 0.05, g, spine );
+        }
+        spine.setDistanceToParent( 0 );
+        final Phylogeny phy = tree( spine, "Shaded clade boxes, crowded (demo)",
+                                    "The twin of the shaded-clade-boxes demo: 150 picornaviruses in 13 genera (a "
+                                            + "vipr:Genus field), 6 of them a single tip, some side by side, coloured by "
+                                            + "host (vipr:Host). Opens "
+                                            + "rectangular with Annotate Clades by Rank at genus as shaded boxes, each "
+                                            + "named beside its box -- except a box shorter than a line of text, whose "
+                                            + "name would sit on its neighbours': the 6 one-tip genera carry no name in "
+                                            + "any window under ~2,000 px tall. The circular and unrooted layouts place "
+                                            + "the names largest clade first: unrooted moves a name outward where it "
+                                            + "would touch another, circular leaves it out." );
+        figure( phy, "v1;layout=RECTANGULAR;colorby=vipr:Host;clademode=BOXES;cladeskip=true;cladelevels=genus~VERTICAL;"
+                + "cladenames=labels" );
+        return phy;
+    }
+
+    /** A clade over {@code tips} by joining random neighbours (keeps their order, so the genus stays contiguous). */
+    private static PhylogenyNode randomClade( final List<PhylogenyNode> tips, final Random rnd ) {
+        final List<PhylogenyNode> work = new ArrayList<PhylogenyNode>( tips );
+        while ( work.size() > 1 ) {
+            final int i = rnd.nextInt( work.size() - 1 );
+            work.set( i, clade( 0.01 + ( 0.01 * rnd.nextInt( 6 ) ), work.get( i ), work.remove( i + 1 ) ) );
+        }
+        return work.get( 0 );
+    }
+
+    /** A tip with its genus in a vipr:Genus field and, when given, its host in vipr:Host. */
+    private static PhylogenyNode boxTip( final String name, final String genus, final String host, final double length ) {
+        final PhylogenyNode n = leaf( name );
+        n.setDistanceToParent( length );
+        cat( n, "vipr:Genus", genus );
+        if ( host != null ) {
+            cat( n, "vipr:Host", host );
+        }
+        return n;
+    }
+
+    /** The radial crowding demos open with Shorten Labels OFF: their names ("lineage_1" ... "lineage_96") would
+     *  shorten to "1" ... "96" (the prefix every tip shares is dropped), and crowd nowhere -- the very thing they show,
+     *  and the counts their descriptions quote. */
+    private static Phylogeny fullNames( final Phylogeny phy ) {
+        figure( phy, "v1;show.SHORTEN_LABELS=false" );
+        return phy;
+    }
+
+    /** Stores a saved figure (FigureSpec's {@code aptx:figure} text) on the tree, as a save from the window would --
+     *  beside any other tree-level property it carries. */
+    private static void figure( final Phylogeny phy, final String spec ) {
+        if ( phy.getProperties() == null ) {
+            phy.setProperties( new PropertiesList() );
+        }
+        phy.getProperties().addProperty( new Property( "aptx:figure", spec, "", TEXT, AppliesTo.PHYLOGENY ) );
     }
 
     /** A tip whose genus is a vipr:Genus FIELD, with a strain field (no rank) and a lineage scheme of the file's own. */

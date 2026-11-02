@@ -57,9 +57,9 @@ public final class RankDialogLayoutTest {
         }
         try {
             final File f = new File( System.getProperty( "user.dir" ), "forester/demo/colorize-by-rank.xml" );
-            return dialogOk( FigureRenderer.readTrees( f )[ 0 ], "Annotate Clades by Rank", 23, false )
+            return dialogOk( FigureRenderer.readTrees( f )[ 0 ], "Annotate Clades by Rank", 25, false )
                     & dialogOk( FigureRenderer.readTrees( f )[ 0 ], "Colorize Subtrees via Taxonomic Rank", 7, false )
-                    & dialogOk( longSchemeTree(), "Annotate Clades by Rank", 23, true );
+                    & dialogOk( longSchemeTree(), "Annotate Clades by Rank", 25, true );
         }
         catch ( final Throwable e ) {
             e.printStackTrace();

@@ -1969,7 +1969,8 @@ public final class MainFrameApplication extends MainFrame {
         _color_rank_jmi.setToolTipText("for example, at \"Class\" level, colorize mammal specific subtree red");
         _tools_menu.add(_clade_bands_jmi = new JMenuItem("Annotate Clades by Rank…"));
         customizeJMenuItem(_clade_bands_jmi);
-        _clade_bands_jmi.setToolTipText("mark clades at a chosen rank with shaded boxes or right-edge bars + labels");
+        _clade_bands_jmi.setToolTipText("mark clades at a chosen rank with shaded boxes (named in a legend or beside "
+                + "each box), bars or brackets");
         _tools_menu.add(_annotation_columns_jmi = new JMenuItem("Metadata Fields…"));
         customizeJMenuItem(_annotation_columns_jmi);
         _annotation_columns_jmi.setToolTipText(

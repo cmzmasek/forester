@@ -92,6 +92,11 @@ final class PropertyColorScheme {
         return ( p != null ) ? p : DEFAULT_PALETTE;
     }
 
+    /** Test hook: a copy of the named palette's colours. */
+    static Color[] paletteForTest( final String name ) {
+        return paletteByName( name ).clone();
+    }
+
     private final String             _ref;
     // Categorical mode: one palette color per distinct value. _value_to_color maps the
     // (display) representative of each group to its color, for the legend; _key_to_color
@@ -514,6 +519,16 @@ final class PropertyColorScheme {
             return null;
         }
         return _element_slot ? label : label.toLowerCase( Locale.ROOT );
+    }
+
+    /** The label a node's value is shown under -- its display label, case kept -- or null when it has none. */
+    String colorLabelOf( final PhylogenyNode node ) {
+        final String v = nodeValue( node );
+        if ( ForesterUtil.isEmpty( v ) ) {
+            return null;
+        }
+        final String label = displayLabel( v );
+        return label.isEmpty() ? null : label;
     }
 
     /**

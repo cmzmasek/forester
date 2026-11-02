@@ -118,14 +118,29 @@ public final class AptxUtil {
      * Returns a map in the same order as the input.
      */
     /**
-     * Tableau 10 -- the shared, curated qualitative palette for ALL categorical annotation coloring
-     * (taxonomy rank / clade bands, stacked-bar &amp; pie series, protein domains, and -- via
-     * {@link PropertyColorScheme} -- color strips / symbols / color-by-property). Muted and balanced, so
+     * Tableau 10 -- the shared, curated qualitative palette for categorical annotation coloring (stacked-bar &amp;
+     * pie series, protein domains, and -- via {@link PropertyColorScheme} -- color strips / symbols /
+     * color-by-property); the taxonomic-rank marks have their own, {@link #RANK_PALETTE}. Muted and balanced, so
      * many categories read as distinct without clashing. {@link #qualitativeColor} extends it past ten.
      */
     final static Color[] TABLEAU_10 = { new Color( 0x4E79A7 ), new Color( 0xF28E2B ), new Color( 0xE15759 ),
             new Color( 0x76B7B2 ), new Color( 0x59A14F ), new Color( 0xEDC948 ), new Color( 0xB07AA1 ),
             new Color( 0xFF9DA7 ), new Color( 0x9C755F ), new Color( 0xBAB0AC ) };
+
+    /**
+     * The taxonomic-rank marks' OWN palette -- clade boxes, bars and Colorize Subtrees by rank -- so the rank legend
+     * and the Color-by legend beside it never hand out the same colours (Christian, 2026-11-01: "own colors"; both
+     * had dealt Tableau 10 from its start, and a genus and a host came out the same blue). Picked from published
+     * qualitative palettes (d3 category10's purple, Carto Bold's teal, ColorBrewer Dark2's magenta, Paul Tol's
+     * olive, Carto Antique's taupe, ...) and ordered so the FIRST colours are the farthest from the first colours of
+     * both Color-by palettes (Tableau 10, Okabe-Ito): each of the first five is at least 16 CIEDE2000 units from
+     * each of their first five (Tableau against itself: 0). Every colour is mid-light (CIELAB L 48.7-67.1), so a thin
+     * branch, a bar and an 18% box wash read on the white canvas and on the dark one (#2B2B2B) alike; Paul Tol's
+     * muted set, the other candidate, has an indigo (L 22) that vanishes there.
+     */
+    final static Color[] RANK_PALETTE = { new Color( 0x9467BD ), new Color( 0x008695 ), new Color( 0xE7298A ),
+            new Color( 0x999933 ), new Color( 0x8C785D ), new Color( 0xEE8866 ), new Color( 0x8DA0CB ),
+            new Color( 0x68855C ), new Color( 0xA06177 ), new Color( 0xA6761D ) };
 
     /**
      * A qualitative color for index {@code i} from {@code base}. Within the palette it is {@code base[i]};
@@ -157,14 +172,25 @@ public final class AptxUtil {
         return qualitativeColor(TABLEAU_10, i);
     }
 
+    /** {@link #assignDistinctColors} over the rank marks' own {@link #RANK_PALETTE}: each taxon in the input's (sorted)
+     *  order takes the next colour, extended past ten as {@link #qualitativeColor} does. */
+    final static Map<String, Color> assignRankColors(final SortedSet<String> taxa) {
+        return dealColors(taxa, RANK_PALETTE);
+    }
+
     final static Map<String, Color> assignDistinctColors(final SortedSet<String> taxa) {
+        return dealColors(taxa, TABLEAU_10);
+    }
+
+    /** {@code palette} dealt to {@code taxa} in their order, extended past its end ({@link #qualitativeColor}). */
+    private static Map<String, Color> dealColors(final SortedSet<String> taxa, final Color[] palette) {
         final Map<String, Color> result = new LinkedHashMap<String, Color>();
-        if ((taxa == null) || taxa.isEmpty()) {
+        if (taxa == null) {
             return result;
         }
         int i = 0;
         for (final String taxon : taxa) {
-            result.put(taxon, qualitativeColor(TABLEAU_10, i++));
+            result.put(taxon, qualitativeColor(palette, i++));
         }
         return result;
     }
@@ -1768,11 +1794,12 @@ public final class AptxUtil {
             // (forester.js openingVisualization) in the two-priority order (a covered taxonomic rank above species
             // first, PropertyColorScheme), so tiers 0, 1, 3 and 4 can open a tree, each only when nothing above
             // it exists, and a wide field neither opens one nor blocks what sits below it. Only when nothing chose a
-            // color already -- a figure spec restored from the file is applied AFTER this and wins anyway, and a tab
-            // that carries a color keeps it.
+            // color already: a tab that carries a color keeps it, and a figure saved with the tree (applied BEFORE
+            // this, as the tab is added) that says Color by is off keeps it off.
             if (cp.getOptions().isAutoColorNewTrees() && (cp.getMainPanel().getCurrentTreePanel() != null)
                     && (cp.getMainPanel().getCurrentTreePanel().getPhylogeny() == t)
-                    && (cp.getMainPanel().getCurrentTreePanel().getColorByPropertyRef() == null)) {
+                    && (cp.getMainPanel().getCurrentTreePanel().getColorByPropertyRef() == null)
+                    && !cp.getMainPanel().getCurrentTreePanel().isColorByOffByFigure()) {
                 final PropertyColorScheme.VisCandidate first = PropertyColorScheme
                         .openingVisualization(cp.getMainPanel().getCurrentTreePanel().getVisualizationCandidates());
                 final String best = (first == null) ? null : first._ref;

@@ -1169,7 +1169,7 @@ public class TreePanelUtil {
                                                      final TaxonSource source ) {
         final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service, source );
         final Map<PhylogenyNode, RankTaxon> roots = maximalMonochromaticRoots( tree, assignment );
-        final Map<String, Color> colors = AptxUtil.assignDistinctColors( legendTaxa( assignment, roots ) );
+        final Map<String, Color> colors = AptxUtil.assignRankColors( legendTaxa( assignment, roots ) );
         applyColorOverrides( colors, overrides );
         int colorizations = 0;
         for( final Entry<PhylogenyNode, RankTaxon> e : roots.entrySet() ) {
@@ -1288,7 +1288,7 @@ public class TreePanelUtil {
         }
         final Map<PhylogenyNode, RankTaxon> assignment = assignNodesToRankTaxon( tree, rank, service, source );
         final Map<PhylogenyNode, RankTaxon> roots = maximalMonochromaticRoots( tree, assignment );
-        final Map<String, Color> colors = AptxUtil.assignDistinctColors( legendTaxa( assignment, roots ) );
+        final Map<String, Color> colors = AptxUtil.assignRankColors( legendTaxa( assignment, roots ) );
         applyColorOverrides( colors, overrides );
         for( final Entry<PhylogenyNode, RankTaxon> e : roots.entrySet() ) {
             final String taxon = e.getValue().getName();

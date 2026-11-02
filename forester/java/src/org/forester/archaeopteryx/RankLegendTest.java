@@ -59,8 +59,8 @@ public final class RankLegendTest {
         if ( GraphicsEnvironment.isHeadless() ) {
             return true;
         }
-        return testRankColorizeLegend() && testCladeBandLegend() && testLegendHandBack() && testSingleMemberSkip()
-                && testLabelAngle() && testNoValueRow();
+        return testRankColorizeLegend() && testCladeBandLegend() && testLegendHandBack() && testRankSlotOwner()
+                && testSingleMemberSkip() && testLabelAngle() && testNoValueRow();
     }
 
     /** Clade-bar/bracket label ANGLE (root-left): HORIZONTAL / DIAGONAL labels extend rightward and reserve more
@@ -541,7 +541,7 @@ public final class RankLegendTest {
      * Removing the clade marks while a BRANCH rank-colorization is active must hand the colour key back to that
      * colorization, not leave the clade rows on screen.
      * <p>
-     * The bands do not merely add a legend, they OVERWRITE it ({@code updateCladeBandLegend} replaces the rows and
+     * The bands do not merely add a legend, they OVERWRITE it ({@code writeCladeBandLegend} replaces the rows and
      * the title). So a naive "keep the legend if something else owns it" leaves a key describing marks that are
      * gone, at a rank the branches are not coloured by -- and because {@code currentRankLegendRank()} falls back to
      * the branch rank once the bands are gone, a colour picked on one of those stale rows is stored against the
@@ -589,6 +589,93 @@ public final class RankLegendTest {
                     System.out.println( "  removing the clade marks must hand the legend back to the BRANCH rank, "
                             + "got " + tp.rankLegendTitleForTest() );
                 }
+            } );
+            SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
+            return ok[ 0 ];
+        }
+        catch ( final Throwable e ) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * The rank slot's OWNER -- Colorize Subtrees and the clade bands share it: the one applied last, and a rebuild or
+     * recolour of the other does not take it (a Color-by change recolours the bands, and handed them the slot); named
+     * boxes draw no key and hand the slot back to the colorization rather than leave their old legend on screen; a
+     * colour picked on a row is filed under the rank the row is for (it was filed under the bands' rank, and changed
+     * nothing); and the bands going -- Reset, Clear All Overlays and the dialog's remove all come through
+     * {@code clearCladeBands} -- never re-deal the branches, which wiped every branch colour applied by hand since,
+     * with no undo. Neither does a colour picked for the bands' rank.
+     */
+    private static boolean testRankSlotOwner() {
+        try {
+            final Phylogeny phy = twoRankTree();
+            int i = 0;
+            for ( final PhylogenyNode tip : phy.getExternalNodes() ) {
+                tip.getNodeData().setProperties( new PropertiesList() );
+                tip.getNodeData().getProperties().addProperty( new Property( "test:kind", ( ( i++ % 2 ) == 0 ) ? "odd"
+                        : "even", "", "xsd:string", Property.AppliesTo.NODE ) );
+            }
+            final MainFrame[] mf = new MainFrame[ 1 ];
+            SwingUtilities.invokeAndWait( () -> mf[ 0 ] = MainFrameApplication
+                    .createInstance( new Phylogeny[] { phy }, new Configuration(), "owner" ) );
+            final boolean[] ok = { true };
+            SwingUtilities.invokeAndWait( () -> {
+                final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
+                final java.util.function.BiConsumer<Boolean, String> ck = ( b, msg ) -> {
+                    if ( !b ) {
+                        ok[ 0 ] = false;
+                        System.out.println( "  " + msg );
+                    }
+                };
+                tp.setColorByPropertyRef( null );
+                ck.accept( tp.setCladeBands( "order", TreePanel.CLADE_VIS.BARS ) == 4, "precondition: 4 order bars" );
+                ck.accept( "Taxonomy: order".equals( tp.rankLegendTitleForTest() ), "precondition: the bars' legend" );
+                ck.accept( tp.colorByRank( "class" ) == 2, "precondition: 2 classes colorized" );
+                ck.accept( "Taxonomy: class".equals( tp.rankLegendTitleForTest() ), "precondition: applied last, the "
+                        + "colorization's legend; got " + tp.rankLegendTitleForTest() );
+                // a Color-by change recolours the bars; the slot stays the colorization's
+                tp.setColorByPropertyRef( "test:kind" );
+                ck.accept( tp.getPropertyColorScheme() != null, "precondition: Color by is on" );
+                ck.accept( "Taxonomy: class".equals( tp.rankLegendTitleForTest() ), "Color by on keeps the "
+                        + "colorization's legend, applied after the bars; got " + tp.rankLegendTitleForTest() );
+                ck.accept( "class".equals( tp.rankLegendRankForTest( "Mammalia" ) ), "...and its rows are class rows; "
+                        + "got " + tp.rankLegendRankForTest( "Mammalia" ) );
+                tp.setColorByPropertyRef( null );
+                ck.accept( "Taxonomy: class".equals( tp.rankLegendTitleForTest() ), "...and Color by off; got "
+                        + tp.rankLegendTitleForTest() );
+                // a branch coloured by hand after the colorization
+                final PhylogenyNode n0 = phy.getNode( "n0" );
+                final java.awt.Color red = new java.awt.Color( 0xFF0000 );
+                n0.getBranchData().setBranchColor( new org.forester.phylogeny.data.BranchColor( red ) );
+                tp.setColorByPropertyRef( "test:kind" );
+                tp.setRankColorOverride( "order", "Chiroptera", new java.awt.Color( 0x00FF00 ) );
+                ck.accept( red.equals( n0.getBranchData().getBranchColor().getValue() ), "a colour picked for the "
+                        + "bars' rank re-deals no branch" );
+                tp.clearCladeBands();
+                ck.accept( "Taxonomy: class".equals( tp.rankLegendTitleForTest() ), "the bars gone, the colorization's "
+                        + "legend; got " + tp.rankLegendTitleForTest() );
+                ck.accept( ( n0.getBranchData().getBranchColor() != null )
+                        && red.equals( n0.getBranchData().getBranchColor().getValue() ), "the bars gone, a branch "
+                                + "coloured by hand keeps its colour" );
+                // boxes named in the legend take the slot (applied last); named beside each box they draw no key,
+                // and the slot goes back to the colorization -- not their old legend
+                tp.setCladeBoxLabels( false );
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES );
+                ck.accept( "Taxonomy: order".equals( tp.rankLegendTitleForTest() ), "precondition: boxes named in the "
+                        + "legend take the slot; got " + tp.rankLegendTitleForTest() );
+                tp.setCladeBoxLabels( true );
+                tp.setCladeBands( "order", TreePanel.CLADE_VIS.BOXES );
+                ck.accept( "Taxonomy: class".equals( tp.rankLegendTitleForTest() ), "boxes named beside each box give "
+                        + "the slot back to the colorization; got " + tp.rankLegendTitleForTest() );
+                ck.accept( "class".equals( tp.rankLegendRankForTest( "Mammalia" ) ), "...and a colour picked on its row "
+                        + "is filed under class; got " + tp.rankLegendRankForTest( "Mammalia" ) );
+                final java.awt.Color blue = new java.awt.Color( 0x0000FF );
+                tp.setRankColorOverride( tp.rankLegendRankForTest( "Mammalia" ), "Mammalia", blue );
+                ck.accept( blue.equals( tp.rankLegendColor( "Mammalia" ) )
+                        && blue.equals( phy.getNode( "n2" ).getBranchData().getBranchColor().getValue() ),
+                           "...and recolours the class legend and branches" );
             } );
             SwingUtilities.invokeAndWait( () -> ( (JFrame) mf[ 0 ] ).dispose() );
             return ok[ 0 ];

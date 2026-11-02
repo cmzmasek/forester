@@ -63,6 +63,7 @@ final class FigureSpec {
     private static final String K_CLADE_MODE   = "clademode";
     private static final String K_CLADE_SKIP   = "cladeskip";
     private static final String K_CLADE_LEVELS = "cladelevels";   // rank:angle|rank:angle...
+    private static final String K_CLADE_NAMES  = "cladenames";    // shaded boxes: "labels" beside each box | "legend"
     private static final String K_LABEL_PROPS  = "labelprops";    // ref|ref...
     private static final String K_COLUMNS      = "columns";       // ref:type:shape:normalized|...
     private static final String K_SHOW_PREFIX  = "show.";         // + DisplayOption.name()
@@ -105,6 +106,7 @@ final class FigureSpec {
         f.put( K_CLADE_MODE, ( tp.getCladeBandsMode() == null ) ? null : tp.getCladeBandsMode().name() );
         f.put( K_CLADE_SKIP, Boolean.toString( tp.isCladeBandsSkipSingletons() ) );
         f.put( K_CLADE_LEVELS, joinCladeLevels( tp.getCladeLevelSpecs() ) );
+        f.put( K_CLADE_NAMES, tp.isCladeBoxLabels() ? "labels" : "legend" );
         f.put( K_LABEL_PROPS, joinList( tp.getLabelPropertyRefs() ) );
         f.put( K_COLUMNS, joinColumns( tp.getAnnotationColumnSpecs() ) );
         return f;
@@ -150,7 +152,11 @@ final class FigureSpec {
                 tp.setShows( opt, Boolean.parseBoolean( v ) );
             }
         }
-        tp.setColorByPropertyRef( emptyToNull( get( K_COLOR_BY ) ) );
+        final String color_by = get( K_COLOR_BY );
+        tp.setColorByPropertyRef( emptyToNull( color_by ) );
+        // Color by OFF said in so many words (every figure saved with it off says colorby=""): the load-time auto-colour
+        // runs after this, and a figure must not reopen coloured (before 0.11.198 it did)
+        tp.setColorByOffByFigure( ( color_by != null ) && ( emptyToNull( color_by ) == null ) );
         tp.setSizeByPropertyRef( emptyToNull( get( K_SIZE_BY ) ) );
         tp.setAncestralPieTrait( emptyToNull( get( K_PIE_TRAIT ) ) );
         final List<String> labels = splitList( get( K_LABEL_PROPS ) );
@@ -163,6 +169,7 @@ final class FigureSpec {
         final List<CladeLevel.Spec> levels = parseCladeLevels( get( K_CLADE_LEVELS ) );
         final TreePanel.CLADE_VIS mode = enumOf( TreePanel.CLADE_VIS.class, get( K_CLADE_MODE ) );
         if ( !levels.isEmpty() && ( mode != null ) ) {
+            tp.setCladeBoxLabels( "labels".equals( get( K_CLADE_NAMES ) ) ); // before the levels: they build the legend
             tp.setCladeLevels( levels, mode, Boolean.parseBoolean( get( K_CLADE_SKIP ) ) );
         }
         else {

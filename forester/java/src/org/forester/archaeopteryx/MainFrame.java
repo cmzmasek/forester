@@ -1563,8 +1563,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * The Tools "Annotate Clades by Rank…" operation: pick a rank and a mode (shaded boxes or right-edge
-     * bars), resolve any unplaced tips online if the user agrees (off the EDT), then draw the bands.
+     * The Tools "Annotate Clades by Rank…" operation: pick a rank, a source and a mode (shaded boxes, named in the
+     * legend or beside each box; bars; brackets), resolve the tips (online off the EDT when the source says so), then
+     * draw the bands.
      * Mirrors {@link #colorRank()} but renders {@link CladeBand}s instead of coloring branches.
      */
     void buildEditMenu() {
@@ -2025,6 +2026,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         bg.add(boxes_rb);
         bg.add(bars_rb);
         bg.add(brackets_rb);
+        // shaded boxes name their clades in the legend, or beside each box (Christian, 2026-10-31, "like the JS does")
+        final JRadioButton names_legend_rb = new JRadioButton("    named in the legend", !tp.isCladeBoxLabels());
+        final JRadioButton names_label_rb = new JRadioButton("    named beside each box", tp.isCladeBoxLabels());
+        final ButtonGroup names_bg = new ButtonGroup();
+        names_bg.add(names_legend_rb);
+        names_bg.add(names_label_rb);
         // a bar/bracket over a single-tip clade is a degenerate one-row stub; skip those by default (Bars/Brackets
         // only -- a shaded box over one tip is a harmless soft highlight, so Boxes ignore this)
         final JCheckBox skip_singletons_cb = new JCheckBox("Skip single-member clades", true);
@@ -2041,7 +2048,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final java.awt.event.ActionListener syncBarBracket = e -> {
             final boolean on = bars_rb.isSelected() || brackets_rb.isSelected();
             skip_singletons_cb.setEnabled(on);
-            angle_box.setEnabled(on);
+            names_legend_rb.setEnabled(boxes_rb.isSelected());
+            names_label_rb.setEnabled(boxes_rb.isSelected());
+            angle_box.setEnabled(on); // bars and brackets only: a box's name is read straight, as the JS draws it
             rank_box_2.setEnabled(on);
             rank_box_3.setEnabled(on);
             final boolean two = on && !CLADE_LEVEL_NONE.equals(rank_box_2.getSelectedItem());
@@ -2081,7 +2090,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         syncWrite.actionPerformed(null);
         final JPanel panel = stackedRows(new JLabel("Annotate clades by rank:"), rank_box, angle_box, new JLabel(" "),
                 new JLabel("Taxa from:"), chooser.sourcePanel(), new JLabel(" "),
-                new JLabel("Show as:"), boxes_rb, bars_rb, brackets_rb, skip_singletons_cb, new JLabel(" "),
+                new JLabel("Show as:"), boxes_rb, names_legend_rb, names_label_rb, bars_rb, brackets_rb,
+                skip_singletons_cb, new JLabel(" "),
                 new JLabel("Additional nested levels (Bars / Brackets only):"), rank_box_2, angle_box_2, rank_box_3,
                 angle_box_3, new JLabel(" "),
                 write_cb, overwrite_cb, chooser.writeLineagesBox(), report_only_cb);
@@ -2092,18 +2102,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (chooser.isFirstEntrySelected()) {
             // "remove" wins over every other control in the dialog -- there is no rank to draw or report. The write
             // checkboxes are disabled while this entry is selected, so nothing is silently dropped here.
-            final TreePanel.CLADE_VIS was = tp.getCladeBandsMode();
+            // the room the marks took is given back -- only when they took some (bars, brackets, named boxes; boxes
+            // named in the legend take none): re-fitting otherwise would throw away the user's zoom for nothing
+            final boolean reserved = tp.cladeMarksReserveRoom();
             tp.clearCladeBands();
-            // Only BARS/BRACKETS reserved an extent to reclaim, and only in a horizontal rectangular layout -- the
-            // same gate reportCladeBands uses. Re-fitting otherwise would throw away the user's zoom for nothing,
-            // or (root-top/bottom) re-fit the axis that never carried the marks.
-            if ((was == TreePanel.CLADE_VIS.BARS) || (was == TreePanel.CLADE_VIS.BRACKETS)) {
-                if (tp.isVerticalOrientation()) {
-                    getControlPanel().fitHeight();
-                }
-                else if (!tp.isRadialLayout()) {
-                    getControlPanel().fitWidth();
-                }
+            if (reserved) {
+                refitForCladeMarks(tp);
             }
             tp.repaint();
             repaint();
@@ -2123,6 +2127,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _last_taxon_source = source;
         final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS
                 : brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BOXES;
+        final boolean box_labels = names_label_rb.isSelected();
         final List<CladeLevel.Spec> specs = new ArrayList<>();
         specs.add(new CladeLevel.Spec(r, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
         if (mode != TreePanel.CLADE_VIS.BOXES) { // boxes are single-level by design
@@ -2138,12 +2143,23 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if (source.isOnline() && !unresolved.isEmpty()) {
             new Thread(new OnlineTaxonResolver(this, "clade bands (" + r + ")", unresolved,
-                    err -> reportCladeBands(tp, r, specs, mode, write, overwrite, write_lineages, skip_singletons,
-                                            source, report_only, err))).start();
+                    err -> reportCladeBands(tp, r, specs, mode, box_labels, write, overwrite, write_lineages,
+                                            skip_singletons, source, report_only, err))).start();
             return;
         }
-        reportCladeBands(tp, r, specs, mode, write, overwrite, write_lineages, skip_singletons, source, report_only,
-                         null);
+        reportCladeBands(tp, r, specs, mode, box_labels, write, overwrite, write_lineages, skip_singletons, source,
+                         report_only, null);
+    }
+
+    /** Re-fits the depth axis after the clade marks' room changed: the height in a root-top/bottom tree (where the
+     *  marks run along the bottom), else the width (the radial layouts re-derive their radius from it too). */
+    private void refitForCladeMarks(final TreePanel tp) {
+        if (tp.isVerticalOrientation()) {
+            tp.getControlPanel().fitHeight();
+        }
+        else {
+            tp.getControlPanel().fitWidth();
+        }
     }
 
     private static String[] itemsOf(final JComboBox<String> box) {
@@ -2227,7 +2243,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * @param report_only open the per-tip report and change nothing (no drawing, no write)
      */
     private void reportCladeBands(final TreePanel tp, final String rank, final List<CladeLevel.Spec> specs,
-                                  final TreePanel.CLADE_VIS mode, final boolean write, final boolean overwrite,
+                                  final TreePanel.CLADE_VIS mode, final boolean box_labels, final boolean write,
+                                  final boolean overwrite,
                                   final boolean write_lineages, final boolean skip_singletons,
                                   final TaxonSource source, final boolean report_only, final String error) {
         final java.util.List<String> asked = new ArrayList<>();
@@ -2251,14 +2268,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             kept = write_lineages ? tp.writeLineageMetadata() : 0;
             wrote = write ? tp.writeCladeTaxonomiesByRank(rank, overwrite, source) : 0;
         }
+        // the tab's naming choice goes in with the levels it names (they build the legend from it) -- set here, not as
+        // the dialog closed: an online lookup runs first, and every paint in between drew the OLD marks the new way
+        final boolean reserved = tp.cladeMarksReserveRoom();
+        if (mode == TreePanel.CLADE_VIS.BOXES) { // bars and brackets leave the boxes' choice as it was, for next time
+            tp.setCladeBoxLabels(box_labels);
+        }
         final int n = tp.setCladeLevels(specs, mode, skip_singletons, source);
         if (n > 0) {
             tp.setEdited(true);
-            // bars/brackets extend to the right of the labels; fit the width so they are immediately
-            // visible without the user having to press "W" (boxes sit within the existing tree width)
-            if ((mode == TreePanel.CLADE_VIS.BARS) || (mode == TreePanel.CLADE_VIS.BRACKETS)) {
-                tp.getControlPanel().fitWidth();
-            }
+        }
+        // bars, brackets and named boxes take room past the labels (boxes named in the legend sit within the tree):
+        // fit so they are visible without the user having to press "W" -- and give the room back when the marks
+        // that took it are replaced by ones that take none
+        if (reserved || tp.cladeMarksReserveRoom()) {
+            refitForCladeMarks(tp);
         }
         final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)"
                 : (mode == TreePanel.CLADE_VIS.BRACKETS) ? "bracket(s)" : "box(es)";
@@ -3734,6 +3758,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.clearAnnotationColumns(); // per-tab: drop any Tools>Annotation Fields selection (fresh install has none)
                 tp.setMatrixColumnOrder(MatrixColumnOrder.DEFAULT); // per-tab: back to Clustered (no columns left to move)
                 tp.clearCladeBands(); // per-tab: likewise the Tools>Annotate Clades by Rank marks + their legend
+                tp.setCladeBoxLabels(false); // per-tab: shaded boxes named in the legend again (the shipped default)
             }
             syncMatrixColumnOrderMenu(); // the View > Order Matrix Columns radios follow the reset
             final ControlPanel cp = getMainPanel().getControlPanel();

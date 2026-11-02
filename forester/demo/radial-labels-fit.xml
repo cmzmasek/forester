@@ -53,5 +53,6 @@
       <branch_length>0.5</branch_length>
     </clade>
   </clade>
+  <property ref="aptx:figure" datatype="xsd:string" applies_to="phylogeny">v1;show.SHORTEN_LABELS=false</property>
 </phylogeny>
 </phyloxml>

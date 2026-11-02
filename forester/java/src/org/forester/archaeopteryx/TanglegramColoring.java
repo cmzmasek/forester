@@ -35,8 +35,8 @@ import org.forester.util.ForesterUtil;
 /**
  * Headless support for colouring a tanglegram's connectors by a categorical tip attribute: which fields are available
  * to colour by (taxonomy scientific name / code, and any categorical node property the tips carry), and the
- * value&rarr;colour palette for a chosen field. The palette reuses {@link AptxUtil#assignDistinctColors} (the same
- * deterministic, reproducible spread the rank colorizer uses).
+ * value&rarr;colour palette for a chosen field. The palette reuses {@link AptxUtil#assignDistinctColors} (a
+ * deterministic, reproducible spread; the rank marks deal their own, {@link AptxUtil#RANK_PALETTE}).
  */
 final class TanglegramColoring {
 

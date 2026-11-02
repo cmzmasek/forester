@@ -124,6 +124,8 @@ public final class DemoTreesTest {
         // the joint rules: a vipr: field places, an unannotated tip is swept in without a vote, an annotated node's
         // word reaches its bare tip, a contradicted node is reported, strain is no rank, a scheme of the file's own is
         ok &= rankNoVoteOk( "rank-no-vote.xml" );
+        // shaded clade boxes and their crowded twin: the counts and the saved figures their README rows quote
+        ok &= cladeBoxesOk();
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
         // break long branches: a phylogram with branch lengths AND a genuine outlier branch (> the auto cap), so the
@@ -2969,6 +2971,85 @@ public final class DemoTreesTest {
             return note( sparse_name + ": Host, Year, Genus and opens on Host; got " + PropertyColorSchemeTest.refsOf( cs ) );
         }
         return true;
+    }
+
+    /**
+     * clade-boxes.xml and clade-boxes-crowded.xml have what their README rows say: 22 coronaviruses in 5 genus clades,
+     * every tip with a host and a numeric genome length, the 4 deltacoronaviruses on zero-length branches, a saved
+     * figure opening unrooted with named boxes coloured by host; and 150 picornaviruses in 13 genus clades, 6 of them
+     * one tip, two such pairs side by side, opening rectangular with named boxes. (How they DRAW: CladeBoxesTest.)
+     */
+    private static boolean cladeBoxesOk() {
+        final Phylogeny phy = load( "clade-boxes.xml" );
+        final Phylogeny crowded = load( "clade-boxes-crowded.xml" );
+        if ( ( phy == null ) || ( crowded == null ) ) {
+            return false;
+        }
+        final java.util.List<CladeBand> bands = TreePanelUtil.cladeBands( phy, "genus", null, null, null, TaxonSource.TREE );
+        if ( ( phy.getNumberOfExternalNodes() != 22 ) || ( bands.size() != 5 ) ) {
+            return note( "clade-boxes.xml: 22 tips in 5 genus clades, got " + phy.getNumberOfExternalNodes() + " / "
+                    + bands.size() );
+        }
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            final org.forester.phylogeny.data.PropertiesList p = tip.getNodeData().getProperties();
+            if ( ( p == null ) || p.getProperties( "vipr:Host" ).isEmpty() || p.getProperties( "vipr:Genome_kb" ).isEmpty()
+                    || !"xsd:decimal".equals( p.getProperties( "vipr:Genome_kb" ).get( 0 ).getDataType() ) ) {
+                return note( "clade-boxes.xml: every tip has a vipr:Host and a numeric vipr:Genome_kb; " + tip.getName() );
+            }
+        }
+        int on_root = 0;
+        for( final CladeBand b : bands ) {
+            if ( "Deltacoronavirus".equals( b.getTaxon() ) ) {
+                for( final PhylogenyNode tip : b.getRoot().getAllExternalDescendants() ) {
+                    on_root += ( ( tip.getParent() == b.getRoot() ) && ( tip.getDistanceToParent() == 0 ) ) ? 1 : 0;
+                }
+            }
+        }
+        if ( on_root != 4 ) {
+            return note( "clade-boxes.xml: the 4 deltacoronaviruses sit on zero-length branches off their clade's root, got "
+                    + on_root );
+        }
+        final FigureSpec f = FigureSpec.readFrom( phy );
+        if ( ( f == null ) || !"UNROOTED".equals( f.get( "layout" ) ) || !"BOXES".equals( f.get( "clademode" ) )
+                || !"labels".equals( f.get( "cladenames" ) ) || !"vipr:Host".equals( f.get( "colorby" ) )
+                || !"genus~VERTICAL".equals( f.get( "cladelevels" ) ) ) {
+            return note( "clade-boxes.xml: opens unrooted, genus boxes named, coloured by host; got "
+                    + ( ( f == null ) ? null : f.toPropertyValue() ) );
+        }
+        final java.util.List<CladeBand> cb = TreePanelUtil.cladeBands( crowded, "genus", null, null, null, TaxonSource.TREE );
+        int one_tip = 0;
+        for( final CladeBand b : cb ) {
+            one_tip += b.getRoot().isExternal() ? 1 : 0;
+        }
+        if ( ( crowded.getNumberOfExternalNodes() != 150 ) || ( cb.size() != 13 ) || ( one_tip != 6 ) ) {
+            return note( "clade-boxes-crowded.xml: 150 tips in 13 genus clades, 6 of one tip; got "
+                    + crowded.getNumberOfExternalNodes() + " / " + cb.size() + " / " + one_tip );
+        }
+        // side by side: consecutive tips that are each a one-tip genus (Hepato|Parecho, Cardio|Seneca|Tremo)
+        int pairs = 0;
+        final java.util.List<PhylogenyNode> tips = crowded.getExternalNodes();
+        for( int i = 1; i < tips.size(); ++i ) {
+            pairs += ( isOneTipGenus( cb, tips.get( i - 1 ) ) && isOneTipGenus( cb, tips.get( i ) ) ) ? 1 : 0;
+        }
+        if ( pairs != 3 ) {
+            return note( "clade-boxes-crowded.xml: one-tip genera side by side, 3 neighbouring pairs; got " + pairs );
+        }
+        final FigureSpec g = FigureSpec.readFrom( crowded );
+        if ( ( g == null ) || !"RECTANGULAR".equals( g.get( "layout" ) ) || !"labels".equals( g.get( "cladenames" ) )
+                || !"BOXES".equals( g.get( "clademode" ) ) ) {
+            return note( "clade-boxes-crowded.xml: opens rectangular, genus boxes named; got "
+                    + ( ( g == null ) ? null : g.toPropertyValue() ) );
+        }
+        return true;
+    }
+
+    private static boolean isOneTipGenus( final java.util.List<CladeBand> bands, final PhylogenyNode tip ) {
+        for( final CladeBand b : bands ) {
+            if ( b.getRoot() == tip ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean rankNoVoteOk( final String file_name ) {
