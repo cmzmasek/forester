@@ -1707,38 +1707,57 @@ public final class AptxUtil {
         }
     }
 
+    /**
+     * The load-time guesses: display settings derived from what the tree carries (no branch lengths: a cladogram;
+     * support values or events: shown; branch colours or widths, domains, an alignment: switched on; ...).
+     * <p>
+     * <b>A saved figure wins.</b> Its tab took the figure as it was added ({@link MainPanel#addPhylogenyInNewTab}),
+     * and every guess below leaves alone a setting that figure names ({@link FigureSpec#names}), so a tree reopens
+     * as it was saved -- a tree saved with its confidence values off no longer reopens with them on, nor an aligned
+     * phylogram as the user's default. The one exception: a tree with no branch lengths opens as a cladogram
+     * whatever its figure says, since there is nothing to draw a phylogram with. Settings a figure does not carry
+     * (the node-age and fossil bars, tip images) are guessed as for any tree.
+     */
     final static void lookAtSomeTreePropertiesForAptxControlSettings(final Phylogeny t, final ControlPanel cp) {
         if ((t != null) && !t.isEmpty()) {
+            final FigureSpec figure = FigureSpec.readFrom(t);
             final boolean has_bl = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero(t);
             if (!has_bl) {
                 cp.setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
                 cp.setDrawPhylogramEnabled(false);
             }
-            if (t.getFirstExternalNode().getBranchData().getBranchColor() != null
+            // through setCheckbox, not the bare widget: the paint reads the TAB's copy, and the later guess whose push
+            // used to carry a bare widget change onto the tab does not run when the figure names that one
+            if (!figureNames(figure, DisplayOption.USE_STYLE)
+                    && t.getFirstExternalNode().getBranchData().getBranchColor() != null
                     && cp.getUseVisualStylesCb() != null) {
-                cp.getUseVisualStylesCb().setSelected(true);
+                cp.setCheckbox(DisplayOption.USE_STYLE, true);
             }
-            if (t.getFirstExternalNode().getBranchData().getBranchWidth() != null
+            if (!figureNames(figure, DisplayOption.WIDTH_BRANCHES)
+                    && t.getFirstExternalNode().getBranchData().getBranchWidth() != null
                     && t.getFirstExternalNode().getBranchData().getBranchWidth()
                     .getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE
                     && cp.getUseBranchWidthsCb() != null) {
-                cp.getUseBranchWidthsCb().setSelected(true);
+                cp.setCheckbox(DisplayOption.WIDTH_BRANCHES, true);
             }
             if (DisplayOption.DISPLAY_AS_PHYLOGRAM.isGuessedByDefault()) {
                 if (cp.getDisplayAsAlignedPhylogramRb() != null) {
                     if (has_bl) {
                         // open the tree in the user's persisted P/A/C preference (default UNALIGNED_PHYLOGRAM), gated
                         // on the branch lengths -- so a restored "A"/"C" choice survives a restart
-                        cp.setTreeDisplayType(AptxUtil.preferredDisplayTypeForBranchLengthTree(
-                                AptxUtil.isMostlyMeasuredForPhylogram(t),
-                                cp.getOptions().getPhylogenyDisplayType()));
+                        if (!figureNames(figure, DisplayOption.DISPLAY_AS_PHYLOGRAM)) {
+                            cp.setTreeDisplayType(AptxUtil.preferredDisplayTypeForBranchLengthTree(
+                                    AptxUtil.isMostlyMeasuredForPhylogram(t),
+                                    cp.getOptions().getPhylogenyDisplayType()));
+                        }
                         cp.setDrawPhylogramEnabled(true);
                     } else {
                         cp.setTreeDisplayType(Options.PHYLOGENY_DISPLAY_TYPE.CLADOGRAM);
                     }
                 }
             }
-            if (DisplayOption.WRITE_CONFIDENCE_VALUES.isGuessedByDefault()) {
+            if (DisplayOption.WRITE_CONFIDENCE_VALUES.isGuessedByDefault()
+                    && !figureNames(figure, DisplayOption.WRITE_CONFIDENCE_VALUES)) {
                 if (cp.getWriteConfidenceCb() != null) {
                     if (AptxUtil.isHasAtLeastOneBranchWithSupportValues(t)) {
                         cp.setCheckbox(DisplayOption.WRITE_CONFIDENCE_VALUES, true);
@@ -1747,7 +1766,7 @@ public final class AptxUtil {
                     }
                 }
             }
-            if (DisplayOption.WRITE_EVENTS.isGuessedByDefault()) {
+            if (DisplayOption.WRITE_EVENTS.isGuessedByDefault() && !figureNames(figure, DisplayOption.WRITE_EVENTS)) {
                 if (cp.getShowEventsCb() != null) {
                     if (AptxUtil.isHasAtLeastNodeWithEvent(t)) {
                         cp.setCheckbox(DisplayOption.WRITE_EVENTS, true);
@@ -1758,8 +1777,17 @@ public final class AptxUtil {
             }
             // A tree with domains: switch the "Domain Architectures" display on and fit it to screen,
             // so the domains are shown right away (most users would not find the checkbox otherwise).
+            // A figure saved with the track ON gets the same (the track's width is not part of a figure), but not the
+            // switch to radial labels when it names a direction. One saved with it OFF keeps it off, at the initial
+            // width all the same, so ticking it later shows the track as a guessed one opens.
             if (AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture(t)) {
-                cp.showDomainArchitecturesFitted();
+                if (!figureNames(figure, DisplayOption.SHOW_DOMAIN_ARCHITECTURES)
+                        || figure.shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES)) {
+                    cp.showDomainArchitecturesFitted((figure == null) || !figure.namesLabelDirection());
+                }
+                else {
+                    cp.fitInitialDomainWidth();
+                }
                 assignDomainPalette(t, cp.getMainPanel());
             }
             // "Node Age Bars (HPD)" and "Fossil Range Bars" are data-driven GLOBAL toggles (Options + a menu item),
@@ -1784,7 +1812,8 @@ public final class AptxUtil {
             // CURRENT. Guarded the same way the auto-colour block below is: this method tolerates being called
             // for a tree that is not the front tab, and without the guard such a call would switch the alignment
             // on for someone else's tab and leave the shared widget latched on for every tab opened after it.
-            if (hasAlignedSequences(t) && (cp.getMainPanel().getCurrentTreePanel() != null)
+            if (!figureNames(figure, DisplayOption.SHOW_MSA) && hasAlignedSequences(t)
+                    && (cp.getMainPanel().getCurrentTreePanel() != null)
                     && (cp.getMainPanel().getCurrentTreePanel().getPhylogeny() == t)) {
                 cp.setCheckbox(DisplayOption.SHOW_MSA, true);
             }
@@ -1809,6 +1838,11 @@ public final class AptxUtil {
                 }
             }
         }
+    }
+
+    /** Whether the tree's saved figure (null: none) names {@code opt}, so a load-time guess must leave it alone. */
+    private static boolean figureNames(final FigureSpec figure, final DisplayOption opt) {
+        return (figure != null) && figure.names(opt);
     }
 
     /** Set the two data-driven global overlay toggles (Node Age HPD bars, Fossil Range bars) to whether ANY open tree

@@ -146,10 +146,12 @@ final class FigureSpec {
                 tp.getOptions().setNodeLabelDirection( ld ); // aptx_render: no frame, no menus
             }
         }
+        // by shows(): what this sets and what the load-time guesses leave alone are one test (DISPLAY_AS_PHYLOGRAM
+        // is never a per-tab boolean: displaytype carries it, above)
         for( final DisplayOption opt : DisplayOption.values() ) {
-            final String v = get( K_SHOW_PREFIX + opt.name() );
-            if ( v != null ) {
-                tp.setShows( opt, Boolean.parseBoolean( v ) );
+            final Boolean on = shows( opt );
+            if ( on != null ) {
+                tp.setShows( opt, on.booleanValue() );
             }
         }
         final String color_by = get( K_COLOR_BY );
@@ -175,6 +177,35 @@ final class FigureSpec {
         else {
             tp.clearCladeBands();
         }
+    }
+
+    // --- what the figure names: the load-time guesses leave these alone ---------------------------------------
+
+    /**
+     * Whether this figure sets {@code opt} -- the test {@link #applyTo} itself uses (through {@link #shows}), so "the
+     * figure set it" and "a load-time guess leaves it alone" are one question: a {@code show.} key with any value
+     * (an empty one reads as off); for {@link DisplayOption#DISPLAY_AS_PHYLOGRAM}, a {@code displaytype} this
+     * version knows (an unknown one is skipped, so the guess decides).
+     */
+    boolean names( final DisplayOption opt ) {
+        if ( opt == DisplayOption.DISPLAY_AS_PHYLOGRAM ) {
+            return enumOf( Options.PHYLOGENY_DISPLAY_TYPE.class, get( K_DISPLAY_TYPE ) ) != null;
+        }
+        return get( K_SHOW_PREFIX + opt.name() ) != null;
+    }
+
+    /** The on/off {@link #applyTo} sets for {@code opt}, or null when this figure does not name it (and for
+     *  {@link DisplayOption#DISPLAY_AS_PHYLOGRAM}, a three-way choice: ask {@link #names}). */
+    Boolean shows( final DisplayOption opt ) {
+        if ( ( opt == DisplayOption.DISPLAY_AS_PHYLOGRAM ) || !names( opt ) ) {
+            return null;
+        }
+        return Boolean.valueOf( Boolean.parseBoolean( get( K_SHOW_PREFIX + opt.name() ) ) );
+    }
+
+    /** Whether this figure sets the radial layouts' label direction (a value this version knows, as applyTo). */
+    boolean namesLabelDirection() {
+        return enumOf( Options.NODE_LABEL_DIRECTION.class, get( K_LABEL_DIR ) ) != null;
     }
 
     /** The figure a tree gets when everything is switched off -- what "Clear All Overlays" applies. Only the

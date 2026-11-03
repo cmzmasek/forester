@@ -36,6 +36,8 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import java.util.ArrayList;
 import java.util.List;
+import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -163,6 +165,8 @@ public final class DemoTreeGenerator {
         write( dir, "node-data-editor.xml", nodeDataEditorTree() );
         write( dir, "node-data-links.xml", nodeDataLinksTree() );
         write( dir, "node-data-links-none.xml", nodeDataLinksNoneTree() );
+        write( dir, "saved-figure.xml", savedFigureTree( true ) );
+        write( dir, "saved-figure-none.xml", savedFigureTree( false ) );
         write( dir, "tree-properties.xml", treePropertiesTree() );
         writeText( dir, "beast-annotations.nex", beastAnnotationsNexus() );
         writeText( dir, "beast-rate-missing.nex", beastRateMissingNexus() );
@@ -2064,6 +2068,79 @@ public final class DemoTreeGenerator {
         if ( host != null ) {
             cat( n, "vipr:Host", host );
         }
+        return n;
+    }
+
+    // ----- "A saved figure wins" and its twin. A small Src-family kinase tree carrying the data that switches
+    //       displays on when a tree opens: support values, duplications, branch colours and widths (on the
+    //       first tip, which is where the colour and width guesses look), a domain architecture and an aligned
+    //       sequence on every tip. The demo's saved figure turns each of them off and asks for an aligned phylogram,
+    //       and the tree opens exactly that way; the twin is the same tree without a figure, where each is guessed.
+
+    /** The saved-figure demo's figure: every setting the load-time guesses would otherwise decide, each the other way. */
+    public static final String SAVED_FIGURE = "v1;layout=RECTANGULAR;displaytype=ALIGNED_PHYLOGRAM;"
+            + "show.WRITE_CONFIDENCE_VALUES=false;show.WRITE_EVENTS=false;show.USE_STYLE=false;show.WIDTH_BRANCHES=false;"
+            + "show.SHOW_DOMAIN_ARCHITECTURES=false;show.SHOW_MSA=false";
+
+    private static Phylogeny savedFigureTree( final boolean with_figure ) {
+        final String base = "MGSNKSKPKDASQRRRSLEPAENVHGAGGA"; // 30 columns
+        final PhylogenyNode src_h = savedFigureTip( "SRC_HUMAN", 0.04, base );
+        final PhylogenyNode src_m = savedFigureTip( "SRC_MOUSE", 0.05, sub( base, 7, 'R' ) );
+        final PhylogenyNode yes_h = savedFigureTip( "YES_HUMAN", 0.06, sub( sub( base, 3, 'T' ), 18, 'D' ) );
+        final PhylogenyNode yes_m = savedFigureTip( "YES_MOUSE", 0.07, sub( sub( base, 3, 'T' ), 19, 'K' ) );
+        final PhylogenyNode fyn_h = savedFigureTip( "FYN_HUMAN", 0.05, sub( sub( base, 10, '-' ), 22, 'S' ) );
+        final PhylogenyNode fyn_m = savedFigureTip( "FYN_MOUSE", 0.06, sub( sub( base, 10, '-' ), 25, 'T' ) );
+        final PhylogenyNode abl_h = savedFigureTip( "ABL1_HUMAN", 0.18, sub( sub( base, 1, 'L' ), 14, 'E' ) );
+        final PhylogenyNode abl_d = savedFigureTip( "ABL_DROME", 0.31, sub( sub( sub( base, 1, 'L' ), 14, 'E' ), 27, 'N' ) );
+        final PhylogenyNode src = savedFigureSplit( 0.03, 97, false, src_h, src_m );
+        final PhylogenyNode yes = savedFigureSplit( 0.04, 99, false, yes_h, yes_m );
+        final PhylogenyNode fyn = savedFigureSplit( 0.05, 100, false, fyn_h, fyn_m );
+        final PhylogenyNode src_yes = savedFigureSplit( 0.06, 84, true, src, yes );
+        final PhylogenyNode src_fam = savedFigureSplit( 0.12, 76, true, src_yes, fyn );
+        final PhylogenyNode abl = savedFigureSplit( 0.20, 100, false, abl_h, abl_d );
+        // the Src clade drawn heavier and in colour: the guesses look at the FIRST tip's branch
+        final BranchColor red = new BranchColor( new Color( 0xC0, 0x39, 0x2B ) );
+        for( final PhylogenyNode n : new PhylogenyNode[] { src_h, src_m, src } ) {
+            n.getBranchData().setBranchColor( red );
+            n.getBranchData().setBranchWidth( new BranchWidth( 3 ) );
+        }
+        final Phylogeny phy;
+        if ( with_figure ) {
+            phy = tree( clade( 0, src_fam, abl ), "Saved figure wins (demo)",
+                        "A small Src-family kinase tree (synthetic sequences) carrying the data that switches displays "
+                                + "on when a tree opens: support values, duplications, branch colours and widths, a domain "
+                                + "architecture and an aligned sequence on every tip. Its saved figure turns each of "
+                                + "them off and asks for an aligned phylogram, and the tree opens exactly that way: what "
+                                + "a saved figure names wins over what the data would switch on. The twin, "
+                                + "saved-figure-none.xml, is the same tree without a figure." );
+            figure( phy, SAVED_FIGURE );
+        }
+        else {
+            phy = tree( clade( 0, src_fam, abl ), "Saved figure wins: none (demo)",
+                        "The twin of saved-figure.xml: the same tree without a saved figure. It opens with the "
+                                + "support values, the duplications, the branch colours and widths, the domain "
+                                + "architectures and the alignment switched on, in the phylogram type your preference "
+                                + "names." );
+        }
+        return phy;
+    }
+
+    /** A tip of the saved-figure demos: an SH3-SH2-kinase architecture and an aligned sequence on one record. */
+    private static PhylogenyNode savedFigureTip( final String name, final double bl, final String aligned ) {
+        final PhylogenyNode n = domainLeaf( name, bl, 536, dom( "SH3", 84, 145 ), dom( "SH2", 151, 248 ),
+                                            dom( "Pkinase", 270, 519 ) );
+        final Sequence seq = n.getNodeData().getSequence();
+        seq.setMolecularSequence( aligned );
+        seq.setMolecularSequenceAligned( true );
+        return n;
+    }
+
+    /** An internal node of the saved-figure demos: its support, and a duplication or a speciation. */
+    private static PhylogenyNode savedFigureSplit( final double bl, final int support, final boolean duplication,
+                                                   final PhylogenyNode a, final PhylogenyNode b ) {
+        final PhylogenyNode n = clade( bl, a, b );
+        n.getBranchData().addConfidence( new Confidence( support, "bootstrap" ) );
+        n.getNodeData().setEvent( duplication ? new Event( 1, 0, 0 ) : new Event( 0, 1, 0 ) );
         return n;
     }
 

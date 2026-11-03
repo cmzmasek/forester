@@ -246,6 +246,7 @@ public final class DemoTreesTest {
         ok &= hasAtLeastTips( "node-data-editor.xml", 5 );
         ok &= nodeDataEditorDemoOk( "node-data-editor.xml" );
         ok &= nodeDataLinksDemosOk();
+        ok &= savedFigureDemosOk();
         ok &= nodeClickTargetsDemoOk();
 
         // tree properties (View > Tree Properties): tree-level identifier / type / unit, two kinds of support
@@ -953,6 +954,53 @@ public final class DemoTreesTest {
                 || coverage.value( "Taxonomy" ).contains( "100%" ) ) {
             return note( file_name + " needs mixed coverage: an event, a distribution, internal dates, and SOME "
                     + "(not all) tips with taxonomy; got " + coverage.facts );
+        }
+        return true;
+    }
+
+    /**
+     * saved-figure.xml: the tree carries what every load-time guess looks for, and its saved figure names each
+     * guessed setting the other way (an aligned phylogram, every switch off). saved-figure-none.xml: the same tree
+     * without a figure. What the two OPEN as is SavedFigureWinsTest's (it needs a window).
+     */
+    private static boolean savedFigureDemosOk() {
+        final Phylogeny fig = load( "saved-figure.xml" );
+        final Phylogeny none = load( "saved-figure-none.xml" );
+        if ( ( fig == null ) || ( none == null ) ) {
+            return false;
+        }
+        for( final Phylogeny t : new Phylogeny[] { fig, none } ) {
+            final String f = ( t == fig ) ? "saved-figure.xml" : "saved-figure-none.xml";
+            final org.forester.phylogeny.data.BranchData first = t.getFirstExternalNode().getBranchData();
+            if ( !AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) || !AptxUtil.isMostlyMeasuredForPhylogram( t )
+                    || !AptxUtil.isHasAtLeastOneBranchWithSupportValues( t ) || !AptxUtil.isHasAtLeastNodeWithEvent( t )
+                    || ( first.getBranchColor() == null ) || ( first.getBranchWidth() == null )
+                    || ( first.getBranchWidth().getValue() == org.forester.phylogeny.data.BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE )
+                    || !AptxUtil.isHasAtLeastOneNodeWithDomainArchitecture( t ) || !AptxUtil.hasAlignedSequences( t ) ) {
+                return note( f + ": must reach every load-time guess (lengths, support, events, a colour and a width on "
+                        + "the first tip, domains, an alignment)" );
+            }
+        }
+        if ( FigureSpec.readFrom( none ) != null ) {
+            return note( "saved-figure-none.xml: must carry no figure" );
+        }
+        final FigureSpec spec = FigureSpec.readFrom( fig );
+        if ( ( spec == null ) || !"ALIGNED_PHYLOGRAM".equals( spec.get( "displaytype" ) )
+                || !"RECTANGULAR".equals( spec.get( "layout" ) ) ) {
+            return note( "saved-figure.xml: its figure must ask for a rectangular aligned phylogram: "
+                    + ( ( spec == null ) ? null : spec.toPropertyValue() ) );
+        }
+        for( final DisplayOption opt : SavedFigureWinsTest.GUESSED_SWITCHES ) {
+            if ( !Boolean.FALSE.equals( spec.shows( opt ) ) ) {
+                return note( "saved-figure.xml: its figure must switch " + opt + " off" );
+            }
+        }
+        final java.util.List<String> a = new java.util.ArrayList<>();
+        final java.util.List<String> b = new java.util.ArrayList<>();
+        fig.getExternalNodes().forEach( n -> a.add( n.getName() ) );
+        none.getExternalNodes().forEach( n -> b.add( n.getName() ) );
+        if ( !a.equals( b ) ) {
+            return note( "saved-figure-none.xml: the same tree as saved-figure.xml, got " + b + " vs " + a );
         }
         return true;
     }

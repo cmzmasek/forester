@@ -8533,7 +8533,11 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             }
             if (shows(DisplayOption.SHOW_DOMAIN_ARCHITECTURES) && node.getNodeData().isHasSequence()
                     && (node.getNodeData().getSequence().getDomainArchitecture() != null)) {
-                final double rendered = renderedDomainWidth(node);
+                // the track's full width whatever this architecture's length: room for the longest one (each is drawn
+                // at 0.9 x this x its length / the longest's, initNodeData). Asks nothing the first paint prepares: a
+                // saved figure with the track on measures here BEFORE that paint, and the cast this once made to the
+                // paint's RenderableDomainArchitecture threw, so such a tree could not be reopened (0.11.198, earlier)
+                final double rendered = effectiveDomainStructureWidth();
                 sum += rendered + 10;
                 if (rendered > _longest_rendered_domain) {
                     _longest_rendered_domain = rendered;
@@ -14272,13 +14276,6 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return (int) Math.max(0, reach);
     }
 
-    /** The width a tip's domain architecture is drawn at: the track's zoom scaled by the architecture's length. */
-    private double renderedDomainWidth(final PhylogenyNode node) {
-        final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
-        return (effectiveDomainStructureWidth() / ((RenderableDomainArchitecture) d).getOriginalSize().getWidth())
-                * d.getTotalLength();
-    }
-
     /** For tests: what the domain track adds outside the labels in the circular layout, as last measured. */
     final int circularDomainReachForTest() {
         return (int) circularDomainReach();
@@ -14359,7 +14356,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         rds.setRenderingHeight(height);
         ++_radial_domains_drawn;
         recordDomainPainted(node);
-        final double half_w = renderedDomainWidth(node) / 2.0;
+        final double half_w = effectiveDomainStructureWidth() / 2.0; // the track's room, as the label measure takes it
         _radial_domain_boxes.put(node.getId(), new double[] { pivot_x + ((start_dist + half_w) * Math.cos(angle)),
                 pivot_y + ((start_dist + half_w) * Math.sin(angle)), half_w, height / 2.0, angle });
         final java.awt.geom.AffineTransform saved = g.getTransform();
@@ -20287,6 +20284,12 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      *  have read before this state existed ({@link ControlPanel#currentValueOf}), so an unseeded tab behaves
      *  exactly as it always did -- including the readers that are not plain checkbox reads. */
     final boolean shows(final DisplayOption which) {
+        if (which == DisplayOption.DISPLAY_INTERNAL_DATA) {
+            return _show_internal_data;
+        }
+        if (which == DisplayOption.DISPLAY_EXTERNAL_DATA) {
+            return _show_external_data;
+        }
         final Boolean b = _display_state.get(which);
         if (b != null) {
             return b.booleanValue();
@@ -20294,8 +20297,19 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return (getControlPanel() != null) && getControlPanel().currentValueOf(which);
     }
 
+    /** The two Display-Data toggles keep their own fields, which the paint reads: they are written there, never
+     *  beside them -- a figure's {@code show.DISPLAY_INTERNAL_DATA} went into the map, was never drawn and was
+     *  overwritten by the next push, so a tree saved with its internal labels off reopened with them on. */
     final void setShows(final DisplayOption which, final boolean on) {
-        _display_state.put(which, Boolean.valueOf(on));
+        if (which == DisplayOption.DISPLAY_INTERNAL_DATA) {
+            _show_internal_data = on;
+        }
+        else if (which == DisplayOption.DISPLAY_EXTERNAL_DATA) {
+            _show_external_data = on;
+        }
+        else {
+            _display_state.put(which, Boolean.valueOf(on));
+        }
     }
 
     /** Whether THIS tab draws the sequence alignment beside its tips. Per-tab, like every other Display-Data
@@ -20311,7 +20325,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     /** For tests: whether this tab has its own opinion on {@code which} yet. */
     final boolean hasOwnDisplayState(final DisplayOption which) {
-        return _display_state.containsKey(which);
+        return (which == DisplayOption.DISPLAY_INTERNAL_DATA) || (which == DisplayOption.DISPLAY_EXTERNAL_DATA)
+                || _display_state.containsKey(which); // the two Display-Data fields: seeded as the tab is made
     }
 
     /** Whether THIS tab shows internal-node labels (the shared "Show Internal Data" checkbox reflects the

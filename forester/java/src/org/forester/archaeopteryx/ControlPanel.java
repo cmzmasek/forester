@@ -1717,31 +1717,43 @@ final class ControlPanel extends JPanel implements ActionListener {
         });
     }
 
-    /**
-     * If the "Domain Architectures" checkbox is available, switch it on and fit the tree -- now wider
-     * because of the domain rows -- to the screen. Called on load for a tree that contains domain
-     * architectures so the domains are shown immediately (most users never find the checkbox).
-     */
     // On load, open the domain architectures at ~this fraction of the viewport width (the widest architecture), so
     // they read at a useful size out of the box instead of a fixed ~90px. The user's domain zoom (+/-) scales from here.
     private static final double INITIAL_DOMAIN_WIDTH_SCREEN_FRACTION = 0.25;
 
-    void showDomainArchitecturesFitted() {
+    /**
+     * A freshly loaded tree with domain architectures: switch the "Domain Architectures" display on (most users never
+     * find the checkbox), at the initial width, and fit the tree -- now wider because of the domain rows -- to the
+     * screen. {@code may_switch_to_radial_labels} false when the tree's saved figure names a label direction, which
+     * then stands.
+     */
+    void showDomainArchitecturesFitted(final boolean may_switch_to_radial_labels) {
         if ((_show_domain_architectures != null) && _show_domain_architectures.isVisible()) {
-            _show_domain_architectures.setSelected(true); // no-op (and fires nothing) if already on
-            // Set THIS tree's initial domain width regardless of whether the checkbox was already selected by a
-            // previously-open domain tree: _domain_structure_width is per-TreePanel and a freshly-loaded tree has
-            // no user domain-zoom to clobber. (This method runs only from the per-load property scan, never on a
-            // manual checkbox toggle, so it can't reset the width out from under a user who is zooming domains.)
-            getCurrentTreePanel().fitDomainWidthToScreen(INITIAL_DOMAIN_WIDTH_SCREEN_FRACTION,
-                    getMainPanel().getSizeOfViewport().width);
+            // onto the tab as well as the widget: the paint reads the tab's copy
+            setCheckbox(DisplayOption.SHOW_DOMAIN_ARCHITECTURES, true);
+            fitInitialDomainWidth();
             final MainFrame mf = getMainFrame();
-            if (mf != null) {
+            if ((mf != null) && may_switch_to_radial_labels) {
                 // a tree that opens in a radial layout (persisted graphics type): auto-enable "Radial Labels" so its
                 // domains show right away (they are suppressed under horizontal labels)
                 mf.enableRadialLabelsIfDomainsInRadialLayout();
             }
             fitWidth(); // re-fit the (now wider) tree horizontally so the domains show; keep vertical zoom
+        }
+    }
+
+    /**
+     * A freshly loaded tree's domain-track width, a fraction of the window -- set whether or not the track is on, so a
+     * track its saved figure keeps off starts at this width when it is ticked (the checkbox only re-fits the tree).
+     * Set for THIS tree regardless of whether the checkbox was already selected by a previously-open domain tree:
+     * {@code _domain_structure_width} is per-TreePanel and a freshly loaded tree has no user domain zoom to clobber.
+     * (Called only from the per-load property scan, never on a manual checkbox toggle, so it cannot reset the width
+     * out from under a user who is zooming domains.)
+     */
+    void fitInitialDomainWidth() {
+        final TreePanel tp = getCurrentTreePanel();
+        if ((tp != null) && (getMainPanel() != null)) {
+            tp.fitDomainWidthToScreen(INITIAL_DOMAIN_WIDTH_SCREEN_FRACTION, getMainPanel().getSizeOfViewport().width);
         }
     }
 

@@ -76,7 +76,7 @@ public final class DomainRadialWidthTest {
             SwingUtilities.invokeAndWait( () -> {
                 final TreePanel tp = mf[ 0 ].getMainPanel().getCurrentTreePanel();
                 final ControlPanel cp = tp.getControlPanel();
-                cp.showDomainArchitecturesFitted(); // the load: the rectangular width = a quarter of the viewport
+                cp.showDomainArchitecturesFitted( true ); // the load: the rectangular width = a quarter of the viewport
                 final double rect_w = tp.domainStructureWidthForTest();
                 mf[ 0 ].getOptions().setPhylogenyGraphicsType( layout );
                 tp.setPhylogenyGraphicsType( layout );
