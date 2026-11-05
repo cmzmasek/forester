@@ -60,9 +60,11 @@ final class FigureSpec {
     private static final String K_COLOR_BY     = "colorby";
     private static final String K_SIZE_BY      = "sizeby";
     private static final String K_PIE_TRAIT    = "pietrait";
-    private static final String K_CLADE_MODE   = "clademode";
+    private static final String K_CLADE_MODE   = "clademode";     // the columns' style (BARS / BRACKETS), else BOXES
     private static final String K_CLADE_SKIP   = "cladeskip";
-    private static final String K_CLADE_LEVELS = "cladelevels";   // rank:angle|rank:angle...
+    private static final String K_CLADE_LEVELS = "cladelevels";   // rank~angle~style|rank~angle~style... (the style,
+                                                                  // BOXES / BARS / BRACKETS, since 0.11.200; a level
+                                                                  // without one takes clademode, as every level did)
     private static final String K_CLADE_NAMES  = "cladenames";    // shaded boxes: "labels" beside each box | "legend"
     private static final String K_LABEL_PROPS  = "labelprops";    // ref|ref...
     private static final String K_COLUMNS      = "columns";       // ref:type:shape:normalized|...
@@ -354,6 +356,9 @@ final class FigureSpec {
                 sb.append( '|' );
             }
             sb.append( c.getRank() ).append( '~' ).append( c.getLabelAngle().name() );
+            if ( c.getStyle() != null ) { // a tab's specs are resolved; a reader before 0.11.200 ignores the third part
+                sb.append( '~' ).append( c.getStyle().name() );
+            }
         }
         return sb.toString();
     }
@@ -367,7 +372,9 @@ final class FigureSpec {
             }
             final TreePanel.CLADE_LABEL_ANGLE a = ( p.length > 1 )
                     ? enumOf( TreePanel.CLADE_LABEL_ANGLE.class, p[ 1 ] ) : null;
-            out.add( new CladeLevel.Spec( p[ 0 ], a ) );
+            // the level's own style; absent (a figure before 0.11.200) or unknown = the figure's clademode
+            final TreePanel.CLADE_VIS style = ( p.length > 2 ) ? enumOf( TreePanel.CLADE_VIS.class, p[ 2 ] ) : null;
+            out.add( new CladeLevel.Spec( p[ 0 ], a, style ) );
         }
         return out;
     }

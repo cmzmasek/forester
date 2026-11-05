@@ -1551,6 +1551,16 @@ public final class AptxUtil {
      * {@code bare_rank} is the plain rank, so each choice is compared by its prefix before " (". Used to
      * pre-select the last-used rank in the "Annotate Clades by Rank" chooser. Case-insensitive.
      */
+    /** Whether {@code list} holds {@code s}, case aside (a rank name, however the file spells it). */
+    final static boolean containsIgnoreCase(final java.util.List<String> list, final String s) {
+        for (final String x : list) {
+            if (x.equalsIgnoreCase(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     final static int indexOfRank(final String[] choices, final String bare_rank) {
         if ((choices == null) || ForesterUtil.isEmpty(bare_rank)) {
             return -1;

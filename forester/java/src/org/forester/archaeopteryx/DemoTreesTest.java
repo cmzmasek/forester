@@ -126,6 +126,8 @@ public final class DemoTreesTest {
         ok &= rankNoVoteOk( "rank-no-vote.xml" );
         // shaded clade boxes and their crowded twin: the counts and the saved figures their README rows quote
         ok &= cladeBoxesOk();
+        // shaded boxes with a bracket column: the counts and the saved figure its README row quotes
+        ok &= cladeBoxesWithBracketsOk();
         // scale axis: a phylogram with real branch lengths (so the labeled distance axis has ticks)
         ok &= hasBranchLengths( "scale-axis.xml" );
         // break long branches: a phylogram with branch lengths AND a genuine outlier branch (> the auto cap), so the
@@ -3087,6 +3089,50 @@ public final class DemoTreesTest {
                 || !"BOXES".equals( g.get( "clademode" ) ) ) {
             return note( "clade-boxes-crowded.xml: opens rectangular, genus boxes named; got "
                     + ( ( g == null ) ? null : g.toPropertyValue() ) );
+        }
+        return true;
+    }
+
+    /**
+     * clade-boxes-with-brackets.xml has what its README row says: 24 carnivores in 12 genera (5 of them one tip) and
+     * 5 families, every tip with an ncbi:genus and an ncbi:family, every family of two tips or more, and a saved figure
+     * opening rectangular with the genera as shaded boxes named in the legend and the families as brackets. (How they
+     * DRAW together: CladeLevelsRenderTest.)
+     */
+    private static boolean cladeBoxesWithBracketsOk() {
+        final Phylogeny phy = load( "clade-boxes-with-brackets.xml" );
+        if ( phy == null ) {
+            return false;
+        }
+        final java.util.List<CladeBand> genera = TreePanelUtil.cladeBands( phy, "genus", null, null, null, TaxonSource.TREE );
+        final java.util.List<CladeBand> families = TreePanelUtil.cladeBands( phy, "family", null, null, null, TaxonSource.TREE );
+        int one_tip = 0;
+        for( final CladeBand b : genera ) {
+            one_tip += b.getRoot().isExternal() ? 1 : 0;
+        }
+        if ( ( phy.getNumberOfExternalNodes() != 24 ) || ( genera.size() != 12 ) || ( one_tip != 5 )
+                || ( families.size() != 5 ) ) {
+            return note( "clade-boxes-with-brackets.xml: 24 tips in 12 genera (5 of one tip) and 5 families, got "
+                    + phy.getNumberOfExternalNodes() + " / " + genera.size() + " / " + one_tip + " / " + families.size() );
+        }
+        for( final CladeBand b : families ) {
+            if ( b.getRoot().isExternal() ) {
+                return note( "clade-boxes-with-brackets.xml: every family has two tips or more (its bracket is drawn); "
+                        + b.getTaxon() + " has one" );
+            }
+        }
+        for( final PhylogenyNode tip : phy.getExternalNodes() ) {
+            final org.forester.phylogeny.data.PropertiesList p = tip.getNodeData().getProperties();
+            if ( ( p == null ) || p.getProperties( "ncbi:genus" ).isEmpty() || p.getProperties( "ncbi:family" ).isEmpty() ) {
+                return note( "clade-boxes-with-brackets.xml: every tip has an ncbi:genus and an ncbi:family; " + tip.getName() );
+            }
+        }
+        final FigureSpec f = FigureSpec.readFrom( phy );
+        if ( ( f == null ) || !"RECTANGULAR".equals( f.get( "layout" ) ) || !"BRACKETS".equals( f.get( "clademode" ) )
+                || !"legend".equals( f.get( "cladenames" ) )
+                || !"genus~VERTICAL~BOXES|family~VERTICAL~BRACKETS".equals( f.get( "cladelevels" ) ) ) {
+            return note( "clade-boxes-with-brackets.xml: opens rectangular, genus boxes named in the legend inside family "
+                    + "brackets; got " + ( ( f == null ) ? null : f.toPropertyValue() ) );
         }
         return true;
     }

@@ -119,6 +119,7 @@ public final class DemoTreeGenerator {
         write( dir, "rank-no-vote.xml", rankNoVoteTree() );
         write( dir, "clade-boxes.xml", cladeBoxesTree() );
         write( dir, "clade-boxes-crowded.xml", cladeBoxesCrowdedTree() );
+        write( dir, "clade-boxes-with-brackets.xml", cladeBoxesWithBracketsTree() );
         write( dir, "infer-ancestor-taxonomies.xml", inferAncestorTaxonomiesTree() );
         write( dir, "gene-duplication.xml", reconciliationGeneTree() );
         write( dir, "bat-phylogeny.xml", batSpeciesTree() );
@@ -2150,6 +2151,67 @@ public final class DemoTreeGenerator {
     private static Phylogeny fullNames( final Phylogeny phy ) {
         figure( phy, "v1;show.SHORTEN_LABELS=false" );
         return phy;
+    }
+
+    // ----- Shaded boxes WITH a bracket column (Christian, 2026-11-04, "go, box + two"): 24 carnivores in 12 genera and
+    //       5 families (ncbi:genus / ncbi:family fields), the genera as shaded boxes named in the legend, the families
+    //       as brackets past the tip labels -- the published look of a highlighted clade with the bracket that groups
+    //       it. Five genera are a single tip: they get their wash (a box never skips) while a one-tip family would get
+    //       no bracket. Opens rectangular. The same dialog draws the boxes with a bracket at their OWN rank, which then
+    //       names each box.
+    private static Phylogeny cladeBoxesWithBracketsTree() {
+        final PhylogenyNode felidae = clade( 0.20,
+                                             clade( 0.08, clade( 0.03, carnivoreTip( "Panthera leo", "Panthera", "Felidae", 0.04 ),
+                                                                 carnivoreTip( "Panthera tigris", "Panthera", "Felidae", 0.05 ) ),
+                                                    clade( 0.02, carnivoreTip( "Panthera pardus", "Panthera", "Felidae", 0.05 ),
+                                                           carnivoreTip( "Panthera onca", "Panthera", "Felidae", 0.06 ) ) ),
+                                             clade( 0.06, clade( 0.04, carnivoreTip( "Felis catus", "Felis", "Felidae", 0.02 ),
+                                                                 carnivoreTip( "Felis silvestris", "Felis", "Felidae", 0.02 ) ),
+                                                    clade( 0.05, carnivoreTip( "Lynx lynx", "Lynx", "Felidae", 0.03 ),
+                                                           carnivoreTip( "Lynx rufus", "Lynx", "Felidae", 0.04 ) ) ) );
+        final PhylogenyNode canidae = clade( 0.18,
+                                             clade( 0.07, clade( 0.03, carnivoreTip( "Canis lupus", "Canis", "Canidae", 0.02 ),
+                                                                 carnivoreTip( "Canis latrans", "Canis", "Canidae", 0.03 ) ),
+                                                    carnivoreTip( "Canis aureus", "Canis", "Canidae", 0.05 ) ),
+                                             clade( 0.09, carnivoreTip( "Vulpes vulpes", "Vulpes", "Canidae", 0.04 ),
+                                                    carnivoreTip( "Vulpes lagopus", "Vulpes", "Canidae", 0.05 ) ) );
+        final PhylogenyNode ursidae = clade( 0.12,
+                                             clade( 0.05, clade( 0.02, carnivoreTip( "Ursus arctos", "Ursus", "Ursidae", 0.02 ),
+                                                                 carnivoreTip( "Ursus maritimus", "Ursus", "Ursidae", 0.01 ) ),
+                                                    carnivoreTip( "Ursus americanus", "Ursus", "Ursidae", 0.04 ) ),
+                                             carnivoreTip( "Ailuropoda melanoleuca", "Ailuropoda", "Ursidae", 0.11 ) );
+        final PhylogenyNode mustelidae = clade( 0.10,
+                                                clade( 0.06, clade( 0.03, carnivoreTip( "Mustela erminea", "Mustela", "Mustelidae", 0.03 ),
+                                                                    carnivoreTip( "Mustela nivalis", "Mustela", "Mustelidae", 0.03 ) ),
+                                                       carnivoreTip( "Mustela putorius", "Mustela", "Mustelidae", 0.05 ) ),
+                                                clade( 0.04, carnivoreTip( "Lutra lutra", "Lutra", "Mustelidae", 0.08 ),
+                                                       carnivoreTip( "Meles meles", "Meles", "Mustelidae", 0.09 ) ) );
+        final PhylogenyNode phocidae = clade( 0.14, carnivoreTip( "Phoca vitulina", "Phoca", "Phocidae", 0.05 ),
+                                              carnivoreTip( "Halichoerus grypus", "Halichoerus", "Phocidae", 0.05 ) );
+        final PhylogenyNode caniformia = clade( 0.06, canidae, clade( 0.05, ursidae, clade( 0.04, phocidae, mustelidae ) ) );
+        final PhylogenyNode root = clade( 0, felidae, caniformia );
+        final Phylogeny phy = tree( root, "Shaded clade boxes with brackets (demo)",
+                                    "Synthetic carnivore tree: 24 tips in 12 genera and 5 families (ncbi:genus and "
+                                            + "ncbi:family fields). Opens RECTANGULAR with Annotate Clades by Rank drawing "
+                                            + "two kinds of mark at once: the genera as shaded boxes, named in the legend, "
+                                            + "and the families as brackets past the tip labels -- a highlighted clade with "
+                                            + "the bracket that groups it. Five genera are a single tip and keep their wash "
+                                            + "(a box is never skipped). In the dialog, pick Shaded boxes for the main rank "
+                                            + "and a family level under the additional levels, drawn as brackets; pick genus "
+                                            + "there instead and each bracket names its box." );
+        figure( phy, "v1;layout=RECTANGULAR;clademode=BRACKETS;cladeskip=true;"
+                + "cladelevels=genus~VERTICAL~BOXES|family~VERTICAL~BRACKETS;cladenames=legend" );
+        return phy;
+    }
+
+    /** A carnivore tip carrying its genus and family as ncbi: fields (the ranks the clade marks read offline). */
+    private static PhylogenyNode carnivoreTip( final String name, final String genus, final String family,
+                                               final double length ) {
+        final PhylogenyNode n = leaf( name );
+        n.setDistanceToParent( length );
+        cat( n, "ncbi:genus", genus );
+        cat( n, "ncbi:family", family );
+        return n;
     }
 
     /** Stores a saved figure (FigureSpec's {@code aptx:figure} text) on the tree, as a save from the window would --

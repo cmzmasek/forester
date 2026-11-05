@@ -1247,8 +1247,13 @@ public final class CladeBoxesTest {
         try {
             // the demo opens with its boxes named beside each box: named in the legend, beside again, then removed --
             // each a change of the room the marks take past the labels, which the dialog must give back or take
-            for ( final String choice : new String[] { "legend", "beside", "bars", "remove" } ) {
-                final boolean beside = "beside".equals( choice );
+            // ...and "boxbracket": the boxes plus a bracket column at their OWN rank (the only other rank this demo
+            // places is none), which names each box -- the names choice greyed, the boxes' colours the key
+            for ( final String choice : new String[] { "legend", "beside", "boxbracket", "bars", "remove" } ) {
+                final boolean box_bracket = "boxbracket".equals( choice );
+                // "boxbracket" picks "named beside each box" too: the choice is kept for next time, and the names are
+                // still not drawn, because the brackets at the boxes' rank name them
+                final boolean beside = "beside".equals( choice ) || box_bracket;
                 final boolean bars_run = "bars".equals( choice );
                 final boolean remove = "remove".equals( choice );
                 final boolean[] seen = { false };
@@ -1279,6 +1284,26 @@ public final class CladeBoxesTest {
                                 if ( bars_run ) { // bars, with "named in the legend" left selected (and greyed)
                                     legend.doClick();
                                     bars.doClick();
+                                }
+                                if ( box_bracket ) {
+                                    final List<javax.swing.JComboBox<?>> combos = combos( form );
+                                    @SuppressWarnings( "unchecked" )
+                                    final javax.swing.JComboBox<String> ranks2 = ( javax.swing.JComboBox<String> ) combos.get( 2 );
+                                    final JRadioButton as_brackets = radio( form, "...drawn as brackets" );
+                                    ok[ 0 ] &= ck( !as_brackets.isEnabled(), "the extra levels' style is greyed until "
+                                            + "an extra level is set" );
+                                    for ( int i = 0; i < ranks2.getItemCount(); ++i ) {
+                                        if ( "genus".equals( RankSourcePanel.bareRank( ranks2.getItemAt( i ) ) ) ) {
+                                            ranks2.setSelectedIndex( i );
+                                        }
+                                    }
+                                    ok[ 0 ] &= ck( "genus".equals( RankSourcePanel.bareRank( ( String ) ranks2.getSelectedItem() ) ),
+                                                   "precondition: the second level set to genus, the boxes' own rank" );
+                                    ok[ 0 ] &= ck( as_brackets.isEnabled(), "with an extra level past shaded boxes its "
+                                            + "style is offered" );
+                                    as_brackets.doClick();
+                                    ok[ 0 ] &= ck( !legend.isEnabled() && !named.isEnabled(), "a column at the boxes' "
+                                            + "own rank names each box: the names choice is greyed" );
                                 }
                                 if ( remove ) { // the rank chooser's first entry: stop drawing the clade marks
                                     @SuppressWarnings( "unchecked" )
@@ -1315,13 +1340,17 @@ public final class CladeBoxesTest {
                     mf[ 0 ].labelCladesByRank();
                 } );
                 final TreePanel tp = mf[ 0 ].getCurrentTreePanel();
-                final boolean[] state = new boolean[ 3 ];
+                final boolean[] state = new boolean[ 5 ];
                 final double[] spread = new double[ 2 ];
                 SwingUtilities.invokeAndWait( () -> {
                     paint( tp );
                     state[ 0 ] = tp.isCladeBoxLabels();
                     state[ 1 ] = tp.getRankLegendBoundsForTest() != null;
                     state[ 2 ] = tp.hasCladeBands();
+                    state[ 3 ] = ( tp.getCladeBandsMode() == CLADE_VIS.BRACKETS ) && "genus".equals( tp.cladeBoxRank() )
+                            && tp.cladeColumnRanks().equals( java.util.Arrays.asList( "genus" ) )
+                            && ( tp.drawnCladeColumnCount() > 0 );
+                    state[ 4 ] = !tp.cladeBoxNamesShownForTest(); // (the names at the mouths are the brackets')
                     spread[ 0 ] = tipSpread( tp );
                     tp.getControlPanel().fitWidth(); // what the dialog should have done already
                     paint( tp );
@@ -1334,6 +1363,12 @@ public final class CladeBoxesTest {
                 else if ( bars_run ) {
                     ok[ 0 ] &= ck( state[ 2 ] && state[ 0 ], "a Bars run keeps the boxes' \"named beside each box\" "
                             + "for next time (names " + state[ 0 ] + ")" );
+                }
+                else if ( box_bracket ) {
+                    ok[ 0 ] &= ck( state[ 2 ] && state[ 3 ], "genus boxes + a genus bracket column reach the tab" );
+                    ok[ 0 ] &= ck( state[ 4 ] && state[ 1 ] && state[ 0 ], "the brackets name the boxes (no names beside "
+                            + "them, though \"beside\" stays chosen) and the boxes' colours are the key (a legend); names "
+                            + state[ 4 ] + ", legend " + state[ 1 ] + ", chosen " + state[ 0 ] );
                 }
                 else {
                     ok[ 0 ] &= ck( state[ 2 ] && ( state[ 0 ] == beside ) && ( state[ 1 ] == !beside ), "the dialog's \""
@@ -1564,6 +1599,20 @@ public final class CladeBoxesTest {
 
     private static MouseEvent at( final TreePanel tp, final int x, final int y ) {
         return new MouseEvent( tp, MouseEvent.MOUSE_PRESSED, 0, 0, x, y, 1, false );
+    }
+
+    /** Every combo box under {@code c}, in component order. */
+    private static List<javax.swing.JComboBox<?>> combos( final Component c ) {
+        final List<javax.swing.JComboBox<?>> out = new java.util.ArrayList<>();
+        if ( c instanceof javax.swing.JComboBox ) {
+            out.add( ( javax.swing.JComboBox<?> ) c );
+        }
+        if ( c instanceof java.awt.Container ) {
+            for ( final Component x : ( ( java.awt.Container ) c ).getComponents() ) {
+                out.addAll( combos( x ) );
+            }
+        }
+        return out;
     }
 
     private static JRadioButton radio( final Component c, final String prefix ) {

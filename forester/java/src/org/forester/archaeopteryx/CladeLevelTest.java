@@ -25,13 +25,18 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.forester.archaeopteryx.TreePanel.CLADE_LABEL_ANGLE;
+import org.forester.archaeopteryx.TreePanel.CLADE_VIS;
 
 /**
- * "Annotate Clades by Rank" can draw up to three ranks at once as nested bar/bracket columns. Which rank ends up
- * where is DERIVED, never chosen: {@link CladeLevel#order} sorts finest-rank-first so the finest is drawn nearest
- * the tips and the broadest outermost, which is the only order in which the nesting reads correctly -- a broad
- * clade's mark has to span the several finer marks inside it. If this ordering breaks, the figure silently lies
- * about the hierarchy, so it is pinned down here. Pure + headless.
+ * "Annotate Clades by Rank" can draw up to three ranks at once as nested bar/bracket columns, one of them instead a
+ * level of shaded boxes. Which rank ends up where is DERIVED, never chosen: {@link CladeLevel#order} sorts
+ * finest-rank-first so the finest is drawn nearest the tips and the broadest outermost, which is the only order in
+ * which the nesting reads correctly -- a broad clade's mark has to span the several finer marks inside it. If this
+ * ordering breaks, the figure silently lies about the hierarchy, so it is pinned down here. The styles: each spec
+ * carries its own, a spec without one takes the mode, every box rank is kept (the finest that places anything is
+ * the one drawn, decided where the bands are known), the columns are capped so the drawn levels never exceed three,
+ * and a rank may appear once as boxes and once as a column (the bracket that names the shaded clade) but never as
+ * two columns. Pure + headless.
  */
 public final class CladeLevelTest {
 
@@ -42,7 +47,7 @@ public final class CladeLevelTest {
     }
 
     public static boolean test() {
-        return rankDepth() && ordering() && clearAffordance();
+        return rankDepth() && ordering() && styles() && clearAffordance();
     }
 
     /**
@@ -134,7 +139,7 @@ public final class CladeLevelTest {
         for ( final List<String> picked : Arrays.asList( Arrays.asList( "family", "genus", "order" ),
                                                          Arrays.asList( "order", "family", "genus" ),
                                                          Arrays.asList( "genus", "order", "family" ) ) ) {
-            final List<String> got = ranks( CladeLevel.order( specs( picked ) ) );
+            final List<String> got = ranks( CladeLevel.order( specs( picked ), CLADE_VIS.BARS ) );
             if ( !got.equals( Arrays.asList( "genus", "family", "order" ) ) ) {
                 return fail( "picked " + picked + " must draw as [genus, family, order], got " + got );
             }
@@ -146,13 +151,13 @@ public final class CladeLevelTest {
         messy.add( new CladeLevel.Spec( "", CLADE_LABEL_ANGLE.VERTICAL ) );
         messy.add( new CladeLevel.Spec( "genus", CLADE_LABEL_ANGLE.VERTICAL ) );
         messy.add( new CladeLevel.Spec( "FAMILY", CLADE_LABEL_ANGLE.VERTICAL ) ); // same rank, other case
-        final List<String> cleaned = ranks( CladeLevel.order( messy ) );
+        final List<String> cleaned = ranks( CladeLevel.order( messy, CLADE_VIS.BARS ) );
         if ( !cleaned.equals( Arrays.asList( "genus", "family" ) ) ) {
             return fail( "blanks/nulls/duplicates must be dropped, got " + cleaned );
         }
         // never more columns than the layout can carry
         final List<String> many = Arrays.asList( "species", "genus", "subfamily", "family", "order", "class" );
-        final List<CladeLevel.Spec> capped = CladeLevel.order( specs( many ) );
+        final List<CladeLevel.Spec> capped = CladeLevel.order( specs( many ), CLADE_VIS.BARS );
         if ( capped.size() != CladeLevel.MAX_LEVELS ) {
             return fail( "at most " + CladeLevel.MAX_LEVELS + " levels may survive, got " + capped.size() );
         }
@@ -161,12 +166,12 @@ public final class CladeLevelTest {
                     + ranks( capped ) );
         }
         // a rank of unknown depth goes OUTERMOST (the safe end) rather than being taken for the finest
-        final List<String> with_unknown = ranks( CladeLevel.order( specs( Arrays.asList( "mystery", "genus" ) ) ) );
+        final List<String> with_unknown = ranks( CladeLevel.order( specs( Arrays.asList( "mystery", "genus" ) ), CLADE_VIS.BARS ) );
         if ( !with_unknown.equals( Arrays.asList( "genus", "mystery" ) ) ) {
             return fail( "an unrecognized rank must sort outermost, got " + with_unknown );
         }
         // equal-depth (here: both unknown) specs keep the order the user gave them -- a stable sort
-        final List<String> stable = ranks( CladeLevel.order( specs( Arrays.asList( "zeta", "alpha" ) ) ) );
+        final List<String> stable = ranks( CladeLevel.order( specs( Arrays.asList( "zeta", "alpha" ) ), CLADE_VIS.BARS ) );
         if ( !stable.equals( Arrays.asList( "zeta", "alpha" ) ) ) {
             return fail( "equal-depth specs must keep the user's order, got " + stable );
         }
@@ -174,13 +179,125 @@ public final class CladeLevelTest {
         final List<CladeLevel.Spec> angled = new ArrayList<>();
         angled.add( new CladeLevel.Spec( "family", CLADE_LABEL_ANGLE.HORIZONTAL ) );
         angled.add( new CladeLevel.Spec( "genus", CLADE_LABEL_ANGLE.VERTICAL ) );
-        final List<CladeLevel.Spec> ordered = CladeLevel.order( angled );
+        final List<CladeLevel.Spec> ordered = CladeLevel.order( angled, CLADE_VIS.BARS );
         if ( ( ordered.get( 0 ).getLabelAngle() != CLADE_LABEL_ANGLE.VERTICAL )
                 || ( ordered.get( 1 ).getLabelAngle() != CLADE_LABEL_ANGLE.HORIZONTAL ) ) {
             return fail( "each level's label angle must travel with its rank through the re-ordering" );
         }
-        if ( !CladeLevel.order( null ).isEmpty() ) {
+        if ( !CladeLevel.order( null, CLADE_VIS.BARS ).isEmpty() ) {
             return fail( "a null spec list must yield no levels" );
+        }
+        return true;
+    }
+
+    /**
+     * The per-level styles (Christian, 2026-11-04, "go, box + two"): a spec without a style takes the mode; a box
+     * and a column may share a rank (one pair of marks for the same clades) while two columns may not; a second
+     * box level is dropped, the finest kept (what a tab of several box levels drew before styles were per level);
+     * the cap counts the box; the style travels with its rank through the re-ordering.
+     */
+    private static boolean styles() {
+        // the mode fills in what a spec does not say -- every caller from before, and every figure before 0.11.200
+        final List<CladeLevel.Spec> plain = CladeLevel.order( specs( Arrays.asList( "genus", "family" ) ),
+                                                              CLADE_VIS.BRACKETS );
+        for ( final CladeLevel.Spec s : plain ) {
+            if ( s.getStyle() != CLADE_VIS.BRACKETS ) {
+                return fail( "a spec without a style must take the mode, got " + plain );
+            }
+        }
+        // a box and a column at one rank: both kept, the box first (before a column at its own rank, whichever was picked first)
+        final List<CladeLevel.Spec> pair = new ArrayList<>();
+        pair.add( new CladeLevel.Spec( "genus", CLADE_LABEL_ANGLE.VERTICAL, CLADE_VIS.BOXES ) );
+        pair.add( new CladeLevel.Spec( "Genus", CLADE_LABEL_ANGLE.HORIZONTAL, CLADE_VIS.BRACKETS ) );
+        pair.add( new CladeLevel.Spec( "family", CLADE_LABEL_ANGLE.VERTICAL, CLADE_VIS.BRACKETS ) );
+        final List<CladeLevel.Spec> both = CladeLevel.order( pair, CLADE_VIS.BOXES );
+        if ( ( both.size() != 3 ) || !both.get( 0 ).isBox() || !"genus".equals( both.get( 0 ).getRank() )
+                || both.get( 1 ).isBox() || !"Genus".equals( both.get( 1 ).getRank() )
+                || ( both.get( 1 ).getStyle() != CLADE_VIS.BRACKETS )
+                || ( both.get( 1 ).getLabelAngle() != CLADE_LABEL_ANGLE.HORIZONTAL )
+                || !"family".equals( both.get( 2 ).getRank() ) ) {
+            return fail( "a box and a column at one rank must both survive, the box first, got " + both );
+        }
+        // ...but two columns at one rank are one column; every BOX rank is kept (which one draws is decided where the
+        // bands are known: the finest that places anything, so a box rank the tree cannot place leaves the next)
+        final List<CladeLevel.Spec> twice = new ArrayList<>();
+        twice.add( new CladeLevel.Spec( "family", null, CLADE_VIS.BOXES ) );
+        twice.add( new CladeLevel.Spec( "genus", null, CLADE_VIS.BARS ) );
+        twice.add( new CladeLevel.Spec( "genus", null, CLADE_VIS.BARS ) );
+        twice.add( new CladeLevel.Spec( "genus", null, CLADE_VIS.BOXES ) );
+        final List<CladeLevel.Spec> once = CladeLevel.order( twice, CLADE_VIS.BARS );
+        if ( ( once.size() != 3 ) || !once.get( 0 ).isBox() || !"genus".equals( once.get( 0 ).getRank() )
+                || once.get( 1 ).isBox() || !"genus".equals( once.get( 1 ).getRank() )
+                || !once.get( 2 ).isBox() || !"family".equals( once.get( 2 ).getRank() ) ) {
+            return fail( "two columns at one rank are one; every box rank is kept, finest first; got " + once );
+        }
+        // the old BOXES-mode tab of three ranks: three box specs, finest first (one of them draws)
+        final List<CladeLevel.Spec> old = CladeLevel.order( specs( Arrays.asList( "order", "genus", "family" ) ),
+                                                            CLADE_VIS.BOXES );
+        if ( ( old.size() != 3 ) || !ranks( old ).equals( Arrays.asList( "genus", "family", "order" ) )
+                || !old.get( 0 ).isBox() || !old.get( 1 ).isBox() || !old.get( 2 ).isBox() ) {
+            return fail( "several ranks in BOXES mode keep every box rank, finest first, got " + old );
+        }
+        // the cap counts the box and never drops it: a box and three columns are the box and the two finest columns
+        final List<CladeLevel.Spec> four = new ArrayList<>();
+        four.add( new CladeLevel.Spec( "species", null, CLADE_VIS.BOXES ) );
+        four.add( new CladeLevel.Spec( "order", null, CLADE_VIS.BARS ) );
+        four.add( new CladeLevel.Spec( "genus", null, CLADE_VIS.BARS ) );
+        four.add( new CladeLevel.Spec( "family", null, CLADE_VIS.BARS ) );
+        final List<CladeLevel.Spec> capped = CladeLevel.order( four, CLADE_VIS.BARS );
+        if ( ( capped.size() != CladeLevel.MAX_LEVELS ) || !ranks( capped ).equals( Arrays.asList( "species", "genus",
+                                                                                                   "family" ) )
+                || !capped.get( 0 ).isBox() || capped.get( 1 ).isBox() || capped.get( 2 ).isBox() ) {
+            return fail( "the cap counts the box level and keeps the finest columns, got " + capped );
+        }
+        // ...even when the box is the BROADEST rank: the broadest COLUMN goes, the box stays
+        final List<CladeLevel.Spec> broad_box = new ArrayList<>();
+        broad_box.add( new CladeLevel.Spec( "species", null, CLADE_VIS.BARS ) );
+        broad_box.add( new CladeLevel.Spec( "genus", null, CLADE_VIS.BARS ) );
+        broad_box.add( new CladeLevel.Spec( "family", null, CLADE_VIS.BARS ) );
+        broad_box.add( new CladeLevel.Spec( "order", null, CLADE_VIS.BOXES ) );
+        final List<CladeLevel.Spec> kept_box = CladeLevel.order( broad_box, CLADE_VIS.BARS );
+        if ( ( kept_box.size() != CladeLevel.MAX_LEVELS )
+                || !ranks( kept_box ).equals( Arrays.asList( "species", "genus", "order" ) )
+                || !kept_box.get( 2 ).isBox() ) {
+            return fail( "the cap must drop the broadest COLUMN, never the box, got " + kept_box );
+        }
+        // three columns and no box: the cap is three columns
+        if ( CladeLevel.order( specs( Arrays.asList( "species", "genus", "family" ) ), CLADE_VIS.BARS ).size() != 3 ) {
+            return fail( "three columns without a box all survive" );
+        }
+        // a level cannot be built from an unresolved spec: the paints switch on the style
+        try {
+            new CladeLevel( new CladeLevel.Spec( "genus", CLADE_LABEL_ANGLE.VERTICAL ), new ArrayList<CladeBand>() );
+            return fail( "a CladeLevel from a spec without a style must be refused" );
+        }
+        catch ( final IllegalArgumentException expected ) {
+            // the guard
+        }
+        // the report's word for the columns: by the specs' styles, both when a figure mixed them
+        final List<CladeLevel.Spec> mixed = new ArrayList<>();
+        mixed.add( new CladeLevel.Spec( "genus", null, CLADE_VIS.BOXES ) );
+        mixed.add( new CladeLevel.Spec( "family", null, CLADE_VIS.BARS ) );
+        if ( !"bar(s)".equals( MainFrame.cladeColumnKind( mixed ) ) ) {
+            return fail( "boxes + bars report bar(s), got " + MainFrame.cladeColumnKind( mixed ) );
+        }
+        mixed.set( 1, new CladeLevel.Spec( "family", null, CLADE_VIS.BRACKETS ) );
+        if ( !"bracket(s)".equals( MainFrame.cladeColumnKind( mixed ) ) ) {
+            return fail( "boxes + brackets report bracket(s), got " + MainFrame.cladeColumnKind( mixed ) );
+        }
+        mixed.add( new CladeLevel.Spec( "order", null, CLADE_VIS.BARS ) );
+        if ( !"bar(s) and bracket(s)".equals( MainFrame.cladeColumnKind( mixed ) ) ) {
+            return fail( "mixed columns report both, got " + MainFrame.cladeColumnKind( mixed ) );
+        }
+        // a null mode is not a crash: boxes, the dialog's default
+        final List<CladeLevel.Spec> none = CladeLevel.order( specs( Arrays.asList( "genus" ) ), null );
+        if ( ( none.size() != 1 ) || !none.get( 0 ).isBox() ) {
+            return fail( "a null mode must resolve to boxes, got " + none );
+        }
+        // a resolved spec keeps its own style over the mode
+        final CladeLevel.Spec styled = new CladeLevel.Spec( "genus", null, CLADE_VIS.BARS );
+        if ( styled.resolved( CLADE_VIS.BOXES ) != styled ) {
+            return fail( "a spec with a style must come back unchanged from resolved()" );
         }
         return true;
     }

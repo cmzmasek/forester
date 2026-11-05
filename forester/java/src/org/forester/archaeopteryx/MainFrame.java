@@ -1564,7 +1564,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     /**
      * The Tools "Annotate Clades by Rank…" operation: pick a rank, a source and a mode (shaded boxes, named in the
-     * legend or beside each box; bars; brackets), resolve the tips (online off the EDT when the source says so), then
+     * legend or beside each box; bars; brackets), up to two more ranks as bar/bracket columns (nested outside the
+     * first, or past the shaded boxes -- at the boxes' own rank too, where the column's label names each box),
+     * resolve the tips (online off the EDT when the source says so), then
      * draw the bands.
      * Mirrors {@link #colorRank()} but renders {@link CladeBand}s instead of coloring branches.
      */
@@ -2010,13 +2012,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 tp.hasCladeBands() ? CLADE_LEVEL_CLEAR : null, 2);
         final JComboBox<String> rank_box = chooser.rankBox();
         // Preselect against the model actually shown -- the "remove" entry shifts every rank's index by one --
-        // and fall back to the rank currently DRAWN (finest first) when this session has no remembered rank.
-        final java.util.List<String> drawn = tp.cladeLevelRanks();
+        // and fall back to the rank currently DRAWN as the MAIN rank when this session has no remembered rank.
         rank_box.setSelectedIndex(cladeRankPreselectIndex(itemsOf(rank_box), _last_clade_rank,
-                                                          drawn.isEmpty() ? null : drawn.get(0)));
-        // Levels 2 and 3: optional extra ranks, drawn as nested bar/bracket columns outside the first. Each entry
-        // has its own label angle -- an outer rank has few, long names worth reading straight, inner ones must stay
-        // narrow. Which rank ends up where is NOT taken from this order: CladeLevel.order sorts them finest-first.
+                                                          cladeRankToPreselect(tp)));
+        // Levels 2 and 3: optional extra ranks, drawn as nested bar/bracket columns outside the first -- or past the
+        // shaded boxes, when the main rank is boxes (Christian, 2026-11-04, "go, box + two"). Each entry has its own
+        // label angle -- an outer rank has few, long names worth reading straight, inner ones must stay narrow. Which
+        // rank ends up where is NOT taken from this order: CladeLevel.order sorts them finest-first.
         final JComboBox<String> rank_box_2 = chooser.extraRankBoxes().get(0);
         final JComboBox<String> rank_box_3 = chooser.extraRankBoxes().get(1);
         final JRadioButton boxes_rb = new JRadioButton("Shaded boxes (behind the clades)", true);
@@ -2042,35 +2044,43 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box = cladeLabelAngleBox();
         final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box_2 = cladeLabelAngleBox();
         final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box_3 = cladeLabelAngleBox();
-        skip_singletons_cb.setEnabled(false); // Boxes is the default selection
-        // Boxes stay SINGLE-level: the wash is alpha-composited, so nesting one inside another paints the product
-        // of two washes -- darker than either, and no longer the colour its legend row claims.
+        // The extra levels' style. With Shaded boxes as the main rank they are bar or bracket columns past the boxes
+        // (the boxes stay ONE level: the wash is alpha-composited, so nesting one inside another paints the product
+        // of two washes -- darker than either, and no longer the colour its legend row claims); with Bars or
+        // Brackets they follow the main rank's style, as they always did.
+        final JRadioButton extra_bars_rb = new JRadioButton("    ...drawn as bars", true);
+        final JRadioButton extra_brackets_rb = new JRadioButton("    ...drawn as brackets ]");
+        final ButtonGroup extra_bg = new ButtonGroup();
+        extra_bg.add(extra_bars_rb);
+        extra_bg.add(extra_brackets_rb);
+        final String same_rank_tip = "A column at the boxes' own rank names each box: the names choice does not apply.";
         final java.awt.event.ActionListener syncBarBracket = e -> {
-            final boolean on = bars_rb.isSelected() || brackets_rb.isSelected();
-            skip_singletons_cb.setEnabled(on);
-            names_legend_rb.setEnabled(boxes_rb.isSelected());
-            names_label_rb.setEnabled(boxes_rb.isSelected());
-            angle_box.setEnabled(on); // bars and brackets only: a box's name is read straight, as the JS draws it
-            rank_box_2.setEnabled(on);
-            rank_box_3.setEnabled(on);
-            final boolean two = on && !CLADE_LEVEL_NONE.equals(rank_box_2.getSelectedItem());
-            final boolean three = on && !CLADE_LEVEL_NONE.equals(rank_box_3.getSelectedItem());
+            final boolean columns_main = bars_rb.isSelected() || brackets_rb.isSelected();
+            final boolean two = !CLADE_LEVEL_NONE.equals(rank_box_2.getSelectedItem());
+            final boolean three = !CLADE_LEVEL_NONE.equals(rank_box_3.getSelectedItem());
+            skip_singletons_cb.setEnabled(columns_main || two || three); // any bar/bracket column
+            // a column at the boxes' own rank (genus boxes + genus brackets) names each box: the names choice is moot
+            final boolean same_rank = boxes_rb.isSelected() && extraLevelSharesMainRank(chooser);
+            names_legend_rb.setEnabled(boxes_rb.isSelected() && !same_rank);
+            names_label_rb.setEnabled(boxes_rb.isSelected() && !same_rank);
+            names_legend_rb.setToolTipText(same_rank ? same_rank_tip : null);
+            names_label_rb.setToolTipText(same_rank ? same_rank_tip : null);
+            angle_box.setEnabled(columns_main); // bars and brackets only: a box's name is read straight, as the JS draws it
             angle_box_2.setEnabled(two);
             angle_box_3.setEnabled(three);
-            if (!on) { // leaving bars/brackets: drop the extra levels so Boxes cannot carry them in
-                rank_box_2.setSelectedItem(CLADE_LEVEL_NONE);
-                rank_box_3.setSelectedItem(CLADE_LEVEL_NONE);
+            if (columns_main) { // the extra levels follow the main rank's style
+                (bars_rb.isSelected() ? extra_bars_rb : extra_brackets_rb).setSelected(true);
             }
+            extra_bars_rb.setEnabled(boxes_rb.isSelected() && (two || three));
+            extra_brackets_rb.setEnabled(boxes_rb.isSelected() && (two || three));
         };
+        rank_box.addActionListener(syncBarBracket);
         rank_box_2.addActionListener(syncBarBracket);
         rank_box_3.addActionListener(syncBarBracket);
-        for (final JComboBox<?> b : new JComboBox<?>[] { rank_box_2, rank_box_3, angle_box, angle_box_2,
-                angle_box_3 }) {
-            b.setEnabled(false);
-        }
         boxes_rb.addActionListener(syncBarBracket);
         bars_rb.addActionListener(syncBarBracket);
         brackets_rb.addActionListener(syncBarBracket);
+        syncBarBracket.actionPerformed(null); // Boxes is the default selection
         final JCheckBox write_cb = new JCheckBox("Also write the clade taxa into the tree (rank + NCBI id; undoable)",
                 false);
         final JCheckBox overwrite_cb = new JCheckBox("    ...overwriting existing internal-node taxonomies", false);
@@ -2092,8 +2102,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 new JLabel("Taxa from:"), chooser.sourcePanel(), new JLabel(" "),
                 new JLabel("Show as:"), boxes_rb, names_legend_rb, names_label_rb, bars_rb, brackets_rb,
                 skip_singletons_cb, new JLabel(" "),
-                new JLabel("Additional nested levels (Bars / Brackets only):"), rank_box_2, angle_box_2, rank_box_3,
-                angle_box_3, new JLabel(" "),
+                new JLabel("Additional nested levels (bar / bracket columns, the finest nearest the tips):"), rank_box_2,
+                angle_box_2, rank_box_3, angle_box_3, extra_bars_rb, extra_brackets_rb, new JLabel(" "),
                 write_cb, overwrite_cb, chooser.writeLineagesBox(), report_only_cb);
         if (JOptionPane.showConfirmDialog(this, panel, "Annotate Clades by Rank", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
@@ -2127,13 +2137,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _last_taxon_source = source;
         final TreePanel.CLADE_VIS mode = bars_rb.isSelected() ? TreePanel.CLADE_VIS.BARS
                 : brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BOXES;
+        // the extra levels are always columns: the main rank's style, or the chosen one past shaded boxes
+        final TreePanel.CLADE_VIS column_style = (mode != TreePanel.CLADE_VIS.BOXES) ? mode
+                : extra_brackets_rb.isSelected() ? TreePanel.CLADE_VIS.BRACKETS : TreePanel.CLADE_VIS.BARS;
         final boolean box_labels = names_label_rb.isSelected();
         final List<CladeLevel.Spec> specs = new ArrayList<>();
-        specs.add(new CladeLevel.Spec(r, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
-        if (mode != TreePanel.CLADE_VIS.BOXES) { // boxes are single-level by design
-            addCladeLevelSpec(specs, chooser.selectedExtraRank(0), angle_box_2);
-            addCladeLevelSpec(specs, chooser.selectedExtraRank(1), angle_box_3);
-        }
+        specs.add(new CladeLevel.Spec(r, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem(), mode));
+        addCladeLevelSpec(specs, chooser.selectedExtraRank(0), angle_box_2, column_style);
+        addCladeLevelSpec(specs, chooser.selectedExtraRank(1), angle_box_3, column_style);
         // An online source looks up what its cache lacks, over EVERY rank asked for (a tree annotated at family only
         // resolves family offline; the extra levels would otherwise silently draw nothing). The tree source never
         // looks anything up.
@@ -2149,6 +2160,28 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         reportCladeBands(tp, r, specs, mode, box_labels, write, overwrite, write_lineages, skip_singletons, source,
                          report_only, null);
+    }
+
+    /** The rank the dialog's main chooser falls back to: the shaded boxes' rank when boxes are drawn (the main rank's
+     *  default style is boxes, so reopening on "family boxes + genus brackets" must not offer genus), else the finest
+     *  column's; null without marks. */
+    static String cladeRankToPreselect(final TreePanel tp) {
+        if (tp.cladeBoxRank() != null) {
+            return tp.cladeBoxRank();
+        }
+        final List<String> columns = tp.cladeColumnRanks();
+        return columns.isEmpty() ? null : columns.get(0);
+    }
+
+    /** How the report names the column marks of {@code specs}: "bar(s)", "bracket(s)", or both when the columns mix
+     *  (only a figure can ask for that; the dialog gives every column one style). */
+    static String cladeColumnKind(final List<CladeLevel.Spec> specs) {
+        boolean bars = false, brackets = false;
+        for (final CladeLevel.Spec spec : specs) {
+            bars |= spec.getStyle() == TreePanel.CLADE_VIS.BARS;
+            brackets |= spec.getStyle() == TreePanel.CLADE_VIS.BRACKETS;
+        }
+        return (bars && brackets) ? "bar(s) and bracket(s)" : brackets ? "bracket(s)" : "bar(s)";
     }
 
     /** Re-fits the depth axis after the clade marks' room changed: the height in a root-top/bottom tree (where the
@@ -2181,10 +2214,26 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     /** Appends one optional nested level, if its rank chooser is set to something other than "(none)". */
     private static void addCladeLevelSpec(final List<CladeLevel.Spec> specs, final String rank,
-                                          final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box) {
+                                          final JComboBox<TreePanel.CLADE_LABEL_ANGLE> angle_box,
+                                          final TreePanel.CLADE_VIS style) {
         if (!ForesterUtil.isEmpty(rank)) {
-            specs.add(new CladeLevel.Spec(rank, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem()));
+            specs.add(new CladeLevel.Spec(rank, (TreePanel.CLADE_LABEL_ANGLE) angle_box.getSelectedItem(), style));
         }
+    }
+
+    /** Whether an extra-level chooser names the main chooser's rank (case aside): a column at the shaded boxes' own
+     *  rank, whose label names each box. False while the main chooser is on its "remove" entry. */
+    static boolean extraLevelSharesMainRank(final RankSourcePanel chooser) {
+        final String main = chooser.isFirstEntrySelected() ? null : chooser.selectedRank();
+        if (ForesterUtil.isEmpty(main)) {
+            return false;
+        }
+        for (int i = 0; i < chooser.extraRankBoxes().size(); ++i) {
+            if (main.equalsIgnoreCase(chooser.selectedExtraRank(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** A taxon-label angle chooser for one clade level (they all read the same, so they are built the same way). */
@@ -2284,26 +2333,43 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if (reserved || tp.cladeMarksReserveRoom()) {
             refitForCladeMarks(tp);
         }
-        final String kind = (mode == TreePanel.CLADE_VIS.BARS) ? "bar(s)"
-                : (mode == TreePanel.CLADE_VIS.BRACKETS) ? "bracket(s)" : "box(es)";
-        // the ranks as DRAWN -- finest first (nearest the tips), which is not necessarily the order they were picked
+        // the ranks as DRAWN -- finest first (nearest the tips), which is not necessarily the order they were picked:
+        // the shaded boxes' rank, and the columns' (a rank once, when a column shares the boxes' rank)
         final List<String> drawn_ranks = tp.cladeLevelRanks();
-        final StringBuilder msg = new StringBuilder("Drew ").append(n).append(" clade ").append(kind)
-                .append((drawn_ranks.size() > 1) ? " across " + drawn_ranks.size() + " levels, rank " : " at rank ")
-                .append("\"").append(String.join("\" inside \"", drawn_ranks)).append("\".");
-        if (drawn_ranks.size() > 1) {
+        final String box_rank = tp.cladeBoxRank();
+        final List<String> column_ranks = tp.cladeColumnRanks();
+        final StringBuilder msg = new StringBuilder("Drew ");
+        if (box_rank != null) {
+            msg.append(tp.drawnCladeBoxCount()).append(" shaded clade box(es) at rank \"").append(box_rank).append('"');
+        }
+        if (!column_ranks.isEmpty()) {
+            msg.append((box_rank != null) ? " and " : "").append(tp.drawnCladeColumnCount()).append(" clade ")
+                    .append(cladeColumnKind(specs))
+                    .append((column_ranks.size() > 1) ? " across " + column_ranks.size() + " levels, rank " : " at rank ")
+                    .append("\"").append(String.join("\" inside \"", column_ranks)).append('"');
+        }
+        if ((box_rank == null) && column_ranks.isEmpty()) {
+            msg.append("no clade mark");
+        }
+        msg.append('.');
+        if (column_ranks.size() > 1) {
             msg.append("\nThe finest rank is drawn nearest the tips, the broadest outermost.");
+        }
+        if ((box_rank != null) && AptxUtil.containsIgnoreCase(column_ranks, box_rank)) {
+            msg.append("\nThe ").append((tp.getCladeBandsMode() == TreePanel.CLADE_VIS.BARS) ? "bars" : "brackets")
+                    .append(" at rank \"").append(box_rank).append("\" name the boxes.");
         }
         msg.append("\nTaxa from: ").append(source.getLabel()).append('.');
         // a rank that placed nothing is not drawn and not counted above -- say so rather than let the user wonder
         // why they asked for three columns and got two
-        if (drawn_ranks.size() < specs.size()) {
-            final List<String> missing = new ArrayList<>();
-            for (final CladeLevel.Spec spec : specs) {
-                if (!drawn_ranks.contains(spec.getRank())) {
-                    missing.add(spec.getRank());
-                }
+        final List<String> missing = new ArrayList<>();
+        for (final CladeLevel.Spec spec : specs) {
+            if (!AptxUtil.containsIgnoreCase(drawn_ranks, spec.getRank())
+                    && !AptxUtil.containsIgnoreCase(missing, spec.getRank())) {
+                missing.add(spec.getRank());
             }
+        }
+        if (!missing.isEmpty()) {
             msg.append("\nNo clade could be placed at ").append(missing.size() == 1 ? "rank " : "ranks ")
                     .append(String.join(", ", missing)).append(", so ")
                     .append(missing.size() == 1 ? "that level was" : "those levels were").append(" not drawn.");

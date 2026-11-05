@@ -72,7 +72,19 @@ public final class AptxUtilTest {
                 && testDateIntervalWidth() && testInternalNodeDateInterval()
                 && testPreferredDisplayTypeForBranchLengthTree() && testMostlyMeasuredForPhylogram()
                 && testDetectTimeTree()
-                && testDeriveTimeAxisType();
+                && testDeriveTimeAxisType() && testContainsIgnoreCase();
+    }
+
+    /** {@link AptxUtil#containsIgnoreCase}: a rank name however the file spells it; an empty list holds nothing. */
+    private static boolean testContainsIgnoreCase() {
+        final java.util.List<String> ranks = java.util.Arrays.asList( "genus", "Family" );
+        if ( !AptxUtil.containsIgnoreCase( ranks, "GENUS" ) || !AptxUtil.containsIgnoreCase( ranks, "family" )
+                || AptxUtil.containsIgnoreCase( ranks, "order" ) || AptxUtil.containsIgnoreCase( ranks, "gen" )
+                || AptxUtil.containsIgnoreCase( java.util.Collections.<String> emptyList(), "genus" ) ) {
+            System.out.println( "  [AptxUtilTest] containsIgnoreCase: case aside, whole names only, nothing in an empty list" );
+            return false;
+        }
+        return true;
     }
 
     /** Auto-derive of the per-tree Time-Axis type from the tree's own {@code <date>} data: the {@code <date unit>}

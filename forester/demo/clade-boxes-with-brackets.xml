@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <name>Shaded clade boxes with brackets (demo)</name>
+  <description>Synthetic carnivore tree: 24 tips in 12 genera and 5 families (ncbi:genus and ncbi:family fields). Opens RECTANGULAR with Annotate Clades by Rank drawing two kinds of mark at once: the genera as shaded boxes, named in the legend, and the families as brackets past the tip labels -- a highlighted clade with the bracket that groups it. Five genera are a single tip and keep their wash (a box is never skipped). In the dialog, pick Shaded boxes for the main rank and a family level under the additional levels, drawn as brackets; pick genus there instead and each bracket names its box.</description>
+  <clade>
+    <branch_length>0.0</branch_length>
+    <clade>
+      <branch_length>0.2</branch_length>
+      <clade>
+        <branch_length>0.08</branch_length>
+        <clade>
+          <branch_length>0.03</branch_length>
+          <clade>
+            <name>Panthera leo</name>
+            <branch_length>0.04</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Panthera</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+          <clade>
+            <name>Panthera tigris</name>
+            <branch_length>0.05</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Panthera</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.02</branch_length>
+          <clade>
+            <name>Panthera pardus</name>
+            <branch_length>0.05</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Panthera</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+          <clade>
+            <name>Panthera onca</name>
+            <branch_length>0.06</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Panthera</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.06</branch_length>
+        <clade>
+          <branch_length>0.04</branch_length>
+          <clade>
+            <name>Felis catus</name>
+            <branch_length>0.02</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Felis</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+          <clade>
+            <name>Felis silvestris</name>
+            <branch_length>0.02</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Felis</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.05</branch_length>
+          <clade>
+            <name>Lynx lynx</name>
+            <branch_length>0.03</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Lynx</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+          <clade>
+            <name>Lynx rufus</name>
+            <branch_length>0.04</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Lynx</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Felidae</property>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.06</branch_length>
+      <clade>
+        <branch_length>0.18</branch_length>
+        <clade>
+          <branch_length>0.07</branch_length>
+          <clade>
+            <branch_length>0.03</branch_length>
+            <clade>
+              <name>Canis lupus</name>
+              <branch_length>0.02</branch_length>
+              <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Canis</property>
+              <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+            </clade>
+            <clade>
+              <name>Canis latrans</name>
+              <branch_length>0.03</branch_length>
+              <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Canis</property>
+              <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+            </clade>
+          </clade>
+          <clade>
+            <name>Canis aureus</name>
+            <branch_length>0.05</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Canis</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.09</branch_length>
+          <clade>
+            <name>Vulpes vulpes</name>
+            <branch_length>0.04</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Vulpes</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+          </clade>
+          <clade>
+            <name>Vulpes lagopus</name>
+            <branch_length>0.05</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Vulpes</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Canidae</property>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.05</branch_length>
+        <clade>
+          <branch_length>0.12</branch_length>
+          <clade>
+            <branch_length>0.05</branch_length>
+            <clade>
+              <branch_length>0.02</branch_length>
+              <clade>
+                <name>Ursus arctos</name>
+                <branch_length>0.02</branch_length>
+                <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Ursus</property>
+                <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Ursidae</property>
+              </clade>
+              <clade>
+                <name>Ursus maritimus</name>
+                <branch_length>0.01</branch_length>
+                <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Ursus</property>
+                <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Ursidae</property>
+              </clade>
+            </clade>
+            <clade>
+              <name>Ursus americanus</name>
+              <branch_length>0.04</branch_length>
+              <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Ursus</property>
+              <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Ursidae</property>
+            </clade>
+          </clade>
+          <clade>
+            <name>Ailuropoda melanoleuca</name>
+            <branch_length>0.11</branch_length>
+            <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Ailuropoda</property>
+            <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Ursidae</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.04</branch_length>
+          <clade>
+            <branch_length>0.14</branch_length>
+            <clade>
+              <name>Phoca vitulina</name>
+              <branch_length>0.05</branch_length>
+              <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Phoca</property>
+              <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Phocidae</property>
+            </clade>
+            <clade>
+              <name>Halichoerus grypus</name>
+              <branch_length>0.05</branch_length>
+              <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Halichoerus</property>
+              <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Phocidae</property>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.1</branch_length>
+            <clade>
+              <branch_length>0.06</branch_length>
+              <clade>
+                <branch_length>0.03</branch_length>
+                <clade>
+                  <name>Mustela erminea</name>
+                  <branch_length>0.03</branch_length>
+                  <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Mustela</property>
+                  <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Mustelidae</property>
+                </clade>
+                <clade>
+                  <name>Mustela nivalis</name>
+                  <branch_length>0.03</branch_length>
+                  <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Mustela</property>
+                  <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Mustelidae</property>
+                </clade>
+              </clade>
+              <clade>
+                <name>Mustela putorius</name>
+                <branch_length>0.05</branch_length>
+                <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Mustela</property>
+                <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Mustelidae</property>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.04</branch_length>
+              <clade>
+                <name>Lutra lutra</name>
+                <branch_length>0.08</branch_length>
+                <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Lutra</property>
+                <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Mustelidae</property>
+              </clade>
+              <clade>
+                <name>Meles meles</name>
+                <branch_length>0.09</branch_length>
+                <property ref="ncbi:genus" datatype="xsd:string" applies_to="node">Meles</property>
+                <property ref="ncbi:family" datatype="xsd:string" applies_to="node">Mustelidae</property>
+              </clade>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+  <property ref="aptx:figure" datatype="xsd:string" applies_to="phylogeny">v1;layout=RECTANGULAR;clademode=BRACKETS;cladeskip=true;cladelevels=genus~VERTICAL~BOXES|family~VERTICAL~BRACKETS;cladenames=legend</property>
+</phylogeny>
+</phyloxml>
