@@ -225,6 +225,69 @@ public final class SettingsDialogTest {
                 if ( !saw_shape || !saw_fill ) {
                     ok[ 0 ] = TestFail.here(); // the combos we mean to check must actually be present
                 }
+                // The support-mode combo shows the threshold mode under the JS's name for it, "support dots"
+                // (Christian, 2026-11-05), and the dot's size is a spinner of its own -- [1,30] px, opening at the
+                // default 5 -- that reaches Options. The LITERALS are pinned here, not the constants they come from.
+                boolean saw_support = false;
+                for ( final JComboBox<?> combo : combos ) {
+                    if ( ( combo.getItemCount() > 0 ) && ( combo.getItemAt( 0 ) instanceof Options.SUPPORT_VISUALIZATION ) ) {
+                        saw_support = true;
+                        final String shown = renderedText( combo, Options.SUPPORT_VISUALIZATION.THRESHOLD_MARKS );
+                        if ( !"support dots".equals( shown ) ) {
+                            System.out.println( "  [SettingsDialogTest] the threshold mode must show as \"support dots\", shows \""
+                                    + shown + "\"" );
+                            ok[ 0 ] = TestFail.here();
+                        }
+                    }
+                }
+                if ( !saw_support ) {
+                    System.out.println( "  [SettingsDialogTest] no \"Show support as\" combo found" );
+                    ok[ 0 ] = TestFail.here();
+                }
+                final javax.swing.JSpinner dot_size = spinnerAfter( dlg.getContentPane(), "Support dot size (px):" );
+                if ( dot_size == null ) {
+                    System.out.println( "  [SettingsDialogTest] no \"Support dot size (px):\" spinner found" );
+                    ok[ 0 ] = TestFail.here();
+                }
+                else {
+                    final javax.swing.SpinnerNumberModel m = (javax.swing.SpinnerNumberModel) dot_size.getModel();
+                    if ( !Integer.valueOf( 1 ).equals( m.getMinimum() ) || !Integer.valueOf( 30 ).equals( m.getMaximum() )
+                            || !Integer.valueOf( 5 ).equals( m.getValue() ) ) {
+                        System.out.println( "  [SettingsDialogTest] the support dot size spinner must be [1,30] opening at 5, is ["
+                                + m.getMinimum() + "," + m.getMaximum() + "] at " + m.getValue() );
+                        ok[ 0 ] = TestFail.here();
+                    }
+                    dot_size.setValue( Integer.valueOf( 9 ) );
+                    if ( mf[ 0 ].getOptions().getSupportDotSize() != 9 ) {
+                        System.out.println( "  [SettingsDialogTest] the support dot size spinner must reach Options, which holds "
+                                + mf[ 0 ].getOptions().getSupportDotSize() );
+                        ok[ 0 ] = TestFail.here();
+                    }
+                    dot_size.setValue( Integer.valueOf( 5 ) ); // put it back
+                }
+                // A spinner's SEED is clamped into its range by the spinner helper itself (SpinnerNumberModel THROWS
+                // on an out-of-range seed): an Options value no file could set today -- every saved preference is
+                // clamped on load -- but one an embedding program or a later writer could. Opening Settings on it
+                // must not throw, and the spinner shows the bound.
+                final int kept_dot_size = mf[ 0 ].getOptions().getSupportDotSize();
+                mf[ 0 ].getOptions().setSupportDotSize( 999 );
+                try {
+                    final SettingsDialog over = new SettingsDialog( mf[ 0 ] );
+                    final javax.swing.JSpinner clamped = spinnerAfter( over.getContentPane(), "Support dot size (px):" );
+                    if ( ( clamped == null ) || !Integer.valueOf( 30 ).equals( clamped.getValue() ) ) {
+                        System.out.println( "  [SettingsDialogTest] an out-of-range support dot size (999) must open the spinner at its"
+                                + " bound 30, opened at " + ( ( clamped == null ) ? "no spinner" : clamped.getValue() ) );
+                        ok[ 0 ] = TestFail.here();
+                    }
+                    over.dispose();
+                }
+                catch ( final IllegalArgumentException e ) {
+                    System.out.println( "  [SettingsDialogTest] Settings must open on an out-of-range support dot size: " + e );
+                    ok[ 0 ] = TestFail.here();
+                }
+                finally {
+                    mf[ 0 ].getOptions().setSupportDotSize( kept_dot_size );
+                }
                 dlg.dispose();
                 ( (JFrame) mf[ 0 ] ).dispose();
             } );
@@ -258,6 +321,20 @@ public final class SettingsDialogTest {
             return false;
         }
         return true;
+    }
+
+    /** The spinner on the same row as the label reading {@code text} (a {@code labeled(...)} row), or null. */
+    private static javax.swing.JSpinner spinnerAfter( final Container c, final String text ) {
+        final JLabel l = findLabel( c, text );
+        if ( l == null ) {
+            return null;
+        }
+        for ( final Component sib : l.getParent().getComponents() ) {
+            if ( sib instanceof javax.swing.JSpinner ) {
+                return (javax.swing.JSpinner) sib;
+            }
+        }
+        return null;
     }
 
     /** The text the combo's installed renderer produces for {@code value} (how the item actually appears). */
@@ -303,7 +380,7 @@ public final class SettingsDialogTest {
     }
 
     public static void main( final String[] args ) {
-        System.out.println( test() ? "OK" : "FAILED" );
+        System.out.println( "SettingsDialog: " + ( test() ? "OK." : "FAILED." ) );
     }
 
     private SettingsDialogTest() {

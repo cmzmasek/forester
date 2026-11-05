@@ -179,10 +179,6 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane.repaint();
     }
 
-    private MainFrameApplication(final Phylogeny[] phys, final Configuration config, final String title) {
-        this(phys, config, title, null);
-    }
-
     private MainFrameApplication(final Phylogeny[] phys,
                                  final Configuration config,
                                  final String title,
@@ -192,11 +188,11 @@ public final class MainFrameApplication extends MainFrame {
         if (_configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        installLookAndFeel(_configuration.getUi());
-        // the export/save choosers were created in the super-constructor, before the
-        // look-and-feel above was installed; refresh them, so they are not left with the
-        // platform default (e.g. the native macOS file dialog instead of FlatLaf).
-        refreshFileChoosersLookAndFeel();
+        // The look-and-feel was installed BEFORE this constructor ran (createInstance), so the frame's own root pane
+        // -- built by the JFrame constructor, in super() -- and the file choosers wear it from the start. Installed
+        // here, after super(), the root pane kept the platform's look-and-feel: in the dark theme a menu-bar title's
+        // hover is DERIVED from the background behind it, so "File" hovered came out light grey under light grey
+        // text until a theme switch re-installed the frame (Christian, 2026-11-05). LaunchThemeTest.
         if ((current_dir != null) && current_dir.canRead() && current_dir.isDirectory()) {
             _startup_dir = current_dir; // a transient default for dialogs; NOT persisted (only user choices are)
         }
@@ -1917,6 +1913,14 @@ public final class MainFrameApplication extends MainFrame {
             public void menuSelected(final javax.swing.event.MenuEvent e) {
                 javax.swing.MenuSelectionManager.defaultManager().clearSelectedPath();
                 SwingUtilities.invokeLater(() -> {
+                    // ONE Settings dialog: while it is open, the menu brings it forward. A second copy stacked
+                    // exactly over the first, and the first was no longer re-seeded on a tab switch. A closed one
+                    // is built anew, so it opens seeded from the current tab.
+                    if ((_open_settings_dialog != null) && _open_settings_dialog.isShowing()) {
+                        _open_settings_dialog.toFront();
+                        _open_settings_dialog.requestFocus();
+                        return;
+                    }
                     // track the open dialog so a tab switch can re-seed its per-tab controls (tree style, palette,
                     // Time Axis); refreshOpenSettingsDialog() guards on isShowing(), so a closed/hidden one is inert
                     final SettingsDialog d = new SettingsDialog(MainFrameApplication.this);
@@ -2103,7 +2107,10 @@ public final class MainFrameApplication extends MainFrame {
                                            final Configuration config,
                                            final String title,
                                            final File current_dir) {
-        final MainFrameApplication mf = onEventThread(() -> new MainFrameApplication(phys, config, title, current_dir));
+        final MainFrameApplication mf = onEventThread(() -> {
+            installLookAndFeelFor(config); // before the frame: everything it builds then wears the theme
+            return new MainFrameApplication(phys, config, title, current_dir);
+        });
         if (_launched_as_standalone_application) {
             mf.startUpdateCheckIfEnabled(); // the real app only: never from a test or an embedding program
         }
@@ -2111,7 +2118,16 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     static MainFrame createInstance(final Phylogeny[] phys, final Configuration config, final String title) {
-        return onEventThread(() -> new MainFrameApplication(phys, config, title));
+        return createInstance(phys, config, title, null);
+    }
+
+    /** The configuration's theme, installed ahead of the window it is for; a missing configuration is refused here
+     *  as the constructor refuses it. */
+    private static void installLookAndFeelFor(final Configuration config) {
+        if (config == null) {
+            throw new IllegalArgumentException("configuration is null");
+        }
+        installLookAndFeel(config.getUi());
     }
 
     /**

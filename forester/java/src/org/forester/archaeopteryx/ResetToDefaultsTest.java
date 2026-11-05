@@ -94,6 +94,7 @@ public final class ResetToDefaultsTest {
         o.setGraphicsExportVisibleOnly( true );
         o.setRasterExportScale( 8 );
         o.setSupportThreshold( 0.1 );
+        o.setSupportDotSize( 17 ); // default 5
         o.setMinConfidenceFraction( 0.9 );
         o.setDefaultBranchWidth( 7f );
         o.setDefaultNodeShape( NodeShape.RECTANGLE );
@@ -313,6 +314,7 @@ public final class ResetToDefaultsTest {
         ok &= eq( "visibleOnly", o.isGraphicsExportVisibleOnly(), def.isGraphicsExportVisibleOnly() );
         ok &= eq( "rasterScale", o.getRasterExportScale(), def.getRasterExportScale() );
         ok &= eq( "supportThreshold", o.getSupportThreshold(), def.getSupportThreshold() );
+        ok &= eq( "supportDotSize", o.getSupportDotSize(), def.getSupportDotSize() );
         ok &= eq( "minConfidence", o.getMinConfidenceFraction(), def.getMinConfidenceFraction() );
         ok &= eq( "branchWidth", o.getDefaultBranchWidth(), def.getDefaultBranchWidth() );
         ok &= eq( "nodeShape", o.getDefaultNodeShape(), def.getDefaultNodeShape() );
@@ -425,6 +427,7 @@ public final class ResetToDefaultsTest {
                     //    (b) enum/number Options + a non-default tree style ON THE LIVE TREE + palette + theme
                     o.setRasterExportScale( 7 );
                     o.setSupportThreshold( 0.1 );
+                    o.setSupportDotSize( 17 ); // default 5
                     o.setDefaultNodeShape( NodeShape.RECTANGLE );
                     final TreePanel tp = frame.getMainPanel().getCurrentTreePanel();
                     tp.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ); // live tree drawn circular
@@ -522,6 +525,9 @@ public final class ResetToDefaultsTest {
                     }
                     if ( o.getSupportThreshold() != Options.SUPPORT_THRESHOLD_DEFAULT ) {
                         fail( ok, "support threshold should reset to default, got " + o.getSupportThreshold() );
+                    }
+                    if ( o.getSupportDotSize() != AptxConstants.SUPPORT_DOT_SIZE_DEFAULT ) {
+                        fail( ok, "support dot size should reset to default, got " + o.getSupportDotSize() );
                     }
                     if ( o.getDefaultNodeShape() != NodeShape.CIRCLE ) {
                         fail( ok, "node shape should reset to CIRCLE, got " + o.getDefaultNodeShape() );

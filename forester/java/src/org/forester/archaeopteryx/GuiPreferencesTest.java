@@ -85,6 +85,7 @@ public final class GuiPreferencesTest {
             // raster scale [1,8]) so they survive the clamp on load; out-of-range clamping is checked separately below
             final float branch_width = src.getDefaultBranchWidth() + 2.5f; // 1.5 -> 4.0
             final double support_threshold = ( src.getSupportThreshold() > 0.5 ) ? 0.25 : 0.75;
+            final int dot_size = src.getSupportDotSize() + 4; // 5 -> 9, inside [1,30]
             final double min_conf = ( src.getMinConfidenceFraction() > 0.5 ) ? 0.1 : 0.7;
             // Display-tab layout + export settings: enums, an int, booleans and a validated string (palette)
             final PHYLOGENY_GRAPHICS_TYPE gtype = ( src.getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
@@ -129,6 +130,7 @@ public final class GuiPreferencesTest {
             src.setNodeAgeShape( age_shape );
             src.setConfidenceFromInternalLabels( conf_policy );
             src.setSupportThreshold( support_threshold );
+            src.setSupportDotSize( dot_size );
             src.setMinConfidenceFraction( min_conf );
             src.setPhylogenyGraphicsType( gtype );
             src.setPhylogenyDisplayType( dtype );
@@ -210,6 +212,9 @@ public final class GuiPreferencesTest {
             }
             if ( dst.getSupportThreshold() != support_threshold ) {
                 return fail( "support_threshold did not round-trip" );
+            }
+            if ( dst.getSupportDotSize() != dot_size ) {
+                return fail( "support_dot_size did not round-trip" );
             }
             if ( dst.getMinConfidenceFraction() != min_conf ) {
                 return fail( "min_confidence_fraction did not round-trip" );
@@ -314,10 +319,11 @@ public final class GuiPreferencesTest {
             // an OUT-OF-RANGE or non-finite numeric value must be CLAMPED to the setting's [min,max], never applied
             // verbatim -- otherwise it would later throw when it seeds a range-limited SpinnerNumberModel, or feed
             // NaN/huge values into paint/export. (branch width [0.5,20], support/min-conf [0,1], raster scale [1,8],
-            // node size [0,100].)
+            // node size [0,100], support dot size [1,30].)
             final Path oor = dir.resolve( "out-of-range.properties" );
             Files.write( oor, ( "default_branch_width=1000\nsupport_threshold=5.0\nmin_confidence_fraction=-2\n"
-                    + "raster_export_scale=999\ndefault_node_shape_size=-7\nsupport_threshold_nan=ignored\n" )
+                    + "raster_export_scale=999\ndefault_node_shape_size=-7\nsupport_threshold_nan=ignored\n"
+                    + "support_dot_size=999\n" )
                     .getBytes( StandardCharsets.UTF_8 ) );
             final Options c = Options.createDefaultInstance();
             new GuiPreferences( oor ).applyTo( c );
@@ -335,6 +341,18 @@ public final class GuiPreferencesTest {
             }
             if ( c.getDefaultNodeShapeSize() != 0 ) {
                 return fail( "node size -7 must clamp to 0, got " + c.getDefaultNodeShapeSize() );
+            }
+            if ( c.getSupportDotSize() != AptxConstants.SUPPORT_DOT_SIZE_MAX ) {
+                return fail( "support dot size 999 must clamp to " + AptxConstants.SUPPORT_DOT_SIZE_MAX + ", got "
+                        + c.getSupportDotSize() );
+            }
+            final Path low = dir.resolve( "dot-size-low.properties" );
+            Files.write( low, "support_dot_size=0\n".getBytes( StandardCharsets.UTF_8 ) );
+            final Options l = Options.createDefaultInstance();
+            new GuiPreferences( low ).applyTo( l );
+            if ( l.getSupportDotSize() != AptxConstants.SUPPORT_DOT_SIZE_MIN ) {
+                return fail( "support dot size 0 must clamp to " + AptxConstants.SUPPORT_DOT_SIZE_MIN + ", got "
+                        + l.getSupportDotSize() );
             }
             // NaN/Infinity must not reach Options either: they order outside any finite range, so they clamp to a bound
             final Path nan = dir.resolve( "nan.properties" );

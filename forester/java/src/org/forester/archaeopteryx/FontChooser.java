@@ -23,6 +23,7 @@ package org.forester.archaeopteryx;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -30,6 +31,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -81,8 +83,27 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         this( font, AptxUtil.getAvailableFontFamiliesSorted() );
     }
 
+    /**
+     * A chooser OWNED by {@code owner}, the window it is opened from: it stays above that window. Opened from the
+     * Settings dialog without one, it could end up under Settings while holding the focus, which left Settings
+     * unresponsive (Christian, 2026-11-05). {@code owner} is a Frame or a Dialog -- what {@link JDialog#JDialog(Window)}
+     * accepts; any other Window is refused by it with an IllegalArgumentException.
+     */
+    FontChooser( final Window owner ) {
+        this( owner, new Font( DEFAULT_FONT_NAME, Font.PLAIN, 12 ), AptxUtil.getAvailableFontFamiliesSorted() );
+    }
+
     /** The chooser over {@code families} (the installed ones, by the public constructors; a test passes its own). */
     FontChooser( final Font font, final String[] families ) {
+        this( null, font, families );
+    }
+
+    /**
+     * The chooser over {@code families}, owned by {@code owner}; with none, by the hidden frame Swing gives a dialog
+     * without an owner (what the public constructors always did).
+     */
+    private FontChooser( final Window owner, final Font font, final String[] families ) {
+        super( ( owner != null ) ? owner : JOptionPane.getRootFrame() );
         _font_list = new JList<String>( families );
         _font_jsp = new JScrollPane( _font_list );
         final Container container = getContentPane();

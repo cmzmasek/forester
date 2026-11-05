@@ -117,21 +117,58 @@ public final class NodeSupportSymbolTest {
                         }
                     }
                     if ( i99 != null ) {
+                        final BufferedImage bare = renderImage( tp, mp, SUPPORT_VISUALIZATION.NONE ); // no symbol: the references go over it
                         final int mark = verticalExtent( renderImage( tp, mp, SUPPORT_VISUALIZATION.THRESHOLD_MARKS ), i99 );
                         final int scaled = verticalExtent( renderImage( tp, mp, SUPPORT_VISUALIZATION.SIZE_SCALED ), i99 );
                         // what a disc of the nominal diameter measures when drawn the painter's way at the same
                         // fractional position (an antialiased disc measures a pixel under its diameter: a +-1 check
                         // let a 7 px mutant pass, 2026-10-16), so the mark must measure exactly that
-                        final int want = verticalExtent( referenceDisc( AptxConstants.SUPPORT_THRESHOLD_MARK_DIAMETER, i99 ), i99 );
+                        final int want = verticalExtent( referenceDisc( AptxConstants.SUPPORT_DOT_SIZE_DEFAULT, i99, bare ), i99 );
                         if ( mark != want ) {
                             ok[ 0 ] = false;
-                            System.out.println( "  the threshold mark must measure as a " + AptxConstants.SUPPORT_THRESHOLD_MARK_DIAMETER
+                            System.out.println( "  the threshold mark must measure as a " + AptxConstants.SUPPORT_DOT_SIZE_DEFAULT
                                     + " px disc does (" + want + " px), measured " + mark );
                         }
                         if ( !( mark < scaled ) ) {
                             ok[ 0 ] = false;
                             System.out.println( "  the threshold mark (" + mark + " px) must be smaller than the size-scaled dot of the same support ("
                                     + scaled + " px)" );
+                        }
+                        // The dot takes the size the user sets (Settings > "Support dot size"; Christian, 2026-11-05):
+                        // at 3 and at 9 px it measures as a disc of THAT size, while the size-scaled dot -- whose
+                        // diameter IS the value -- ignores the setting. A 9 px dot is LARGER than the scaled dot, so
+                        // the default's "smaller than" above is a fact of the default, not of the mode.
+                        final int default_size = mp.getOptions().getSupportDotSize();
+                        if ( default_size != AptxConstants.SUPPORT_DOT_SIZE_DEFAULT ) {
+                            ok[ 0 ] = false;
+                            System.out.println( "  precondition: the support dot size starts at its default "
+                                    + AptxConstants.SUPPORT_DOT_SIZE_DEFAULT + ", was " + default_size );
+                        }
+                        try {
+                            for( final int px : new int[] { 3, 9 } ) {
+                                mp.getOptions().setSupportDotSize( px );
+                                final int sized = verticalExtent( renderImage( tp, mp, SUPPORT_VISUALIZATION.THRESHOLD_MARKS ), i99 );
+                                final int want_sized = verticalExtent( referenceDisc( px, i99, bare ), i99 );
+                                if ( sized != want_sized ) {
+                                    ok[ 0 ] = false;
+                                    System.out.println( "  at a support dot size of " + px + " the dot must measure as a " + px
+                                            + " px disc does (" + want_sized + " px), measured " + sized );
+                                }
+                                final int scaled_again = verticalExtent( renderImage( tp, mp, SUPPORT_VISUALIZATION.SIZE_SCALED ), i99 );
+                                if ( scaled_again != scaled ) {
+                                    ok[ 0 ] = false;
+                                    System.out.println( "  the size-scaled dot must ignore the support dot size: " + scaled
+                                            + " px at the default, " + scaled_again + " px at " + px );
+                                }
+                                if ( ( px == 9 ) && !( sized > scaled ) ) {
+                                    ok[ 0 ] = false;
+                                    System.out.println( "  a 9 px support dot (" + sized + " px) must be larger than the size-scaled dot ("
+                                            + scaled + " px)" );
+                                }
+                            }
+                        }
+                        finally {
+                            mp.getOptions().setSupportDotSize( default_size );
                         }
                     }
                 }
@@ -221,15 +258,17 @@ public final class NodeSupportSymbolTest {
     }
 
     /** A disc of {@code diameter} drawn as the painter draws a support symbol -- an antialiased filled ellipse framed
-     *  at (centre - d/2) -- on the branch centre of {@code internal}, alone on a white image of the panel's size. */
-    private static BufferedImage referenceDisc( final float diameter, final PhylogenyNode internal ) {
+     *  at (centre - d/2) -- on the branch centre of {@code internal}, over a copy of {@code bare}: the tree rendered
+     *  with NO symbol. Reference and render then differ in nothing but the diameter the painter chose, the branch
+     *  line under the dot included (a disc alone on white measured a 3 px dot as 0, 2026-11-05: its rounded centre
+     *  pixel is an antialiased EDGE pixel of so small a disc, dark in the render only because the line lies beneath). */
+    private static BufferedImage referenceDisc( final float diameter, final PhylogenyNode internal, final BufferedImage bare ) {
         final PhylogenyNode parent = internal.getParent();
         final float[] c = TreePanelUtil.supportSymbolCenter( parent.getXcoord(), internal.getXcoord(), parent.getYcoord(),
                                                             internal.getYcoord(), false );
-        final BufferedImage img = new BufferedImage( Math.round( c[ 0 ] ) + 40, Math.round( c[ 1 ] ) + 40, BufferedImage.TYPE_INT_RGB );
+        final BufferedImage img = new BufferedImage( bare.getWidth(), bare.getHeight(), BufferedImage.TYPE_INT_RGB );
         final java.awt.Graphics2D g = img.createGraphics();
-        g.setColor( java.awt.Color.WHITE );
-        g.fillRect( 0, 0, img.getWidth(), img.getHeight() );
+        g.drawImage( bare, 0, 0, null );
         g.setRenderingHint( java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON );
         g.setColor( java.awt.Color.BLACK );
         final float half = diameter / 2.0f;

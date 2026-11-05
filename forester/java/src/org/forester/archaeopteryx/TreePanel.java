@@ -3895,8 +3895,9 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      * per the {@link Options.SUPPORT_VISUALIZATION} mode. Monochrome (branch color) so it does not
      * compete with clade/taxonomy coloring; uses the absolute support scale (1 or 100, detected per
      * paint into {@code _confidence_scale_max}) rather than normalizing to the maximum present, so a
-     * given symbol means the same thing across trees. THRESHOLD_MARKS draws one fixed dot (the default node
-     * size) only at or above the cutoff; SIZE_SCALED draws a dot whose diameter grows with support.
+     * given symbol means the same thing across trees. THRESHOLD_MARKS ("support dots") draws one dot, at the size
+     * the user set ({@link Options#getSupportDotSize}), only at or above the cutoff; SIZE_SCALED draws a dot whose
+     * diameter grows with support and ignores that size.
      */
     final private void paintNodeSupportSymbol(final float x,
                                               final float y,
@@ -3922,7 +3923,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                     getOptions().getSupportThreshold())) {
                 return;
             }
-            diameter = AptxConstants.SUPPORT_THRESHOLD_MARK_DIAMETER;
+            diameter = getOptions().getSupportDotSize();
         } else {
             diameter = TreePanelUtil.supportSymbolSize(conf,
                     _confidence_scale_max,

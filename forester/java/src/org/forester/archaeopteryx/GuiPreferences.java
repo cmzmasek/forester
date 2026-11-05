@@ -128,6 +128,8 @@ final class GuiPreferences {
                       Options.DOMAIN_LABEL_MODE::valueOf ),
             boolPref( "show_domain_glow", Options::isShowDomainGlow, Options::setShowDomainGlow ),
             doublePref( "support_threshold", Options::getSupportThreshold, Options::setSupportThreshold, 0.0, 1.0 ),
+            intPref( "support_dot_size", Options::getSupportDotSize, Options::setSupportDotSize,
+                     AptxConstants.SUPPORT_DOT_SIZE_MIN, AptxConstants.SUPPORT_DOT_SIZE_MAX ),
             doublePref( "min_confidence_fraction", Options::getMinConfidenceFraction,
                         Options::setMinConfidenceFraction, 0.0, 1.0 ),
             // Display-tab layout: tree style + overview placement (both clean Options enums). EVERY tree style is

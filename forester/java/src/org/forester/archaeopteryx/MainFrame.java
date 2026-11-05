@@ -853,10 +853,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         SwingUtilities.invokeLater(this::doUpdateProcessMenu);
     }
 
-    void chooseFont() {
-        final FontChooser fc = new FontChooser();
+    /** Opens the tree-font chooser owned by, and centred on, {@code owner}: the window it is asked from (the Settings
+     *  dialog), so it stays above that window. A Frame or a Dialog, as JDialog requires of an owner. */
+    void chooseFont(final Window owner) {
+        final FontChooser fc = new FontChooser(owner);
         fc.setFont(getMainPanel().getTreeFontSet().getBaseFont()); // the user size, not the transient auto-shrunk one
-        fc.showDialog(this, "Select the Base Font");
+        fc.showDialog(owner, "Select the Base Font");
         getMainPanel().getTreeFontSet().setBaseFont(fc.getFont());
         getControlPanel().displayedPhylogenyMightHaveChanged(true);
         if (getMainPanel().getCurrentTreePanel() != null) {
@@ -3432,11 +3434,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * The export/save file choosers are created in the {@link MainFrame} constructor,
-     * before the look-and-feel is installed, so on macOS they pick up the native Aqua
-     * file dialog and keep it. They are also standalone (never part of a window's
-     * component tree), so a runtime theme switch does not reach them. Refresh their UI
-     * explicitly so they always match the current FlatLaf theme.
+     * The export/save file choosers are standalone (never part of a window's component tree), so a runtime theme
+     * switch does not reach them. Refresh their UI explicitly so they always match the current FlatLaf theme.
      */
     void refreshFileChoosersLookAndFeel() {
         for (final JFileChooser fc : new JFileChooser[] { _writetopdf_filechooser, _writetographics_filechooser,

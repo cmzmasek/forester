@@ -493,6 +493,22 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Settings dialog stacking (its dialogs are owned by it; one Settings dialog at a time): ");
+        if (org.forester.archaeopteryx.SettingsDialogStackingTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
+        System.out.print("Launch theme (the whole window wears the theme asked for; menu-bar hover legible): ");
+        if (org.forester.archaeopteryx.LaunchThemeTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Recent files (Open Recent history): ");
         if (org.forester.archaeopteryx.RecentFilesTest.test()) {
             System.out.println("OK.");

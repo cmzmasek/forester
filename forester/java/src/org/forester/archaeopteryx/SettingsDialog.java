@@ -110,8 +110,12 @@ final class SettingsDialog extends JDialog {
         } );
         final JButton reset = button( "Reset to Defaults…", this::confirmAndResetToDefaults );
         reset.setToolTipText( "Restore all display settings, the theme, and tree colors to the built-in defaults" );
+        // Closed = disposed (the Close button and the window's own close box alike): a HIDDEN dialog stays a window,
+        // re-skinned on every theme switch and holding its eight tabs of widgets -- one more per open/close cycle
+        // (review, 2026-11-05). The menu builds a fresh one, seeded from the current tab.
+        setDefaultCloseOperation( DISPOSE_ON_CLOSE );
         final JButton close = new JButton( "Close" );
-        close.addActionListener( e -> setVisible( false ) );
+        close.addActionListener( e -> dispose() );
         final JPanel south = new JPanel( new BorderLayout() );
         final JPanel south_left = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
         south_left.add( reset );
@@ -408,18 +412,21 @@ final class SettingsDialog extends JDialog {
         add( c, labeled( "Branch width:", doubleSpinner( _mf.getOptions().getDefaultBranchWidth(), 0.5, 20, 0.5,
                                                          v -> { _mf.getOptions().setDefaultBranchWidth( v.floatValue() ); repaintTree(); } ) ) );
         add( c, labeled( "Min. support shown (fraction of scale):",
-                         // clamp the seed into [0,1]: SpinnerNumberModel THROWS (not clamps) on an out-of-range
-                         // value, so a legacy/persisted absolute value (e.g. 50) must not reach the constructor
-                         doubleSpinner( Math.max( 0.0, Math.min( 1.0, _mf.getOptions().getMinConfidenceFraction() ) ),
-                                        0, 1.0, 0.05,
+                         // a legacy/persisted ABSOLUTE value (e.g. 50) is clamped into [0,1] by the spinner helper
+                         doubleSpinner( _mf.getOptions().getMinConfidenceFraction(), 0, 1.0, 0.05,
                                         v -> { _mf.getOptions().setMinConfidenceFraction( v ); repaintTree(); } ) ) );
         add( c, labeled( "Show support as:", enumCombo( SUPPORT_VISUALIZATION.values(),
                                                         _mf.getOptions().getSupportVisualization(),
                                                         v -> { _mf.getOptions().setSupportVisualization( v ); repaintTree(); } ) ) );
         add( c, labeled( "Support threshold (0–1):", doubleSpinner( _mf.getOptions().getSupportThreshold(), 0, 1.0, 0.05,
                                                                        v -> { _mf.getOptions().setSupportThreshold( v ); repaintTree(); } ) ) );
+        // the diameter of a support dot (the size-scaled dots ignore it)
+        add( c, labeled( "Support dot size (px):",
+                         intSpinner( _mf.getOptions().getSupportDotSize(), AptxConstants.SUPPORT_DOT_SIZE_MIN,
+                                     AptxConstants.SUPPORT_DOT_SIZE_MAX, 1,
+                                     v -> { _mf.getOptions().setSupportDotSize( v ); repaintTree(); } ) ) );
         c.add( header( "Fonts" ) );
-        add( c, labeled( "Tree font:", button( "Choose…", () -> { _mf.chooseFont(); refreshFontInfo(); } ) ) );
+        add( c, labeled( "Tree font:", button( "Choose…", () -> { _mf.chooseFont( this ); refreshFontInfo(); } ) ) );
         _current_font_label = new JLabel();
         add( c, _current_font_label );
         final JLabel font_blurb = new JLabel( buildPreferredFontsHtml() );
@@ -1031,16 +1038,19 @@ final class SettingsDialog extends JDialog {
         return sb.toString();
     }
 
+    /** The seed is clamped into [min,max] here, for every spinner: SpinnerNumberModel THROWS (not clamps) on an
+     *  out-of-range value, and a seed can come from an older or hand-edited settings file. */
     private JSpinner intSpinner( final int value, final int min, final int max, final int step,
                                  final Setter<Integer> setter ) {
-        final JSpinner s = new JSpinner( new SpinnerNumberModel( value, min, max, step ) );
+        final JSpinner s = new JSpinner( new SpinnerNumberModel( Math.max( min, Math.min( max, value ) ), min, max, step ) );
         s.addChangeListener( e -> setter.set( ( (Number) s.getValue() ).intValue() ) );
         return s;
     }
 
+    /** The seed clamped into [min,max], as in {@link #intSpinner}. */
     private JSpinner doubleSpinner( final double value, final double min, final double max, final double step,
                                     final Setter<Double> setter ) {
-        final JSpinner s = new JSpinner( new SpinnerNumberModel( value, min, max, step ) );
+        final JSpinner s = new JSpinner( new SpinnerNumberModel( Math.max( min, Math.min( max, value ) ), min, max, step ) );
         s.addChangeListener( e -> setter.set( ( (Number) s.getValue() ).doubleValue() ) );
         return s;
     }

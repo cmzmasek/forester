@@ -178,7 +178,9 @@ final public class Options {
     // design (uses the branch color) so the color channel stays free for clade/taxonomy identity.
     static enum SUPPORT_VISUALIZATION {
         NONE("none"),
-        THRESHOLD_MARKS("threshold marks"),
+        // "support dots" is the JS's name for the same mark (Christian, 2026-11-05); the constant stays, saved
+        // preferences name it
+        THRESHOLD_MARKS("support dots"),
         SIZE_SCALED("size-scaled dots"),
         COLOR_BRANCHES("branch color");
 
@@ -259,6 +261,7 @@ final public class Options {
     private SUPPORT_VISUALIZATION _support_visualization;
     private NODE_AGE_SHAPE _node_age_shape;
     private double _support_threshold;
+    private int _support_dot_size;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
     private boolean _nh_parsing_replace_underscores;
     private int _raster_export_scale;
@@ -465,6 +468,7 @@ final public class Options {
         _support_visualization = SUPPORT_VISUALIZATION.NONE;
         _node_age_shape = NODE_AGE_SHAPE.BAR;
         _support_threshold = SUPPORT_THRESHOLD_DEFAULT;
+        _support_dot_size = AptxConstants.SUPPORT_DOT_SIZE_DEFAULT;
         _export_black_and_white = false;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _phylogeny_display_type = PHYLOGENY_DISPLAY_TYPE.UNALIGNED_PHYLOGRAM;
@@ -560,6 +564,11 @@ final public class Options {
 
     final double getSupportThreshold() {
         return _support_threshold;
+    }
+
+    /** The diameter, in px, of a support dot (THRESHOLD_MARKS); the size-scaled dots ignore it. */
+    final int getSupportDotSize() {
+        return _support_dot_size;
     }
 
     NH_CONVERSION_SUPPORT_VALUE_STYLE getNhConversionSupportValueStyle() {
@@ -1020,6 +1029,10 @@ final public class Options {
 
     final void setSupportThreshold(final double support_threshold) {
         _support_threshold = support_threshold;
+    }
+
+    final void setSupportDotSize(final int support_dot_size) {
+        _support_dot_size = support_dot_size;
     }
 
     void setNhConversionSupportValueStyle(final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_value_style) {

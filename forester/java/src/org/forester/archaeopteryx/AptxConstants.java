@@ -29,8 +29,8 @@ import org.forester.util.ForesterConstants;
 public final class AptxConstants {
 
     public final static String PRG_NAME = "Archaeopteryx";
-    final static String VERSION = "0.11.200";
-    final static String PRG_DATE = "2026-11-04";
+    final static String VERSION = "0.11.201";
+    final static String PRG_DATE = "2026-11-05";
     // The first three are bundled and registered at startup (see FontResources), so they are always
     // present and give identical, reproducible figure type across platforms; the rest are fallbacks.
     final static String[] DEFAULT_FONT_CHOICES = {
@@ -110,9 +110,13 @@ public final class AptxConstants {
     // as labels) are shown head + "…" when "Shorten Labels" is on. Also the threshold at which that
     // Diameters (px) of the internal-node support symbols drawn on the middle of a branch: in SIZE_SCALED mode
     // the smallest dot (low support) and the largest (full support) -- the diameter IS the value, so these are the
-    // scale's ends; in THRESHOLD_MARKS mode one fixed dot at or above the cutoff, a yes/no mark, kept at the
-    // default node size (was the 8 px of full support until 0.11.184; Christian, 2026-10-16: "too large").
-    public final static float SUPPORT_SYMBOL_MIN_DIAMETER     = 2.0f;
-    public final static float SUPPORT_SYMBOL_MAX_DIAMETER     = 8.0f;
-    public final static float SUPPORT_THRESHOLD_MARK_DIAMETER = 5.0f;
+    // scale's ends. A SUPPORT DOT (THRESHOLD_MARKS) is one yes/no dot at or above the cutoff, at the size the user
+    // sets (Settings > Fonts, Nodes and Branches > "Support dot size"; Christian, 2026-11-05), by default the default
+    // node size (was the 8 px of full support until 0.11.184; Christian, 2026-10-16: "too large"). The range is the
+    // spinner's and the saved preference's clamp.
+    public final static float SUPPORT_SYMBOL_MIN_DIAMETER = 2.0f;
+    public final static float SUPPORT_SYMBOL_MAX_DIAMETER = 8.0f;
+    public final static int   SUPPORT_DOT_SIZE_DEFAULT    = 5;
+    public final static int   SUPPORT_DOT_SIZE_MIN        = 1;
+    public final static int   SUPPORT_DOT_SIZE_MAX        = 30;
 }
