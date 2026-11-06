@@ -2264,8 +2264,8 @@ public final class launch {
         System.out.println();
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( "% java -Xms256m -Xmx512m -cp forester.jar org.forester.applications."
-                + SurfacingConstants.PRG_NAME + " [options] <phylogen(y|ies) infile>" );
+        System.out.println( "% java -Xms256m -Xmx512m -cp forester.jar "
+                + launch.class.getName() + " [options] <phylogen(y|ies) infile>" );
         System.out.println();
         System.out.println( " Note: This software might need a significant amount of memory (heap space);" );
         System.out

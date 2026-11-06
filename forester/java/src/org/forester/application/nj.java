@@ -135,7 +135,7 @@ public class nj {
         System.out.println();
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( "% java -cp forester.jar org.forester.applications." + PRG_NAME
+        System.out.println( "% java -cp forester.jar " + nj.class.getName()
                             + " [options] <pairwise distances infile> <out file>" );
         System.out.println();
         System.out.println( " Options: " );
