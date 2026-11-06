@@ -2054,7 +2054,7 @@ public final class MainFrameApplication extends MainFrame {
      *  it's a per-JVM singleton, so there is no concurrent-write race and no risk of overwriting the developer's
      *  real ~/.archaeopteryx from a test. */
     // Set true ONLY by Archaeopteryx.main -- i.e. when this JVM IS the standalone Archaeopteryx application, not
-    // an embedder (msa_compactor, forester_applications) that opens a tree view via Archaeopteryx.createApplication
+    // an embedder (msa_compactor, or another program) that opens a tree view via Archaeopteryx.createApplication
     // and keeps its own JVM working. Gates the System.exit(0) in exit(); also means a test (which never sets it)
     // can never force-kill the suite JVM even if it reached exit().
     private static boolean _launched_as_standalone_application = false;
