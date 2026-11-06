@@ -609,18 +609,24 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
     /** The first link showing {@code text}, the page laid out first (a form never shown has no size, and a text
      *  without a place has no character under any point); null when there is none. */
     JTextComponent linkForTest( final String text ) {
-        if ( getWidth() == 0 ) {
-            setSize( 620, 2400 );
-            for( int pass = 0; pass < 2; ++pass ) { // wrapped areas know their height only after a first layout
-                layOut( this );
-            }
-        }
+        layOutForTest();
         for( final JTextComponent c : linkComponents( this, new ArrayList<>() ) ) {
             if ( c.getText().equals( text ) ) {
                 return c;
             }
         }
         return null;
+    }
+
+    /** Lays the page out at 620 px wide when it never was (a form never shown has no size, and a text without a
+     *  place has no character under any point). */
+    private void layOutForTest() {
+        if ( getWidth() == 0 ) {
+            setSize( 620, 2400 );
+            for( int pass = 0; pass < 2; ++pass ) { // wrapped areas know their height only after a first layout
+                layOut( this );
+            }
+        }
     }
 
     /** The middle of the first character of {@code c}'s text. */
@@ -652,19 +658,92 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         }
     }
 
-    /** The address the metadata value in {@code row} links to, or null. */
+    /** The address the metadata value in {@code row} links to (its first link), or null. */
     String propertyLinkForTest( final int row ) {
-        return propertyLink( row, 1 );
+        final List<NodeDataLinks.Span> spans = propertyLinks( row, 1 );
+        return spans.isEmpty() ? null : spans.get( 0 ).url;
     }
 
-    /** Clicks the metadata VALUE cell of {@code row} (a plain left click: modifiers 0, one click). */
+    /** Every link in the metadata value of {@code row}, in order, as {text, address}. */
+    List<String[]> propertyLinksForTest( final int row ) {
+        final List<String[]> out = new ArrayList<>();
+        final String value = String.valueOf( _property_model.getValueAt( row, 1 ) );
+        for( final NodeDataLinks.Span s : propertyLinks( row, 1 ) ) {
+            out.add( new String[] { value.substring( s.start, s.end ), s.url } );
+        }
+        return out;
+    }
+
+    /** Clicks the first character of the metadata value of {@code row} (a plain left click: modifiers 0, one
+     *  click). */
     void clickPropertyValueForTest( final int row, final int modifiers_ex, final int click_count ) {
-        final java.awt.Rectangle r = _property_table.getCellRect( row, 1, false );
+        clickPropertyCharForTest( row, 0, modifiers_ex, click_count );
+    }
+
+    /** Clicks the middle of character {@code index} of the metadata value of {@code row}. */
+    void clickPropertyCharForTest( final int row, final int index, final int modifiers_ex, final int click_count ) {
+        final java.awt.Point p = propertyCharPoint( row, index );
         _property_table.dispatchEvent( new java.awt.event.MouseEvent( _property_table,
                                                                       java.awt.event.MouseEvent.MOUSE_CLICKED,
                                                                       System.currentTimeMillis(), modifiers_ex,
-                                                                      r.x + 2, r.y + 2, click_count, false,
+                                                                      p.x, p.y, click_count, false,
                                                                       java.awt.event.MouseEvent.BUTTON1 ) );
+    }
+
+    /** The tooltip over character {@code index} of the metadata value of {@code row}: a link's address there. */
+    String propertyTooltipAtForTest( final int row, final int index ) {
+        final java.awt.Point p = propertyCharPoint( row, index );
+        return _property_table.getToolTipText( new java.awt.event.MouseEvent( _property_table,
+                java.awt.event.MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, p.x, p.y, 0, false ) );
+    }
+
+    /** The cursor's type once the pointer is over character {@code index} of the metadata value of {@code row}. */
+    int propertyCursorAtForTest( final int row, final int index ) {
+        final java.awt.Point p = propertyCharPoint( row, index );
+        _property_table.dispatchEvent( new java.awt.event.MouseEvent( _property_table,
+                java.awt.event.MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, p.x, p.y, 0, false ) );
+        return _property_table.getCursor().getType();
+    }
+
+    /** The tooltip 3 px past the end of the metadata value of {@code row}: beside the text, none. */
+    String propertyTooltipPastTextForTest( final int row ) {
+        final Component c = propertyRenderer( row, 1 );
+        final String text = String.valueOf( _property_model.getValueAt( row, 1 ) );
+        return propertyTooltipAtXForTest( row, c.getFontMetrics( c.getFont() ).stringWidth( text ) + 3 );
+    }
+
+    /** The tooltip {@code x} px right of the left edge of the metadata value of {@code row}'s text. */
+    String propertyTooltipAtXForTest( final int row, final int x ) {
+        layOutForTest();
+        final java.awt.Rectangle r = _property_table.getCellRect( row, 1, false );
+        final Component c = propertyRenderer( row, 1 );
+        return _property_table.getToolTipText( new java.awt.event.MouseEvent( _property_table,
+                java.awt.event.MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0,
+                r.x + propertyInsets( c ).left + x, r.y + ( r.height / 2 ), 0, false ) );
+    }
+
+    /** Whether the metadata value of {@code row} is shown whole (a longer one is cut with an ellipsis): the
+     *  precondition of every claim about where its characters are. */
+    boolean propertyValueFitsForTest( final int row ) {
+        layOutForTest();
+        final java.awt.Rectangle r = _property_table.getCellRect( row, 1, false );
+        final Component c = propertyRenderer( row, 1 );
+        final java.awt.Insets in = propertyInsets( c );
+        final String text = String.valueOf( _property_model.getValueAt( row, 1 ) );
+        return c.getFontMetrics( c.getFont() ).stringWidth( text ) <= ( r.width - in.left - in.right ); // whole at equality, as shownTextWidth and Swing's clip
+    }
+
+    /** The middle of character {@code index} of the metadata value of {@code row}, in table coordinates, the page
+     *  laid out first. */
+    private java.awt.Point propertyCharPoint( final int row, final int index ) {
+        layOutForTest();
+        final java.awt.Rectangle r = _property_table.getCellRect( row, 1, false );
+        final Component c = propertyRenderer( row, 1 );
+        final java.awt.FontMetrics fm = c.getFontMetrics( c.getFont() );
+        final String text = String.valueOf( _property_model.getValueAt( row, 1 ) );
+        final int x = r.x + propertyInsets( c ).left + fm.stringWidth( text.substring( 0, index ) )
+                + ( fm.charWidth( text.charAt( index ) ) / 2 );
+        return new java.awt.Point( x, r.y + ( r.height / 2 ) );
     }
 
     private static List<JTextComponent> linkComponents( final Component c, final List<JTextComponent> out ) {
@@ -725,12 +804,86 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         return linkList( texts, urls, this::openLink );
     }
 
-    /** The address a metadata cell links to: a VALUE that is a web address, in VIEW mode only; else null. */
-    private String propertyLink( final int row, final int col ) {
+    /** The links in a metadata VALUE cell, VIEW mode only, in order -- {@link NodeDataLinks#propertySpans}, the
+     *  one rule the node menu's "Open PDB" reads too (a web address; the identifiers of a pdb_ids field). Empty
+     *  otherwise. */
+    private List<NodeDataLinks.Span> propertyLinks( final int row, final int col ) {
         if ( isEditable() || ( col != 1 ) || ( row < 0 ) || ( row >= _property_model.getRowCount() ) ) {
+            return java.util.Collections.emptyList();
+        }
+        return NodeDataLinks.propertySpans( String.valueOf( _property_model.getValueAt( row, 0 ) ),
+                                            String.valueOf( _property_model.getValueAt( row, col ) ) );
+    }
+
+    /**
+     * The link under {@code p} (table coordinates) in the metadata table: the one whose characters lie under the
+     * point, measured as the cell's renderer lays its text out (from its left inset, in its font) and within what
+     * the cell SHOWS of the value -- a value wider than the cell is cut with an ellipsis, and what lies under the
+     * ellipsis or beyond it cannot be clicked ({@link #shownTextWidth}). Null beside the text, between links and
+     * over a token that is none. A link is its TEXT, as everywhere on the page.
+     */
+    private NodeDataLinks.Span propertyLinkAt( final java.awt.Point p ) {
+        final int row = _property_table.rowAtPoint( p );
+        final int col = _property_table.columnAtPoint( p );
+        final List<NodeDataLinks.Span> spans = propertyLinks( row, col );
+        if ( spans.isEmpty() ) {
             return null;
         }
-        return NodeDataLinks.webUrl( String.valueOf( _property_model.getValueAt( row, col ) ) );
+        final java.awt.Rectangle r = _property_table.getCellRect( row, col, false );
+        final Component c = propertyRenderer( row, col );
+        final java.awt.Insets in = propertyInsets( c );
+        final java.awt.FontMetrics fm = c.getFontMetrics( c.getFont() );
+        final String text = String.valueOf( _property_model.getValueAt( row, col ) );
+        final int x = p.x - r.x - in.left; // from the text's left edge
+        if ( ( x < 0 ) || ( x >= shownTextWidth( fm, text, r.width - in.left - in.right ) ) ) {
+            return null;
+        }
+        int pos = 0; // the characters measured so far, and their width: each character measured once
+        int width = 0;
+        for( final NodeDataLinks.Span s : spans ) { // in text order
+            width += fm.stringWidth( text.substring( pos, s.start ) );
+            if ( x < width ) {
+                return null; // before this link: between links, or on a token that is none
+            }
+            width += fm.stringWidth( text.substring( s.start, s.end ) );
+            pos = s.end;
+            if ( x < width ) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * How much of {@code text} a cell with {@code avail} px for its text shows, in px: its whole width when it
+     * fits; else the width of the characters before the ellipsis, measured as the renderer clips them (the label
+     * layout's {@code clipString}: character widths summed until the "..." no longer fits).
+     */
+    private static int shownTextWidth( final java.awt.FontMetrics fm, final String text, final int avail ) {
+        final int whole = fm.stringWidth( text );
+        if ( whole <= avail ) {
+            return whole;
+        }
+        final int room = avail - fm.stringWidth( "..." );
+        int width = 0;
+        for( int i = 0; i < text.length(); ++i ) {
+            final int w = fm.charWidth( text.charAt( i ) );
+            if ( ( width + w ) > room ) {
+                break;
+            }
+            width += w;
+        }
+        return width;
+    }
+
+    /** The cell's renderer, prepared for the cell: what paints it, with its font and insets. */
+    private Component propertyRenderer( final int row, final int col ) {
+        return _property_table.prepareRenderer( _property_table.getCellRenderer( row, col ), row, col );
+    }
+
+    private static java.awt.Insets propertyInsets( final Component renderer ) {
+        return ( renderer instanceof JComponent ) ? ( (JComponent) renderer ).getInsets()
+                : new java.awt.Insets( 0, 0, 0, 0 );
     }
 
     // ------------------------------------------------------------------ building
@@ -890,7 +1043,17 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
         // -- Properties --
         {
             _property_model = new PropertyTableModel( d.properties, isEditable() );
-            _property_table = new JTable( _property_model );
+            _property_table = new JTable( _property_model ) {
+
+                private static final long serialVersionUID = 1L;
+
+                /** VIEW: over a link in a value, its address; otherwise the renderer's (a problem's message). */
+                @Override
+                public String getToolTipText( final java.awt.event.MouseEvent e ) {
+                    final NodeDataLinks.Span s = propertyLinkAt( e.getPoint() );
+                    return ( s != null ) ? s.url : super.getToolTipText( e );
+                }
+            };
             _property_table.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
             _property_table.setRowHeight( _property_table.getFontMetrics( _property_table.getFont() ).getHeight()
                     + 8 );
@@ -1643,37 +1806,36 @@ final class NodeDataForm extends JPanel implements EditorFrame.Form {
                 }
             }
             else {
-                // VIEW: a value that is a web address reads as a link (see the table's mouse listener)
-                final String link = propertyLink( row, col );
+                // VIEW: a value holding a link reads as one; the table's mouse listener opens the link under the
+                // pointer and its getToolTipText shows that link's address (there may be several in one value)
                 c.setForeground( selected ? table.getSelectionForeground()
-                        : ( link != null ) ? linkColor() : table.getForeground() );
+                        : !propertyLinks( row, col ).isEmpty() ? linkColor() : table.getForeground() );
                 if ( c instanceof JComponent ) {
-                    ( (JComponent) c ).setToolTipText( link );
+                    ( (JComponent) c ).setToolTipText( null );
                 }
             }
             return c;
         }
     }
 
-    /** VIEW: a plain left click on a metadata value that is a web address opens it; the pointer is a hand there. */
+    /** VIEW: a plain left click on a link in a metadata value ({@link #propertyLinkAt}) opens it; the pointer is
+     *  a hand over one. */
     private void linkPropertyValues() {
         final java.awt.event.MouseAdapter m = new java.awt.event.MouseAdapter() {
 
             @Override
             public void mouseClicked( final java.awt.event.MouseEvent e ) {
                 if ( isPlainSingleLeftClick( e ) ) {
-                    final String url = propertyLink( _property_table.rowAtPoint( e.getPoint() ),
-                                                     _property_table.columnAtPoint( e.getPoint() ) );
-                    if ( url != null ) {
-                        openLink( url );
+                    final NodeDataLinks.Span s = propertyLinkAt( e.getPoint() );
+                    if ( s != null ) {
+                        openLink( s.url );
                     }
                 }
             }
 
             @Override
             public void mouseMoved( final java.awt.event.MouseEvent e ) {
-                final boolean over = propertyLink( _property_table.rowAtPoint( e.getPoint() ),
-                                                   _property_table.columnAtPoint( e.getPoint() ) ) != null;
+                final boolean over = propertyLinkAt( e.getPoint() ) != null;
                 _property_table.setCursor( over ? java.awt.Cursor.getPredefinedCursor( java.awt.Cursor.HAND_CURSOR )
                         : java.awt.Cursor.getDefaultCursor() );
             }

@@ -44,11 +44,13 @@ public final class ConfigurationTest {
      * {@link DisplayOption} (they replaced the old fragile positional {@code String[][]} arrays + parallel
      * int index constants, so the previous alignment guard is obsolete). Spot-check that each enum carries a
      * title and that a couple of representative default states are correct, and that the removed actions/
-     * options ("Launch BLAST", "Open PDB", "Binary Characters", "Vector Data", ...) are gone.
+     * options ("Launch BLAST", "Binary Characters", "Vector Data", ...) are gone -- "Open PDB", removed with them
+     * in 0.11.80, is back (2026-11-06) as {@link NodeMenuEntry#OPEN_PDB_WEB}.
      */
     private static boolean testOptionEnums() {
         if ( !"Display Node Data".equals( NodeMenuEntry.DISPLAY_NODE_DATA.title() )
                 || !"Ladderize Subtree".equals( NodeMenuEntry.ORDER_SUBTREE.title() )
+                || !"Open PDB".equals( NodeMenuEntry.OPEN_PDB_WEB.title() )
                 || !"Open Taxonomy DB".equals( NodeMenuEntry.OPEN_TAX_WEB.title() ) ) {
             return false;
         }
@@ -56,8 +58,8 @@ public final class ConfigurationTest {
             if ( ( o.title() == null ) || o.title().isEmpty() ) {
                 return false;
             }
-            // the removed BLAST / PDB actions must be gone
-            if ( "Launch BLAST".equals( o.title() ) || "Open PDB".equals( o.title() ) ) {
+            // the removed BLAST action must be gone
+            if ( "Launch BLAST".equals( o.title() ) ) {
                 return false;
             }
         }

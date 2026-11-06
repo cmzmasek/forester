@@ -1009,8 +1009,9 @@ public final class DemoTreesTest {
 
     /**
      * node-data-links.xml: each tip's Display Node Data page carries exactly the links its records name (the
-     * genome accession on a protein sequence opens NCBI Nucleotide; the metadata web address links); its twin
-     * node-data-links-none.xml: data on every tip, and not one link.
+     * genome accession on a protein sequence opens NCBI Nucleotide; the metadata web address links; the PDB
+     * cross-references and the identifiers of the pdb_ids field open RCSB PDB, and the node menu's Open PDB offers
+     * exactly those); its twin node-data-links-none.xml: data on every tip, and not one link.
      */
     private static boolean nodeDataLinksDemosOk() {
         final Phylogeny links = load( "node-data-links.xml" );
@@ -1019,11 +1020,15 @@ public final class DemoTreesTest {
             return false;
         }
         final java.util.Map<String, Integer> want = new java.util.LinkedHashMap<>();
-        want.put( "BRCA1_HUMAN", 13 ); // name, code, id; accession; 5 cross-references; 3 domains; DOI
+        want.put( "BRCA1_HUMAN", 16 ); // name, code, id; accession; 8 cross-references (3 PDB); 3 domains; DOI
         want.put( "Guaroa_virus|AKC42486.1", 3 ); // name, id, accession
         want.put( "AAY88866", 7 ); // name, code, id, accession, 3 cross-references
         want.put( "KJ473821", 3 ); // name, id, accession
         want.put( "PP_006XHL9.4", 4 ); // name, id, accession, URI
+        want.put( "MERS-CoV_EMC/2012|AFS88936.1", 3 ); // name, id, accession (the PDB identifiers: the metadata table)
+        final java.util.Map<String, Integer> want_pdb = new java.util.LinkedHashMap<>(); // what Open PDB offers
+        want_pdb.put( "BRCA1_HUMAN", 3 );
+        want_pdb.put( "MERS-CoV_EMC/2012|AFS88936.1", 4 );
         final java.util.Map<String, Integer> got = new java.util.LinkedHashMap<>();
         for( final PhylogenyNode tip : links.getExternalNodes() ) {
             final NodeDataForm f = new NodeDataForm( tip, null, NodeDataForm.Mode.VIEW );
@@ -1049,6 +1054,45 @@ public final class DemoTreesTest {
                             + TreePanel.sequenceDbUrl( seq ) + ", which the window does not link" );
                 }
             }
+            // Open PDB offers every PDB entry the window links -- a cross-reference's, or an identifier in the
+            // metadata table -- and nothing else
+            final java.util.Set<String> pdb_links = new java.util.HashSet<>();
+            for( final String[] l : f.linksForTest() ) {
+                if ( l[ 1 ].startsWith( NodeDataLinks.RCSB_PDB ) ) {
+                    pdb_links.add( l[ 1 ] );
+                }
+            }
+            final int rows = tip.getNodeData().isHasProperties() ? tip.getNodeData().getProperties().size() : 0;
+            for( int row = 0; row < rows; ++row ) {
+                for( final String[] l : f.propertyLinksForTest( row ) ) {
+                    if ( l[ 1 ].startsWith( NodeDataLinks.RCSB_PDB ) ) {
+                        pdb_links.add( l[ 1 ] );
+                    }
+                }
+            }
+            final java.util.Set<String> pdb_menu = new java.util.HashSet<>();
+            for( final String[] e : TreePanel.pdbEntries( tip ) ) {
+                pdb_menu.add( e[ 1 ] );
+            }
+            if ( !pdb_menu.equals( pdb_links ) ) {
+                return note( "node-data-links.xml: " + tip.getName() + ": Open PDB offers " + pdb_menu
+                        + ", the window links " + pdb_links );
+            }
+            final Integer n_pdb = want_pdb.get( tip.getName() );
+            if ( pdb_menu.size() != ( ( n_pdb == null ) ? 0 : n_pdb ) ) {
+                return note( "node-data-links.xml: " + tip.getName() + ": " + pdb_menu.size() + " PDB entries, expected "
+                        + n_pdb );
+            }
+            if ( tip.getName().startsWith( "MERS-CoV" ) ) {
+                final java.util.List<String> ids = new java.util.ArrayList<>();
+                f.propertyLinksForTest( 0 ).forEach( l -> ids.add( l[ 0 ] + " " + l[ 1 ] ) );
+                final java.util.List<String> want_ids = java.util.Arrays.asList( "4KQZ " + NodeDataLinks.RCSB_PDB + "4KQZ",
+                        "4L3N " + NodeDataLinks.RCSB_PDB + "4L3N", "5X4R " + NodeDataLinks.RCSB_PDB + "5X4R",
+                        "5X59 " + NodeDataLinks.RCSB_PDB + "5X59" );
+                if ( !want_ids.equals( ids ) ) {
+                    return note( "node-data-links.xml: the pdb_ids field must link each identifier, got " + ids );
+                }
+            }
         }
         if ( !want.equals( got ) ) {
             return note( "node-data-links.xml: links per tip " + got + ", expected " + want );
@@ -1058,10 +1102,24 @@ public final class DemoTreesTest {
             if ( !f.hasSectionForTest( NodeDataDraft.SEC_TAXONOMY ) && !f.hasSectionForTest( NodeDataDraft.SEC_SEQUENCES ) ) {
                 return note( "node-data-links-none.xml: " + tip.getName() + " must show data (else 'no links' is empty)" );
             }
-            if ( !f.linksForTest().isEmpty() || ( tip.getNodeData().isHasProperties()
-                    && ( f.propertyLinkForTest( 0 ) != null ) ) ) {
+            final int rows = tip.getNodeData().isHasProperties() ? tip.getNodeData().getProperties().size() : 0;
+            for( int row = 0; row < rows; ++row ) {
+                if ( f.propertyLinkForTest( row ) != null ) {
+                    return note( "node-data-links-none.xml: " + tip.getName() + ": metadata row " + row + " links "
+                            + f.propertyLinkForTest( row ) );
+                }
+            }
+            if ( !f.linksForTest().isEmpty() ) {
                 return note( "node-data-links-none.xml: " + tip.getName() + " must link nothing, links "
                         + f.linksForTest().size() );
+            }
+            if ( !TreePanel.pdbEntries( tip ).isEmpty() ) {
+                return note( "node-data-links-none.xml: " + tip.getName() + ": Open PDB must be greyed, offers "
+                        + TreePanel.pdbEntries( tip ).size() );
+            }
+            if ( tip.getName().equals( "XYZ12345678" ) && !( tip.getNodeData().isHasProperties()
+                    && "none".equals( tip.getNodeData().getProperties().getProperties().get( 0 ).getValue() ) ) ) {
+                return note( "node-data-links-none.xml: the pdb_ids field saying none is the twin's PDB refusal" );
             }
             if ( TreePanel.taxonomyDbUrl( tip ) != null ) { // a common name or an unknown provider's id: no page
                 return note( "node-data-links-none.xml: " + tip.getName() + ": Open Taxonomy DB must be greyed, opens "

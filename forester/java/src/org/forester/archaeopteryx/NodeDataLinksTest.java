@@ -20,9 +20,18 @@
 
 package org.forester.archaeopteryx;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.NodeData;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 
 /**
@@ -38,6 +47,7 @@ public final class NodeDataLinksTest {
     private static final String UNIPROT_KB    = "https://www.uniprot.org/uniprot/";
     private static final String NCBI_PROTEIN  = "https://www.ncbi.nlm.nih.gov/protein/";
     private static final String NCBI_NUCCORE  = "https://www.ncbi.nlm.nih.gov/nuccore/";
+    private static final String RCSB          = "https://www.rcsb.org/structure/";
 
     public static void main( final String[] args ) {
         final boolean ok = test();
@@ -48,7 +58,7 @@ public final class NodeDataLinksTest {
     public static boolean test() {
         try {
             return taxonomyIds() & names() & menuChain() & ncbiAccessions() & otherSources() & withoutSource()
-                    & placeholderSources() & doi() & web() & malformedUnicode();
+                    & placeholderSources() & pdb() & pdbFields() & pdbEntries() & doi() & web() & malformedUnicode();
         }
         catch ( final Throwable e ) {
             e.printStackTrace();
@@ -258,6 +268,157 @@ public final class NodeDataLinksTest {
         ok &= eq( "?: as no source", UNIPROT_KB + "P38398", NodeDataLinks.accessionUrl( "P38398", "?", null ) );
         ok &= eq( "unknown: still only an accession", null, NodeDataLinks.accessionUrl( "hello", "unknown", null ) );
         return ok;
+    }
+
+    /** A PDB entry (2026-11-06): the source names PDB, the value must be an identifier; the page is RCSB PDB's. */
+    private static boolean pdb() {
+        boolean ok = eq( "source pdb", RCSB + "4KRR", NodeDataLinks.accessionUrl( "4KRR", "pdb", null ) );
+        ok &= eq( "source PDB, any case, the type irrelevant", RCSB + "1G5M",
+                  NodeDataLinks.accessionUrl( "1G5M", "PDB", "protein" ) );
+        for( final String src : new String[] { "rcsb", "RCSB PDB", "rcsb_pdb", "rcsb-pdb", "wwPDB" } ) {
+            ok &= eq( "a source naming PDB: " + src, RCSB + "4KRR", NodeDataLinks.accessionUrl( "4KRR", src, null ) );
+        }
+        ok &= eq( "a lower-case identifier opens the upper-case page", RCSB + "1IYF",
+                  NodeDataLinks.accessionUrl( "1iyf", "pdb", null ) );
+        ok &= eq( "a chain after '_' opens the entry", RCSB + "4KRR", NodeDataLinks.pdbUrl( "4KRR_A" ) );
+        ok &= eq( "a chain after '.'", RCSB + "4KRR", NodeDataLinks.pdbUrl( "4krr.B" ) );
+        ok &= eq( "an entity after ':'", RCSB + "4KRR", NodeDataLinks.pdbUrl( "4KRR:1" ) );
+        ok &= eq( "an accession with a chain after ':' (the token ends at the separator)", RCSB + "4KRR",
+                  NodeDataLinks.accessionUrl( "4KRR:A", "pdb", null ) );
+        ok &= eq( "a chain under the source", RCSB + "4KRR", NodeDataLinks.accessionUrl( "4KRR_A", "pdb", null ) );
+        ok &= eq( "a comment after a space is not part of it", RCSB + "4KRR",
+                  NodeDataLinks.accessionUrl( "4KRR (X-ray)", "pdb", null ) );
+        ok &= eq( "trimmed", RCSB + "9N7D", NodeDataLinks.pdbUrl( " 9N7D " ) );
+        // not an identifier
+        ok &= eq( "five characters", null, NodeDataLinks.pdbUrl( "4KRR5" ) );
+        ok &= eq( "three characters", null, NodeDataLinks.pdbUrl( "4KR" ) );
+        ok &= eq( "a leading zero", null, NodeDataLinks.pdbUrl( "0ABC" ) );
+        ok &= eq( "a leading letter", null, NodeDataLinks.pdbUrl( "ABCD" ) );
+        ok &= eq( "all digits is a number (a year), not an entry", null, NodeDataLinks.pdbUrl( "1999" ) );
+        ok &= eq( "all digits under the source too", null, NodeDataLinks.accessionUrl( "1999", "pdb", null ) );
+        ok &= eq( "an AlphaFold model", null, NodeDataLinks.pdbUrl( "AF-P38398-F1" ) );
+        ok &= eq( "a composite", null, NodeDataLinks.pdbUrl( "pdb|4KRR|A" ) );
+        ok &= eq( "a chain of five is no chain", null, NodeDataLinks.pdbUrl( "1ABC_HUMAN" ) );
+        ok &= eq( "a chain after a space is a composite", null, NodeDataLinks.pdbUrl( "4KRR A" ) );
+        ok &= eq( "the overflow token a pipeline writes", null, NodeDataLinks.pdbUrl( "+58more" ) );
+        ok &= eq( "'none'", null, NodeDataLinks.pdbUrl( "none" ) );
+        ok &= eq( "empty", null, NodeDataLinks.pdbUrl( "" ) );
+        ok &= eq( "null", null, NodeDataLinks.pdbUrl( null ) );
+        ok &= eq( "under pdb, a UniProt accession is no entry", null, NodeDataLinks.accessionUrl( "P38398", "pdb", null ) );
+        ok &= eq( "no source: an identifier-shaped value is not guessed at", null,
+                  NodeDataLinks.accessionUrl( "4KRR", "", null ) );
+        ok &= eq( "a source we do not know: neither", null, NodeDataLinks.accessionUrl( "4KRR", "pdbe", null ) );
+        return ok;
+    }
+
+    /** A metadata field of PDB identifiers: which names count, and which tokens of its value link. */
+    private static boolean pdbFields() {
+        boolean ok = true;
+        for( final String ref : new String[] { "repseq:pdb_ids", "data:PDB-IDs", "pdb_id", "x:pdb", "pdb:ids",
+                "pdb:entry", "data:pdb_ids ", "a:pdb codes", "b:PdbId", "c:pdb.accessions", "d:pdb_structures",
+                // with or without separators, every name alike (a table header "PDBCode" joins as meta:PDBCode)
+                "meta:PDBCode", "meta:PDBID", "meta:pdbentry", "meta:PDB Accession", "meta:PDB-Structures", "PDB",
+                "pdb:pdb_id", "pdb_" } ) { // the last two: a PDB field by its local name alone; separators are nothing
+            ok &= eq( "a field of PDB identifiers: " + ref, true, NodeDataLinks.isPdbRef( ref ) );
+        }
+        for( final String ref : new String[] { "data:pdb_year", "data:structure", "repseq:has_structure",
+                "repseq:struct_domains", "pdb:resolution", "pdb:year", "data:pdbs", "", null, "pdb_x", "meta:PDBCodex",
+                "pdbs:id" } ) {
+            ok &= eq( "not one: " + ref, false, NodeDataLinks.isPdbRef( ref ) );
+        }
+        // the ONE rule for a metadata value: a web address (any field) is one link, the whole value; a PDB field's
+        // identifiers; anything else nothing
+        ok &= eq( "a web address in a PDB field: one link, the address",
+                  Arrays.asList( "0-35 https://www.rcsb.org/structure/4KRR" ),
+                  spans( NodeDataLinks.propertySpans( "data:pdb_ids", "https://www.rcsb.org/structure/4KRR" ) ) );
+        ok &= eq( "a web address in any field", Arrays.asList( "0-19 https://example.org" ),
+                  spans( NodeDataLinks.propertySpans( "data:page", "https://example.org" ) ) );
+        ok &= eq( "identifiers in a PDB field", Arrays.asList( "0-4 " + RCSB + "9KRA", "5-9 " + RCSB + "9KRB" ),
+                  spans( NodeDataLinks.propertySpans( "repseq:pdb_ids", "9KRA,9KRB" ) ) );
+        ok &= eq( "an identifier in a field of another name: nothing", new ArrayList<String>(),
+                  spans( NodeDataLinks.propertySpans( "data:structure", "2AJF" ) ) );
+        ok &= eq( "a null value", new ArrayList<String>(), spans( NodeDataLinks.propertySpans( "data:pdb_ids", null ) ) );
+        ok &= eq( "a comma-separated list", Arrays.asList( "0-4 " + RCSB + "9KRA", "5-9 " + RCSB + "9KRB",
+                                                           "10-14 " + RCSB + "5XGR" ),
+                  spans( NodeDataLinks.pdbIdSpans( "9KRA,9KRB,5XGR" ) ) );
+        ok &= eq( "every separator, a chain, a number, the overflow token and 'none' among them",
+                  Arrays.asList( "0-4 " + RCSB + "4KQZ", "6-10 " + RCSB + "4L3N", "12-16 " + RCSB + "5X59",
+                                 "37-43 " + RCSB + "4KRR" ),
+                  spans( NodeDataLinks.pdbIdSpans( "4KQZ, 4l3n; 5X59 | 1999 +58more none 4KRR_A" ) ) );
+        ok &= eq( "nothing listed", new ArrayList<String>(), spans( NodeDataLinks.pdbIdSpans( "none" ) ) );
+        ok &= eq( "empty", new ArrayList<String>(), spans( NodeDataLinks.pdbIdSpans( "" ) ) );
+        ok &= eq( "null", new ArrayList<String>(), spans( NodeDataLinks.pdbIdSpans( null ) ) );
+        return ok;
+    }
+
+    /** A node's PDB entries, for the node menu: every surface the window links, once each, in the window's order;
+     *  a field not named for PDB identifiers is not read. */
+    private static boolean pdbEntries() throws Exception {
+        final NodeData nd = new NodeData();
+        final Sequence s1 = new Sequence();
+        s1.setAccession( new Accession( "4KRR", "pdb" ) );
+        s1.addCrossReference( new Accession( "IPR002552", "interpro" ) );
+        s1.addCrossReference( new Accession( "1JM7", "pdb" ) );
+        s1.addCrossReference( new Accession( "1JM7", "PDB", "X-ray" ) ); // the same entry, named again
+        s1.addCrossReference( new Accession( "1999", "pdb" ) ); // not an identifier
+        final Sequence s2 = new Sequence();
+        s2.addCrossReference( new Accession( "4KRR_A", "pdb" ) ); // the accession's entry, by its chain
+        nd.addSequence( s1 );
+        nd.addSequence( s2 );
+        final PropertiesList pl = new PropertiesList();
+        pl.addProperty( new Property( "repseq:pdb_ids", "5X59,4KRR,+2more", "", "xsd:string", AppliesTo.NODE ) );
+        pl.addProperty( new Property( "data:structure", "2AJF", "", "xsd:string", AppliesTo.NODE ) ); // not named
+        pl.addProperty( new Property( "data:pdb_year", "2013", "", "xsd:string", AppliesTo.NODE ) );
+        nd.setProperties( pl );
+        boolean ok = eq( "the entries, once each, the accession, the cross-references, then the field",
+                         Arrays.asList( "4KRR " + RCSB + "4KRR", "1JM7 " + RCSB + "1JM7", "5X59 " + RCSB + "5X59" ),
+                         pairs( NodeDataLinks.pdbEntries( nd ) ) );
+        final NodeData only_field = new NodeData();
+        final PropertiesList pl2 = new PropertiesList();
+        pl2.addProperty( new Property( "data:pdb_ids", "9N7D", "", "xsd:string", AppliesTo.NODE ) );
+        only_field.setProperties( pl2 );
+        ok &= eq( "a field alone", Arrays.asList( "9N7D " + RCSB + "9N7D" ), pairs( NodeDataLinks.pdbEntries( only_field ) ) );
+        final NodeData web_field = new NodeData(); // a PDB field holding a web address: the window links it, so the menu offers it
+        final PropertiesList pl_web = new PropertiesList();
+        pl_web.addProperty( new Property( "data:pdb_ids", " https://www.rcsb.org/structure/4KRR ", "", "xsd:string", AppliesTo.NODE ) );
+        web_field.setProperties( pl_web );
+        ok &= eq( "a PDB field holding an address: that address, trimmed as its text",
+                  Arrays.asList( "https://www.rcsb.org/structure/4KRR https://www.rcsb.org/structure/4KRR" ),
+                  pairs( NodeDataLinks.pdbEntries( web_field ) ) );
+        final NodeData only_chain = new NodeData();
+        final Sequence s3 = new Sequence();
+        s3.addCrossReference( new Accession( "4krr_B", "pdb" ) );
+        only_chain.addSequence( s3 );
+        ok &= eq( "a cross-reference alone, its text as written", Arrays.asList( "4krr_B " + RCSB + "4KRR" ),
+                  pairs( NodeDataLinks.pdbEntries( only_chain ) ) );
+        ok &= eq( "no data", new ArrayList<String>(), pairs( NodeDataLinks.pdbEntries( new NodeData() ) ) );
+        ok &= eq( "null", new ArrayList<String>(), pairs( NodeDataLinks.pdbEntries( null ) ) );
+        final NodeData nothing_named = new NodeData();
+        final PropertiesList pl3 = new PropertiesList();
+        pl3.addProperty( new Property( "data:structure", "2AJF", "", "xsd:string", AppliesTo.NODE ) );
+        nothing_named.setProperties( pl3 );
+        final Sequence s4 = new Sequence();
+        s4.setAccession( new Accession( "2AJF", "" ) ); // no source: not guessed at
+        nothing_named.addSequence( s4 );
+        ok &= eq( "an identifier-shaped value under no source or another name: none", new ArrayList<String>(),
+                  pairs( NodeDataLinks.pdbEntries( nothing_named ) ) );
+        return ok;
+    }
+
+    private static List<String> spans( final List<NodeDataLinks.Span> spans ) {
+        final List<String> out = new ArrayList<>();
+        for( final NodeDataLinks.Span s : spans ) {
+            out.add( s.start + "-" + s.end + " " + s.url );
+        }
+        return out;
+    }
+
+    private static List<String> pairs( final List<String[]> entries ) {
+        final List<String> out = new ArrayList<>();
+        for( final String[] e : entries ) {
+            out.add( e[ 0 ] + " " + e[ 1 ] );
+        }
+        return out;
     }
 
     private static boolean doi() {

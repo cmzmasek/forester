@@ -1424,7 +1424,8 @@ public final class DemoTreeGenerator {
     //       (UniProt P38398, its InterPro/Ensembl/Gene cross-references and Pfam domains at UniProt's positions,
     //       the 1994 paper), Guaroa virus (NCBI protein), bat SARS coronavirus HKU3-1 (a UniProt taxonomy id and
     //       code), BtVs-BetaCoV/SC2013 (a GENOME accession on a protein sequence: it opens NCBI Nucleotide), and
-    //       Bundibugyo virus (a Pathoplexus record). The twin, node-data-links-none.xml, must link nothing.
+    //       Bundibugyo virus (a Pathoplexus record), MERS-CoV with a pdb_ids field. The twin,
+    //       node-data-links-none.xml, must link nothing.
     private static Phylogeny nodeDataLinksTree() throws PhyloXmlDataFormatException {
         final PhylogenyNode brca1 = linkTip( "BRCA1_HUMAN", "Homo sapiens", "HUMAN", "9606", "ncbi" );
         final Sequence s = linkSequence( brca1, "Breast cancer type 1 susceptibility protein", "protein", "P38398",
@@ -1435,6 +1436,11 @@ public final class DemoTreeGenerator {
         s.addCrossReference( new Accession( "IPR001841", "interpro" ) );
         s.addCrossReference( new Accession( "ENSG00000012048", "ensembl" ) );
         s.addCrossReference( new Accession( "672", "geneid" ) );
+        // three of BRCA1's structures: PDB cross-references open RCSB PDB (an upper-case source and a comment, as
+        // UniProt exports write them, read the same)
+        s.addCrossReference( new Accession( "1JM7", "pdb" ) );
+        s.addCrossReference( new Accession( "1JNX", "pdb" ) );
+        s.addCrossReference( new Accession( "1T15", "PDB", "X-ray" ) );
         // no E-values: a domain saved without a confidence must come back when the file is opened (until 0.11.195
         // the reader dropped it); DemoTreesTest counts these three domains' links
         final DomainArchitecture da = new DomainArchitecture();
@@ -1461,12 +1467,21 @@ public final class DemoTreeGenerator {
         linkSequence( bdbv, "Bundibugyo ebolavirus", "dna", "PP_006XHL9.4", "pathoplexus" )
                 .addUri( new Uri( URI.create( "https://pathoplexus.org/seq/PP_006XHL9.4" ), "pathoplexus record",
                                   null ) );
-        final PhylogenyNode root = clade( 0, clade( 0.05, brca1, guaroa ), clade( 0.05, hku3, sc2013, bdbv ) );
+        // a metadata field NAMED for PDB identifiers lists them (as a structure-aware pipeline writes it): each
+        // identifier is a link, and the node menu's "Open PDB" offers each
+        final PhylogenyNode mers = linkTip( "MERS-CoV_EMC/2012|AFS88936.1",
+                                            "Middle East respiratory syndrome-related coronavirus", null, "1335626",
+                                            "ncbi" );
+        linkSequence( mers, "spike glycoprotein [Middle East respiratory syndrome-related coronavirus]", "protein",
+                      "AFS88936.1", "ncbi" );
+        addProperty( mers, "data:pdb_ids", "4KQZ,4L3N,5X4R,5X59", "xsd:string" );
+        final PhylogenyNode root = clade( 0, clade( 0.05, brca1, guaroa ), clade( 0.05, hku3, sc2013, bdbv, mers ) );
         return tree( root, "Node Data Links (demo)",
-                     "Five real records on a schematic tree (the topology means nothing). Click a tip and choose "
+                     "Six real records on a schematic tree (the topology means nothing). Click a tip and choose "
                              + "\"Display Node Data\": the scientific name, taxonomy code and identifier, the "
-                             + "accession, cross-references, URIs, domains, the DOI and a metadata web address are "
-                             + "links that open the page they name in your browser." );
+                             + "accession, cross-references, URIs, domains, the DOI, a metadata web address and the "
+                             + "PDB identifiers of a pdb_ids field are links that open the page they name in your "
+                             + "browser; the node menu's \"Open PDB\" opens the PDB entries." );
     }
 
     /** The twin of {@link #nodeDataLinksTree}: node data that names no page we know -- nothing may link. */
@@ -1494,12 +1509,14 @@ public final class DemoTreeGenerator {
         itis.getNodeData().setTaxonomy( t );
         final PhylogenyNode shape = leaf( "XYZ12345678" ); // an NCBI accession of no known shape and no type
         linkSequence( shape, "an accession of unknown shape", null, "XYZ12345678", "ncbi" );
+        cat( shape, "data:pdb_ids", "none" ); // a field of PDB identifiers listing none (as a pipeline writes it)
         final PhylogenyNode root = clade( 0, clade( 0.05, bvbrc, ecoli ), clade( 0.05, itis, shape ) );
         return tree( root, "Node Data Links: none (demo)",
                      "The twin of node-data-links.xml: node data that names no page Archaeopteryx knows how to open "
                              + "(a BV-BRC feature id, a GTDB and an ITIS taxonomy id, a KEGG cross-reference, a "
                              + "file: URI, a reference without a DOI, an NCBI accession of unknown shape and no "
-                             + "type). Display Node Data shows every value as plain text: no links." );
+                             + "type, a pdb_ids field saying none). Display Node Data shows every value as plain "
+                             + "text: no links, and the node menu's \"Open PDB\" is greyed." );
     }
 
     private static PhylogenyNode linkTip( final String name, final String scientific_name, final String code,

@@ -49,6 +49,10 @@ public enum NodeMenuEntry {
     SELECT_NODE( "Select/Deselect Node", Group.SELECTION, false ),
     SELECT_TIPS( "Select/Deselect Tips", Group.SELECTION, false ),
     OPEN_SEQ_WEB( "Open Sequence DB", Group.LINKS, false ),
+    /** The node's PDB entries ({@code NodeDataLinks.pdbEntries}: an accession or cross-reference with source pdb, a
+     *  metadata field listing identifiers): named by the identifier with one entry, a submenu of them with
+     *  several, greyed with its reason with none. Back after its removal with the click-to modes (0.11.80). */
+    OPEN_PDB_WEB( "Open PDB", Group.LINKS, false ),
     OPEN_TAX_WEB( "Open Taxonomy DB", Group.LINKS, false ),
     EDIT_NODE_DATA( "Edit Node Data", Group.EDITING, true ),
     /** Not editable-only, like Tools > Node Style for Selected Nodes: a style edit was never gated by the
@@ -69,7 +73,7 @@ public enum NodeMenuEntry {
         SHAPE,
         /** the manual selection (found set 0) */
         SELECTION,
-        /** web links for the node's accession / taxonomy */
+        /** web links for the node's accession / PDB entries / taxonomy */
         LINKS,
         /** editing, node and tree: edit data, edit style, cut, copy, paste, add */
         EDITING,

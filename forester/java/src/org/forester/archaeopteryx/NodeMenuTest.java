@@ -34,9 +34,11 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -48,6 +50,9 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.PropertiesList;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.util.SequenceAccessionTools;
 
@@ -210,7 +215,7 @@ public final class NodeMenuTest {
         final List<String> expected_editable = Arrays.asList( "|", "Display Node Data", "|", "Switch to Subtree",
                 "Collapse/Uncollapse", "Uncollapse Subtree", "Swap Descendants", "Ladderize Subtree",
                 "Colorize Subtree", "Root/Reroot", "|", "Select/Deselect Node", "Select/Deselect Tips", "|",
-                "Open Sequence DB", "Open Taxonomy DB", "|", "Edit Node Data", "Edit Node Style", "Cut Subtree",
+                "Open Sequence DB", "Open PDB", "Open Taxonomy DB", "|", "Edit Node Data", "Edit Node Style", "Cut Subtree",
                 "Copy Subtree", "Paste Subtree", "Add New Node", "|", "Delete Node/Subtree…" );
         ok &= ck( tp.getOptions().isEditable(), "precondition: the tree is editable by default" );
         ok &= ck( expected_editable.equals( words( tp.buildNodeMenu( ab ) ) ),
@@ -219,7 +224,7 @@ public final class NodeMenuTest {
         final List<String> expected_read_only = Arrays.asList( "|", "Display Node Data", "|", "Switch to Subtree",
                 "Collapse/Uncollapse", "Uncollapse Subtree", "Swap Descendants", "Ladderize Subtree",
                 "Colorize Subtree", "Root/Reroot", "|", "Select/Deselect Node", "Select/Deselect Tips", "|",
-                "Open Sequence DB", "Open Taxonomy DB", "|", "Edit Node Style" );
+                "Open Sequence DB", "Open PDB", "Open Taxonomy DB", "|", "Edit Node Style" );
         ok &= ck( expected_read_only.equals( words( tp.buildNodeMenu( ab ) ) ),
                   "the editing entries exist only on an editable tree: " + words( tp.buildNodeMenu( ab ) ) );
         tp.getOptions().setEditableForTest( true );
@@ -237,7 +242,7 @@ public final class NodeMenuTest {
             ok &= ck( enabled( on_tip, on ), "on a tip, '" + on + "' applies" );
         }
         for ( final String off : new String[] { "Collapse/Uncollapse", "Uncollapse Subtree", "Swap Descendants",
-                "Ladderize Subtree", "Select/Deselect Tips", "Open Sequence DB", "Open Taxonomy DB" } ) {
+                "Ladderize Subtree", "Select/Deselect Tips", "Open Sequence DB", "Open PDB", "Open Taxonomy DB" } ) {
             ok &= ck( item( on_tip, off ) != null, "on a tip, '" + off + "' is offered" );
             ok &= ck( !enabled( on_tip, off ), "on a tip, '" + off + "' is greyed" );
         }
@@ -273,6 +278,99 @@ public final class NodeMenuTest {
         ok &= ck( ( item( on_b, "Open Sequence DB [P38398]" ) != null ) && enabled( on_b, "Open Sequence DB [P38398]" )
                   && ( item( on_b, "Open Sequence DB" ) == null ),
                   "a sequence with an accession: one link named by it (once, the name being the accession), in place of the bare entry: " + words( on_b ) );
+        // ---- Open PDB: the window's PDB links (NodeDataLinks.pdbEntries) -- one entry named by its identifier,
+        //      a submenu of them with several, greyed with its reason with none; listed between the sequence and
+        //      the taxonomy links, where it sat before 0.11.80
+        ok &= ck( !enabled( on_tip, "Open PDB" ) && TreePanel.NO_PDB_ENTRY.equals( item( on_tip, "Open PDB" ).getToolTipText() ),
+                  "no PDB identifier: greyed, and says why: " + item( on_tip, "Open PDB" ).getToolTipText() );
+        final Sequence b_seq = b.getNodeData().getSequence();
+        final Accession x1 = new Accession( "1JM7", "pdb" );
+        b_seq.addCrossReference( x1 );
+        final JPopupMenu one = tp.buildNodeMenu( b );
+        ok &= ck( ( item( one, "Open PDB [1JM7]" ) != null ) && enabled( one, "Open PDB [1JM7]" )
+                  && !( item( one, "Open PDB [1JM7]" ) instanceof JMenu ) && ( item( one, "Open PDB" ) == null ),
+                  "one entry: the plain entry, named by the identifier: " + words( one ) );
+        ok &= ck( ( TreePanel.pdbEntries( b ).size() == 1 )
+                  && "https://www.rcsb.org/structure/1JM7".equals( TreePanel.pdbEntries( b ).get( 0 )[ 1 ] ),
+                  "it opens RCSB PDB's page for the entry" );
+        final List<String> browsed = new ArrayList<>(); // the entries RUN, their address caught before the browser
+        tp.setBrowserForTest( browsed::add );
+        item( one, "Open PDB [1JM7]" ).doClick();
+        ok &= ck( Arrays.asList( "https://www.rcsb.org/structure/1JM7" ).equals( browsed ),
+                  "the plain entry, clicked, hands the entry's address to the browser: " + browsed );
+        browsed.clear();
+        tp.runNodeMenuEntry( NodeMenuEntry.OPEN_PDB_WEB, b );
+        ok &= ck( Arrays.asList( "https://www.rcsb.org/structure/1JM7" ).equals( browsed ), "run from code, the same: " + browsed );
+        final Accession x2 = new Accession( "4KRR_A", "pdb", "X-ray" ); // a chain: the entry 4KRR
+        b_seq.addCrossReference( x2 );
+        final PropertiesList pl = new PropertiesList(); // a field listing identifiers: 4KRR again, and an overflow token
+        pl.addProperty( new Property( "repseq:pdb_ids", "5X59,4KRR,+2more", "", "xsd:string", AppliesTo.NODE ) );
+        b.getNodeData().setProperties( pl );
+        final JPopupMenu several = tp.buildNodeMenu( b );
+        final JMenuItem sub = item( several, "Open PDB" );
+        ok &= ck( ( sub instanceof JMenu ) && sub.isEnabled() && ( item( several, "Open PDB [1JM7]" ) == null ),
+                  "several entries: a submenu in the entry's place: " + words( several ) );
+        final List<String> sub_words = new ArrayList<>();
+        final List<String> sub_urls = new ArrayList<>();
+        if ( sub instanceof JMenu ) {
+            for ( int i = 0; i < ( (JMenu) sub ).getItemCount(); ++i ) {
+                sub_words.add( ( (JMenu) sub ).getItem( i ).getText() );
+                sub_urls.add( ( (JMenu) sub ).getItem( i ).getToolTipText() );
+            }
+        }
+        ok &= ck( Arrays.asList( "1JM7", "4KRR_A", "5X59" ).equals( sub_words ),
+                  "one item per entry, in the window's order, named by the identifier as written; 4KRR named twice is one; '+2more' is none: " + sub_words );
+        ok &= ck( Arrays.asList( "https://www.rcsb.org/structure/1JM7", "https://www.rcsb.org/structure/4KRR",
+                                 "https://www.rcsb.org/structure/5X59" ).equals( sub_urls ),
+                  "each item opens its entry (the address is its tooltip, as on the window's links): " + sub_urls );
+        browsed.clear();
+        if ( sub instanceof JMenu ) {
+            ( (JMenu) sub ).getItem( 1 ).doClick();
+        }
+        ok &= ck( Arrays.asList( "https://www.rcsb.org/structure/4KRR" ).equals( browsed ),
+                  "a submenu item, clicked, hands its own entry's address to the browser: " + browsed );
+        browsed.clear();
+        tp.runNodeMenuEntry( NodeMenuEntry.OPEN_PDB_WEB, b ); // not reachable from the menu with several: the first
+        ok &= ck( Arrays.asList( "https://www.rcsb.org/structure/1JM7" ).equals( browsed ),
+                  "the plain entry run from code with several entries opens the first: " + browsed );
+        final List<String> w = words( several );
+        ok &= ck( ( w.indexOf( "Open PDB" ) == ( w.indexOf( "Open Sequence DB [P38398]" ) + 1 ) )
+                  && ( w.indexOf( "Open PDB" ) == ( w.indexOf( "Open Taxonomy DB" ) - 1 ) ),
+                  "listed between the sequence and the taxonomy links: " + w );
+        // more entries than a menu can show at once: pages of PDB_MENU_PAGE, each a submenu named by its first and
+        // last identifier, every entry on one of them, in order
+        final StringBuilder many = new StringBuilder();
+        for ( int i = 1; i <= 45; ++i ) {
+            many.append( ( i > 1 ) ? "," : "" ).append( String.format( Locale.ROOT, "1X%02d", i ) );
+        }
+        pl.addProperty( new Property( "data:pdb_ids", many.toString(), "", "xsd:string", AppliesTo.NODE ) );
+        ok &= ck( TreePanel.PDB_MENU_PAGE == 20, "precondition: pages of 20 (the test's titles say so)" );
+        final JMenuItem paged = item( tp.buildNodeMenu( b ), "Open PDB" );
+        final List<String> page_titles = new ArrayList<>();
+        final List<String> all = new ArrayList<>();
+        if ( paged instanceof JMenu ) {
+            for ( int i = 0; i < ( (JMenu) paged ).getItemCount(); ++i ) {
+                final JMenuItem pi = ( (JMenu) paged ).getItem( i );
+                page_titles.add( pi.getText() );
+                if ( pi instanceof JMenu ) {
+                    for ( int j = 0; j < ( (JMenu) pi ).getItemCount(); ++j ) {
+                        all.add( ( (JMenu) pi ).getItem( j ).getText() );
+                    }
+                }
+            }
+        }
+        ok &= ck( Arrays.asList( "1JM7 \u2013 1X17", "1X18 \u2013 1X37", "1X38 \u2013 1X45" ).equals( page_titles ),
+                  "48 entries: three pages, each named by its first and last identifier: " + page_titles );
+        ok &= ck( ( all.size() == 48 ) && all.subList( 0, 4 ).equals( Arrays.asList( "1JM7", "4KRR_A", "5X59", "1X01" ) )
+                  && all.get( 47 ).equals( "1X45" ), "every entry on a page, in order: " + all );
+        pl.getProperties().remove( pl.getProperties().size() - 1 );
+        ok &= ck( !( ( (JMenu) item( tp.buildNodeMenu( b ), "Open PDB" ) ).getItem( 0 ) instanceof JMenu ),
+                  "control: three entries again, no pages" );
+        b.getNodeData().setProperties( null );
+        b_seq.getCrossReferences().remove( x1 );
+        b_seq.getCrossReferences().remove( x2 );
+        tp.setBrowserForTest( null );
+        ok &= ck( !enabled( tp.buildNodeMenu( b ), "Open PDB" ), "control: the data removed, greyed again: " + words( tp.buildNodeMenu( b ) ) );
         ok &= ck( enabled( tp.buildNodeMenu( c ), "Open Taxonomy DB" ), "a taxonomy: the taxonomy link applies" );
         // the menu opens what the node window's link opens (NodeDataLinks): the provider's database
         ok &= ck( "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name=Homo+sapiens".equals( TreePanel.taxonomyDbUrl( c ) ),

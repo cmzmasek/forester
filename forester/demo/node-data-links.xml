@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Node Data Links (demo)</name>
-  <description>Five real records on a schematic tree (the topology means nothing). Click a tip and choose &quot;Display Node Data&quot;: the scientific name, taxonomy code and identifier, the accession, cross-references, URIs, domains, the DOI and a metadata web address are links that open the page they name in your browser.</description>
+  <description>Six real records on a schematic tree (the topology means nothing). Click a tip and choose &quot;Display Node Data&quot;: the scientific name, taxonomy code and identifier, the accession, cross-references, URIs, domains, the DOI, a metadata web address and the PDB identifiers of a pdb_ids field are links that open the page they name in your browser; the node menu&apos;s &quot;Open PDB&quot; opens the PDB entries.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -20,11 +20,14 @@
           <accession source="UniProt">P38398</accession>
           <name>Breast cancer type 1 susceptibility protein</name>
           <cross_references>
+            <accession source="PDB" comment="X-ray">1T15</accession>
             <accession source="ensembl">ENSG00000012048</accession>
             <accession source="geneid">672</accession>
             <accession source="interpro">IPR001357</accession>
             <accession source="interpro">IPR001841</accession>
             <accession source="interpro">IPR011364</accession>
+            <accession source="pdb">1JM7</accession>
+            <accession source="pdb">1JNX</accession>
           </cross_references>
           <domain_architecture length="1863">
             <domain from="24" to="65" confidence="-1.0" id="PF00097">zf-C3HC4</domain>
@@ -95,6 +98,19 @@
           <name>Bundibugyo ebolavirus</name>
           <uri desc="pathoplexus record">https://pathoplexus.org/seq/PP_006XHL9.4</uri>
         </sequence>
+      </clade>
+      <clade>
+        <name>MERS-CoV_EMC/2012|AFS88936.1</name>
+        <branch_length>0.02</branch_length>
+        <taxonomy>
+          <id provider="ncbi">1335626</id>
+          <scientific_name>Middle East respiratory syndrome-related coronavirus</scientific_name>
+        </taxonomy>
+        <sequence type="protein">
+          <accession source="ncbi">AFS88936.1</accession>
+          <name>spike glycoprotein [Middle East respiratory syndrome-related coronavirus]</name>
+        </sequence>
+        <property ref="data:pdb_ids" datatype="xsd:string" applies_to="node">4KQZ,4L3N,5X4R,5X59</property>
       </clade>
     </clade>
   </clade>

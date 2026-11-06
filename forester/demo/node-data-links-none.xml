@@ -2,7 +2,7 @@
 <phyloxml xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="true">
   <name>Node Data Links: none (demo)</name>
-  <description>The twin of node-data-links.xml: node data that names no page Archaeopteryx knows how to open (a BV-BRC feature id, a GTDB and an ITIS taxonomy id, a KEGG cross-reference, a file: URI, a reference without a DOI, an NCBI accession of unknown shape and no type). Display Node Data shows every value as plain text: no links.</description>
+  <description>The twin of node-data-links.xml: node data that names no page Archaeopteryx knows how to open (a BV-BRC feature id, a GTDB and an ITIS taxonomy id, a KEGG cross-reference, a file: URI, a reference without a DOI, an NCBI accession of unknown shape and no type, a pdb_ids field saying none). Display Node Data shows every value as plain text: no links, and the node menu&apos;s &quot;Open PDB&quot; is greyed.</description>
   <clade>
     <branch_length>0.0</branch_length>
     <clade>
@@ -52,6 +52,7 @@
           <accession source="ncbi">XYZ12345678</accession>
           <name>an accession of unknown shape</name>
         </sequence>
+        <property ref="data:pdb_ids" datatype="xsd:string" applies_to="node">none</property>
       </clade>
     </clade>
   </clade>

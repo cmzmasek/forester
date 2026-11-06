@@ -280,6 +280,18 @@ public final class NodeDataFormTest {
         n.getNodeData().addSequence( s3 );
         n.getNodeData().getProperties().addProperty( new Property( "data:page", "https://example.org/sample/7", "",
                                                                    "xsd:anyURI", AppliesTo.NODE ) );
+        // a field of PDB identifiers (row 3): one link per identifier; a token that is none stays text; a field of
+        // another name holding an identifier (row 4) is not guessed at
+        n.getNodeData().getProperties().addProperty( new Property( "repseq:pdb_ids", "4KRR,1iyf_A,+2more", "",
+                                                                   "xsd:string", AppliesTo.NODE ) );
+        n.getNodeData().getProperties().addProperty( new Property( "data:structure", "2AJF", "", "xsd:string",
+                                                                   AppliesTo.NODE ) );
+        final StringBuilder many = new StringBuilder(); // row 5: 20 identifiers, far wider than the cell shows
+        for( int i = 0; i < 20; ++i ) {
+            many.append( ( i > 0 ) ? "," : "" ).append( (char) ( '1' + ( i % 9 ) ) ).append( "AB" ).append( (char) ( 'A' + i ) );
+        }
+        n.getNodeData().getProperties().addProperty( new Property( "data:pdb_ids", many.toString(), "", "xsd:string",
+                                                                   AppliesTo.NODE ) );
         final List<String> want = Arrays.asList( "Homo sapiens", NCBI_TAX + "9606", //
                                                  "HUMAN", "https://www.uniprot.org/taxonomy?query=mnemonic:HUMAN", //
                                                  "9606", NCBI_TAX + "9606", //
@@ -317,6 +329,67 @@ public final class NodeDataFormTest {
                   opened );
         v.clickPropertyValueForTest( 2, 0, 1 );
         ok &= eq( "a click on a linked metadata value opens it", Arrays.asList( "https://example.org/sample/7" ), opened );
+        // several links in one value: each identifier is one, its text; "4KRR,1iyf_A,+2more" -- 4KRR is 0-3, the
+        // comma 4, 1iyf_A 5-10, the comma 11, +2more 12-17
+        ok &= eq( "a pdb_ids value: one link per identifier, the first link being the first",
+                  Arrays.asList( "4KRR", RCSB + "4KRR", "1iyf_A", RCSB + "1IYF" ), flatten( v.propertyLinksForTest( 3 ) ) )
+                && eq( "its first link", RCSB + "4KRR", v.propertyLinkForTest( 3 ) );
+        ok &= check( "precondition: the value is shown whole (else its characters have no known place)",
+                     v.propertyValueFitsForTest( 3 ) );
+        opened.clear();
+        v.clickPropertyCharForTest( 3, 7, 0, 1 ); // the 'y' of 1iyf_A
+        ok &= eq( "a click on the second identifier opens its entry", Arrays.asList( RCSB + "1IYF" ), opened );
+        opened.clear();
+        v.clickPropertyCharForTest( 3, 4, 0, 1 ); // the comma
+        v.clickPropertyCharForTest( 3, 14, 0, 1 ); // +2more
+        ok &= eq( "a click between the identifiers, or on a token that is none, opens nothing",
+                  new ArrayList<String>(), opened );
+        v.clickPropertyCharForTest( 3, 1, 0, 1 );
+        ok &= eq( "the first identifier opens its entry", Arrays.asList( RCSB + "4KRR" ), opened );
+        opened.clear();
+        v.clickPropertyCharForTest( 3, 7, InputEvent.META_DOWN_MASK, 1 );
+        v.clickPropertyCharForTest( 3, 7, 0, 2 );
+        ok &= eq( "a modified or double click on an identifier opens nothing", new ArrayList<String>(), opened );
+        ok &= eq( "the tooltip over an identifier is its address", RCSB + "1IYF", v.propertyTooltipAtForTest( 3, 8 ) )
+                && eq( "over a token that is none, no tooltip", null, v.propertyTooltipAtForTest( 3, 14 ) )
+                && eq( "past the text, none", null, v.propertyTooltipPastTextForTest( 3 ) );
+        ok &= check( "a hand over an identifier, not over the comma or past the text",
+                     ( v.propertyCursorAtForTest( 3, 2 ) == java.awt.Cursor.HAND_CURSOR )
+                             && ( v.propertyCursorAtForTest( 3, 4 ) != java.awt.Cursor.HAND_CURSOR )
+                             && ( v.propertyCursorAtForTest( 3, 9 ) == java.awt.Cursor.HAND_CURSOR )
+                             && ( v.propertyCursorAtForTest( 3, 14 ) != java.awt.Cursor.HAND_CURSOR ) );
+        ok &= eq( "a field not named for PDB identifiers holding one links nothing", new ArrayList<String>(),
+                  flatten( v.propertyLinksForTest( 4 ) ) ) && eq( "(nor its first link)", null, v.propertyLinkForTest( 4 ) );
+        opened.clear();
+        v.clickPropertyCharForTest( 4, 1, 0, 1 );
+        ok &= eq( "a click on it opens nothing", new ArrayList<String>(), opened );
+        // a value the cell cuts off with an ellipsis: what is shown can be clicked, what lies under the ellipsis
+        // or beyond it cannot -- the cut measured independently, by Swing's own label layout on the cell
+        ok &= check( "precondition: a value of 20 identifiers is wider than its cell", !v.propertyValueFitsForTest( 5 ) );
+        ok &= eq( "every identifier is a link in the value", 20, v.propertyLinksForTest( 5 ).size() );
+        final int shown = shownChars( v, 5 );
+        ok &= check( "precondition: the cell shows some identifiers, not all (" + shown + " of " + many.length() + " characters)",
+                     ( shown > 8 ) && ( shown < ( many.length() - 8 ) ) );
+        int k = shown - 1;
+        while ( many.charAt( k ) == ',' ) {
+            --k;
+        }
+        final String last_shown = RCSB + many.substring( ( k / 5 ) * 5, ( ( k / 5 ) * 5 ) + 4 );
+        ok &= eq( "the last identifier shown opens (the tooltip says so)", last_shown, v.propertyTooltipAtForTest( 5, k ) );
+        ok &= eq( "under the ellipsis, no link, though an identifier's character sits there", null,
+                  v.propertyTooltipAtForTest( 5, shown + 1 ) )
+                && check( "nor a hand", v.propertyCursorAtForTest( 5, shown + 1 ) != java.awt.Cursor.HAND_CURSOR );
+        v.clickPropertyCharForTest( 5, shown + 1, 0, 1 );
+        ok &= eq( "a click there opens nothing", new ArrayList<String>(), opened );
+        v.clickPropertyCharForTest( 5, 1, 0, 1 );
+        ok &= eq( "the first identifier, shown, opens", Arrays.asList( RCSB + "1ABA" ), opened );
+        // the ellipsis itself begins where the shown characters end (Swing's clip, again): 3 px into it no link,
+        // 3 px before it the last shown character's link, when that character is in an identifier
+        final int prefix_px = shownPrefixWidth( v, 5, shown );
+        ok &= eq( "just inside the ellipsis: no link", null, v.propertyTooltipAtXForTest( 5, prefix_px + 3 ) );
+        final int c0 = ( ( shown - 1 ) / 5 ) * 5;
+        final String before = ( many.charAt( shown - 1 ) == ',' ) ? null : RCSB + many.substring( c0, c0 + 4 );
+        ok &= eq( "just before it: the last shown character's link", before, v.propertyTooltipAtXForTest( 5, prefix_px - 3 ) );
         ok &= linkSurface( n );
         // a rebind (undo/redo) to a node with OTHER data: the links are the new node's, not kept from the old page
         final PhylogenyNode n2 = NodeDataDraftTest.richNode();
@@ -330,7 +403,8 @@ public final class NodeDataFormTest {
                              && !after.contains( "https://doi.org/10.1126/science.7545954" ) );
         final NodeDataForm e = new NodeDataForm( n, null, NodeDataForm.Mode.EDIT );
         ok &= eq( "the edit page has no links", new ArrayList<String>(), flatten( e.linksForTest() ) )
-                && eq( "nor in its metadata table", null, e.propertyLinkForTest( 2 ) );
+                && eq( "nor in its metadata table", null, e.propertyLinkForTest( 2 ) )
+                && eq( "not even the identifiers", new ArrayList<String>(), flatten( e.propertyLinksForTest( 3 ) ) );
         return ok;
     }
 
@@ -403,9 +477,14 @@ public final class NodeDataFormTest {
         ok &= check( "the metadata columns cannot be dragged", !t.getTableHeader().getReorderingAllowed() );
         // one renderer component serves every cell: read each cell's look before preparing the next
         final java.awt.Component cell = t.prepareRenderer( t.getCellRenderer( 2, 1 ), 2, 1 );
-        ok &= check( "the linked metadata value is painted as a link, with its address",
+        ok &= check( "the linked metadata value is painted as a link; its address is the tooltip over its text",
                      ( cell.getForeground().getRGB() == FormWidgets.linkColor().getRGB() )
-                             && "https://example.org/sample/7".equals( ( (JComponent) cell ).getToolTipText() ) );
+                             && "https://example.org/sample/7".equals( v.propertyTooltipAtForTest( 2, 0 ) ) );
+        final java.awt.Component pdb = t.prepareRenderer( t.getCellRenderer( 3, 1 ), 3, 1 );
+        ok &= check( "a value holding several links is painted as a link",
+                     pdb.getForeground().getRGB() == FormWidgets.linkColor().getRGB() );
+        final java.awt.Component plain_id = t.prepareRenderer( t.getCellRenderer( 4, 1 ), 4, 1 );
+        ok &= check( "a value that links nothing is not", plain_id.getForeground().getRGB() != FormWidgets.linkColor().getRGB() );
         final java.awt.Component ref = t.prepareRenderer( t.getCellRenderer( 2, 0 ), 2, 0 );
         ok &= check( "its reference is not", ( ref.getForeground().getRGB() != FormWidgets.linkColor().getRGB() )
                 && ( ( (JComponent) ref ).getToolTipText() == null ) );
@@ -413,6 +492,32 @@ public final class NodeDataFormTest {
     }
 
     private static final String NCBI_TAX = "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=";
+    private static final String RCSB     = "https://www.rcsb.org/structure/";
+
+    /** The width of the first {@code shown} characters of the metadata value of {@code row}, in the cell's font. */
+    private static int shownPrefixWidth( final NodeDataForm v, final int row, final int shown ) {
+        final javax.swing.JTable t = v.propertyTableForTest();
+        final javax.swing.JLabel label = (javax.swing.JLabel) t.prepareRenderer( t.getCellRenderer( row, 1 ), row, 1 );
+        return label.getFontMetrics( label.getFont() ).stringWidth( label.getText().substring( 0, shown ) );
+    }
+
+    /** How many characters of the metadata value of {@code row} the cell shows before its ellipsis -- by Swing's
+     *  own label layout on the cell's renderer (the clipped text it returns ends in "..."), not by the form. */
+    private static int shownChars( final NodeDataForm v, final int row ) {
+        final javax.swing.JTable t = v.propertyTableForTest();
+        final java.awt.Rectangle r = t.getCellRect( row, 1, false );
+        final javax.swing.JLabel label = (javax.swing.JLabel) t.prepareRenderer( t.getCellRenderer( row, 1 ), row, 1 );
+        final java.awt.Insets in = label.getInsets();
+        final java.awt.Rectangle view = new java.awt.Rectangle( 0, 0, r.width - in.left - in.right, r.height - in.top - in.bottom );
+        final String clipped = javax.swing.SwingUtilities.layoutCompoundLabel( label, label.getFontMetrics( label.getFont() ),
+                label.getText(), null, label.getVerticalAlignment(), label.getHorizontalAlignment(),
+                label.getVerticalTextPosition(), label.getHorizontalTextPosition(), view, new java.awt.Rectangle(),
+                new java.awt.Rectangle(), label.getIconTextGap() );
+        if ( !clipped.endsWith( "..." ) ) {
+            throw new IllegalStateException( "not clipped: " + clipped );
+        }
+        return clipped.length() - 3;
+    }
 
     private static List<String> flatten( final List<String[]> pairs ) {
         final List<String> out = new ArrayList<>();

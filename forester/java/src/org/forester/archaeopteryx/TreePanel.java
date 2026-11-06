@@ -79,6 +79,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -1836,6 +1837,9 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             case OPEN_SEQ_WEB:
                 openSeqWeb(node);
                 break;
+            case OPEN_PDB_WEB:
+                openPdbWeb(node);
+                break;
             case OPEN_TAX_WEB:
                 openTaxWeb(node);
                 break;
@@ -2350,7 +2354,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
      * {@link NodeMenuEntry} entries in their order with a separator between groups. An entry that does not apply
      * to this node, this tree or this layout is GREYED, never hidden, with the reason as its tooltip where there
      * is one ({@link #nodeMenuReason}); the editing entries exist only on an editable tree. "Open Sequence DB" is
-     * one entry per sequence with an accession, named by it. The delete entry comes last, in the warning colour.
+     * one entry per sequence with an accession, named by it; "Open PDB" with several entries is a submenu of them
+     * ({@link #addPdbSubmenu}). The delete entry comes last, in the warning colour.
      */
     final JPopupMenu buildNodeMenu(final PhylogenyNode node) {
         final JPopupMenu menu = new JPopupMenu();
@@ -2369,6 +2374,9 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 last = entry.group();
             }
             if ((entry == NodeMenuEntry.OPEN_SEQ_WEB) && addPerSequenceDbItems(menu, node)) {
+                continue;
+            }
+            if ((entry == NodeMenuEntry.OPEN_PDB_WEB) && addPdbSubmenu(menu, node)) {
                 continue;
             }
             final JMenuItem item = new JMenuItem(nodeMenuLabel(entry, node));
@@ -2402,13 +2410,52 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                     final String label = (ForesterUtil.isEmpty(trimmedName) || trimmedName.equals(acc.getValue()))
                             ? acc.getValue() : trimmedName + " [" + acc.getValue() + "]";
                     final JMenuItem item = new JMenuItem(NodeMenuEntry.OPEN_SEQ_WEB.title() + " [" + label + "]");
-                    item.addActionListener(e -> openSeqWebForSequence(node, seq));
+                    item.addActionListener(e -> openSeqWebForSequence(seq));
                     menu.add(item);
                     added = true;
                 }
             }
         }
         return added;
+    }
+
+    /** The most entries the "Open PDB" submenu lists flat; past it, PAGES of this many, each a submenu named by
+     *  its first and last identifier (a tip of the bcl-2 reference tree names 311: a flat menu runs off the screen). */
+    static final int PDB_MENU_PAGE = 20;
+
+    /**
+     * "Open PDB" on a node naming SEVERAL PDB entries: a submenu with one item per entry, named by its identifier
+     * and opening its page (the address is the item's tooltip, as on the node window's links), in pages of
+     * {@link #PDB_MENU_PAGE} when there are more; false with one entry or none, which the plain entry handles
+     * ({@link #nodeMenuLabel} names the one, {@link #nodeMenuReason} says why none).
+     */
+    private boolean addPdbSubmenu(final JPopupMenu menu, final PhylogenyNode node) {
+        final List<String[]> entries = pdbEntries(node);
+        if (entries.size() < 2) {
+            return false;
+        }
+        final JMenu sub = new JMenu(NodeMenuEntry.OPEN_PDB_WEB.title());
+        if (entries.size() <= PDB_MENU_PAGE) {
+            addPdbItems(sub, entries);
+        } else {
+            for (int from = 0; from < entries.size(); from += PDB_MENU_PAGE) {
+                final List<String[]> page = entries.subList(from, Math.min(from + PDB_MENU_PAGE, entries.size()));
+                final JMenu page_menu = new JMenu(page.get(0)[0] + " \u2013 " + page.get(page.size() - 1)[0]);
+                addPdbItems(page_menu, page);
+                sub.add(page_menu);
+            }
+        }
+        menu.add(sub);
+        return true;
+    }
+
+    private void addPdbItems(final JMenu into, final List<String[]> entries) {
+        for (final String[] entry : entries) {
+            final JMenuItem item = new JMenuItem(entry[0]);
+            item.setToolTipText(entry[1]);
+            item.addActionListener(e -> openInBrowser(entry[1], "PDB"));
+            into.add(item);
+        }
     }
 
     /**
@@ -2424,6 +2471,10 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             case OPEN_SEQ_WEB: {
                 final String id = isCanOpenSeqWeb(node);
                 return ForesterUtil.isEmpty(id) ? entry.title() : entry.title() + " [" + id + "]";
+            }
+            case OPEN_PDB_WEB: {
+                final List<String[]> entries = pdbEntries(node);
+                return (entries.size() == 1) ? entry.title() + " [" + entries.get(0)[0] + "]" : entry.title();
             }
             case DELETE:
                 return node.isExternal() ? "Delete Node\u2026" : "Delete Node/Subtree\u2026";
@@ -2458,6 +2509,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 return !node.isExternal();
             case OPEN_SEQ_WEB:
                 return !ForesterUtil.isEmpty(isCanOpenSeqWeb(node));
+            case OPEN_PDB_WEB:
+                return !pdbEntries(node).isEmpty();
             case OPEN_TAX_WEB:
                 return isCanOpenTaxWeb(node);
             case CUT_SUBTREE:
@@ -2510,6 +2563,8 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
                 return atSubtreeCap() ? NO_DEEPER_SUBTREE : null;
             case OPEN_TAX_WEB:
                 return node.getNodeData().isHasTaxonomy() ? NO_TAXONOMY_PAGE : "this node has no taxonomy";
+            case OPEN_PDB_WEB:
+                return NO_PDB_ENTRY;
             case UNCOLLAPSE_ALL:
             case COLOR_SUBTREE:
             case CUT_SUBTREE:
@@ -2525,6 +2580,7 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
 
     private static final String NOT_IN_UNROOTED = "not in the unrooted layout";
     static final String NO_TAXONOMY_PAGE = "no identifier, scientific name or code that names a page";
+    static final String NO_PDB_ENTRY = "no PDB identifier: no accession, cross-reference or metadata field names one";
     private static final String NO_DEEPER_SUBTREE = "no deeper subtree view: return to a supertree first";
 
     /** The warning colour for the delete entry: the look and feel's, else a plain red. */
@@ -2727,20 +2783,49 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
             cannotOpenBrowserWarningMessage("sequence");
             return;
         }
-        final String uri_str = TreePanelUtil.createUriForSeqWeb(node, getConfiguration(), this);
-        if (!ForesterUtil.isEmpty(uri_str)) {
-            try {
-                AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_seq");
-            } catch (final IOException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            } catch (final URISyntaxException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        } else {
-            cannotOpenBrowserWarningMessage("sequence");
+        openInBrowser(TreePanelUtil.createUriForSeqWeb(node, getConfiguration(), this), "sequence");
+    }
+
+    /** "Open PDB" as the plain entry: opens the node's one PDB entry; with none, says it cannot. The menu builds
+     *  the plain entry only for one entry or none (several get the submenu, whose items open their own); run with
+     *  several from code, it opens the first. */
+    final private void openPdbWeb(final PhylogenyNode node) {
+        final List<String[]> entries = pdbEntries(node);
+        openInBrowser(entries.isEmpty() ? null : entries.get(0)[1], "PDB");
+    }
+
+    /** The PDB entries the node menu offers for {@code node} -- the pages the node window links
+     *  ({@link NodeDataLinks#pdbEntries}) -- as {identifier, address}; empty when it names none. */
+    static List<String[]> pdbEntries(final PhylogenyNode node) {
+        return NodeDataLinks.pdbEntries(node.getNodeData());
+    }
+
+    /** What the node menu's links hand an address to: the browser ({@link #launchBrowser}), or a test's stand-in. */
+    private java.util.function.Consumer<String> _browser = this::launchBrowser;
+
+    /** Hands {@code uri_str} to the browser; nothing to open (null or empty) is reported as "cannot launch" for
+     *  {@code what} data. */
+    final private void openInBrowser(final String uri_str, final String what) {
+        if (ForesterUtil.isEmpty(uri_str)) {
+            cannotOpenBrowserWarningMessage(what);
+            return;
         }
+        _browser.accept(uri_str);
+    }
+
+    /** The one launcher ({@link AptxUtil#openWebsite}, as the domain links use); a failure shows its message. */
+    private void launchBrowser(final String uri_str) {
+        try {
+            AptxUtil.openWebsite(uri_str);
+        } catch (final IOException e) {
+            AptxUtil.showErrorMessage(this, e.toString());
+            e.printStackTrace();
+        }
+    }
+
+    /** For tests: where the node menu's links send their address instead of the browser (null: the browser). */
+    final void setBrowserForTest(final java.util.function.Consumer<String> browser) {
+        _browser = (browser != null) ? browser : this::launchBrowser;
     }
 
     /** Where the node window links {@code seq}'s accession ({@link NodeDataLinks#accessionUrl}), or null: the
@@ -2757,38 +2842,12 @@ public final class TreePanel extends JPanel implements MouseWheelListener {
         return (link != null) ? link : TreePanelUtil.createUriForSeqWeb(seq, getConfiguration(), this);
     }
 
-    final private void openSeqWebForSequence(final PhylogenyNode node, final Sequence seq) {
-        final String uri_str = sequenceMenuUrl(seq);
-        if (!ForesterUtil.isEmpty(uri_str)) {
-            try {
-                AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_seq");
-            } catch (final IOException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            } catch (final URISyntaxException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        } else {
-            cannotOpenBrowserWarningMessage("sequence");
-        }
+    final private void openSeqWebForSequence(final Sequence seq) {
+        openInBrowser(sequenceMenuUrl(seq), "sequence");
     }
 
     final private void openTaxWeb(final PhylogenyNode node) {
-        final String uri_str = taxonomyDbUrl(node);
-        if (!ForesterUtil.isEmpty(uri_str)) {
-            try {
-                AptxUtil.launchWebBrowser(new URI(uri_str), "_aptx_tax");
-            } catch (final IOException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            } catch (final URISyntaxException e) {
-                AptxUtil.showErrorMessage(this, e.toString());
-                e.printStackTrace();
-            }
-        } else {
-            cannotOpenBrowserWarningMessage("taxonomic");
-        }
+        openInBrowser(taxonomyDbUrl(node), "taxonomic");
     }
 
     final private void paintBranchLength(final Graphics2D g,

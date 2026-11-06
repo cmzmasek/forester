@@ -25,12 +25,23 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.NodeData;
+import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
@@ -57,8 +68,17 @@ import org.forester.util.SequenceAccessionTools;
  * 2026-10-30 on 725 trees (Downloads, the family reference trees, the demos): 2,287 sequences declared "protein"
  * carry a genome accession (KJ473821, NC_009021). The declared type decides only a format we do not recognise.</li>
  * <li>A DOI opens doi.org. A URI, or a metadata value, opens itself when it is an http(s) address.</li>
+ * <li>A PDB ENTRY opens RCSB PDB (2026-11-06, "bring back the ability to open PDB entries"): an accession or a
+ * cross-reference whose source is pdb (rcsb and wwpdb read the same), and every identifier listed in a metadata
+ * field NAMED for PDB identifiers ({@link #isPdbRef}: pdb, pdb id, pdb entry, pdb code, pdb accession, pdb
+ * structure, singular or plural, in any namespace, with or without separators: pdb_ids, PDB-ID, PDBCode) -- a
+ * listed token that is no identifier ("+58more", "none") stays text. {@link #propertySpans} is the ONE rule for
+ * what a metadata value links (a web address, or the identifiers of such a field), for the window and the menu.
+ * An identifier is a digit 1-9 and three letters or digits, never all digits ("1999" is a year), in either case,
+ * with at most a chain or entity after "_", "." or ":" ("4KRR_A" opens 4KRR). A field of another name holding
+ * such a token is not guessed at. {@link #pdbEntries} gathers a node's entries for the node menu's "Open PDB".</li>
  * </ul>
- * Every pattern was opened once by hand (2026-10-30) and answered with the page it names.
+ * Every pattern was opened once by hand (2026-10-30; the PDB entry 2026-11-06) and answered with the page it names.
  */
 final class NodeDataLinks {
 
@@ -72,6 +92,7 @@ final class NodeDataLinks {
     static final String INTERPRO_ENTRY          = "https://www.ebi.ac.uk/interpro/entry/InterPro/";
     static final String PATHOPLEXUS             = "https://pathoplexus.org/seq/";
     static final String DOI                     = "https://doi.org/";
+    static final String RCSB_PDB                = "https://www.rcsb.org/structure/";
 
     /** The leading run of characters an accession is made of; what follows must be a separator (":NS5"). */
     private static final Pattern TOKEN              = Pattern.compile( "[A-Za-z0-9_.]+" );
@@ -98,6 +119,16 @@ final class NodeDataLinks {
     private static final Pattern PATHOPLEXUS_ID     = Pattern.compile( "PP_[A-Z0-9]+(\\.\\d+)?" );
     private static final Pattern DOI_PATTERN        = Pattern.compile( "10\\.\\d{4,9}/\\S+" );
     private static final Pattern WEB                = Pattern.compile( "(?i)https?://\\S+" );
+    /** A PDB identifier (group 1), with at most a chain or entity after a separator; see the class comment. */
+    private static final Pattern PDB_ID             = Pattern
+            .compile( "([1-9][A-Za-z0-9]{3})(?:[_.:][A-Za-z0-9]{1,4})?" );
+    /** One token of a list of identifiers: what lies between commas, semicolons, bars and white space. */
+    private static final Pattern LIST_TOKEN         = Pattern.compile( "[^,;|\\s]+" );
+    /** The local names of a metadata field that lists PDB identifiers, folded as {@link RankVocabulary#fold} folds
+     *  (case aside; spaces, '_', '-' and '.' stripped): pdb_id, PDB-ID, "pdb id" and PDBID are all "pdbid". */
+    private static final Set<String> PDB_FIELD_NAMES = new HashSet<>( Arrays.asList( "pdb", "pdbid", "pdbids",
+            "pdbentry", "pdbentries", "pdbcode", "pdbcodes", "pdbaccession", "pdbaccessions", "pdbstructure",
+            "pdbstructures" ) );
     /** What a URI may hold as written, besides a "%XX" escape (RFC 3986's unreserved and reserved characters, but
      *  '[' and ']', which only an IPv6 host may hold). */
     private static final String  URI_CHARS          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -208,6 +239,13 @@ final class NodeDataLinks {
             }
             case "pathoplexus":
                 return PATHOPLEXUS_ID.matcher( token ).matches() ? PATHOPLEXUS + token : null;
+            case "pdb":
+            case "rcsb":
+            case "rcsb pdb":
+            case "rcsb_pdb":
+            case "rcsb-pdb":
+            case "wwpdb":
+                return pdbUrl( token );
             default:
                 if ( s.startsWith( "uniprot" ) || s.equals( "swissprot" ) || s.equals( "swiss-prot" )
                         || s.equals( "trembl" ) || s.equals( "sp" ) || s.equals( "tr" ) ) {
@@ -289,6 +327,137 @@ final class NodeDataLinks {
             return token.substring( 0, token.length() - m.group( m.groupCount() ).length() );
         }
         return token;
+    }
+
+    // ------------------------------------------------------------------ structures
+    /** RCSB PDB's page for a PDB identifier (written in either case, with at most a chain or entity after it, see
+     *  the class comment), or null when {@code value} is not one. */
+    static String pdbUrl( final String value ) {
+        final Matcher m = PDB_ID.matcher( trim( value ) );
+        if ( !m.matches() ) {
+            return null;
+        }
+        final String id = m.group( 1 ).toUpperCase( Locale.ROOT );
+        return DIGITS.matcher( id ).matches() ? null : RCSB_PDB + id; // all digits: a number, not an entry
+    }
+
+    /** The PDB identifiers listed in {@code text} (between commas, semicolons, bars or white space), each as the
+     *  span of characters it occupies and the page it opens; a token that is no identifier is left out. */
+    static List<Span> pdbIdSpans( final String text ) {
+        final List<Span> out = new ArrayList<>();
+        if ( text == null ) {
+            return out;
+        }
+        final Matcher m = LIST_TOKEN.matcher( text );
+        while ( m.find() ) {
+            final String url = pdbUrl( m.group() );
+            if ( url != null ) {
+                out.add( new Span( m.start(), m.end(), url ) );
+            }
+        }
+        return out;
+    }
+
+    /** Whether a metadata reference names a field of PDB identifiers: its local name (after the namespace),
+     *  folded, is one of {@link #PDB_FIELD_NAMES} ("repseq:pdb_ids", "data:PDB-IDs", "meta:PDBCode"); or its
+     *  namespace is pdb and the local name says which identifiers ("pdb:ids", "pdb:entry"). */
+    static boolean isPdbRef( final String ref ) {
+        final String r = trim( ref );
+        final int colon = r.lastIndexOf( ':' );
+        final String local = RankVocabulary.fold( r.substring( colon + 1 ) );
+        if ( PDB_FIELD_NAMES.contains( local ) ) {
+            return true;
+        }
+        return ( colon > 0 ) && RankVocabulary.fold( r.substring( 0, colon ) ).equals( "pdb" )
+                && PDB_FIELD_NAMES.contains( "pdb" + local );
+    }
+
+    /**
+     * The links in a metadata value, in order -- the ONE rule the node window's metadata table and the node menu's
+     * "Open PDB" share: a value that is a web address is one link, the whole value; a value in a field named for
+     * PDB identifiers ({@link #isPdbRef}) holds one link per identifier it lists ({@link #pdbIdSpans}); any other
+     * value links nothing. Empty for a null value.
+     */
+    static List<Span> propertySpans( final String ref, final String value ) {
+        final List<Span> out = new ArrayList<>();
+        if ( value == null ) {
+            return out;
+        }
+        final String web = webUrl( value );
+        if ( web != null ) {
+            out.add( new Span( 0, value.length(), web ) );
+            return out;
+        }
+        return isPdbRef( ref ) ? pdbIdSpans( value ) : out;
+    }
+
+    /**
+     * The PDB entries a node names, as {text, address} in the node window's order -- each sequence's accession,
+     * then its cross-references, then what the metadata fields named for PDB identifiers link
+     * ({@link #propertySpans}: their identifiers, or the web address such a field holds) -- one per entry (an
+     * identifier named twice, "4KRR" and "4KRR_A", is one). What the node menu's "Open PDB" offers: exactly the
+     * PDB links the window shows. Empty when none.
+     */
+    static List<String[]> pdbEntries( final NodeData nd ) {
+        final Map<String, String> by_url = new LinkedHashMap<>();
+        if ( nd != null ) {
+            if ( nd.isHasSequence() ) {
+                for( final Sequence seq : nd.getSequences() ) {
+                    if ( seq == null ) {
+                        continue;
+                    }
+                    final Accession acc = seq.getAccession();
+                    if ( acc != null ) {
+                        putPdbEntry( by_url, acc );
+                    }
+                    if ( seq.getCrossReferences() != null ) {
+                        for( final Accession x : seq.getCrossReferences() ) {
+                            putPdbEntry( by_url, x );
+                        }
+                    }
+                }
+            }
+            if ( nd.isHasProperties() ) {
+                for( final Property p : nd.getProperties().getProperties() ) {
+                    if ( isPdbRef( p.getRef() ) ) {
+                        final String value = ( p.getValue() == null ) ? "" : p.getValue();
+                        for( final Span span : propertySpans( p.getRef(), value ) ) {
+                            by_url.putIfAbsent( span.url, value.substring( span.start, span.end ).trim() );
+                        }
+                    }
+                }
+            }
+        }
+        final List<String[]> out = new ArrayList<>();
+        for( final Map.Entry<String, String> e : by_url.entrySet() ) {
+            out.add( new String[] { e.getValue(), e.getKey() } );
+        }
+        return out;
+    }
+
+    /** An accession whose source names PDB and whose value is an identifier: its entry (the first text wins). */
+    private static void putPdbEntry( final Map<String, String> by_url, final Accession acc ) {
+        if ( acc == null ) {
+            return;
+        }
+        final String url = accessionUrl( acc.getValue(), acc.getSource(), null );
+        if ( ( url != null ) && url.startsWith( RCSB_PDB ) ) {
+            by_url.putIfAbsent( url, trim( acc.getValue() ) );
+        }
+    }
+
+    /** A link inside a text: the characters [{@code start}, {@code end}) and the address they open. */
+    static final class Span {
+
+        final int    start;
+        final int    end;
+        final String url;
+
+        Span( final int start, final int end, final String url ) {
+            this.start = start;
+            this.end = end;
+            this.url = url;
+        }
     }
 
     // ------------------------------------------------------------------ the rest
