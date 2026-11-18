@@ -1556,6 +1556,14 @@ public final class Test {
             System.out.println("failed.");
             failed++;
         }
+        System.out.print("Embedded viewer (host's look and feel, saved state, end(), radial tab): ");
+        if (org.forester.archaeopteryx.EmbeddedViewerTest.test()) {
+            System.out.println("OK.");
+            succeeded++;
+        } else {
+            System.out.println("failed.");
+            failed++;
+        }
         System.out.print("Keyboard shortcuts reference: ");
         if (org.forester.archaeopteryx.KeyboardShortcutsTest.test()) {
             System.out.println("OK.");
