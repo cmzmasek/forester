@@ -343,10 +343,12 @@ public final class ErrorLogTest {
     private static boolean location() {
         final String saved = System.getProperty( GuiPreferences.DIR_PROPERTY );
         try {
-            System.setProperty( GuiPreferences.DIR_PROPERTY, "/tmp/aptx-log-location-probe" );
+            // a directory spelled as THIS platform spells one ("/tmp/..." is "\tmp\..." as a Windows path), and
+            // compared as a path, not as text; nothing is created there
+            final Path dir = java.nio.file.Paths.get( System.getProperty( "java.io.tmpdir" ), "aptx-log-location-probe" );
+            System.setProperty( GuiPreferences.DIR_PROPERTY, dir.toString() );
             final Path p = ErrorLog.defaultFile();
-            if ( !p.toString().startsWith( "/tmp/aptx-log-location-probe" )
-                    || !p.getFileName().toString().equals( ErrorLog.FILE_NAME ) ) {
+            if ( !dir.equals( p.getParent() ) || !p.getFileName().toString().equals( ErrorLog.FILE_NAME ) ) {
                 return fail( "the log should honour the cache-dir override, got " + p );
             }
             System.clearProperty( GuiPreferences.DIR_PROPERTY );

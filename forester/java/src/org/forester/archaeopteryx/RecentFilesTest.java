@@ -126,13 +126,19 @@ public final class RecentFilesTest {
                 return fail( "a missing store must read as empty" );
             }
             deleteQuietly( missing.getParent() );
-            // an unwritable location: add() must not throw
-            final RecentFiles broken = new RecentFiles( new File( "/" ).toPath().resolve( "aptx-nope" )
-                    .resolve( "x.properties" ) );
-            broken.add( new File( "/tmp" ) );
+            // an unwritable location: add() must not throw. The store's directory is a regular FILE, which no
+            // platform and no user can create a directory under ("/aptx-nope" is writable as root, and under C:\)
+            final Path blocker = Files.createTempFile( "aptx-recent-blocker", ".tmp" );
+            final Path unwritable = blocker.resolve( "x.properties" );
+            final RecentFiles broken = new RecentFiles( unwritable );
+            broken.add( blocker.toFile() );
+            if ( Files.exists( unwritable ) ) {
+                return fail( "fixture: a store under a regular file must not be writable: " + unwritable );
+            }
             if ( !broken.load().isEmpty() ) {
                 return fail( "an unwritable store must stay empty rather than pretend" );
             }
+            Files.deleteIfExists( blocker );
             // a null file is ignored rather than recorded
             final Path dir = Files.createTempDirectory( "aptx-recent-null" );
             final Path store = dir.resolve( RecentFiles.RECENT_FILES_FILE );
