@@ -228,6 +228,25 @@ public final class TreeWindowsTest {
         check( ok, "no matches", f.hitCountForTest() == 0 );
         f.setFindTextForTest( "CLADE" );
         check( ok, "case-insensitive", f.hitCountForTest() == hits );
+        // a hit selects the text that was found, whatever line ending the platform writes: on Windows the pane's
+        // text counts two characters per line break, the document and the caret one
+        final Object eol_before = f.setLineEndingForTest( "\r\n" );
+        check( ok, "fixture: the pane writes \\r\\n", f.writtenTextForTest().contains( "\r\n" ) );
+        check( ok, "one line ending per line break in what Copy and Save As write",
+               !f.writtenTextForTest().contains( "\r\r" ) );
+        check( ok, "the shown text holds line feeds only", f.textForTest().indexOf( '\r' ) < 0 );
+        check( ok, "written = shown, but for the line endings",
+               f.writtenTextForTest().replace( "\r\n", "\n" ).equals( f.textForTest() ) );
+        f.setFindTextForTest( "clade" );
+        check( ok, "fixture: the first hit follows a line break",
+               f.textForTest().indexOf( '\n' ) < f.textForTest().toLowerCase().indexOf( "clade" ) );
+        check( ok, "as many hits with \\r\\n line endings", f.hitCountForTest() == hits );
+        for( int i = 0; i < f.hitCountForTest(); ++i ) {
+            check( ok, "hit " + i + " selects the found text, selects \"" + f.selectedTextForTest() + "\"",
+                   "clade".equalsIgnoreCase( f.selectedTextForTest() ) );
+            f.stepForTest( 1 );
+        }
+        f.setLineEndingForTest( eol_before );
         f.setFindTextForTest( "" );
         check( ok, "cleared", f.hitCountForTest() == 0 );
         // the tree changed: stale, then regenerated on demand
@@ -238,8 +257,16 @@ public final class TreeWindowsTest {
         check( ok, "old text until refreshed", !f.textForTest().contains( "RENAMED_TIP" ) );
         f.refreshNow();
         check( ok, "regenerated", f.textForTest().contains( "RENAMED_TIP" ) && !f.isStaleForTest() );
+        // a find text carried to a format never shown before: its pane has no size yet when the hits are selected
+        f.setFindTextForTest( "renamed_tip" );
+        check( ok, "fixture: a hit before the switch", f.hitCountForTest() >= 1 );
         mf.viewAsText( Format.NEXUS );
         check( ok, "other format regenerated too", f.textForTest().contains( "RENAMED_TIP" ) );
+        check( ok, "the find text is searched in a format shown for the first time: " + f.hitCountForTest() + " hits",
+               ( f.hitCountForTest() >= 1 ) && ( f.currentHitForTest() == 0 ) );
+        check( ok, "... and its first hit selected, selects \"" + f.selectedTextForTest() + "\"",
+               "RENAMED_TIP".equals( f.selectedTextForTest() ) );
+        f.setFindTextForTest( "" );
         f.close();
         check( ok, "slot released", ( tp.treeTextFrameForTest() == null ) && !f.isDisplayable() );
     }

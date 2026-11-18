@@ -45,7 +45,7 @@ public final class TreeTextTest {
 
     public static boolean test() {
         try {
-            return render() && sizeText() && xmlSpans() && newickSpans() && nexusSpans() && numbers() && limit()
+            return render() && lineFeedsOnly() && indexOfIgnoreCase() && sizeText() && xmlSpans() && newickSpans() && nexusSpans() && numbers() && limit()
                     && fileName();
         }
         catch ( final Throwable e ) {
@@ -82,6 +82,39 @@ public final class TreeTextTest {
         }
         if ( Format.PHYLOXML.wrapsByDefault() || !Format.NEWICK.wrapsByDefault() || !Format.NEXUS.wrapsByDefault() ) {
             return TestFail.here();
+        }
+        return true;
+    }
+
+    /** Line breaks become one line feed each, whatever the platform wrote. */
+    private static boolean lineFeedsOnly() {
+        if ( !"a\nb\n\nc\n".equals( TreeText.lineFeedsOnly( "a\r\nb\r\n\r\nc\r\n" ) )
+                || !"a\nb\nc".equals( TreeText.lineFeedsOnly( "a\rb\nc" ) ) || !"".equals( TreeText.lineFeedsOnly( "" ) )
+                || ( TreeText.lineFeedsOnly( null ) != null ) ) {
+            return TestFail.here( TreeText.lineFeedsOnly( "a\r\nb\r\n\r\nc\r\n" ) );
+        }
+        final String plain = "a\nb";
+        if ( TreeText.lineFeedsOnly( plain ) != plain ) {
+            return TestFail.here( "a text without carriage returns is returned as it is" );
+        }
+        return true;
+    }
+
+    /** Offsets are those of the text searched: a character whose lower case is longer must not move later hits. */
+    private static boolean indexOfIgnoreCase() {
+        final String text = "\u0130zmir clade CLADE Clade"; // capital dotted I: two characters when lower-cased
+        if ( "\u0130".toLowerCase( java.util.Locale.ROOT ).length() != 2 ) {
+            return TestFail.here( "fixture: the capital dotted I must lower-case to two characters" );
+        }
+        if ( ( TreeText.indexOfIgnoreCase( text, "clade", 0 ) != 6 ) || ( TreeText.indexOfIgnoreCase( text, "clade", 7 ) != 12 )
+                || ( TreeText.indexOfIgnoreCase( text, "CLADE", 13 ) != 18 )
+                || ( TreeText.indexOfIgnoreCase( text, "clade", 19 ) != -1 )
+                || ( TreeText.indexOfIgnoreCase( text, "zmir", 0 ) != 1 )
+                || ( TreeText.indexOfIgnoreCase( text, "Clade", 18 ) != 18 )
+                || ( TreeText.indexOfIgnoreCase( text, "clades", 0 ) != -1 )
+                || ( TreeText.indexOfIgnoreCase( "ab", "abc", 0 ) != -1 )
+                || ( TreeText.indexOfIgnoreCase( text, "clade", -5 ) != 6 ) ) {
+            return TestFail.here( "first hit at " + TreeText.indexOfIgnoreCase( text, "clade", 0 ) );
         }
         return true;
     }

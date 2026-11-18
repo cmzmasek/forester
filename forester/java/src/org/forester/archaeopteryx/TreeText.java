@@ -113,14 +113,42 @@ final class TreeText {
         }
         switch ( format ) {
             case PHYLOXML:
-                return phy.toPhyloXML( 0 );
+                return lineFeedsOnly( phy.toPhyloXML( 0 ) );
             case NEWICK:
-                return phy.toNewHampshire( style );
+                return lineFeedsOnly( phy.toNewHampshire( style ) );
             case NEXUS:
-                return phy.toNexus( style );
+                return lineFeedsOnly( phy.toNexus( style ) );
             default:
                 return "";
         }
+    }
+
+    /**
+     * {@code text} with every line break as one line feed. The writers end a line with the platform's separator
+     * ("\r\n" on Windows); a text pane counts each character of it and, asked for its text, writes every line feed
+     * as the platform's separator again -- "\r\r\n". The window holds line feeds and lets the pane write the
+     * platform's line ending once.
+     */
+    static String lineFeedsOnly( final String text ) {
+        if ( ( text == null ) || ( text.indexOf( '\r' ) < 0 ) ) {
+            return text;
+        }
+        return text.replace( "\r\n", "\n" ).replace( '\r', '\n' );
+    }
+
+    /**
+     * The first offset at or after {@code from} where {@code needle} stands in {@code text}, letter case aside; -1
+     * when nowhere. Compared in place: lower-casing the whole text first can change its length (a capital dotted I
+     * becomes two characters), which moves every later offset.
+     */
+    static int indexOfIgnoreCase( final String text, final String needle, final int from ) {
+        final int n = needle.length();
+        for( int i = Math.max( 0, from ); i <= ( text.length() - n ); ++i ) {
+            if ( text.regionMatches( true, i, needle, 0, n ) ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /** "12,345 characters · 210 lines" (a one-line Newick reports "1 line"). */

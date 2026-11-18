@@ -41,7 +41,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -224,9 +223,37 @@ final class TreeTextFrame extends JFrame {
         showFormat( format() );
     }
 
-    /** The text currently shown. */
+    /** The text currently shown, as the document holds it: line breaks are line feeds, offsets are the caret's. */
     String textForTest() {
-        return _panes.get( format() ).getText();
+        return shownText();
+    }
+
+    /** The text Copy and Save As write: the shown text with the platform's line endings. */
+    String writtenTextForTest() {
+        return writtenText();
+    }
+
+    private String shownText() {
+        final String text = _texts.get( format() );
+        return ( text == null ) ? "" : text;
+    }
+
+    private String writtenText() {
+        return _panes.get( format() ).getText(); // the editor kit writes each line feed as the platform's line ending
+    }
+
+    /** What the current hit selects in the shown text. */
+    String selectedTextForTest() {
+        return _panes.get( format() ).getSelectedText();
+    }
+
+    /** Makes the shown pane write its text with this line ending, as it does by itself on a platform whose line
+     *  separator is not a line feed (Windows); null = the platform's. Returns what was set before. */
+    Object setLineEndingForTest( final Object eol ) {
+        final javax.swing.text.Document doc = _panes.get( format() ).getDocument();
+        final Object before = doc.getProperty( javax.swing.text.DefaultEditorKit.EndOfLineStringProperty );
+        doc.putProperty( javax.swing.text.DefaultEditorKit.EndOfLineStringProperty, eol );
+        return before;
     }
 
     String subtitleForTest() {
@@ -409,15 +436,18 @@ final class TreeTextFrame extends JFrame {
             _find_count.setText( " " );
             return;
         }
-        final String hay = pane.getText().toLowerCase( Locale.ROOT );
-        final String n = needle.toLowerCase( Locale.ROOT );
+        // The text as the DOCUMENT holds it, so that a hit's offset is the highlighter's and the caret's.
+        // JTextPane.getText() writes every line feed as the platform's line ending: on Windows one character more
+        // per line break, which put every hit that much further right.
+        final String hay = shownText();
+        final String n = needle;
         int from = 0;
         int total = 0;
         final Color c = accentColor();
         final DefaultHighlighter.DefaultHighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(
                 new Color( c.getRed(), c.getGreen(), c.getBlue(), 70 ) );
         while( true ) {
-            final int i = hay.indexOf( n, from );
+            final int i = TreeText.indexOfIgnoreCase( hay, n, from );
             if ( i < 0 ) {
                 break;
             }
@@ -466,7 +496,7 @@ final class TreeTextFrame extends JFrame {
     // ------------------------------------------------------------------ copy / save
     private void copyAll() {
         try {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents( new StringSelection( textForTest() ), null );
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents( new StringSelection( writtenText() ), null );
             _status.setText( "Copied to the clipboard." );
         }
         catch ( final IllegalStateException e ) {
@@ -501,7 +531,7 @@ final class TreeTextFrame extends JFrame {
             }
         }
         try {
-            Files.write( out.toPath(), textForTest().getBytes( StandardCharsets.UTF_8 ) );
+            Files.write( out.toPath(), writtenText().getBytes( StandardCharsets.UTF_8 ) );
             _status.setText( "Saved to " + out.getName() + "." );
             if ( mf != null ) {
                 mf.setCurrentDir( DirectoryPreferences.Category.SAVE, out.getParentFile() );
